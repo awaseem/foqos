@@ -7,21 +7,21 @@ struct BlockedProfileView: View {
     @Environment(\.dismiss) private var dismiss
     
     @EnvironmentObject var nfcScanner: NFCScanner
-
+    
     // If profile is nil, we're creating a new profile
     var profile: BlockedProfiles?
-
+    
     @State private var name: String = ""
     @State private var selectedActivity = FamilyActivitySelection()
     @State private var catAndAppCount: Int = 0
     @State private var showingActivityPicker = false
     @State private var errorMessage: String?
     @State private var showError = false
-
+    
     private var isEditing: Bool {
         profile != nil
     }
-
+    
     init(profile: BlockedProfiles? = nil) {
         self.profile = profile
         _name = State(initialValue: profile?.name ?? "")
@@ -34,7 +34,7 @@ struct BlockedProfileView: View {
                 .countSelectedActivities(selectedActivity)
         )
     }
-
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -42,7 +42,7 @@ struct BlockedProfileView: View {
                     TextField("Profile Name", text: $name)
                         .textContentType(.none)
                 }
-
+                
                 Section("Selected Restrictions") {
                     Button(action: {
                         showingActivityPicker = true
@@ -141,7 +141,7 @@ struct BlockedProfileView: View {
             }
             .onChange(of: selectedActivity) { _, newValue in
                 catAndAppCount =
-                    BlockedProfiles
+                BlockedProfiles
                     .countSelectedActivities(newValue)
             }
             .navigationTitle(isEditing ? "Profile Details" : "New Profile")
@@ -152,7 +152,7 @@ struct BlockedProfileView: View {
                         dismiss()
                     }
                 }
-
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(isEditing ? "Update" : "Create") {
                         saveProfile()
@@ -160,10 +160,12 @@ struct BlockedProfileView: View {
                     .disabled(name.isEmpty)
                 }
             }
-            .familyActivityPicker(
-                isPresented: $showingActivityPicker,
-                selection: $selectedActivity
-            )
+            .sheet(isPresented: $showingActivityPicker) {
+                AppPicker(
+                    selection: $selectedActivity,
+                    isPresented: $showingActivityPicker
+                )
+            }
             .alert("Error", isPresented: $showError) {
                 Button("OK") {}
             } message: {
@@ -178,7 +180,7 @@ struct BlockedProfileView: View {
             nfcScanner.writeURL(url)
         }
     }
-
+    
     private func saveProfile() {
         do {
             if let existingProfile = profile {

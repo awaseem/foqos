@@ -45,6 +45,8 @@
 		801B20A62CB363A20073E9E2 /* foqosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = foqosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20B02CB363A20073E9E2 /* foqosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = foqosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		803989B22CCC06D600E87F57 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		80C6CAFA2D4301B3008680F4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		80C6CAFC2D4301B3008680F4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		80DBF6132CB776D100EEA8A6 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -131,6 +133,8 @@
 			children = (
 				803989B22CCC06D600E87F57 /* StoreKit.framework */,
 				80DBF6132CB776D100EEA8A6 /* DeviceActivity.framework */,
+				80C6CAFA2D4301B3008680F4 /* WidgetKit.framework */,
+				80C6CAFC2D4301B3008680F4 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -214,7 +218,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					801B20942CB363A10073E9E2 = {
