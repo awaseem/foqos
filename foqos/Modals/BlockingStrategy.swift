@@ -1,13 +1,9 @@
-struct BlockingStrategyInputs {
-    var tag: String?
-}
-
 protocol BlockingStrategy {
-    var id: String { get }
+    static var id: String { get }
     var name: String { get }
     var description: String { get }
-    var iconType: String { get } 
-        
-    func startBlocking(data: BlockingStrategyInputs, profile: BlockedProfiles)
-    func stopBlocking(data: BlockingStrategyInputs, session: BlockedProfileSession)
+    var iconType: String { get }
+            
+    func startBlocking(profile: BlockedProfiles)
+    func stopBlocking(session: BlockedProfileSession)
 }
