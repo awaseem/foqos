@@ -6,11 +6,23 @@ class StrategyManager: ObservableObject {
     @Published var timer: Timer?
     @Published var activeSession: BlockedProfileSession?
     
+    @Published var errorMessage: String?
+    
     var isBlocking: Bool {
         return activeSession?.isActive == true
     }
     
     private var nfcStrategy = NFCBlockingStrategy()
+    
+    func loadActiveStrategy(context: ModelContext) {
+        activeSession =
+            BlockedProfileSession
+            .mostRecentActiveSession(in: context)
+
+        if activeSession?.isActive == true {
+            startTimer()
+        }
+    }
     
     func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
         if isBlocking {
@@ -20,6 +32,47 @@ class StrategyManager: ObservableObject {
         }
 
     }
+    
+    func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if let startTime = self.activeSession?.startTime {
+                self.elapsedTime = Date().timeIntervalSince(startTime)
+            }
+        }
+    }
+
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    func toggleSessionFromDeeplink(_ profileId: String, context: ModelContext) {
+//        guard let profileUUID = UUID(uuidString: profileId) else {
+//            errorMessage = "failed to parse profile in tag"
+//            return
+//        }
+//
+//        do {
+//            guard
+//                let profile = try BlockedProfiles.findProfile(
+//                    byID: profileUUID,
+//                    in: context
+//                )
+//            else {
+//                errorMessage = "Failed to find a profile stored locally that matches the tag"
+//                return
+//            }
+//
+//            let url = BlockedProfiles.getProfileDeepLink(profile)
+//            let nfcResults = nfcScanner.resultFromURL(url)
+//
+//            toggleBlocking(results: nfcResults)
+//            navigationManager.clearProfileId()
+//        } catch {
+//            showErrorAlert(message: "Something went wrong fetching profile")
+//        }
+    }
+
     
     private func startBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
         guard let definedProfile = activeProfile else {
@@ -32,6 +85,11 @@ class StrategyManager: ObservableObject {
         nfcStrategy.onSessionCreation = { session in
             self.activeSession = session
             self.startTimer()
+            self.errorMessage = nil
+        }
+        
+        nfcStrategy.onErrorMessage = { message in
+            self.errorMessage = message
         }
 
         nfcStrategy.startBlocking(context: context, profile: definedProfile)
@@ -48,21 +106,13 @@ class StrategyManager: ObservableObject {
         nfcStrategy.onSessionCreation = { session in
             self.activeSession = session
             self.stopTimer()
+            self.errorMessage = nil
+        }
+        
+        nfcStrategy.onErrorMessage = { message in
+            self.errorMessage = message
         }
 
         nfcStrategy.stopBlocking(context: context, session: session)
-    }
-    
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if let startTime = self.activeSession?.startTime {
-                self.elapsedTime = Date().timeIntervalSince(startTime)
-            }
-        }
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
     }
 }

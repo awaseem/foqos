@@ -23,9 +23,6 @@ class NFCBlockingStrategy: BlockingStrategy {
                 .createSession(in: context, withTag: tag, withProfile: profile)
             self.onSessionCreation?(activeSession)
         }
-        nfcScanner.onError = { error in
-            self.onErrorMessage?(error)
-        }
         
         nfcScanner.scan(profileName: profile.name)
     }
@@ -46,10 +43,7 @@ class NFCBlockingStrategy: BlockingStrategy {
             
             self.onSessionCreation?(nil)
         }
-        nfcScanner.onError = { error in
-            self.onErrorMessage?(error)
-        }
-        
+
         nfcScanner.scan(profileName: session.blockedProfile.name)
     }
 }

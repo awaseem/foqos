@@ -10,9 +10,9 @@ import SwiftUI
 
 @main
 struct foqosApp: App {
-    @StateObject private var appBlocker = AppBlocker()
+    @StateObject private var requestAuthorizer = RequestAuthorizer()
+    @StateObject private var startegyManager = StrategyManager()
     @StateObject private var donationManager = TipManager()
-    @StateObject private var nfcScanner = NFCScanner()
     @StateObject private var navigationManager = NavigationManager()
 
     var body: some Scene {
@@ -28,9 +28,9 @@ struct foqosApp: App {
                     handleUniversalLink(url)
                     
                 }
-                .environmentObject(appBlocker)
+                .environmentObject(requestAuthorizer)
                 .environmentObject(donationManager)
-                .environmentObject(nfcScanner)
+                .environmentObject(startegyManager)
                 .environmentObject(navigationManager)
         }
         .modelContainer(

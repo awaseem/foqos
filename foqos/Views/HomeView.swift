@@ -8,11 +8,11 @@ struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
 
-    @EnvironmentObject var appBlocker: AppBlocker
+    @EnvironmentObject var requestAuthorizer: RequestAuthorizer
+    @EnvironmentObject var strategyManager: StrategyManager
     @EnvironmentObject var donationManager: TipManager
-    @EnvironmentObject var nfcScanner: NFCScanner
     @EnvironmentObject var navigationManager: NavigationManager
-
+    
     // Profile management
     @Query(sort: \BlockedProfiles.updatedAt, order: .reverse) private
         var profiles: [BlockedProfiles]
@@ -30,12 +30,6 @@ struct HomeView: View {
         order: .reverse
     ) private var recentCompletedSessions: [BlockedProfileSession]
 
-    @State var activeSession: BlockedProfileSession?
-
-    // Timers
-    @State private var elapsedTime: TimeInterval = 0
-    @State private var timer: Timer?
-
     // Alerts
     @State private var showingAlert = false
     @State private var alertTitle = ""
@@ -49,15 +43,22 @@ struct HomeView: View {
     @State private var opacityValue = 1.0
 
     var isBlocking: Bool {
-        return activeSession?.isActive == true
+        return strategyManager.isBlocking
+    }
+    
+    var activeSessionProfileId: UUID? {
+        return strategyManager.activeSession?.blockedProfile.id
     }
 
     var sessionStatusStr: String {
         let sessionName = activeProfile?.name ?? "Sesssion"
-        return isBlocking
-            ? "Stop " : "Start " + sessionName
+        if isBlocking {
+            return "Stop " + sessionName
+        }
+        
+        return "Start " + sessionName
     }
-
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             RefreshControl(isRefreshing: $isRefreshing) {
@@ -65,21 +66,11 @@ struct HomeView: View {
             }
 
             VStack(alignment: .leading, spacing: 20) {
-
-                if profiles.isEmpty {
-                    Spacer()
-                        .frame(height: 60)
-                    Welcome(onTap: {
-                        showActiveProfileView = true
-                    })
-                    Spacer()
-                }
-
                 if !profiles.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionTitle(sessionStatusStr)
 
-                        Text(timeString(from: elapsedTime))
+                        Text(timeString(from: strategyManager.elapsedTime))
                             .font(.system(size: 80))
                             .fontWeight(.semibold)
                             .foregroundColor(
@@ -102,15 +93,20 @@ struct HomeView: View {
                                 }
                             }
                     }
-                }
-
-                if !profiles.isEmpty {
+                    
                     VStack(alignment: .leading, spacing: 10) {
                         SectionTitle("Weekly Usage")
 
                         BlockedSessionsChart(
                             sessions: recentCompletedSessions)
                     }
+                } else {
+                    Spacer()
+                        .frame(height: 60)
+                    Welcome(onTap: {
+                        showActiveProfileView = true
+                    })
+                    Spacer()
                 }
 
                 if let mostRecent = activeProfile {
@@ -119,8 +115,8 @@ struct HomeView: View {
 
                         BlockedProfileSelector(
                             profile: mostRecent,
-                            isActive: activeProfile?.id
-                                == activeSession?.blockedProfile.id,
+                            isActive: mostRecent.id
+                            == activeSessionProfileId,
                             onSwipeLeft: {
                                 incrementProfiles()
                             },
@@ -131,7 +127,7 @@ struct HomeView: View {
                                 showActiveProfileView = true
                             },
                             onLongPress: {
-                                scanButtonPress()
+                                strategyButtonPress()
                             }
                         )
                     }
@@ -169,7 +165,7 @@ struct HomeView: View {
                                     label: sessionStatusStr,
                                     color: isBlocking ? .red : .green
                                 ) {
-                                    scanButtonPress()
+                                    strategyButtonPress()
                                 }
                             }
                             ActionCard(
@@ -208,6 +204,9 @@ struct HomeView: View {
             minWidth: 0, maxWidth: .infinity, minHeight: 0,
             maxHeight: .infinity, alignment: .topLeading
         )
+        .onChange(of: strategyManager.errorMessage) { _, newValue in
+            showErrorAlert(message: newValue ?? "")
+        }
         .onChange(of: profileIndex) { _, newValue in
             activeProfile = profiles[safe: profileIndex]
         }
@@ -216,12 +215,7 @@ struct HomeView: View {
                 toggleSessionFromDeeplink(profileId)
             }
         }
-        .onChange(of: nfcScanner.scannedNFCTag) { _, newValue in
-            if let nfcResults = newValue {
-                toggleBlocking(results: nfcResults)
-            }
-        }
-        .onChange(of: appBlocker.isAuthorized) { _, newValue in
+        .onChange(of: requestAuthorizer.isAuthorized) { _, newValue in
             if newValue {
                 showIntroScreen = false
             } else {
@@ -240,7 +234,7 @@ struct HomeView: View {
             unloadApp()
         }.sheet(isPresented: $showIntroScreen) {
             IntroView {
-                appBlocker.requestAuthorization()
+                requestAuthorizer.requestAuthorization()
             }.interactiveDismissDisabled()
         }.sheet(isPresented: $showActiveProfileView) {
             BlockedProfileView(profile: activeProfile)
@@ -253,33 +247,7 @@ struct HomeView: View {
     }
 
     private func toggleSessionFromDeeplink(_ profileId: String) {
-        guard let profileUUID = UUID(uuidString: profileId) else {
-            showErrorAlert(message: "Failed to parse profile in tag")
-            return
-        }
-
-        do {
-            guard
-                let profile = try BlockedProfiles.findProfile(
-                    byID: profileUUID,
-                    in: context
-                )
-            else {
-                showErrorAlert(
-                    message:
-                        "Failed to find a profile stored locally that matches the tag"
-                )
-                return
-            }
-
-            let url = BlockedProfiles.getProfileDeepLink(profile)
-            let nfcResults = nfcScanner.resultFromURL(url)
-
-            toggleBlocking(results: nfcResults)
-            navigationManager.clearProfileId()
-        } catch {
-            showErrorAlert(message: "Something went wrong fetching profile")
-        }
+        strategyManager.toggleSessionFromDeeplink(profileId, context: context)
     }
 
     private func incrementProfiles() {
@@ -294,101 +262,19 @@ struct HomeView: View {
         profileIndex = (profileIndex - 1 + profiles.count) % profiles.count
     }
 
-    private func scanButtonPress() {
-        nfcScanner.scan(profileName: activeProfile?.name ?? "Session")
-    }
-
-    private func toggleBlocking(results: NFCResult) {
-        print(
-            "Toggling block for scanned tag \(results.id) on \(results.DateScanned)"
-        )
-
-        let tag = results.url ?? results.id
-        if isBlocking {
-            stopBlocking(tag: tag)
-        } else {
-            startBlocking(tag: tag)
-        }
-
-        reloadApp()
-    }
-
-    private func startBlocking(tag: String) {
-        if let definedProfile = activeProfile {
-            appBlocker
-                .activateRestrictions(
-                    selection: definedProfile.selectedActivity
-                )
-            activeSession =
-                BlockedProfileSession
-                .createSession(
-                    in: context,
-                    withTag: tag,
-                    withProfile: definedProfile
-                )
-            startTimer()
-        }
-    }
-
-    private func stopBlocking(tag: String) {
-        print("Stopping app blocks...")
-
-        guard let session = activeSession else {
-            print(
-                "No active session found, calling stop blocking with no session"
-            )
-            return
-        }
-
-        if session.tag != tag {
-            print("session tag: \(session.tag) does not match with tag: \(tag)")
-            showErrorAlert(
-                message: "You must scan the original tag to stop focus")
-            return
-        }
-
-        appBlocker.deactivateRestrictions()
-        session.endSession()
-
-        activeSession = nil
-        stopTimer()
+    private func strategyButtonPress() {
+        strategyManager
+            .toggleBlocking(context: context, activeProfile: activeProfile)
     }
 
     private func loadApp() {
         activeProfile = profiles[safe: profileIndex]
 
-        activeSession =
-            BlockedProfileSession
-            .mostRecentActiveSession(in: context)
-
-        if activeSession?.isActive == true {
-            startTimer()
-        }
+        strategyManager.loadActiveStrategy(context: context)
     }
 
     private func unloadApp() {
-        stopTimer()
-    }
-
-    private func reloadApp() {
-        resetTimer()
-    }
-
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if let startTime = activeSession?.startTime {
-                elapsedTime = Date().timeIntervalSince(startTime)
-            }
-        }
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    private func resetTimer() {
-        elapsedTime = 0
+        strategyManager.stopTimer()
     }
 
     private func timeString(from timeInterval: TimeInterval) -> String {
@@ -398,26 +284,20 @@ struct HomeView: View {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 
-    private func showAlert(title: String, message: String) {
-        alertTitle = title
+    private func showErrorAlert(message: String) {
+        alertTitle = "Whoops"
         alertMessage = message
         showingAlert = true
     }
 
-    private func showErrorAlert(message: String) {
-        self.showAlert(title: "Whoops", message: message)
-    }
-
     private func dismissAlert() {
         showingAlert = false
-        alertTitle = ""
-        alertMessage = ""
     }
 }
 
 #Preview {
     HomeView()
-        .environmentObject(AppBlocker())
+        .environmentObject(RequestAuthorizer())
         .environmentObject(TipManager())
         .environmentObject(NFCScanner())
         .environmentObject(NavigationManager())
