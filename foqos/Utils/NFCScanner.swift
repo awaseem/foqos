@@ -9,7 +9,6 @@ struct NFCResult: Equatable {
 
 class NFCScanner: NSObject, ObservableObject {
     @Published var scannedNFCTag: NFCResult?
-    @Published var isScanning: Bool = false
     @Published var errorMessage: String?
 
     private var nfcSession: NFCReaderSession?
@@ -35,8 +34,6 @@ class NFCScanner: NSObject, ObservableObject {
         nfcSession?.alertMessage =
         "Hold your iPhone near an NFC tag to trigger " + profileName
         nfcSession?.begin()
-
-        isScanning = true
     }
 
     func writeURL(_ url: String) {
@@ -59,8 +56,6 @@ class NFCScanner: NSObject, ObservableObject {
         ndefSession.alertMessage =
             "Hold your iPhone near an NFC tag to write the profile."
         ndefSession.begin()
-
-        isScanning = true
     }
 }
 
@@ -74,7 +69,6 @@ extension NFCScanner: NFCTagReaderSessionDelegate {
         _ session: NFCTagReaderSession, didInvalidateWithError error: Error
     ) {
         DispatchQueue.main.async {
-            self.isScanning = false
             self.errorMessage = error.localizedDescription
         }
     }
@@ -206,7 +200,6 @@ extension NFCScanner: NFCTagReaderSessionDelegate {
 
         DispatchQueue.main.async {
             self.scannedNFCTag = result
-            self.isScanning = false
             session.invalidate()
         }
     }
@@ -266,7 +259,6 @@ extension NFCScanner: NFCNDEFReaderSessionDelegate {
         _ session: NFCNDEFReaderSession, didInvalidateWithError error: Error
     ) {
         DispatchQueue.main.async {
-            self.isScanning = false
             if let readerError = error as? NFCReaderError {
                 switch readerError.code {
                 case .readerSessionInvalidationErrorFirstNDEFTagRead,

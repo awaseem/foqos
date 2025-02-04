@@ -4,7 +4,6 @@ import DeviceActivity
 import ManagedSettings
 
 class AppBlocker: ObservableObject {
-    @Published var isBlocking = false
     @Published var isAuthorized = false
     
     let store = ManagedSettingsStore(named: ManagedSettingsStore.Name("foqosAppRestrictions"))
