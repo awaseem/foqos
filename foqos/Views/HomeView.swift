@@ -299,7 +299,6 @@ struct HomeView: View {
     HomeView()
         .environmentObject(RequestAuthorizer())
         .environmentObject(TipManager())
-        .environmentObject(NFCScanner())
         .environmentObject(NavigationManager())
         .defaultAppStorage(UserDefaults(suiteName: "preview")!)
         .onAppear {

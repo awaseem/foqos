@@ -5,9 +5,7 @@ import SwiftUI
 struct BlockedProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    @EnvironmentObject var nfcScanner: NFCScanner
-    
+        
     // If profile is nil, we're creating a new profile
     var profile: BlockedProfiles?
     
@@ -21,6 +19,8 @@ struct BlockedProfileView: View {
     private var isEditing: Bool {
         profile != nil
     }
+    
+    let nfcUtil = NFCScannerUtil()
     
     init(profile: BlockedProfiles? = nil) {
         self.profile = profile
@@ -177,7 +177,7 @@ struct BlockedProfileView: View {
     private func writeProfile() {
         if let profileToWrite = profile {
             let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
-            nfcScanner.writeURL(url)
+            nfcUtil.writeURL(url)
         }
     }
     

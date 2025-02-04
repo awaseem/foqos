@@ -1,4 +1,11 @@
 import CoreNFC
+import SwiftUI
+
+struct NFCResult: Equatable {
+    var id: String
+    var url: String?
+    var DateScanned: Date
+}
 
 class NFCScannerUtil: NSObject {
     // Callback closures for handling results and errors
@@ -242,3 +249,8 @@ extension NFCScannerUtil: NFCNDEFReaderSessionDelegate {
     }
 }
 
+extension Data {
+    func hexEncodedString() -> String {
+        return map { String(format: "%02hhX", $0) }.joined()
+    }
+}
