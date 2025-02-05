@@ -14,6 +14,7 @@ struct foqosApp: App {
     @StateObject private var startegyManager = StrategyManager()
     @StateObject private var donationManager = TipManager()
     @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var nfcWriter = NFCWriter()
 
     var body: some Scene {
         WindowGroup {
@@ -32,6 +33,7 @@ struct foqosApp: App {
                 .environmentObject(donationManager)
                 .environmentObject(startegyManager)
                 .environmentObject(navigationManager)
+                .environmentObject(nfcWriter)
         }
         .modelContainer(
             for: [
