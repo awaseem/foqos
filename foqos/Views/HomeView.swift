@@ -4,10 +4,10 @@ import SwiftUI
 
 struct HomeView: View {
     let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
-
+    
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
-
+    
     @EnvironmentObject var requestAuthorizer: RequestAuthorizer
     @EnvironmentObject var strategyManager: StrategyManager
     @EnvironmentObject var donationManager: TipManager
@@ -15,33 +15,33 @@ struct HomeView: View {
     
     // Profile management
     @Query(sort: \BlockedProfiles.updatedAt, order: .reverse) private
-        var profiles: [BlockedProfiles]
+    var profiles: [BlockedProfiles]
     @State private var activeProfile: BlockedProfiles? = nil
     @State private var profileIndex = 0
     @State private var isProfileListPresent = false
     @State private var showActiveProfileView = false
-
+    
     // Activity sessions
     @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
-        var sessions: [BlockedProfileSession]
+    var sessions: [BlockedProfileSession]
     @Query(
         filter: #Predicate<BlockedProfileSession> { $0.endTime != nil },
         sort: \BlockedProfileSession.endTime,
         order: .reverse
     ) private var recentCompletedSessions: [BlockedProfileSession]
-
+    
     // Alerts
     @State private var showingAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
-
+    
     // Intro sheet
     @AppStorage("showIntroScreen") private var showIntroScreen = true
-
+    
     // UI States
     @State private var isRefreshing = false
     @State private var opacityValue = 1.0
-
+    
     var isBlocking: Bool {
         return strategyManager.isBlocking
     }
@@ -49,7 +49,7 @@ struct HomeView: View {
     var activeSessionProfileId: UUID? {
         return strategyManager.activeSession?.blockedProfile.id
     }
-
+    
     var sessionStatusStr: String {
         let sessionName = activeProfile?.name ?? "Sesssion"
         if isBlocking {
@@ -64,12 +64,12 @@ struct HomeView: View {
             RefreshControl(isRefreshing: $isRefreshing) {
                 loadApp()
             }
-
+            
             VStack(alignment: .leading, spacing: 20) {
                 if !profiles.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionTitle(sessionStatusStr)
-
+                        
                         Text(timeString(from: strategyManager.elapsedTime))
                             .font(.system(size: 80))
                             .fontWeight(.semibold)
@@ -96,7 +96,7 @@ struct HomeView: View {
                     
                     VStack(alignment: .leading, spacing: 10) {
                         SectionTitle("Weekly Usage")
-
+                        
                         BlockedSessionsChart(
                             sessions: recentCompletedSessions)
                     }
@@ -108,11 +108,11 @@ struct HomeView: View {
                     })
                     Spacer()
                 }
-
+                
                 if let mostRecent = activeProfile {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionTitle("Active Profile")
-
+                        
                         BlockedProfileSelector(
                             profile: mostRecent,
                             isActive: mostRecent.id
@@ -132,10 +132,10 @@ struct HomeView: View {
                         )
                     }
                 }
-
+                
                 VStack(alignment: .leading, spacing: 10) {
                     SectionTitle("Manage")
-
+                    
                     Grid(horizontalSpacing: 10, verticalSpacing: 16) {
                         GridRow {
                             ActionCard(
@@ -179,9 +179,9 @@ struct HomeView: View {
                         }
                     }
                 }
-
+                
                 Spacer()
-
+                
                 VersionFooter()
                     .frame(maxWidth: .infinity)
             }
@@ -194,7 +194,7 @@ struct HomeView: View {
                 if profileIndex >= profiles.count {
                     profileIndex = max(profiles.count - 1, 0)
                 }
-
+                
                 activeProfile = profiles[safe: profileIndex]
             }
         ) {
@@ -245,51 +245,51 @@ struct HomeView: View {
             Text(alertMessage)
         }
     }
-
+    
     private func toggleSessionFromDeeplink(_ profileId: String) {
         strategyManager.toggleSessionFromDeeplink(profileId, context: context)
     }
-
+    
     private func incrementProfiles() {
         guard !profiles.isEmpty else { return }
-
+        
         profileIndex = (profileIndex + 1) % profiles.count
     }
-
+    
     private func decrementProfiles() {
         guard !profiles.isEmpty else { return }
-
+        
         profileIndex = (profileIndex - 1 + profiles.count) % profiles.count
     }
-
+    
     private func strategyButtonPress() {
         strategyManager
             .toggleBlocking(context: context, activeProfile: activeProfile)
     }
-
+    
     private func loadApp() {
         activeProfile = profiles[safe: profileIndex]
-
+        
         strategyManager.loadActiveStrategy(context: context)
     }
-
+    
     private func unloadApp() {
         strategyManager.stopTimer()
     }
-
+    
     private func timeString(from timeInterval: TimeInterval) -> String {
         let hours = Int(timeInterval) / 3600
         let minutes = Int(timeInterval) / 60 % 60
         let seconds = Int(timeInterval) % 60
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
-
+    
     private func showErrorAlert(message: String) {
         alertTitle = "Whoops"
         alertMessage = message
         showingAlert = true
     }
-
+    
     private func dismissAlert() {
         showingAlert = false
     }
