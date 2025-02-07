@@ -64,16 +64,18 @@ class StrategyManager: ObservableObject {
 //            }
 //
 //            let url = BlockedProfiles.getProfileDeepLink(profile)
-//            let nfcResults = nfcScanner.resultFromURL(url)
+//            let nfcResults = resultFromURL(url: url)
 //
-//            toggleBlocking(results: nfcResults)
 //            navigationManager.clearProfileId()
 //        } catch {
 //            showErrorAlert(message: "Something went wrong fetching profile")
 //        }
     }
-
     
+    private func resultFromURL(_ url: String) -> NFCResult {
+        return NFCResult(id: url, url: url, DateScanned: Date())
+    }
+
     private func startBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
         guard let definedProfile = activeProfile else {
             print(
