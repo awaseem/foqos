@@ -27,7 +27,7 @@ struct BlockingStrategyList: View {
                         Image(systemName: "arrow.right.circle.fill")
                     }
                     .padding()
-                    .background(Color.accentColor)
+                    .background(Color.purple)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }

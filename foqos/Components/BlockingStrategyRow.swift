@@ -10,7 +10,7 @@ struct StrategyRow: View {
             HStack(spacing: 16) {
                 Image(systemName: strategy.iconType)
                     .font(.title2)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(.purple)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(strategy.name)
@@ -25,7 +25,7 @@ struct StrategyRow: View {
                 Spacer()
                 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                    .foregroundColor(isSelected ? .purple : .secondary)
             }
             .padding()
             .background(
