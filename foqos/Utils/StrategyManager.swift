@@ -80,17 +80,19 @@ class StrategyManager: ObservableObject {
         }
     }
     
-    func getStrategy(id: String) -> BlockingStrategy {
-        var strategy: BlockingStrategy
-        
+    static func getStrategyFromId(id: String) -> BlockingStrategy {
         switch id {
         case NFCBlockingStrategy.id:
-            strategy = NFCBlockingStrategy()
+            return NFCBlockingStrategy()
         case ManualBlockingStrategy.id:
-            strategy = ManualBlockingStrategy()
+            return ManualBlockingStrategy()
         default:
-            strategy = NFCBlockingStrategy()
+            return NFCBlockingStrategy()
         }
+    }
+    
+    func getStrategy(id: String) -> BlockingStrategy {
+        var strategy = StrategyManager.getStrategyFromId(id: id)
         
         strategy.onSessionCreation = { session in
             self.activeSession = session
@@ -122,8 +124,10 @@ class StrategyManager: ObservableObject {
             return
         }
         
-        getStrategy(id: definedProfile.blockingStrategyId).startBlocking(context: context, profile: definedProfile)
-        
+        if let strategyId = definedProfile.blockingStrategyId {
+            getStrategy(id: strategyId)
+                .startBlocking(context: context, profile: definedProfile)
+        }
     }
     
     private func stopBlocking(context: ModelContext) {
@@ -134,8 +138,10 @@ class StrategyManager: ObservableObject {
             return
         }
         
-        getStrategy(
-            id: session.blockedProfile.blockingStrategyId
-        ).stopBlocking(context: context, session: session)
+        if let strategyId = session.blockedProfile.blockingStrategyId {
+            getStrategy(
+                id: strategyId
+            ).stopBlocking(context: context, session: session)
+        }
     }
 }

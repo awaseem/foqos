@@ -10,7 +10,7 @@ class BlockedProfiles {
     var selectedActivity: FamilyActivitySelection
     var createdAt: Date
     var updatedAt: Date
-    var blockingStrategyId: String
+    var blockingStrategyId: String?
 
     @Relationship var sessions: [BlockedProfileSession] = []
 

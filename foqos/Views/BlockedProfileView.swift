@@ -39,8 +39,8 @@ struct BlockedProfileView: View {
         
         if let profileStrategyId = profile?.blockingStrategyId {
             _selectedStrategy = State(
-                initialValue: strategyManager
-                    .getStrategy(id: profileStrategyId))
+                initialValue: StrategyManager
+                    .getStrategyFromId(id: profileStrategyId))
         }
     }
     
