@@ -14,7 +14,8 @@ protocol BlockingStrategy {
     var onErrorMessage: ((String) -> Void)? {
         get set
     }
-            
+    
+    func getIdentifier() -> String
     func startBlocking(context: ModelContext, profile: BlockedProfiles)
     func stopBlocking(context: ModelContext, session: BlockedProfileSession)
 }

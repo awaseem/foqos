@@ -12,6 +12,10 @@ class NFCBlockingStrategy: BlockingStrategy {
     
     private let nfcScanner: NFCScannerUtil = NFCScannerUtil()
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
+    
+    func getIdentifier() -> String {
+        return NFCBlockingStrategy.id
+    }
 
     func startBlocking(context: ModelContext, profile: BlockedProfiles) {
         nfcScanner.onTagScanned = { tag in

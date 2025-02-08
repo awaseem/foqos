@@ -7,16 +7,18 @@ struct BlockedProfileView: View {
     @Environment(\.dismiss) private var dismiss
     
     @EnvironmentObject private var nfcWriter: NFCWriter
-        
+    
     // If profile is nil, we're creating a new profile
     var profile: BlockedProfiles?
     
     @State private var name: String = ""
-    @State private var selectedActivity = FamilyActivitySelection()
     @State private var catAndAppCount: Int = 0
     @State private var showingActivityPicker = false
     @State private var errorMessage: String?
     @State private var showError = false
+    
+    @State private var selectedActivity = FamilyActivitySelection()
+    @State private var selectedStrategyId: String = NFCBlockingStrategy.id
     
     private var isEditing: Bool {
         profile != nil
@@ -33,6 +35,9 @@ struct BlockedProfileView: View {
                 BlockedProfiles
                 .countSelectedActivities(selectedActivity)
         )
+        _selectedStrategyId = State(
+            initialValue: profile?.blockingStrategyId ?? NFCBlockingStrategy
+                .id)
     }
     
     var body: some View {
@@ -63,6 +68,10 @@ struct BlockedProfileView: View {
                             .foregroundStyle(.gray)
                             .padding(.top, 4)
                     }
+                }
+                
+                Section("Selected Blocking Strategy") {
+
                 }
                 
                 if isEditing {

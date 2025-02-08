@@ -2,6 +2,11 @@ import SwiftUI
 import SwiftData
 
 class StrategyManager: ObservableObject {
+    static let availableStrategies: [BlockingStrategy] = [
+        NFCBlockingStrategy(),
+        ManualBlockingStrategy()
+    ]
+    
     @Published var elapsedTime: TimeInterval = 0
     @Published var timer: Timer?
     @Published var activeSession: BlockedProfileSession?

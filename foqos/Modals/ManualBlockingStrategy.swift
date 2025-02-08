@@ -12,6 +12,10 @@ class ManualBlockingStrategy: BlockingStrategy {
     
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
     
+    func getIdentifier() -> String {
+        return ManualBlockingStrategy.id
+    }
+    
     func startBlocking(context: ModelContext, profile: BlockedProfiles) {
         self.appBlocker
             .activateRestrictions(selection: profile.selectedActivity)
