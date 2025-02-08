@@ -1,4 +1,4 @@
-import SwiftUI
+import SwiftUI 
 
 struct StrategyRow: View {
     let strategy: BlockingStrategy
@@ -11,6 +11,7 @@ struct StrategyRow: View {
                 Image(systemName: strategy.iconType)
                     .font(.title2)
                     .foregroundColor(.purple)
+                    .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(strategy.name)
@@ -21,20 +22,21 @@ struct StrategyRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
+                .padding(.vertical, 8)
                 
                 Spacer()
                 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(isSelected ? .purple : .secondary)
+                    .font(.system(size: 20))
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(.secondarySystemBackground))
-            )
         }
         .buttonStyle(PlainButtonStyle())
     }
+}
+
+#Preview {
+    StrategyRow(strategy: NFCBlockingStrategy(), isSelected: true, onTap: {})
 }
 
 #Preview {

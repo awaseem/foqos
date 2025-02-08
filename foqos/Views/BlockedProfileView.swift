@@ -7,6 +7,7 @@ struct BlockedProfileView: View {
     @Environment(\.dismiss) private var dismiss
     
     @EnvironmentObject private var nfcWriter: NFCWriter
+    @EnvironmentObject private var strategyManager: StrategyManager
     
     // If profile is nil, we're creating a new profile
     var profile: BlockedProfiles?
@@ -18,7 +19,7 @@ struct BlockedProfileView: View {
     @State private var showError = false
     
     @State private var selectedActivity = FamilyActivitySelection()
-    @State private var selectedStrategyId: String = NFCBlockingStrategy.id
+    @State private var selectedStrategy: BlockingStrategy? = nil
     
     private var isEditing: Bool {
         profile != nil
@@ -35,9 +36,12 @@ struct BlockedProfileView: View {
                 BlockedProfiles
                 .countSelectedActivities(selectedActivity)
         )
-        _selectedStrategyId = State(
-            initialValue: profile?.blockingStrategyId ?? NFCBlockingStrategy
-                .id)
+        
+        if let profileStrategyId = profile?.blockingStrategyId {
+            _selectedStrategy = State(
+                initialValue: strategyManager
+                    .getStrategy(id: profileStrategyId))
+        }
     }
     
     var body: some View {
@@ -71,7 +75,10 @@ struct BlockedProfileView: View {
                 }
                 
                 Section("Selected Blocking Strategy") {
-
+                    BlockingStrategyList(
+                        strategies: StrategyManager.availableStrategies,
+                        selectedStrategy: $selectedStrategy
+                    )
                 }
                 
                 if isEditing {

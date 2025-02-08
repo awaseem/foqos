@@ -80,6 +80,31 @@ class StrategyManager: ObservableObject {
         }
     }
     
+    func getStrategy(id: String) -> BlockingStrategy {
+        var strategy: BlockingStrategy
+        
+        switch id {
+        case NFCBlockingStrategy.id:
+            strategy = NFCBlockingStrategy()
+        case ManualBlockingStrategy.id:
+            strategy = ManualBlockingStrategy()
+        default:
+            strategy = NFCBlockingStrategy()
+        }
+        
+        strategy.onSessionCreation = { session in
+            self.activeSession = session
+            self.startTimer()
+            self.errorMessage = nil
+        }
+        
+        strategy.onErrorMessage = { message in
+            self.errorMessage = message
+        }
+        
+        return strategy
+    }
+    
     private func getActiveSession(context: ModelContext) -> BlockedProfileSession? {
         return BlockedProfileSession
             .mostRecentActiveSession(in: context)
@@ -112,30 +137,5 @@ class StrategyManager: ObservableObject {
         getStrategy(
             id: session.blockedProfile.blockingStrategyId
         ).stopBlocking(context: context, session: session)
-    }
-    
-    private func getStrategy(id: String) -> BlockingStrategy {
-        var strategy: BlockingStrategy
-        
-        switch id {
-        case NFCBlockingStrategy.id:
-            strategy = NFCBlockingStrategy()
-        case ManualBlockingStrategy.id:
-            strategy = ManualBlockingStrategy()
-        default:
-            strategy = NFCBlockingStrategy()
-        }
-        
-        strategy.onSessionCreation = { session in
-            self.activeSession = session
-            self.startTimer()
-            self.errorMessage = nil
-        }
-        
-        strategy.onErrorMessage = { message in
-            self.errorMessage = message
-        }
-        
-        return strategy
     }
 }
