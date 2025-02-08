@@ -10,6 +10,7 @@ class BlockedProfiles {
     var selectedActivity: FamilyActivitySelection
     var createdAt: Date
     var updatedAt: Date
+    var blockingStrategyId: String
 
     @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -18,13 +19,15 @@ class BlockedProfiles {
         name: String,
         selectedActivity: FamilyActivitySelection = FamilyActivitySelection(),
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        blockingStrategyId: String = NFCBlockingStrategy.id
     ) {
         self.id = id
         self.name = name
         self.selectedActivity = selectedActivity
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.blockingStrategyId = blockingStrategyId
     }
 
     static func fetchProfiles(in context: ModelContext) throws

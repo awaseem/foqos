@@ -270,7 +270,7 @@ struct HomeView: View {
     private func loadApp() {
         activeProfile = profiles[safe: profileIndex]
         
-        strategyManager.loadActiveStrategy(context: context)
+        strategyManager.loadActiveSession(context: context)
     }
     
     private func unloadApp() {
