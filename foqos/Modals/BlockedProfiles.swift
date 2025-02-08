@@ -74,6 +74,17 @@ class BlockedProfiles {
         profile.updatedAt = Date()
         try context.save()
     }
+    
+    static func updateBlockingStrategy(
+        _ profile: BlockedProfiles,
+        in context: ModelContext,
+        blockingStrategyId: String
+    ) throws {
+        profile.blockingStrategyId = blockingStrategyId
+        profile.updatedAt = Date()
+        try context.save()
+    }
+
 
     static func deleteProfile(
         _ profile: BlockedProfiles, in context: ModelContext
