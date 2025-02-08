@@ -205,7 +205,8 @@ struct BlockedProfileView: View {
                     existingProfile,
                     in: modelContext,
                     name: name,
-                    selection: selectedActivity
+                    selection: selectedActivity,
+                    blockingStrategyId: selectedStrategy?.getIdentifier()
                 )
             } else {
                 // Create new profile
@@ -227,5 +228,19 @@ struct BlockedProfileView: View {
 // Preview provider for SwiftUI previews
 #Preview {
     BlockedProfileView()
+        .environmentObject(NFCWriter())
+        .environmentObject(StrategyManager())
+        .modelContainer(for: BlockedProfiles.self, inMemory: true)
+}
+
+#Preview {
+    let previewProfile = BlockedProfiles(
+        name: "test",
+        selectedActivity: FamilyActivitySelection()
+    )
+    
+    BlockedProfileView(profile: previewProfile)
+        .environmentObject(NFCWriter())
+        .environmentObject(StrategyManager())
         .modelContainer(for: BlockedProfiles.self, inMemory: true)
 }

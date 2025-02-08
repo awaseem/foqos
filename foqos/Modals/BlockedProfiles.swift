@@ -61,7 +61,8 @@ class BlockedProfiles {
         _ profile: BlockedProfiles,
         in context: ModelContext,
         name: String? = nil,
-        selection: FamilyActivitySelection? = nil
+        selection: FamilyActivitySelection? = nil,
+        blockingStrategyId: String? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -70,21 +71,14 @@ class BlockedProfiles {
         if let newSelection = selection {
             profile.selectedActivity = newSelection
         }
+        
+        if let newStrategyId = blockingStrategyId {
+            profile.blockingStrategyId = newStrategyId
+        }
 
         profile.updatedAt = Date()
         try context.save()
     }
-    
-    static func updateBlockingStrategy(
-        _ profile: BlockedProfiles,
-        in context: ModelContext,
-        blockingStrategyId: String
-    ) throws {
-        profile.blockingStrategyId = blockingStrategyId
-        profile.updatedAt = Date()
-        try context.save()
-    }
-
 
     static func deleteProfile(
         _ profile: BlockedProfiles, in context: ModelContext
