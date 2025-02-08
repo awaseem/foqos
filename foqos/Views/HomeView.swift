@@ -12,6 +12,7 @@ struct HomeView: View {
     @EnvironmentObject var strategyManager: StrategyManager
     @EnvironmentObject var donationManager: TipManager
     @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var ratingManager: RatingManager
     
     // Profile management
     @Query(sort: \BlockedProfiles.updatedAt, order: .reverse) private
@@ -265,6 +266,8 @@ struct HomeView: View {
     private func strategyButtonPress() {
         strategyManager
             .toggleBlocking(context: context, activeProfile: activeProfile)
+        
+        ratingManager.incrementLaunchCount()
     }
     
     private func loadApp() {
