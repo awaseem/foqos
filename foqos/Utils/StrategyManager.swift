@@ -4,7 +4,8 @@ import SwiftData
 class StrategyManager: ObservableObject {
     static let availableStrategies: [BlockingStrategy] = [
         NFCBlockingStrategy(),
-        ManualBlockingStrategy()
+        ManualBlockingStrategy(),
+        NFCManualBlockingStrategy()
     ]
     
     @Published var elapsedTime: TimeInterval = 0
@@ -86,6 +87,8 @@ class StrategyManager: ObservableObject {
             return NFCBlockingStrategy()
         case ManualBlockingStrategy.id:
             return ManualBlockingStrategy()
+        case NFCManualBlockingStrategy.id:
+            return NFCManualBlockingStrategy()
         default:
             return NFCBlockingStrategy()
         }

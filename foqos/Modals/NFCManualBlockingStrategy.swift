@@ -1,21 +1,22 @@
 import SwiftData
 
-class ManualBlockingStrategy: BlockingStrategy {
-    static var id: String = "ManualBlockingStrategy"
+class NFCManualBlockingStrategy: BlockingStrategy {
+    static var id: String = "NFCManualBlockingStrategy"
     
-    var name: String = "Manual"
-    var description: String = "Block and unblock profiles manually through the app"
-    var iconType: String = "button.horizontal.top.press.fill"
+    var name: String = "NFC + Manual"
+    var description: String = "Block manually, but unblock by using a NFC tag"
+    var iconType: String = "badge.plus.radiowaves.forward"
     
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
+    private let nfcScanner: NFCScannerUtil = NFCScannerUtil()
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
     
     func getIdentifier() -> String {
-        return ManualBlockingStrategy.id
+        return NFCManualBlockingStrategy.id
     }
-    
+
     func startBlocking(context: ModelContext, profile: BlockedProfiles) {
         self.appBlocker
             .activateRestrictions(selection: profile.selectedActivity)
@@ -29,14 +30,18 @@ class ManualBlockingStrategy: BlockingStrategy {
         
         self.onSessionCreation?(activeSession)
     }
-    
+
     func stopBlocking(
         context: ModelContext,
         session: BlockedProfileSession
     ) {
-        session.endSession()
-        self.appBlocker.deactivateRestrictions()
-        
-        self.onSessionCreation?(nil)
+        nfcScanner.onTagScanned = { tag in
+            session.endSession()
+            self.appBlocker.deactivateRestrictions()
+            
+            self.onSessionCreation?(nil)
+        }
+
+        nfcScanner.scan(profileName: session.blockedProfile.name)
     }
 }
