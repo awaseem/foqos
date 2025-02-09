@@ -25,6 +25,10 @@ struct BlockedProfileView: View {
         profile != nil
     }
     
+    private var isBlocking: Bool {
+        strategyManager.activeSession?.isActive ?? false
+    }
+    
     init(profile: BlockedProfiles? = nil) {
         self.profile = profile
         _name = State(initialValue: profile?.name ?? "")
@@ -56,12 +60,16 @@ struct BlockedProfileView: View {
                 
                 BlockedProfileAppSelector(
                     selection: selectedActivity,
-                    buttonAction: { showingActivityPicker = true }
+                    buttonAction: { showingActivityPicker = true },
+                    disabled: isBlocking,
+                    disabledText: "Disable the current session to edit apps for blocking"
                 )
                 
                 BlockingStrategyList(
                     strategies: StrategyManager.availableStrategies,
-                    selectedStrategy: $selectedStrategy
+                    selectedStrategy: $selectedStrategy,
+                    disabled: isBlocking,
+                    disabledText: "Disable the current session to edit the strategy"
                 )
                 
                 if isEditing {

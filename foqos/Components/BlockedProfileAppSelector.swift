@@ -4,6 +4,8 @@ import FamilyControls
 struct BlockedProfileAppSelector: View {
     var selection: FamilyActivitySelection
     var buttonAction: () -> Void
+    var disabled: Bool = false
+    var disabledText: String?
     
     private var catAndAppCount: Int {
         return BlockedProfiles
@@ -20,7 +22,13 @@ struct BlockedProfileAppSelector: View {
                         .foregroundStyle(.gray)
                 }
             }
-            if catAndAppCount == 0 {
+            .disabled(disabled)
+            
+            if let disabledText = disabledText, disabled {
+                Text(disabledText)
+                    .foregroundStyle(.red)
+                    .padding(.top, 4)
+            } else if catAndAppCount == 0 {
                 Text("No apps or websites selected")
                     .foregroundStyle(.gray)
             } else {
@@ -31,4 +39,13 @@ struct BlockedProfileAppSelector: View {
             }
         }
     }
+}
+
+#Preview {
+    BlockedProfileAppSelector(
+        selection: FamilyActivitySelection(),
+        buttonAction: {},
+        disabled: true,
+        disabledText: "Disable the current session to edit apps for blocking"
+    )
 }
