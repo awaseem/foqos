@@ -54,34 +54,15 @@ struct BlockedProfileView: View {
                         .textContentType(.none)
                 }
                 
-                Section("Selected Restrictions") {
-                    Button(action: {
-                        showingActivityPicker = true
-                    }) {
-                        HStack {
-                            Text("Select Apps & Websites")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.gray)
-                        }
-                    }
-                    if catAndAppCount == 0 {
-                        Text("No apps or websites selected")
-                            .foregroundStyle(.gray)
-                    } else {
-                        Text("\(catAndAppCount) items selected")
-                            .font(.footnote)
-                            .foregroundStyle(.gray)
-                            .padding(.top, 4)
-                    }
-                }
+                BlockedProfileAppSelector(
+                    selection: selectedActivity,
+                    buttonAction: { showingActivityPicker = true }
+                )
                 
-                Section("Selected Blocking Strategy") {
-                    BlockingStrategyList(
-                        strategies: StrategyManager.availableStrategies,
-                        selectedStrategy: $selectedStrategy
-                    )
-                }
+                BlockingStrategyList(
+                    strategies: StrategyManager.availableStrategies,
+                    selectedStrategy: $selectedStrategy
+                )
                 
                 if isEditing {
                     Section("Utilities") {

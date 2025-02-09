@@ -5,17 +5,19 @@ struct BlockingStrategyList: View {
     @Binding var selectedStrategy: BlockingStrategy?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            VStack() {
-                ForEach(strategies, id: \.name) { strategy in
-                    StrategyRow(
-                        strategy: strategy,
-                        isSelected: selectedStrategy?.name == strategy.name,
-                        onTap: { selectedStrategy = strategy }
-                    )
+        Section("Selected Blocking Strategy") {
+            VStack(alignment: .leading, spacing: 8) {
+                VStack() {
+                    ForEach(strategies, id: \.name) { strategy in
+                        StrategyRow(
+                            strategy: strategy,
+                            isSelected: selectedStrategy?.name == strategy.name,
+                            onTap: { selectedStrategy = strategy }
+                        )
+                    }
                 }
-            }
-        }.padding(0)
+            }.padding(0)
+        }
     }
 }
 
