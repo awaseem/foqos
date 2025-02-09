@@ -52,11 +52,11 @@ struct HomeView: View {
     }
     
     var sessionStatusStr: String {
-        let sessionName = activeProfile?.name ?? "Sesssion"
-        if isBlocking {
-            return "Stop " + sessionName
+        if let activeSession = strategyManager.activeSession {
+            return "Stop " + activeSession.blockedProfile.name
         }
         
+        let sessionName = activeProfile?.name ?? "Sesssion"
         return "Start " + sessionName
     }
     
