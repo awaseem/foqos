@@ -64,7 +64,7 @@ class StrategyManager: ObservableObject {
                 return
             }
             
-            let manualStrategy = ManualBlockingStrategy()
+            let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
                         
             if let localActiveSession = getActiveSession(context: context)  {
                 manualStrategy

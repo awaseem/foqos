@@ -62,14 +62,14 @@ struct BlockedProfileView: View {
                     selection: selectedActivity,
                     buttonAction: { showingActivityPicker = true },
                     disabled: isBlocking,
-                    disabledText: "Disable the current session to edit apps for blocking"
+                    disabledText: "Disable the current session to edit"
                 )
                 
                 BlockingStrategyList(
                     strategies: StrategyManager.availableStrategies,
                     selectedStrategy: $selectedStrategy,
                     disabled: isBlocking,
-                    disabledText: "Disable the current session to edit the strategy"
+                    disabledText: "Disable the current session to edit"
                 )
                 
                 if isEditing {

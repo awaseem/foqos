@@ -214,6 +214,7 @@ struct HomeView: View {
         .onChange(of: navigationManager.profileId) { _, newValue in
             if let profileId = newValue {
                 toggleSessionFromDeeplink(profileId)
+                navigationManager.clearProfileId()
             }
         }
         .onChange(of: requestAuthorizer.isAuthorized) { _, newValue in
