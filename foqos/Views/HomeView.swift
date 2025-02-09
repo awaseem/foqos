@@ -69,8 +69,6 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 20) {
                 if !profiles.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionTitle(sessionStatusStr)
-                        
                         Text(timeString(from: strategyManager.elapsedTime))
                             .font(.system(size: 80))
                             .fontWeight(.semibold)
@@ -272,9 +270,16 @@ struct HomeView: View {
     }
     
     private func loadApp() {
-        activeProfile = profiles[safe: profileIndex]
-        
         strategyManager.loadActiveSession(context: context)
+        
+        if let sessionProfileId = activeSessionProfileId,
+           let matchingProfile = profiles.first(where: { (profile: BlockedProfiles) in
+               profile.id == sessionProfileId
+           }) {
+            activeProfile = matchingProfile
+        } else {
+            activeProfile = profiles[safe: profileIndex]
+        }
     }
     
     private func unloadApp() {
