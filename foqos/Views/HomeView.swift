@@ -137,26 +137,6 @@ struct HomeView: View {
                     
                     Grid(horizontalSpacing: 10, verticalSpacing: 16) {
                         GridRow {
-                            ActionCard(
-                                icon: "person.crop.circle.fill",
-                                count: nil,
-                                label: "Profiles",
-                                color: .purple
-                            ) {
-                                isProfileListPresent = true
-                            }
-                            ActionCard(
-                                icon: "cart.fill",
-                                count: nil,
-                                label: "Purchase NFC tags",
-                                color: .gray
-                            ) {
-                                if let url = URL(string: AMZN_STORE_LINK) {
-                                    openURL(url)
-                                }
-                            }
-                        }
-                        GridRow {
                             if !profiles.isEmpty {
                                 ActionCard(
                                     icon: "wave.3.right.circle.fill",
@@ -165,6 +145,26 @@ struct HomeView: View {
                                     color: isBlocking ? .red : .green
                                 ) {
                                     strategyButtonPress()
+                                }
+                            }
+                            ActionCard(
+                                icon: "person.crop.circle.fill",
+                                count: nil,
+                                label: "Profiles",
+                                color: .purple
+                            ) {
+                                isProfileListPresent = true
+                            }
+                        }
+                        GridRow {
+                            ActionCard(
+                                icon: "cart.fill",
+                                count: nil,
+                                label: "Purchase NFC tags",
+                                color: .gray
+                            ) {
+                                if let url = URL(string: AMZN_STORE_LINK) {
+                                    openURL(url)
                                 }
                             }
                             ActionCard(
