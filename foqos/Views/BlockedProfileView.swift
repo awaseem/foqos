@@ -148,7 +148,9 @@ struct BlockedProfileView: View {
                 // Create new profile
                 let newProfile = BlockedProfiles(
                     name: name,
-                    selectedActivity: selectedActivity
+                    selectedActivity: selectedActivity,
+                    blockingStrategyId: selectedStrategy?
+                        .getIdentifier() ?? NFCBlockingStrategy.id
                 )
                 modelContext.insert(newProfile)
                 try modelContext.save()
