@@ -5,7 +5,8 @@ class StrategyManager: ObservableObject {
     static let availableStrategies: [BlockingStrategy] = [
         NFCBlockingStrategy(),
         ManualBlockingStrategy(),
-        NFCManualBlockingStrategy()
+        NFCManualBlockingStrategy(),
+        QRCodeBlockingStrategy()
     ]
     
     @Published var elapsedTime: TimeInterval = 0
@@ -89,6 +90,8 @@ class StrategyManager: ObservableObject {
             return ManualBlockingStrategy()
         case NFCManualBlockingStrategy.id:
             return NFCManualBlockingStrategy()
+        case QRCodeBlockingStrategy.id:
+            return QRCodeBlockingStrategy()
         default:
             return NFCBlockingStrategy()
         }
