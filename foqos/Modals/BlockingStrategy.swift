@@ -7,10 +7,6 @@ protocol BlockingStrategy {
     var description: String { get }
     var iconType: String { get }
     
-    // Custom views
-    var showCustomView: Bool { get }
-    var customView: (any View)? { get }
-    
     // Callback closures session creation
     var onSessionCreation: ((BlockedProfileSession?) -> Void)? {
         get set
@@ -21,6 +17,6 @@ protocol BlockingStrategy {
     }
     
     func getIdentifier() -> String
-    func startBlocking(context: ModelContext, profile: BlockedProfiles)
-    func stopBlocking(context: ModelContext, session: BlockedProfileSession)
+    func startBlocking(context: ModelContext, profile: BlockedProfiles) -> (any View)?
+    func stopBlocking(context: ModelContext, session: BlockedProfileSession) -> (any View)?
 }

@@ -11,16 +11,13 @@ class ManualBlockingStrategy: BlockingStrategy {
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
-    var showCustomView: Bool = false
-    var customView: (any View)? = nil
-    
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
     
     func getIdentifier() -> String {
         return ManualBlockingStrategy.id
     }
     
-    func startBlocking(context: ModelContext, profile: BlockedProfiles) {
+    func startBlocking(context: ModelContext, profile: BlockedProfiles)  -> (any View)? {
         self.appBlocker
             .activateRestrictions(selection: profile.selectedActivity)
         
@@ -32,15 +29,19 @@ class ManualBlockingStrategy: BlockingStrategy {
             )
         
         self.onSessionCreation?(activeSession)
+        
+        return nil
     }
     
     func stopBlocking(
         context: ModelContext,
         session: BlockedProfileSession
-    ) {
+    )  -> (any View)? {
         session.endSession()
         self.appBlocker.deactivateRestrictions()
         
         self.onSessionCreation?(nil)
+        
+        return nil
     }
 }

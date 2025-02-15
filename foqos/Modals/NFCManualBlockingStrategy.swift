@@ -8,9 +8,6 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     var description: String = "Block manually, but unblock by using a NFC tag"
     var iconType: String = "badge.plus.radiowaves.forward"
     
-    var showCustomView: Bool = false
-    var customView: (any View)? = nil
-    
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
@@ -20,8 +17,8 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     func getIdentifier() -> String {
         return NFCManualBlockingStrategy.id
     }
-
-    func startBlocking(context: ModelContext, profile: BlockedProfiles) {
+    
+    func startBlocking(context: ModelContext, profile: BlockedProfiles)  -> (any View)? {
         self.appBlocker
             .activateRestrictions(selection: profile.selectedActivity)
         
@@ -33,19 +30,23 @@ class NFCManualBlockingStrategy: BlockingStrategy {
             )
         
         self.onSessionCreation?(activeSession)
+        
+        return nil
     }
-
+    
     func stopBlocking(
         context: ModelContext,
         session: BlockedProfileSession
-    ) {
+    )  -> (any View)? {
         nfcScanner.onTagScanned = { tag in
             session.endSession()
             self.appBlocker.deactivateRestrictions()
             
             self.onSessionCreation?(nil)
         }
-
+        
         nfcScanner.scan(profileName: session.blockedProfile.name)
+        
+        return nil
     }
 }
