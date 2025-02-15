@@ -1,3 +1,4 @@
+import SwiftUI
 import SwiftData
 
 class NFCManualBlockingStrategy: BlockingStrategy {
@@ -6,6 +7,9 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     var name: String = "NFC + Manual"
     var description: String = "Block manually, but unblock by using a NFC tag"
     var iconType: String = "badge.plus.radiowaves.forward"
+    
+    var showCustomView: Bool = false
+    var customView: (any View)? = nil
     
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?

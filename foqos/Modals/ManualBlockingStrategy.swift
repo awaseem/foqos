@@ -1,3 +1,4 @@
+import SwiftUI
 import SwiftData
 
 class ManualBlockingStrategy: BlockingStrategy {
@@ -9,6 +10,9 @@ class ManualBlockingStrategy: BlockingStrategy {
     
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
+    
+    var showCustomView: Bool = false
+    var customView: (any View)? = nil
     
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
     

@@ -1,3 +1,4 @@
+import SwiftUI
 import SwiftData
 
 class QRCodeBlockingStrategy: BlockingStrategy {
@@ -9,6 +10,9 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
+    
+    var showCustomView: Bool = false
+    var customView: (any View)? = nil
     
     private let qrCodeScanner: QRCodeUtil = QRCodeUtil()
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()

@@ -1,3 +1,4 @@
+import SwiftUI
 import SwiftData
 
 protocol BlockingStrategy {
@@ -5,6 +6,10 @@ protocol BlockingStrategy {
     var name: String { get }
     var description: String { get }
     var iconType: String { get }
+    
+    // Custom views
+    var showCustomView: Bool { get }
+    var customView: (any View)? { get }
     
     // Callback closures session creation
     var onSessionCreation: ((BlockedProfileSession?) -> Void)? {
