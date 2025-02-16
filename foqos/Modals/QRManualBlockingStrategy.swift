@@ -7,7 +7,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
     
     var name: String = "QR + Manual"
     var description: String = "Block manually, but unblock by using a QR code"
-    var iconType: String = "camera.badge.clock"
+    var iconType: String = "bolt.square"
     
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
