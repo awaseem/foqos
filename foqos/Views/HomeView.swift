@@ -39,9 +39,6 @@ struct HomeView: View {
     // Intro sheet
     @AppStorage("showIntroScreen") private var showIntroScreen = true
     
-    // Strategy Sheets
-    @State private var showStrategySheet: Bool = false
-    
     // UI States
     @State private var isRefreshing = false
     @State private var opacityValue = 1.0
@@ -241,8 +238,10 @@ struct HomeView: View {
             }.interactiveDismissDisabled()
         }.sheet(isPresented: $showActiveProfileView) {
             BlockedProfileView(profile: activeProfile)
-        }.sheet(isPresented: $showStrategySheet) {
-            BlockingStrategyActionView()
+        }.sheet(isPresented: $strategyManager.showCustomStrategyView) {
+            BlockingStrategyActionView(
+                customView: strategyManager.customStrategyView
+            )
         }
         .alert(alertTitle, isPresented: $showingAlert) {
             Button("OK", role: .cancel) { dismissAlert() }

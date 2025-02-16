@@ -1,21 +1,16 @@
 import SwiftUI
 
 struct BlockingStrategyActionView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var customView: (any View)?
+    
     var body: some View {
         VStack {
-            Text("Bottom Sheet Content (using .sheet)")
-                .font(.title)
-                .padding()
-            Divider()
-
-            List {
-                Text("Item A")
-                Text("Item B")
-                Text("Item C")
+            if let customViewToDisplay = customView {
+                AnyView(customViewToDisplay)
             }
-            .padding()
         }
         .presentationDetents([.medium, .large]) // iOS 15+ for sizing options
-        .presentationDragIndicator(.visible) // iOS 15+ for drag to dismiss indicator
     }
 }

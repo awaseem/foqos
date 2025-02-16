@@ -13,6 +13,9 @@ class StrategyManager: ObservableObject {
     @Published var timer: Timer?
     @Published var activeSession: BlockedProfileSession?
     
+    @Published var showCustomStrategyView: Bool = false
+    @Published var customStrategyView: (any View)? = nil
+    
     @Published var errorMessage: String?
     
     var isBlocking: Bool {
@@ -131,8 +134,16 @@ class StrategyManager: ObservableObject {
         }
         
         if let strategyId = definedProfile.blockingStrategyId {
-            getStrategy(id: strategyId)
-                .startBlocking(context: context, profile: definedProfile)
+            let strategy = getStrategy(id: strategyId)
+            let view = strategy.startBlocking(
+                context: context,
+                profile: definedProfile
+            )
+            
+            if let customView = view {
+                showCustomStrategyView = true
+                customStrategyView = customView
+            }
         }
     }
     
@@ -145,9 +156,13 @@ class StrategyManager: ObservableObject {
         }
         
         if let strategyId = session.blockedProfile.blockingStrategyId {
-            getStrategy(
-                id: strategyId
-            ).stopBlocking(context: context, session: session)
+            let strategy = getStrategy(id: strategyId)
+            let view = strategy.stopBlocking(context: context, session: session)
+
+            if let customView = view {
+                showCustomStrategyView = true
+                customStrategyView = customView
+            }
         }
     }
 }

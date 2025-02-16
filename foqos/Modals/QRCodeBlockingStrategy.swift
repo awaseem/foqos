@@ -29,7 +29,9 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         //            self.onSessionCreation?(activeSession)
         //        }
         
-        return nil
+        return VStack {
+            Text("hello")
+        }
     }
     
     func stopBlocking(
@@ -49,6 +51,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         //            self.onSessionCreation?(nil)
         //        }
         
-        return nil
+        return VStack {
+            Text("hello")
+        }
     }
 }
