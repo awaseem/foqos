@@ -44,6 +44,10 @@ struct HomeView: View {
     @State private var opacityValue = 1.0
     
     var activeProfileStrategy: BlockingStrategy {
+        if let activeStrategyId = strategyManager.activeSession?.blockedProfile.blockingStrategyId {
+            return strategyManager.getStrategy(id: activeStrategyId)
+        }
+        
         return strategyManager
             .getStrategy(
                 id: activeProfile?.blockingStrategyId ?? NFCBlockingStrategy
