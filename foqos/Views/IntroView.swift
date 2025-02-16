@@ -33,6 +33,12 @@ struct IntroView: View {
                 )
                 
                 explanationSection(
+                    icon: "list.star",
+                    title: "Options for Focus",
+                    description: "Use QR codes and even manually trigger profiles to help you stay focused"
+                )
+                
+                explanationSection(
                     icon: "chart.line.uptrend.xyaxis",
                     title: "Track Your Progress",
                     description: "Monitor your focus sessions and build better habits"

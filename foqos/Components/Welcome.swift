@@ -34,7 +34,7 @@ struct Welcome: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                 
-                Text("Tap here to get started on your first profile. No NFC tags? Buy some below 👇")
+                Text("Tap here to get started on your first profile. You can use NFC Tags or even QR codes to add new profiles.")
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(2)
