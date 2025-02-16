@@ -43,6 +43,13 @@ struct HomeView: View {
     @State private var isRefreshing = false
     @State private var opacityValue = 1.0
     
+    var activeProfileStrategy: BlockingStrategy {
+        return strategyManager
+            .getStrategy(
+                id: activeProfile?.blockingStrategyId ?? NFCBlockingStrategy
+                    .id)
+    }
+    
     var isBlocking: Bool {
         return strategyManager.isBlocking
     }
@@ -139,7 +146,7 @@ struct HomeView: View {
                         GridRow {
                             if !profiles.isEmpty {
                                 ActionCard(
-                                    icon: "wave.3.right.circle.fill",
+                                    icon: activeProfileStrategy.iconType,
                                     count: nil,
                                     label: sessionStatusStr,
                                     color: isBlocking ? .red : .green
