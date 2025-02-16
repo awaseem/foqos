@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CodeScanner
 
 class QRCodeBlockingStrategy: BlockingStrategy {
     static var id: String = "QRCodeBlockingStrategy"
@@ -11,7 +12,6 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     var onSessionCreation: ((BlockedProfileSession?) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
-    private let qrCodeScanner: QRCodeUtil = QRCodeUtil()
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
     
     func getIdentifier() -> String {
@@ -19,18 +19,22 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     }
     
     func startBlocking(context: ModelContext, profile: BlockedProfiles) -> (any View)? {
-        //        qrCodeScanner.scanQRCode { result in
-        //            self.appBlocker
-        //                .activateRestrictions(selection: profile.selectedActivity)
-        //
-        //            let tag = result
-        //            let activeSession = BlockedProfileSession
-        //                .createSession(in: context, withTag: tag, withProfile: profile)
-        //            self.onSessionCreation?(activeSession)
-        //        }
-        
-        return VStack {
-            Text("hello")
+        return LabeledCodeScannerView(
+            heading: "Scan QR Code to start",
+            subtitle: "Point your camera at a QR code to activate a profile."
+        ) { result in
+            switch result {
+            case .success(let result):
+                self.appBlocker
+                    .activateRestrictions(selection: profile.selectedActivity)
+                
+                let tag = result.string
+                let activeSession = BlockedProfileSession
+                    .createSession(in: context, withTag: tag, withProfile: profile)
+                self.onSessionCreation?(activeSession)
+            case .failure(let error):
+                self.onErrorMessage?(error.localizedDescription)
+            }
         }
     }
     
@@ -38,21 +42,25 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         context: ModelContext,
         session: BlockedProfileSession
     )  -> (any View)? {
-        //        qrCodeScanner.scanQRCode { result in
-        //            let tag = result
-        //            if session.tag != tag {
-        //                self.onErrorMessage?("You must scan the original QR code to stop focus")
-        //                return
-        //            }
-        //
-        //            session.endSession()
-        //            self.appBlocker.deactivateRestrictions()
-        //
-        //            self.onSessionCreation?(nil)
-        //        }
-        
-        return VStack {
-            Text("hello")
+        return LabeledCodeScannerView(
+            heading: "Scan QR Code to stop",
+            subtitle: "Point your camera at a QR code to deactiviate a profile."
+        ) { result in
+            switch result {
+            case .success(let result):
+                let tag = result.string
+                if session.tag != tag {
+                    self.onErrorMessage?("You must scan the original QR code to stop focus")
+                    return
+                }
+                
+                session.endSession()
+                self.appBlocker.deactivateRestrictions()
+                
+                self.onSessionCreation?(nil)
+            case .failure(let error):
+                self.onErrorMessage?(error.localizedDescription)
+            }
         }
     }
 }
