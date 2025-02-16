@@ -210,9 +210,6 @@ struct HomeView: View {
             minWidth: 0, maxWidth: .infinity, minHeight: 0,
             maxHeight: .infinity, alignment: .topLeading
         )
-        .onChange(of: strategyManager.errorMessage) { _, newValue in
-            showErrorAlert(message: newValue ?? "")
-        }
         .onChange(of: profileIndex) { _, newValue in
             activeProfile = profiles[safe: profileIndex]
         }
@@ -232,6 +229,11 @@ struct HomeView: View {
         .onChange(of: profiles) { oldValue, newValue in
             if !newValue.isEmpty {
                 loadApp()
+            }
+        }
+        .onReceive(strategyManager.$errorMessage) { errorMessage in
+            if let message = errorMessage {
+                showErrorAlert(message: message)
             }
         }
         .onAppear {
