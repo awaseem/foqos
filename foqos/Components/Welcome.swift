@@ -34,10 +34,10 @@ struct Welcome: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                 
-                Text("Tap here to get started on your first profile. You can use NFC Tags or even QR codes to add new profiles.")
+                Text("Tap here to get started on your first profile. You can use NFC Tags or even QR codes.")
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.9))
-                    .lineLimit(2)
+                    .lineLimit(3)
             }
             .padding(20)
             .frame(maxWidth: .infinity, minHeight: 150)
