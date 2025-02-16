@@ -70,7 +70,7 @@ class StrategyManager: ObservableObject {
             }
             
             let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
-                        
+            
             if let localActiveSession = getActiveSession(context: context)  {
                 manualStrategy
                     .stopBlocking(
@@ -85,17 +85,13 @@ class StrategyManager: ObservableObject {
         }
     }
     
+    
     static func getStrategyFromId(id: String) -> BlockingStrategy {
-        switch id {
-        case NFCBlockingStrategy.id:
-            return NFCBlockingStrategy()
-        case ManualBlockingStrategy.id:
-            return ManualBlockingStrategy()
-        case NFCManualBlockingStrategy.id:
-            return NFCManualBlockingStrategy()
-        case QRCodeBlockingStrategy.id:
-            return QRCodeBlockingStrategy()
-        default:
+        if let strategy = availableStrategies.first(
+            where: { $0.getIdentifier() == id
+            }) {
+            return strategy
+        } else {
             return NFCBlockingStrategy()
         }
     }
@@ -167,7 +163,7 @@ class StrategyManager: ObservableObject {
         if let strategyId = session.blockedProfile.blockingStrategyId {
             let strategy = getStrategy(id: strategyId)
             let view = strategy.stopBlocking(context: context, session: session)
-
+            
             if let customView = view {
                 showCustomStrategyView = true
                 customStrategyView = customView
