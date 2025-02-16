@@ -11,6 +11,6 @@ struct BlockingStrategyActionView: View {
                 AnyView(customViewToDisplay)
             }
         }
-        .presentationDetents([.medium, .large]) // iOS 15+ for sizing options
+        .presentationDetents([.medium])
     }
 }

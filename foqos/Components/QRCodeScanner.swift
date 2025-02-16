@@ -6,7 +6,7 @@ struct LabeledCodeScannerView: View {
     let subtitle: String
     let simulatedData: String?
     let onScanResult: (Result<ScanResult, ScanError>) -> Void
-
+    
     @State private var isShowingScanner = true
     @State private var errorMessage: String? = nil
     
@@ -21,7 +21,7 @@ struct LabeledCodeScannerView: View {
         self.simulatedData = simulatedData
         self.onScanResult = onScanResult
     }
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text(heading)
@@ -31,24 +31,26 @@ struct LabeledCodeScannerView: View {
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 .padding(.bottom)
-
+            
             if isShowingScanner {
                 CodeScannerView(
                     codeTypes: [.qr],
-                    completion: handleScanResult
+                    showViewfinder: true, shouldVibrateOnSuccess: true, completion: handleScanResult
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .cornerRadius(12)
+                .padding(.vertical, 10)
             } else if let errorMessage = errorMessage {
                 Text("Error: \(errorMessage)")
                     .foregroundColor(.red)
                     .padding()
             } else {
-
+                
                 Text("Scanner Paused or Not Available")
                     .foregroundColor(.secondary)
                     .padding()
             }
-
+            
             Spacer()
         }
         .padding()
@@ -60,7 +62,7 @@ struct LabeledCodeScannerView: View {
             isShowingScanner = false
         }
     }
-
+    
     private func handleScanResult(_ result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let scanResult):

@@ -104,16 +104,25 @@ class StrategyManager: ObservableObject {
         var strategy = StrategyManager.getStrategyFromId(id: id)
         
         strategy.onSessionCreation = { session in
+            self.dismissView()
+            
             self.activeSession = session
             self.startTimer()
             self.errorMessage = nil
         }
         
         strategy.onErrorMessage = { message in
+            self.dismissView()
+            
             self.errorMessage = message
         }
         
         return strategy
+    }
+    
+    private func dismissView() {
+        showCustomStrategyView = false
+        customStrategyView = nil
     }
     
     private func getActiveSession(context: ModelContext) -> BlockedProfileSession? {

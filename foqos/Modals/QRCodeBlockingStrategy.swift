@@ -20,7 +20,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     
     func startBlocking(context: ModelContext, profile: BlockedProfiles) -> (any View)? {
         return LabeledCodeScannerView(
-            heading: "Scan QR Code to start",
+            heading: "Scan to start",
             subtitle: "Point your camera at a QR code to activate a profile."
         ) { result in
             switch result {
@@ -43,7 +43,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         session: BlockedProfileSession
     )  -> (any View)? {
         return LabeledCodeScannerView(
-            heading: "Scan QR Code to stop",
+            heading: "Scan to stop",
             subtitle: "Point your camera at a QR code to deactiviate a profile."
         ) { result in
             switch result {
