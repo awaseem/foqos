@@ -9,7 +9,7 @@ struct QRCodeView: View {
     @State private var qrCodeImage: UIImage? = nil
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             // Profile name heading
             Text(profileName)
                 .font(.title)
@@ -35,6 +35,7 @@ struct QRCodeView: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
+                .fixedSize(horizontal: false, vertical: true)
             
             // Share button using ShareLink
             if let qrCodeImage {

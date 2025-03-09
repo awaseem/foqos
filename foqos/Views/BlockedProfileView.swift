@@ -96,7 +96,7 @@ struct BlockedProfileView: View {
                         }) {
                             HStack {
                                 Image(systemName: "qrcode")
-                                Text("Write to QR code")
+                                Text("Generate QR code")
                                 Spacer()
                             }
                         }
