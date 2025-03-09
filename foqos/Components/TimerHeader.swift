@@ -1,17 +1,20 @@
 import SwiftUI
 
 struct TimeHeader: View {
-    // Input properties instead of the whole manager
+    // Input properties
     let elapsedTime: TimeInterval
     let isBlocking: Bool
     
     // Local state for animation
     @State private var opacityValue = 1.0
     
+    // Environment values to handle different screen sizes
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .center, spacing: 10) {
             Text(timeString(from: elapsedTime))
-                .font(.system(size: 80))
+                .font(.system(size: adaptiveFontSize))
                 .fontWeight(.semibold)
                 .foregroundColor(
                     isBlocking ? Color(hex: "#32CD32") : .primary
@@ -33,6 +36,11 @@ struct TimeHeader: View {
                     }
                 }
         }
+    }
+    
+    // Adaptive font size based on device
+    private var adaptiveFontSize: CGFloat {
+        horizontalSizeClass == .compact ? 60 : 80
     }
     
     private func timeString(from timeInterval: TimeInterval) -> String {
