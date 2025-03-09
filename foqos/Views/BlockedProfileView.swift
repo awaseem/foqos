@@ -14,7 +14,14 @@ struct BlockedProfileView: View {
     
     @State private var name: String = ""
     @State private var catAndAppCount: Int = 0
+    
+    // QR code generator
+    @State private var showingGeneratedQRCode = false
+    
+    // Sheet for activity picker
     @State private var showingActivityPicker = false
+    
+    // Error states
     @State private var errorMessage: String?
     @State private var showError = false
     
@@ -78,9 +85,18 @@ struct BlockedProfileView: View {
                             writeProfile()
                         }) {
                             HStack {
-                                Image(systemName: "pencil.circle.fill")
-                                    .foregroundStyle(.green)
-                                Text("Write Profile to NFC Tag")
+                                Image(systemName: "tag")
+                                Text("Write to NFC Tag")
+                                Spacer()
+                            }
+                        }
+                        
+                        Button(action: {
+                            showingGeneratedQRCode = true
+                        }) {
+                            HStack {
+                                Image(systemName: "qrcode")
+                                Text("Write to QR code")
                                 Spacer()
                             }
                         }
@@ -117,6 +133,15 @@ struct BlockedProfileView: View {
                     selection: $selectedActivity,
                     isPresented: $showingActivityPicker
                 )
+            }
+            .sheet(isPresented: $showingGeneratedQRCode) {
+                if let profileToWrite = profile {
+                    let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
+                    QRCodeView(
+                        url: url,
+                        profileName: profileToWrite
+                            .name)
+                }
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK") {}
