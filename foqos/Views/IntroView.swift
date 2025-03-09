@@ -48,6 +48,8 @@ struct IntroView: View {
                 .padding(.vertical, 8)
                 .padding(.horizontal, 16)
                 
+                Spacer()
+                
                 // Privacy Note
                 Text("Your app selection and usage data never leaves your device")
                     .font(.footnote)

@@ -8,9 +8,6 @@ struct TimeHeader: View {
     // Local state for animation
     @State private var opacityValue = 1.0
     
-    // Environment values to handle different screen sizes
-    @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
             Text(timeString(from: elapsedTime))
@@ -38,9 +35,14 @@ struct TimeHeader: View {
         }
     }
     
-    // Adaptive font size based on device
     private var adaptiveFontSize: CGFloat {
-        horizontalSizeClass == .compact ? 60 : 80
+        // Not sure if this is the best approach, but it kinda works
+        let screenWidth = UIScreen.main.bounds.width
+        if screenWidth <= 375 {
+            return 60
+        } else {
+            return 80
+        }
     }
     
     private func timeString(from timeInterval: TimeInterval) -> String {
