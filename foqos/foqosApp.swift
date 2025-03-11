@@ -16,6 +16,7 @@ struct foqosApp: App {
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var nfcWriter = NFCWriter()
     @StateObject private var ratingManager = RatingManager()
+    @StateObject private var liveActivityManager = LiveActivityManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -36,6 +37,7 @@ struct foqosApp: App {
                 .environmentObject(navigationManager)
                 .environmentObject(nfcWriter)
                 .environmentObject(ratingManager)
+                .environmentObject(liveActivityManager)
         }
         .modelContainer(
             for: [

@@ -19,6 +19,8 @@ class StrategyManager: ObservableObject {
     
     @Published var errorMessage: String?
     
+    private let liveActivityManager = LiveActivityManager.shared
+    
     var isBlocking: Bool {
         return activeSession?.isActive == true
     }
@@ -28,6 +30,11 @@ class StrategyManager: ObservableObject {
         
         if activeSession?.isActive == true {
             startTimer()
+            
+            // Start live activity for existing session if one exists
+            if let session = activeSession {
+                liveActivityManager.startSessionActivity(session: session)
+            }
         }
     }
     
@@ -37,13 +44,15 @@ class StrategyManager: ObservableObject {
         } else {
             startBlocking(context: context, activeProfile: activeProfile)
         }
-        
     }
     
     func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if let startTime = self.activeSession?.startTime {
                 self.elapsedTime = Date().timeIntervalSince(startTime)
+                
+                // Update live activity with new elapsed time
+                self.liveActivityManager.updateSessionActivity(elapsedTime: self.elapsedTime)
             }
         }
     }
@@ -106,6 +115,12 @@ class StrategyManager: ObservableObject {
             self.activeSession = session
             self.startTimer()
             self.errorMessage = nil
+            
+            // Start a live activity when a new session is created
+            if let activeSession = session {
+                self.liveActivityManager
+                    .startSessionActivity(session: activeSession)
+            }
         }
         
         strategy.onErrorMessage = { message in
@@ -165,10 +180,17 @@ class StrategyManager: ObservableObject {
             let strategy = getStrategy(id: strategyId)
             let view = strategy.stopBlocking(context: context, session: session)
             
+            // End the live activity when blocking stops
+            liveActivityManager.endSessionActivity()
+            
             if let customView = view {
                 showCustomStrategyView = true
                 customStrategyView = customView
             }
         }
+        
+        // Reset timer and session
+        stopTimer()
+        elapsedTime = 0
     }
 }
