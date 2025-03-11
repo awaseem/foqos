@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		803989B32CCC06D600E87F57 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 803989B22CCC06D600E87F57 /* StoreKit.framework */; };
 		80F674AB2D6185510056977F /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 80F674AA2D6185510056977F /* CodeScanner */; };
+		80FF388E2D80DB540032BC5E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80C6CAFA2D4301B3008680F4 /* WidgetKit.framework */; };
+		80FF388F2D80DB540032BC5E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80C6CAFC2D4301B3008680F4 /* SwiftUI.framework */; };
+		80FF389C2D80DB560032BC5E /* FoqosWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,6 +29,13 @@
 			remoteGlobalIDString = 801B20942CB363A10073E9E2;
 			remoteInfo = foqos;
 		};
+		80FF389A2D80DB560032BC5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 801B208D2CB363A10073E9E2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 80FF388C2D80DB540032BC5E;
+			remoteInfo = FoqosWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +45,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				80FF389C2D80DB560032BC5E /* FoqosWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,6 +60,7 @@
 		80C6CAFA2D4301B3008680F4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		80C6CAFC2D4301B3008680F4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		80DBF6132CB776D100EEA8A6 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
+		80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FoqosWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +70,13 @@
 				Info.plist,
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
+		};
+		80FF38A02D80DB560032BC5E /* Exceptions for "FoqosWidget" folder in "FoqosWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -78,6 +97,14 @@
 		801B20B32CB363A20073E9E2 /* foqosUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = foqosUITests;
+			sourceTree = "<group>";
+		};
+		80FF38902D80DB540032BC5E /* FoqosWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				80FF38A02D80DB560032BC5E /* Exceptions for "FoqosWidget" folder in "FoqosWidgetExtension" target */,
+			);
+			path = FoqosWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -106,6 +133,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		80FF388A2D80DB540032BC5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80FF388F2D80DB540032BC5E /* SwiftUI.framework in Frameworks */,
+				80FF388E2D80DB540032BC5E /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -115,6 +151,7 @@
 				801B20972CB363A10073E9E2 /* foqos */,
 				801B20A92CB363A20073E9E2 /* foqosTests */,
 				801B20B32CB363A20073E9E2 /* foqosUITests */,
+				80FF38902D80DB540032BC5E /* FoqosWidget */,
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
 				801B20962CB363A10073E9E2 /* Products */,
 			);
@@ -126,6 +163,7 @@
 				801B20952CB363A10073E9E2 /* foqos.app */,
 				801B20A62CB363A20073E9E2 /* foqosTests.xctest */,
 				801B20B02CB363A20073E9E2 /* foqosUITests.xctest */,
+				80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -156,6 +194,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				80FF389B2D80DB560032BC5E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				801B20972CB363A10073E9E2 /* foqos */,
@@ -214,6 +253,28 @@
 			productReference = 801B20B02CB363A20073E9E2 /* foqosUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 80FF389F2D80DB560032BC5E /* Build configuration list for PBXNativeTarget "FoqosWidgetExtension" */;
+			buildPhases = (
+				80FF38892D80DB540032BC5E /* Sources */,
+				80FF388A2D80DB540032BC5E /* Frameworks */,
+				80FF388B2D80DB540032BC5E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				80FF38902D80DB540032BC5E /* FoqosWidget */,
+			);
+			name = FoqosWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = FoqosWidgetExtension;
+			productReference = 80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -234,6 +295,9 @@
 					801B20AF2CB363A20073E9E2 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 801B20942CB363A10073E9E2;
+					};
+					80FF388C2D80DB540032BC5E = {
+						CreatedOnToolsVersion = 16.2;
 					};
 				};
 			};
@@ -257,6 +321,7 @@
 				801B20942CB363A10073E9E2 /* foqos */,
 				801B20A52CB363A20073E9E2 /* foqosTests */,
 				801B20AF2CB363A20073E9E2 /* foqosUITests */,
+				80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -277,6 +342,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		801B20AE2CB363A20073E9E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		80FF388B2D80DB540032BC5E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -307,6 +379,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		80FF38892D80DB540032BC5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -319,6 +398,11 @@
 			isa = PBXTargetDependency;
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 			targetProxy = 801B20B12CB363A20073E9E2 /* PBXContainerItemProxy */;
+		};
+		80FF389B2D80DB560032BC5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
+			targetProxy = 80FF389A2D80DB560032BC5E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -627,6 +711,65 @@
 			};
 			name = Release;
 		};
+		80FF389D2D80DB560032BC5E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YR54789JNV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FoqosWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FoqosWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		80FF389E2D80DB560032BC5E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YR54789JNV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FoqosWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FoqosWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -662,6 +805,15 @@
 			buildConfigurations = (
 				801B20C12CB363A20073E9E2 /* Debug */,
 				801B20C22CB363A20073E9E2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		80FF389F2D80DB560032BC5E /* Build configuration list for PBXNativeTarget "FoqosWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80FF389D2D80DB560032BC5E /* Debug */,
+				80FF389E2D80DB560032BC5E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
