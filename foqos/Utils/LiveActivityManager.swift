@@ -1,10 +1,3 @@
-//
-//  LiveActivityManager.swift
-//  foqos
-//
-//  Created by Ali Waseem on 2025-03-11.
-//
-
 import Foundation
 import ActivityKit
 import SwiftUI
@@ -23,9 +16,6 @@ class LiveActivityManager: ObservableObject {
         return false
     }
     
-    /// Starts a new Live Activity for a blocking session
-    /// - Parameter session: The active blocking session
-    /// - Returns: Boolean indicating if the activity was started successfully
     func startSessionActivity(session: BlockedProfileSession) -> Bool {
         // Check if Live Activities are supported
         guard isSupported else {
@@ -42,7 +32,7 @@ class LiveActivityManager: ObservableObject {
         // Create and start the activity
         let profileName = session.blockedProfile.name
         let attributes = FoqosWidgetAttributes(name: profileName)
-        let contentState = FoqosWidgetAttributes.ContentState(emoji: "🔒", elapsedTime: 0)
+        let contentState = FoqosWidgetAttributes.ContentState(elapsedTime: 0)
         
         do {
             let activity = try Activity.request(
@@ -58,18 +48,14 @@ class LiveActivityManager: ObservableObject {
         }
     }
     
-    /// Updates the current Live Activity with the elapsed time
-    /// - Parameter elapsedTime: The elapsed time of the blocking session
-    /// - Returns: Boolean indicating if the update was successful
     func updateSessionActivity(elapsedTime: TimeInterval) -> Bool {
         guard let activity = currentActivity else {
             print("No Live Activity to update")
             return false
         }
         
-        // You could use different emojis based on elapsed time
-        let emoji = getEmojiForElapsedTime(elapsedTime)
-        let updatedContentState = FoqosWidgetAttributes.ContentState(emoji: emoji, elapsedTime: elapsedTime)
+        // Update with elapsed time
+        let updatedContentState = FoqosWidgetAttributes.ContentState(elapsedTime: elapsedTime)
         
         Task {
             await activity.update(using: updatedContentState)
@@ -78,16 +64,14 @@ class LiveActivityManager: ObservableObject {
         return true
     }
     
-    /// Ends the current Live Activity
-    /// - Returns: Boolean indicating if the activity was ended successfully
     func endSessionActivity() -> Bool {
         guard let activity = currentActivity else {
             print("No Live Activity to end")
             return false
         }
         
-        // Use a "completed" emoji
-        let completedState = FoqosWidgetAttributes.ContentState(emoji: "✅", elapsedTime: 0)
+        // End the activity
+        let completedState = FoqosWidgetAttributes.ContentState(elapsedTime: 0)
         
         Task {
             await activity
@@ -97,24 +81,5 @@ class LiveActivityManager: ObservableObject {
         
         currentActivity = nil
         return true
-    }
-    
-    /// Helper method to get an emoji based on elapsed time
-    private func getEmojiForElapsedTime(_ elapsedTime: TimeInterval) -> String {
-        // Different emojis based on how long the session has been active
-        let minutes = Int(elapsedTime / 60)
-        
-        switch minutes {
-        case 0...5:
-            return "🔒"
-        case 6...15:
-            return "🕒"
-        case 16...30:
-            return "⏱️"
-        case 31...60:
-            return "🏆"
-        default:
-            return "🌟"
-        }
     }
 }

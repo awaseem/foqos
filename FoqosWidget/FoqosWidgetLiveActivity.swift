@@ -12,7 +12,6 @@ import SwiftUI
 struct FoqosWidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         // Dynamic stateful properties about your activity go here!
-        var emoji: String
         var elapsedTime: TimeInterval
     }
 
@@ -21,7 +20,6 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 }
 
 struct FoqosWidgetLiveActivity: Widget {
-    // Helper function to format elapsed time for display
     private func formatElapsedTime(_ timeInterval: TimeInterval) -> String {
         let hours = Int(timeInterval) / 3600
         let minutes = (Int(timeInterval) % 3600) / 60
@@ -34,7 +32,6 @@ struct FoqosWidgetLiveActivity: Widget {
         }
     }
     
-    // Helper function for compact display of elapsed time
     private func formatElapsedTimeShort(_ timeInterval: TimeInterval) -> String {
         let hours = Int(timeInterval) / 3600
         let minutes = (Int(timeInterval) % 3600) / 60
@@ -49,91 +46,107 @@ struct FoqosWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
             // Lock screen/banner UI goes here
-            VStack {
-                HStack {
-                    Text(context.state.emoji)
-                        .font(.title)
-                    Spacer()
+            HStack(alignment: .center) {
+                // Left side - App info
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 4) {
+                        Text("Foqos")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        Image(systemName: "hourglass")
+                            .foregroundColor(.purple)
+                    }
+                    
                     Text(context.attributes.name)
-                        .font(.headline)
+                        .font(.subheadline)
                         .foregroundColor(.primary)
                 }
-                .padding(.bottom, 4)
                 
-                HStack {
-                    Image(systemName: "timer")
-                        .foregroundColor(.secondary)
-                    Text(formatElapsedTime(context.state.elapsedTime))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
+                Spacer()
+                
+                // Right side - Timer
+                Text(formatElapsedTime(context.state.elapsedTime))
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
             }
             .padding()
-            .activityBackgroundTint(Color.cyan)
-            .activitySystemActionForegroundColor(Color.black)
 
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded UI goes here.  Compose the expanded UI through
-                // various regions, like leading/trailing/center/bottom
+                // Expanded state
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack {
-                        Text(context.state.emoji)
-                        Text(context.attributes.name)
-                            .font(.headline)
-                            .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 4) {
+                            Text("Foqos")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                            Image(systemName: "hourglass")
+                                .foregroundColor(.purple)
+                        }
                     }
+                    .padding(.leading)
                 }
+                
+                DynamicIslandExpandedRegion(.center) {
+                    Text(context.attributes.name)
+                        .font(.subheadline)
+                        .padding(.horizontal)
+                        .padding(.vertical)
+                }
+                
                 DynamicIslandExpandedRegion(.trailing) {
                     Text(formatElapsedTime(context.state.elapsedTime))
-                        .font(.caption)
+                        .font(.title2)
+                        .fontWeight(.semibold)
                         .foregroundColor(.secondary)
-                }
-                DynamicIslandExpandedRegion(.bottom) {
-                    VStack {
-                        Text("Blocking active")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        ProgressView(value: min(context.state.elapsedTime / 3600, 1))
-                            .tint(.blue)
-                    }
-                    .padding(.top, 4)
+                        .padding(.trailing)
                 }
             } compactLeading: {
-                Text(context.state.emoji)
+                // Compact leading state
+                HStack(spacing: 2) {
+                    Image(systemName: "hourglass")
+                        .font(.caption2)
+                        .foregroundColor(.purple)
+                }
             } compactTrailing: {
+                // Compact trailing state
                 Text(formatElapsedTimeShort(context.state.elapsedTime))
-                    .font(.caption2)
+                    .font(.caption)
+                    .fontWeight(.semibold)
                     .foregroundColor(.secondary)
             } minimal: {
-                Text(context.state.emoji)
+                // Minimal state
+                Image(systemName: "hourglass")
+                    .font(.caption2)
+                    .foregroundColor(.purple)
             }
-            .widgetURL(URL(string: "http://www.apple.com"))
-            .keylineTint(Color.red)
+            .widgetURL(URL(string: "http://www.foqos.app"))
+            .keylineTint(Color.purple)
         }
     }
 }
 
 extension FoqosWidgetAttributes {
     fileprivate static var preview: FoqosWidgetAttributes {
-        FoqosWidgetAttributes(name: "World")
+        FoqosWidgetAttributes(name: "Focus Session")
     }
 }
 
 extension FoqosWidgetAttributes.ContentState {
-    fileprivate static var smiley: FoqosWidgetAttributes.ContentState {
-        FoqosWidgetAttributes.ContentState(emoji: "😀", elapsedTime: 60)
+    fileprivate static var shortTime: FoqosWidgetAttributes.ContentState {
+        FoqosWidgetAttributes.ContentState(elapsedTime: 60)
      }
      
-     fileprivate static var starEyes: FoqosWidgetAttributes.ContentState {
-         FoqosWidgetAttributes.ContentState(emoji: "🤩", elapsedTime: 300)
+     fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
+         FoqosWidgetAttributes.ContentState(elapsedTime: 300)
      }
 }
 
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
    FoqosWidgetLiveActivity()
 } contentStates: {
-    FoqosWidgetAttributes.ContentState.smiley
-    FoqosWidgetAttributes.ContentState.starEyes
+    FoqosWidgetAttributes.ContentState.shortTime
+    FoqosWidgetAttributes.ContentState.longTime
 }
