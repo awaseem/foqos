@@ -11,6 +11,7 @@ class BlockedProfiles {
     var createdAt: Date
     var updatedAt: Date
     var blockingStrategyId: String?
+    var enableLiveActivity: Bool = false
 
     @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -20,7 +21,8 @@ class BlockedProfiles {
         selectedActivity: FamilyActivitySelection = FamilyActivitySelection(),
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
-        blockingStrategyId: String = NFCBlockingStrategy.id
+        blockingStrategyId: String = NFCBlockingStrategy.id,
+        enableLiveActivity: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -28,6 +30,7 @@ class BlockedProfiles {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.blockingStrategyId = blockingStrategyId
+        self.enableLiveActivity = enableLiveActivity
     }
 
     static func fetchProfiles(in context: ModelContext) throws
@@ -62,7 +65,8 @@ class BlockedProfiles {
         in context: ModelContext,
         name: String? = nil,
         selection: FamilyActivitySelection? = nil,
-        blockingStrategyId: String? = nil
+        blockingStrategyId: String? = nil,
+        enableLiveActivity: Bool? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -74,6 +78,10 @@ class BlockedProfiles {
         
         if let newStrategyId = blockingStrategyId {
             profile.blockingStrategyId = newStrategyId
+        }
+        
+        if let newEnableLiveActivity = enableLiveActivity {
+            profile.enableLiveActivity = newEnableLiveActivity
         }
 
         profile.updatedAt = Date()

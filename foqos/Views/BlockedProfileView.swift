@@ -14,6 +14,7 @@ struct BlockedProfileView: View {
     
     @State private var name: String = ""
     @State private var catAndAppCount: Int = 0
+    @State private var enableLiveActivity: Bool = false
     
     // QR code generator
     @State private var showingGeneratedQRCode = false
@@ -47,6 +48,9 @@ struct BlockedProfileView: View {
                 BlockedProfiles
                 .countSelectedActivities(selectedActivity)
         )
+        _enableLiveActivity = State(
+            initialValue: profile?.enableLiveActivity ?? false
+        )
         
         if let profileStrategyId = profile?.blockingStrategyId {
             _selectedStrategy = State(
@@ -78,6 +82,10 @@ struct BlockedProfileView: View {
                     disabled: isBlocking,
                     disabledText: "Disable the current session to edit"
                 )
+                
+                Section("Notifications") {
+                    Toggle("Live Activity", isOn: $enableLiveActivity)
+                }
                 
                 if isEditing {
                     Section("Utilities") {
@@ -167,7 +175,8 @@ struct BlockedProfileView: View {
                     in: modelContext,
                     name: name,
                     selection: selectedActivity,
-                    blockingStrategyId: selectedStrategy?.getIdentifier()
+                    blockingStrategyId: selectedStrategy?.getIdentifier(),
+                    enableLiveActivity: enableLiveActivity
                 )
             } else {
                 // Create new profile
@@ -175,7 +184,8 @@ struct BlockedProfileView: View {
                     name: name,
                     selectedActivity: selectedActivity,
                     blockingStrategyId: selectedStrategy?
-                        .getIdentifier() ?? NFCBlockingStrategy.id
+                        .getIdentifier() ?? NFCBlockingStrategy.id,
+                    enableLiveActivity: enableLiveActivity
                 )
                 modelContext.insert(newProfile)
                 try modelContext.save()

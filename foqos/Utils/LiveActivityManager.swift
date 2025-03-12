@@ -29,6 +29,11 @@ class LiveActivityManager: ObservableObject {
             return false
         }
         
+        if session.blockedProfile.enableLiveActivity == false {
+            print("Activity is disabled for profile")
+            return false
+        }
+        
         // Create and start the activity
         let profileName = session.blockedProfile.name
         let attributes = FoqosWidgetAttributes(name: profileName)

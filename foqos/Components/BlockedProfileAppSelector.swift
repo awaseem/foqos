@@ -13,7 +13,7 @@ struct BlockedProfileAppSelector: View {
     }
     
     var body: some View {
-        Section("Selected Restrictions") {
+        Section("Restrictions") {
             Button(action: buttonAction) {
                 HStack {
                     Text("Select Apps & Websites")

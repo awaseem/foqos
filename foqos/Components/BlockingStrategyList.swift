@@ -7,7 +7,7 @@ struct BlockingStrategyList: View {
     var disabledText: String?
     
     var body: some View {
-        Section("Selected Blocking Strategy") {
+        Section("Blocking Strategy") {
             VStack(alignment: .leading, spacing: 8) {
                 VStack() {
                     ForEach(strategies, id: \.name) { strategy in
