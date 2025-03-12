@@ -17,6 +17,7 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 
     // Fixed non-changing properties about your activity go here!
     var name: String
+    var message: String
 }
 
 struct FoqosWidgetLiveActivity: Widget {
@@ -61,6 +62,10 @@ struct FoqosWidgetLiveActivity: Widget {
                     Text(context.attributes.name)
                         .font(.subheadline)
                         .foregroundColor(.primary)
+                        
+                    Text(context.attributes.message)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
@@ -90,10 +95,15 @@ struct FoqosWidgetLiveActivity: Widget {
                 }
                 
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.name)
-                        .font(.subheadline)
-                        .padding(.horizontal)
-                        .padding(.vertical)
+                    VStack(spacing: 8) {
+                        Text(context.attributes.name)
+                            .font(.subheadline)
+                        
+                        Text(context.attributes.message)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
                 }
                 
                 DynamicIslandExpandedRegion(.trailing) {
@@ -130,7 +140,7 @@ struct FoqosWidgetLiveActivity: Widget {
 
 extension FoqosWidgetAttributes {
     fileprivate static var preview: FoqosWidgetAttributes {
-        FoqosWidgetAttributes(name: "Focus Session")
+        FoqosWidgetAttributes(name: "Focus Session", message: "Stay focused and avoid distractions")
     }
 }
 
