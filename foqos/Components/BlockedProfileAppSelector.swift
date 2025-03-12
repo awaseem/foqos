@@ -28,6 +28,7 @@ struct BlockedProfileAppSelector: View {
                 Text(disabledText)
                     .foregroundStyle(.red)
                     .padding(.top, 4)
+                    .font(.caption)
             } else if catAndAppCount == 0 {
                 Text("No apps or websites selected")
                     .foregroundStyle(.gray)

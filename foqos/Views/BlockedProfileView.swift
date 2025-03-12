@@ -65,7 +65,7 @@ struct BlockedProfileView: View {
         NavigationStack {
             Form {
                 Section("Profile Details") {
-                    TextField("Profile Name", text: $name)
+                    TextField("Name", text: $name)
                         .textContentType(.none)
                 }
                 
@@ -85,6 +85,24 @@ struct BlockedProfileView: View {
                 
                 Section("Notifications") {
                     Toggle("Live Activity", isOn: $enableLiveActivity)
+                        .disabled(isBlocking)
+                    
+                    if isBlocking {
+                        Text("Disable current session to change")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                    
+                    if !isBlocking {
+                        Button {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            Text("Go to settings to disable globally")
+                                .font(.caption)
+                        }
+                    }
                 }
                 
                 if isEditing {

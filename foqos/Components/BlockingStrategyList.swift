@@ -28,6 +28,7 @@ struct BlockingStrategyList: View {
                     Text(disabledText)
                         .foregroundStyle(.red)
                         .padding(.top, 4)
+                        .font(.caption)
                 }
             }.padding(0)
         }
