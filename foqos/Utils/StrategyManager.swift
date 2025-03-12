@@ -52,7 +52,9 @@ class StrategyManager: ObservableObject {
                 self.elapsedTime = Date().timeIntervalSince(startTime)
                 
                 // Update live activity with new elapsed time
-                self.liveActivityManager.updateSessionActivity(elapsedTime: self.elapsedTime)
+                if let profile = self.activeSession?.blockedProfile, profile.enableLiveActivity {
+                    self.liveActivityManager.updateSessionActivity(elapsedTime: self.elapsedTime)
+                }
             }
         }
     }
@@ -120,6 +122,9 @@ class StrategyManager: ObservableObject {
             if let activeSession = session {
                 self.liveActivityManager
                     .startSessionActivity(session: activeSession)
+            } else {
+                // End the live activity when blocking stops
+                self.liveActivityManager.endSessionActivity()
             }
         }
         
@@ -179,9 +184,6 @@ class StrategyManager: ObservableObject {
         if let strategyId = session.blockedProfile.blockingStrategyId {
             let strategy = getStrategy(id: strategyId)
             let view = strategy.stopBlocking(context: context, session: session)
-            
-            // End the live activity when blocking stops
-            liveActivityManager.endSessionActivity()
             
             if let customView = view {
                 showCustomStrategyView = true
