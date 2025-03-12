@@ -64,8 +64,8 @@ struct BlockedProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Profile Details") {
-                    TextField("Name", text: $name)
+                Section("Name") {
+                    TextField("Profile Name", text: $name)
                         .textContentType(.none)
                 }
                 
