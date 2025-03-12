@@ -11,7 +11,6 @@ import SwiftUI
 @main
 struct FoqosWidgetBundle: WidgetBundle {
     var body: some Widget {
-        FoqosWidget()
         FoqosWidgetLiveActivity()
     }
 }

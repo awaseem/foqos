@@ -14,7 +14,7 @@ struct FoqosWidgetAttributes: ActivityAttributes {
         // Dynamic stateful properties about your activity go here!
         var elapsedTime: TimeInterval
     }
-
+    
     // Fixed non-changing properties about your activity go here!
     var name: String
     var message: String
@@ -62,7 +62,7 @@ struct FoqosWidgetLiveActivity: Widget {
                     Text(context.attributes.name)
                         .font(.subheadline)
                         .foregroundColor(.primary)
-                        
+                    
                     Text(context.attributes.message)
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -77,59 +77,39 @@ struct FoqosWidgetLiveActivity: Widget {
                     .foregroundColor(.secondary)
             }
             .padding()
-
+            
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded state
-                DynamicIslandExpandedRegion(.leading) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 4) {
-                            Text("Foqos")
-                                .font(.headline)
-                                .fontWeight(.bold)
-                            Image(systemName: "hourglass")
-                                .foregroundColor(.purple)
-                        }
-                    }
-                    .padding(.leading)
-                }
-                
                 DynamicIslandExpandedRegion(.center) {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 4) {
+                        Image(systemName: "hourglass")
+                            .foregroundColor(.purple)
+                        
                         Text(context.attributes.name)
-                            .font(.subheadline)
+                            .font(.headline)
+                            .fontWeight(.medium)
                         
                         Text(context.attributes.message)
-                            .font(.caption2)
+                            .font(.headline)
                             .foregroundColor(.secondary)
+                        
+                        Text(formatElapsedTime(context.state.elapsedTime))
+                            .font(.body)
+                            .fontWeight(.semibold)
                     }
-                    .padding()
-                }
-                
-                DynamicIslandExpandedRegion(.trailing) {
-                    Text(formatElapsedTime(context.state.elapsedTime))
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
-                        .padding(.trailing)
                 }
             } compactLeading: {
                 // Compact leading state
-                HStack(spacing: 2) {
-                    Image(systemName: "hourglass")
-                        .font(.caption2)
-                        .foregroundColor(.purple)
-                }
+                Image(systemName: "hourglass")
+                    .foregroundColor(.purple)
             } compactTrailing: {
                 // Compact trailing state
                 Text(formatElapsedTimeShort(context.state.elapsedTime))
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
             } minimal: {
                 // Minimal state
                 Image(systemName: "hourglass")
-                    .font(.caption2)
                     .foregroundColor(.purple)
             }
             .widgetURL(URL(string: "http://www.foqos.app"))
@@ -147,15 +127,15 @@ extension FoqosWidgetAttributes {
 extension FoqosWidgetAttributes.ContentState {
     fileprivate static var shortTime: FoqosWidgetAttributes.ContentState {
         FoqosWidgetAttributes.ContentState(elapsedTime: 60)
-     }
-     
-     fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
-         FoqosWidgetAttributes.ContentState(elapsedTime: 300)
-     }
+    }
+    
+    fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
+        FoqosWidgetAttributes.ContentState(elapsedTime: 300)
+    }
 }
 
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
-   FoqosWidgetLiveActivity()
+    FoqosWidgetLiveActivity()
 } contentStates: {
     FoqosWidgetAttributes.ContentState.shortTime
     FoqosWidgetAttributes.ContentState.longTime
