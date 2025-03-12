@@ -39,9 +39,7 @@ struct BlockedProfileListView: View {
                         showingCreateProfile = true
                     }) {
                         HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("New")
-                                .bold()
+                            Text("Create")
                         }
                     }
                 }
