@@ -36,7 +36,7 @@ class LiveActivityManager: ObservableObject {
         
         // Create and start the activity
         let profileName = session.blockedProfile.name
-        let message = "Stay focused on your tasks"  // Default message, customize as needed
+        let message = FocusMessages.getRandomMessage()
         let attributes = FoqosWidgetAttributes(name: profileName, message: message)
         let contentState = FoqosWidgetAttributes.ContentState(elapsedTime: 0)
         
