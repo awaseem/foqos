@@ -8,7 +8,7 @@ class NFCBlockingStrategy: BlockingStrategy {
     var description: String = "Block and unblock profiles by using the exact same NFC tag"
     var iconType: String = "wave.3.right.circle.fill"
     
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)?
+    var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
     private let nfcScanner: NFCScannerUtil = NFCScannerUtil()
@@ -26,7 +26,7 @@ class NFCBlockingStrategy: BlockingStrategy {
             let tag = tag.url ?? tag.id
             let activeSession = BlockedProfileSession
                 .createSession(in: context, withTag: tag, withProfile: profile)
-            self.onSessionCreation?(activeSession)
+            self.onSessionCreation?(.started(activeSession))
         }
         
         nfcScanner.scan(profileName: profile.name)
@@ -48,7 +48,7 @@ class NFCBlockingStrategy: BlockingStrategy {
             session.endSession()
             self.appBlocker.deactivateRestrictions()
             
-            self.onSessionCreation?(nil)
+            self.onSessionCreation?(.ended(session.blockedProfile))
         }
         
         nfcScanner.scan(profileName: session.blockedProfile.name)

@@ -8,7 +8,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     var description: String = "Block manually, but unblock by using a NFC tag"
     var iconType: String = "badge.plus.radiowaves.forward"
     
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)?
+    var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
     private let nfcScanner: NFCScannerUtil = NFCScannerUtil()
@@ -29,7 +29,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
                 withProfile: profile
             )
         
-        self.onSessionCreation?(activeSession)
+        self.onSessionCreation?(.started(activeSession))
         
         return nil
     }
@@ -42,7 +42,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
             session.endSession()
             self.appBlocker.deactivateRestrictions()
             
-            self.onSessionCreation?(nil)
+            self.onSessionCreation?(.ended(session.blockedProfile))
         }
         
         nfcScanner.scan(profileName: session.blockedProfile.name)

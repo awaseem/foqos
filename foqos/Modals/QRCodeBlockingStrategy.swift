@@ -9,7 +9,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     var description: String = "Block and unblock profiles by scanning the same QR code"
     var iconType: String = "qrcode.viewfinder"
     
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)?
+    var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
@@ -31,7 +31,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
                 let tag = result.string
                 let activeSession = BlockedProfileSession
                     .createSession(in: context, withTag: tag, withProfile: profile)
-                self.onSessionCreation?(activeSession)
+                self.onSessionCreation?(.started(activeSession))
             case .failure(let error):
                 self.onErrorMessage?(error.localizedDescription)
             }
@@ -57,7 +57,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
                 session.endSession()
                 self.appBlocker.deactivateRestrictions()
                 
-                self.onSessionCreation?(nil)
+                self.onSessionCreation?(.ended(session.blockedProfile))
             case .failure(let error):
                 self.onErrorMessage?(error.localizedDescription)
             }

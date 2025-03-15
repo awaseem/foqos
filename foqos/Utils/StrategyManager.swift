@@ -120,19 +120,22 @@ class StrategyManager: ObservableObject {
 
         strategy.onSessionCreation = { session in
             self.dismissView()
-
-            self.activeSession = session
-            self.startTimer()
-            self.errorMessage = nil
-
-            // Start a live activity when a new session is created
-            if let activeSession = session {
+            
+            switch session {
+            case .started(let session):
+                self.activeSession = session
+                self.startTimer()
+                self.errorMessage = nil
                 self.liveActivityManager
-                    .startSessionActivity(session: activeSession)
-            } else {
-                // End the live activity when blocking stops
+                    .startSessionActivity(session: session)
+            case .ended(let endedProfile):
+                self.activeSession = nil
                 self.liveActivityManager.endSessionActivity()
                 self.timersUtil.cancelAll()
+                self.scheduleReminder(profile: endedProfile)
+                
+                self.stopTimer()
+                self.elapsedTime = 0
             }
         }
 
@@ -203,10 +206,6 @@ class StrategyManager: ObservableObject {
                 customStrategyView = customView
             }
         }
-
-        // Reset timer and session
-        stopTimer()
-        elapsedTime = 0
     }
     
     private func scheduleReminder(profile: BlockedProfiles) {

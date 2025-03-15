@@ -1,6 +1,11 @@
 import SwiftUI
 import SwiftData
 
+enum SessionStatus {
+    case started(BlockedProfileSession)
+    case ended(BlockedProfiles)
+}
+
 protocol BlockingStrategy {
     static var id: String { get }
     var name: String { get }
@@ -8,7 +13,7 @@ protocol BlockingStrategy {
     var iconType: String { get }
     
     // Callback closures session creation
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)? {
+    var onSessionCreation: ((SessionStatus) -> Void)? {
         get set
     }
     

@@ -9,7 +9,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
     var description: String = "Block manually, but unblock by using a QR code"
     var iconType: String = "bolt.square"
     
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)?
+    var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
@@ -29,7 +29,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
                 withProfile: profile
             )
         
-        self.onSessionCreation?(activeSession)
+        self.onSessionCreation?(.started(activeSession))
         
         return nil
     }
@@ -47,7 +47,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
                 session.endSession()
                 self.appBlocker.deactivateRestrictions()
                 
-                self.onSessionCreation?(nil)
+                self.onSessionCreation?(.ended(session.blockedProfile))
             case .failure(let error):
                 self.onErrorMessage?(error.localizedDescription)
             }

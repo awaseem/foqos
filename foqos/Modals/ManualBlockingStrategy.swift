@@ -8,7 +8,7 @@ class ManualBlockingStrategy: BlockingStrategy {
     var description: String = "Block and unblock profiles manually through the app"
     var iconType: String = "button.horizontal.top.press.fill"
     
-    var onSessionCreation: ((BlockedProfileSession?) -> Void)?
+    var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
     
     private let appBlocker: AppBlockerUtil = AppBlockerUtil()
@@ -28,7 +28,7 @@ class ManualBlockingStrategy: BlockingStrategy {
                 withProfile: profile
             )
         
-        self.onSessionCreation?(activeSession)
+        self.onSessionCreation?(.started(activeSession))
         
         return nil
     }
@@ -40,7 +40,7 @@ class ManualBlockingStrategy: BlockingStrategy {
         session.endSession()
         self.appBlocker.deactivateRestrictions()
         
-        self.onSessionCreation?(nil)
+        self.onSessionCreation?(.ended(session.blockedProfile))
         
         return nil
     }
