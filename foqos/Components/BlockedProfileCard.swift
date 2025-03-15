@@ -14,6 +14,18 @@ struct BlockedProfileCard: View {
         guard let strategyId = profile.blockingStrategyId else { return "None" }
         return StrategyManager.getStrategyFromId(id: strategyId).name
     }
+    
+    // Get blocking strategy description
+    private var blockingStrategyDescription: String {
+        guard let strategyId = profile.blockingStrategyId else { return "No strategy selected" }
+        return StrategyManager.getStrategyFromId(id: strategyId).description
+    }
+    
+    // Get blocking strategy icon
+    private var blockingStrategyIcon: String {
+        guard let strategyId = profile.blockingStrategyId else { return "questionmark.circle.fill" }
+        return StrategyManager.getStrategyFromId(id: strategyId).iconType
+    }
 
     var body: some View {
         ZStack {
@@ -22,46 +34,68 @@ struct BlockedProfileCard: View {
             
             // Content
             VStack(alignment: .leading, spacing: 16) {
-                // Header section - Profile name and indicators
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(profile.name)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                // Header section - Profile name, edit button, and indicators
+                HStack {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(profile.name)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
 
-                    // Notification indicators
-                    HStack(spacing: 16) {
-                        // Live Activity indicator
-                        HStack(spacing: 6) {
-                            // Simple dot with no border
-                            Circle()
-                                .fill(
-                                    profile.enableLiveActivity
-                                        ? Color.green.opacity(0.85)
-                                        : Color.gray.opacity(0.35)
-                                )
-                                .frame(width: 6, height: 6)
+                        // Notification indicators
+                        HStack(spacing: 16) {
+                            // Live Activity indicator
+                            HStack(spacing: 6) {
+                                // Simple dot with no border
+                                Circle()
+                                    .fill(
+                                        profile.enableLiveActivity
+                                            ? Color.green.opacity(0.85)
+                                            : Color.gray.opacity(0.35)
+                                    )
+                                    .frame(width: 6, height: 6)
 
-                            Text("Live Activity")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                                Text("Live Activity")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            // Reminder indicator
+                            HStack(spacing: 6) {
+                                // Simple dot with no border
+                                Circle()
+                                    .fill(
+                                        profile.reminderTimeInSeconds != nil
+                                            ? Color.green.opacity(0.85)
+                                            : Color.gray.opacity(0.35)
+                                    )
+                                    .frame(width: 6, height: 6)
+
+                                Text("Reminders")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
                         }
-
-                        // Reminder indicator
-                        HStack(spacing: 6) {
-                            // Simple dot with no border
-                            Circle()
-                                .fill(
-                                    profile.reminderTimeInSeconds != nil
-                                        ? Color.green.opacity(0.85)
-                                        : Color.gray.opacity(0.35)
-                                )
-                                .frame(width: 6, height: 6)
-
-                            Text("Reminders")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Edit button moved to top right
+                    Button(action: {
+                        // Edit action
+                    }) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.primary)
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .fill(.thinMaterial)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                    )
+                            )
                     }
                 }
 
@@ -69,7 +103,7 @@ struct BlockedProfileCard: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Strategy info with icon
                     HStack {
-                        Image(systemName: "shield.fill")
+                        Image(systemName: blockingStrategyIcon)
                             .foregroundColor(cardBackground.getCardColor())
                             .font(.system(size: 16))
                             .frame(width: 28, height: 28)
@@ -78,10 +112,12 @@ struct BlockedProfileCard: View {
                                     .fill(cardBackground.getCardColor().opacity(0.15))
                             )
 
-                        Text(blockingStrategyName)
-                            .foregroundColor(.primary)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(blockingStrategyName)
+                                .foregroundColor(.primary)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
                     }
 
                     // Apps and sessions info
@@ -120,20 +156,14 @@ struct BlockedProfileCard: View {
                 // Spacer to push buttons to bottom
                 Spacer(minLength: 4)
 
-                // Bottom section - Only action buttons
-                HStack(spacing: 8) {
-                    GlassButton(title: "Start", icon: "play.fill") {
-                        // Start action
-                    }
-
-                    GlassButton(title: "Edit", icon: "pencil") {
-                        // Edit action
-                    }
+                // Bottom section - Only start button
+                GlassButton(title: "Start", icon: "play.fill") {
+                    // Start action
                 }
             }
             .padding(16)
         }
-        .frame(height: 170)
+        .frame(height: 190)
         .padding(.horizontal)
     }
 }
