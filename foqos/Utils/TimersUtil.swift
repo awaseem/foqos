@@ -39,8 +39,6 @@ class TimersUtil {
         }
     }
 
-    init() {}
-
     // Register background tasks with the system - call this in app launch
     static func registerBackgroundTasks() {
         BGTaskScheduler.shared.register(

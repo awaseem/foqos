@@ -19,6 +19,7 @@ class StrategyManager: ObservableObject {
     
     @Published var errorMessage: String?
     
+    private let timersUtil = TimersUtil()
     private let liveActivityManager = LiveActivityManager.shared
     
     var isBlocking: Bool {
@@ -125,6 +126,7 @@ class StrategyManager: ObservableObject {
             } else {
                 // End the live activity when blocking stops
                 self.liveActivityManager.endSessionActivity()
+                self.timersUtil.cancelAll()
             }
         }
         
