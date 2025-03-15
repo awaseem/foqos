@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import BackgroundTasks
 
 @main
 struct foqosApp: App {
@@ -17,6 +18,11 @@ struct foqosApp: App {
     @StateObject private var nfcWriter = NFCWriter()
     @StateObject private var ratingManager = RatingManager()
     @StateObject private var liveActivityManager = LiveActivityManager.shared
+    
+    init() {
+        // Register background tasks when app initializes
+        TimersUtil.registerBackgroundTasks()
+    }
 
     var body: some Scene {
         WindowGroup {
