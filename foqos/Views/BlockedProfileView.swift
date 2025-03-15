@@ -93,25 +93,43 @@ struct BlockedProfileView: View {
                 )
 
                 Section("Notifications") {
-                    Toggle("Live Activity", isOn: $enableLiveActivity)
-                        .disabled(isBlocking)
-
-                    Toggle("Remind to enable", isOn: $enableReminder)
-                        .disabled(isBlocking)
-
-                    if enableReminder {
-                        HStack {
-                            Text("Reminder time")
-                            Spacer()
-                            TextField(
-                                "", value: $reminderTimeInMinutes,
-                                format: .number
-                            )
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 50)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Live Activity", isOn: $enableLiveActivity)
                             .disabled(isBlocking)
-                            Text("minutes")
+                        Text(
+                            "Shows a live activity on your lock screen with some inspirational qoute"
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Reminder", isOn: $enableReminder)
+                            .disabled(isBlocking)
+                        Text(
+                            "Sends a reminder to start this profile when its ended"
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        if enableReminder {
+                            HStack {
+                                Text("Reminder time")
+                                Spacer()
+                                TextField(
+                                    "", value: $reminderTimeInMinutes,
+                                    format: .number
+                                )
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 50)
+                                .disabled(isBlocking)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                
+                                Text("minutes")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }.padding(.top)
                         }
                     }
 
