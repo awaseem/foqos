@@ -281,7 +281,8 @@ struct BlockedProfileView: View {
 #Preview {
     let previewProfile = BlockedProfiles(
         name: "test",
-        selectedActivity: FamilyActivitySelection()
+        selectedActivity: FamilyActivitySelection(),
+        reminderTimeInSeconds: 60
     )
 
     BlockedProfileView(profile: previewProfile)
