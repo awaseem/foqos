@@ -82,22 +82,22 @@ struct BlockedProfileCard: View {
                 .overlay(
                     ZStack {
                         // Generate dynamic shapes based on profile name
-                        ForEach(0..<6, id: \.self) { index in
+                        ForEach(0..<5, id: \.self) { index in
                             let seed = getPositionFromName(name: profile.name, index: index)
                             
                             Group {
                                 if index % 3 == 0 {
                                     Circle()
                                         .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
-                                        .frame(width: 80 + CGFloat(seed.size), height: 80 + CGFloat(seed.size))
+                                        .frame(width: 70 + CGFloat(seed.size), height: 70 + CGFloat(seed.size))
                                 } else if index % 3 == 1 {
                                     Capsule()
                                         .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
-                                        .frame(width: 120 + CGFloat(seed.size), height: 60 + CGFloat(seed.size * 0.5))
+                                        .frame(width: 100 + CGFloat(seed.size), height: 50 + CGFloat(seed.size * 0.5))
                                 } else {
                                     RoundedRectangle(cornerRadius: 20)
                                         .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
-                                        .frame(width: 70 + CGFloat(seed.size), height: 70 + CGFloat(seed.size))
+                                        .frame(width: 60 + CGFloat(seed.size), height: 60 + CGFloat(seed.size))
                                 }
                             }
                             .offset(x: seed.x, y: seed.y)
@@ -112,116 +112,95 @@ struct BlockedProfileCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24))
             
             // Content
-            VStack(alignment: .leading, spacing: 12) {
-                // Header info
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 16) {
+                // Header section - Profile name and indicators
+                VStack(alignment: .leading, spacing: 10) {
                     Text(profile.name)
-                        .font(.headline)
+                        .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
-                    Text("Last updated: \(profile.updatedAt.formatted(date: .abbreviated, time: .shortened))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // Notification indicators
+                    HStack(spacing: 16) {
+                        // Live Activity indicator
+                        HStack(spacing: 6) {
+                            // Simple dot with no border
+                            Circle()
+                                .fill(profile.enableLiveActivity ? Color.green.opacity(0.85) : Color.gray.opacity(0.35))
+                                .frame(width: 6, height: 6)
+                            
+                            Text("Live Activity")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        // Reminder indicator
+                        HStack(spacing: 6) {
+                            // Simple dot with no border
+                            Circle()
+                                .fill(profile.reminderTimeInSeconds != nil ? Color.green.opacity(0.85) : Color.gray.opacity(0.35))
+                                .frame(width: 6, height: 6)
+                            
+                            Text("Reminders")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
                 
-                Spacer()
-                
-                // Profile stats
-                VStack(alignment: .leading, spacing: 10) {
-                    // Strategy with icon
+                // Middle section - Strategy and apps info
+                VStack(alignment: .leading, spacing: 16) {
+                    // Strategy info with icon
                     HStack {
-                        Label {
-                            Text("Strategy:")
-                                .foregroundColor(.secondary)
-                        } icon: {
-                            Image(systemName: "shield.fill")
-                                .foregroundColor(cardColor.opacity(0.8))
-                        }
-                        .font(.subheadline)
-                        
-                        Spacer()
+                        Image(systemName: "shield.fill")
+                            .foregroundColor(cardColor)
+                            .font(.system(size: 16))
+                            .frame(width: 28, height: 28)
+                            .background(
+                                Circle()
+                                    .fill(cardColor.opacity(0.15))
+                            )
                         
                         Text(blockingStrategyName)
                             .foregroundColor(.primary)
-                            .fontWeight(.semibold)
                             .font(.subheadline)
+                            .fontWeight(.medium)
                     }
                     
-                    // Apps count with icon
-                    HStack {
-                        Label {
-                            Text("Apps & Categories:")
+                    // Apps and sessions info
+                    HStack(spacing: 16) {
+                        // Apps count
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Apps & Categories")
+                                .font(.caption)
                                 .foregroundColor(.secondary)
-                        } icon: {
-                            Image(systemName: "app.badge.fill")
-                                .foregroundColor(cardColor.opacity(0.8))
-                        }
-                        .font(.subheadline)
-                        
-                        Spacer()
-                        
-                        Text("\(BlockedProfiles.countSelectedActivities(profile.selectedActivity))")
-                            .foregroundColor(.primary)
-                            .fontWeight(.semibold)
-                            .font(.subheadline)
-                    }
-                    
-                    // Live Activity with icon
-                    HStack {
-                        Label {
-                            Text("Live Activity:")
-                                .foregroundColor(.secondary)
-                        } icon: {
-                            Image(systemName: "bell.fill")
-                                .foregroundColor(cardColor.opacity(0.8))
-                        }
-                        .font(.subheadline)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(profile.enableLiveActivity ? Color.green : Color.red)
-                                .frame(width: 8, height: 8)
                             
-                            Text(profile.enableLiveActivity ? "Enabled" : "Disabled")
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
+                            Text("\(BlockedProfiles.countSelectedActivities(profile.selectedActivity))")
                                 .font(.subheadline)
+                                .fontWeight(.semibold)
                         }
-                    }
-                    
-                    // Reminders with icon
-                    HStack {
-                        Label {
-                            Text("Reminders:")
+                        
+                        Divider()
+                            .frame(height: 24)
+                        
+                        // Active sessions
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Active Sessions")
+                                .font(.caption)
                                 .foregroundColor(.secondary)
-                        } icon: {
-                            Image(systemName: "alarm.fill")
-                                .foregroundColor(cardColor.opacity(0.8))
-                        }
-                        .font(.subheadline)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(profile.reminderTimeInSeconds != nil ? Color.green : Color.red)
-                                .frame(width: 8, height: 8)
                             
-                            Text(profile.reminderTimeInSeconds != nil ? "Enabled" : "Disabled")
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
+                            Text("0") // Replace with actual sessions count
                                 .font(.subheadline)
+                                .fontWeight(.semibold)
                         }
                     }
                 }
                 
-                Spacer()
+                // Spacer to push buttons to bottom
+                Spacer(minLength: 4)
                 
-                // Glass pane buttons
-                HStack(spacing: 12) {
+                // Bottom section - Only action buttons
+                HStack(spacing: 8) {
                     GlassButton(title: "Start", icon: "play.fill") {
                         // Start action
                     }
@@ -231,9 +210,9 @@ struct BlockedProfileCard: View {
                     }
                 }
             }
-            .padding(18)
+            .padding(16)
         }
-        .frame(height: 200)
+        .frame(height: 170)
         .padding(.horizontal)
     }
 }
@@ -273,18 +252,17 @@ struct GlassButton: View {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
         
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             BlockedProfileCard(
                 profile: BlockedProfiles(
                     id: UUID(),
-                    name: "Work",
+                    name: "Work Focus",
                     selectedActivity: FamilyActivitySelection(),
                     blockingStrategyId: NFCBlockingStrategy.id,
                     enableLiveActivity: true,
                     reminderTimeInSeconds: 3600
                 )
             )
-
         }
         .padding(.vertical)
     }
