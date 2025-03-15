@@ -208,4 +208,18 @@ class StrategyManager: ObservableObject {
         stopTimer()
         elapsedTime = 0
     }
+    
+    private func scheduleReminder(profile: BlockedProfiles) {
+        guard let reminderTimeInSeconds = profile.reminderTimeInSeconds else {
+            return
+        }
+        
+        let profileName = profile.name
+        timersUtil
+            .scheduleNotification(
+                title: profileName + " time!",
+                message: "Get back to productivity by enabling " + profileName,
+                seconds: TimeInterval(reminderTimeInSeconds)
+            )
+    }
 }
