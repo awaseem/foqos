@@ -20,7 +20,6 @@ struct foqosApp: App {
     @StateObject private var liveActivityManager = LiveActivityManager.shared
     
     init() {
-        // Register background tasks when app initializes
         TimersUtil.registerBackgroundTasks()
     }
 
