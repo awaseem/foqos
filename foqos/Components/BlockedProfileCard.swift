@@ -3,6 +3,8 @@ import SwiftUI
 
 struct BlockedProfileCard: View {
     let profile: BlockedProfiles
+    var onStartTapped: () -> Void
+    var onEditTapped: () -> Void
     
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
@@ -81,9 +83,7 @@ struct BlockedProfileCard: View {
                     Spacer()
                     
                     // Edit button moved to top right
-                    Button(action: {
-                        // Edit action
-                    }) {
+                    Button(action: onEditTapped) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
@@ -158,7 +158,7 @@ struct BlockedProfileCard: View {
 
                 // Bottom section - Only start button
                 GlassButton(title: "Start", icon: "play.fill") {
-                    // Start action
+                    onStartTapped()
                 }
             }
             .padding(16)
@@ -207,12 +207,14 @@ struct GlassButton: View {
             BlockedProfileCard(
                 profile: BlockedProfiles(
                     id: UUID(),
-                    name: "Work Focus",
+                    name: "Work",
                     selectedActivity: FamilyActivitySelection(),
                     blockingStrategyId: NFCBlockingStrategy.id,
                     enableLiveActivity: true,
                     reminderTimeInSeconds: 3600
-                )
+                ),
+                onStartTapped: {},
+                onEditTapped: {}
             )
         }
         .padding(.vertical)
