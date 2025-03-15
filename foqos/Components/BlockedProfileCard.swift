@@ -16,20 +16,55 @@ struct BlockedProfileCard: View {
         Color.red
     ]
     
-    // Select a color based on the profile ID
-    private var cardColor: Color {
-        // Use the UUID to select a color
-        let idString = profile.id.uuidString
+    // Structure to hold position data for shapes
+    private struct ShapePosition {
+        let x: CGFloat
+        let y: CGFloat
+        let size: CGFloat
+    }
+    
+    // Generate deterministic position based on profile name and index
+    private func getPositionFromName(name: String, index: Int) -> ShapePosition {
+        if name.isEmpty {
+            // Fallback values if name is empty
+            return ShapePosition(x: CGFloat(index * 20 - 60), y: CGFloat(index * 15 - 40), size: CGFloat(index * 5))
+        }
         
-        // Convert first 8 characters to an integer and use it to select a color
-        guard let firstPart = idString.split(separator: "-").first,
-              let intValue = UInt64(firstPart, radix: 16) else {
-            // Fallback to the first color
+        // Create a deterministic seed value from name and index
+        let nameBytes = Array(name.utf8)
+        let seedValue = nameBytes.count > 0 ? nameBytes.reduce(UInt64(index * 17)) { ($0 << 5) &+ UInt64($1) } : UInt64(index * 31)
+        
+        // Generate position values within appropriate ranges
+        let xMultiplier = index % 2 == 0 ? -1.0 : 1.0 // Alternate sides
+        let xRange: CGFloat = 100.0
+        let yRange: CGFloat = 80.0
+        
+        let xOffset = CGFloat(seedValue % 100) / 100.0 * xRange * xMultiplier
+        let yOffset = CGFloat((seedValue >> 8) % 100) / 100.0 * yRange - yRange/2
+        let size = CGFloat((seedValue >> 16) % 40) // Size variation
+        
+        return ShapePosition(
+            x: xOffset,
+            y: yOffset,
+            size: size
+        )
+    }
+    
+    // Select a color based on the profile name
+    private var cardColor: Color {
+        // Use the profile name to select a consistent color
+        let name = profile.name
+        
+        if name.isEmpty {
+            // Fallback to the first color if name is empty
             return predefinedColors[0]
         }
         
+        // Sum the Unicode values of characters in the name for a deterministic result
+        let nameSum = name.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        
         // Use modulo to get an index within the array bounds
-        let index = Int(intValue % UInt64(predefinedColors.count))
+        let index = nameSum % predefinedColors.count
         return predefinedColors[index]
     }
     
@@ -46,25 +81,33 @@ struct BlockedProfileCard: View {
                 .fill(Color(UIColor.systemBackground))
                 .overlay(
                     ZStack {
-                        // Multiple soft blurred shapes with the profile color
-                        Circle()
-                            .fill(cardColor.opacity(0.7))
-                            .frame(width: 100, height: 100)
-                            .offset(x: -80, y: -40)
-                            .blur(radius: 20)
-                        
-                        Circle()
-                            .fill(cardColor.opacity(0.6))
-                            .frame(width: 120, height: 120)
-                            .offset(x: 70, y: 60)
-                            .blur(radius: 25)
-                        
-                        Capsule()
-                            .fill(cardColor.opacity(0.5))
-                            .frame(width: 160, height: 80)
-                            .offset(x: -30, y: 40)
-                            .blur(radius: 15)
+                        // Generate dynamic shapes based on profile name
+                        ForEach(0..<6, id: \.self) { index in
+                            let seed = getPositionFromName(name: profile.name, index: index)
+                            
+                            Group {
+                                if index % 3 == 0 {
+                                    Circle()
+                                        .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
+                                        .frame(width: 80 + CGFloat(seed.size), height: 80 + CGFloat(seed.size))
+                                } else if index % 3 == 1 {
+                                    Capsule()
+                                        .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
+                                        .frame(width: 120 + CGFloat(seed.size), height: 60 + CGFloat(seed.size * 0.5))
+                                } else {
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(cardColor.opacity(0.4 + Double(index) * 0.04))
+                                        .frame(width: 70 + CGFloat(seed.size), height: 70 + CGFloat(seed.size))
+                                }
+                            }
+                            .offset(x: seed.x, y: seed.y)
+                            .blur(radius: 15 + CGFloat(index * 3))
+                        }
                     }
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(.ultraThinMaterial.opacity(0.7))
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 24))
             
@@ -233,8 +276,8 @@ struct GlassButton: View {
         VStack(spacing: 20) {
             BlockedProfileCard(
                 profile: BlockedProfiles(
-                    id: UUID(uuidString: "E621E1F8-C36C-495A-93FC-0C247A3E6E5F") ?? UUID(),
-                    name: "Social Media Block",
+                    id: UUID(),
+                    name: "Work",
                     selectedActivity: FamilyActivitySelection(),
                     blockingStrategyId: NFCBlockingStrategy.id,
                     enableLiveActivity: true,
