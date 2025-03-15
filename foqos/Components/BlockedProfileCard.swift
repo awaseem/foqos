@@ -3,12 +3,13 @@ import SwiftUI
 
 struct BlockedProfileCard: View {
     let profile: BlockedProfiles
+    var isActive: Bool = false
     var onStartTapped: () -> Void
     var onEditTapped: () -> Void
     
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
-        CardBackground(name: profile.name)
+        CardBackground(name: profile.name, isActive: isActive)
     }
 
     // Get blocking strategy name
@@ -156,8 +157,11 @@ struct BlockedProfileCard: View {
                 // Spacer to push buttons to bottom
                 Spacer(minLength: 4)
 
-                // Bottom section - Only start button
-                GlassButton(title: "Start", icon: "play.fill") {
+                // Bottom section - Start or Stop button based on active state
+                GlassButton(
+                    title: isActive ? "Stop" : "Start",
+                    icon: isActive ? "stop.fill" : "play.fill"
+                ) {
                     onStartTapped()
                 }
             }
@@ -203,7 +207,8 @@ struct GlassButton: View {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
 
-        VStack(spacing: 16) {
+        VStack(spacing: 100) {
+            // Inactive card
             BlockedProfileCard(
                 profile: BlockedProfiles(
                     id: UUID(),
@@ -216,7 +221,21 @@ struct GlassButton: View {
                 onStartTapped: {},
                 onEditTapped: {}
             )
+            
+            // Active card
+            BlockedProfileCard(
+                profile: BlockedProfiles(
+                    id: UUID(),
+                    name: "Gaming",
+                    selectedActivity: FamilyActivitySelection(),
+                    blockingStrategyId: NFCBlockingStrategy.id,
+                    enableLiveActivity: true,
+                    reminderTimeInSeconds: 3600
+                ),
+                isActive: true,
+                onStartTapped: {},
+                onEditTapped: {}
+            )
         }
-        .padding(.vertical)
     }
 }
