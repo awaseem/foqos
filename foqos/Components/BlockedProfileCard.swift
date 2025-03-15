@@ -11,8 +11,6 @@ struct BlockedProfileCard: View {
         Color.purple,
         Color.pink,
         Color.orange,
-        Color.teal,
-        Color.green,
         Color.red
     ]
     
