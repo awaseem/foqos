@@ -5,38 +5,40 @@ import SwiftUI
 struct BlockedProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     @EnvironmentObject private var nfcWriter: NFCWriter
     @EnvironmentObject private var strategyManager: StrategyManager
-    
+
     // If profile is nil, we're creating a new profile
     var profile: BlockedProfiles?
-    
+
     @State private var name: String = ""
     @State private var catAndAppCount: Int = 0
     @State private var enableLiveActivity: Bool = false
-    
+    @State private var enableReminder: Bool = false
+    @State private var reminderTimeInMinutes: Int = 15
+
     // QR code generator
     @State private var showingGeneratedQRCode = false
-    
+
     // Sheet for activity picker
     @State private var showingActivityPicker = false
-    
+
     // Error states
     @State private var errorMessage: String?
     @State private var showError = false
-    
+
     @State private var selectedActivity = FamilyActivitySelection()
     @State private var selectedStrategy: BlockingStrategy? = nil
-    
+
     private var isEditing: Bool {
         profile != nil
     }
-    
+
     private var isBlocking: Bool {
         strategyManager.activeSession?.isActive ?? false
     }
-    
+
     init(profile: BlockedProfiles? = nil) {
         self.profile = profile
         _name = State(initialValue: profile?.name ?? "")
@@ -51,16 +53,23 @@ struct BlockedProfileView: View {
         _enableLiveActivity = State(
             initialValue: profile?.enableLiveActivity ?? false
         )
-        
+        _enableReminder = State(
+            initialValue: profile?.reminderTimeInSeconds != nil
+        )
+        _reminderTimeInMinutes = State(
+            initialValue: Int(profile?.reminderTimeInSeconds ?? 900) / 60
+        )
+
         if let profileStrategyId = profile?.blockingStrategyId {
             _selectedStrategy = State(
-                initialValue: StrategyManager
+                initialValue:
+                    StrategyManager
                     .getStrategyFromId(id: profileStrategyId))
         } else {
             _selectedStrategy = State(initialValue: NFCBlockingStrategy())
         }
     }
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -68,34 +77,55 @@ struct BlockedProfileView: View {
                     TextField("Profile Name", text: $name)
                         .textContentType(.none)
                 }
-                
+
                 BlockedProfileAppSelector(
                     selection: selectedActivity,
                     buttonAction: { showingActivityPicker = true },
                     disabled: isBlocking,
                     disabledText: "Disable the current session to edit"
                 )
-                
+
                 BlockingStrategyList(
                     strategies: StrategyManager.availableStrategies,
                     selectedStrategy: $selectedStrategy,
                     disabled: isBlocking,
                     disabledText: "Disable the current session to edit"
                 )
-                
+
                 Section("Notifications") {
                     Toggle("Live Activity", isOn: $enableLiveActivity)
                         .disabled(isBlocking)
-                    
+
+                    Toggle("Remind to enable", isOn: $enableReminder)
+                        .disabled(isBlocking)
+
+                    if enableReminder {
+                        HStack {
+                            Text("Reminder time")
+                            Spacer()
+                            TextField(
+                                "", value: $reminderTimeInMinutes,
+                                format: .number
+                            )
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 50)
+                            .disabled(isBlocking)
+                            Text("minutes")
+                        }
+                    }
+
                     if isBlocking {
                         Text("Disable current session to change")
                             .font(.caption)
                             .foregroundColor(.red)
                     }
-                    
+
                     if !isBlocking {
                         Button {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                            if let url = URL(
+                                string: UIApplication.openSettingsURLString)
+                            {
                                 UIApplication.shared.open(url)
                             }
                         } label: {
@@ -104,7 +134,7 @@ struct BlockedProfileView: View {
                         }
                     }
                 }
-                
+
                 if isEditing {
                     Section("Utilities") {
                         Button(action: {
@@ -116,7 +146,7 @@ struct BlockedProfileView: View {
                                 Spacer()
                             }
                         }
-                        
+
                         Button(action: {
                             showingGeneratedQRCode = true
                         }) {
@@ -128,14 +158,14 @@ struct BlockedProfileView: View {
                         }
                     }
                 }
-                
+
                 if isEditing, let validProfile = profile {
                     BlockedProfileStats(profile: validProfile)
                 }
             }
             .onChange(of: selectedActivity) { _, newValue in
                 catAndAppCount =
-                BlockedProfiles
+                    BlockedProfiles
                     .countSelectedActivities(newValue)
             }
             .navigationTitle(isEditing ? "Profile Details" : "New Profile")
@@ -146,7 +176,7 @@ struct BlockedProfileView: View {
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(isEditing ? "Update" : "Create") {
                         saveProfile()
@@ -176,16 +206,20 @@ struct BlockedProfileView: View {
             }
         }
     }
-    
+
     private func writeProfile() {
         if let profileToWrite = profile {
             let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
             nfcWriter.writeURL(url)
         }
     }
-    
+
     private func saveProfile() {
         do {
+            // Calculate reminder time in seconds or nil if disabled
+            let reminderTimeSeconds: UInt32? =
+                enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
+
             if let existingProfile = profile {
                 // Update existing profile
                 try BlockedProfiles.updateProfile(
@@ -194,7 +228,8 @@ struct BlockedProfileView: View {
                     name: name,
                     selection: selectedActivity,
                     blockingStrategyId: selectedStrategy?.getIdentifier(),
-                    enableLiveActivity: enableLiveActivity
+                    enableLiveActivity: enableLiveActivity,
+                    reminderTime: reminderTimeSeconds
                 )
             } else {
                 // Create new profile
@@ -203,7 +238,8 @@ struct BlockedProfileView: View {
                     selectedActivity: selectedActivity,
                     blockingStrategyId: selectedStrategy?
                         .getIdentifier() ?? NFCBlockingStrategy.id,
-                    enableLiveActivity: enableLiveActivity
+                    enableLiveActivity: enableLiveActivity,
+                    reminderTimeInSeconds: reminderTimeSeconds
                 )
                 modelContext.insert(newProfile)
                 try modelContext.save()
@@ -229,7 +265,7 @@ struct BlockedProfileView: View {
         name: "test",
         selectedActivity: FamilyActivitySelection()
     )
-    
+
     BlockedProfileView(profile: previewProfile)
         .environmentObject(NFCWriter())
         .environmentObject(StrategyManager())

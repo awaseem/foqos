@@ -12,6 +12,8 @@ class BlockedProfiles {
     var updatedAt: Date
     var blockingStrategyId: String?
     var enableLiveActivity: Bool = false
+    var reminderTimeInSeconds: UInt32?
+    
 
     @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -22,7 +24,8 @@ class BlockedProfiles {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         blockingStrategyId: String = NFCBlockingStrategy.id,
-        enableLiveActivity: Bool = false
+        enableLiveActivity: Bool = false,
+        reminderTimeInSeconds: UInt32? = nil
     ) {
         self.id = id
         self.name = name
@@ -31,6 +34,7 @@ class BlockedProfiles {
         self.updatedAt = updatedAt
         self.blockingStrategyId = blockingStrategyId
         self.enableLiveActivity = enableLiveActivity
+        self.reminderTimeInSeconds = reminderTimeInSeconds
     }
 
     static func fetchProfiles(in context: ModelContext) throws
@@ -66,7 +70,8 @@ class BlockedProfiles {
         name: String? = nil,
         selection: FamilyActivitySelection? = nil,
         blockingStrategyId: String? = nil,
-        enableLiveActivity: Bool? = nil
+        enableLiveActivity: Bool? = nil,
+        reminderTime: UInt32? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -82,6 +87,10 @@ class BlockedProfiles {
         
         if let newEnableLiveActivity = enableLiveActivity {
             profile.enableLiveActivity = newEnableLiveActivity
+        }
+        
+        if let newReminderTimeInSeconds = reminderTime {
+            profile.reminderTimeInSeconds = newReminderTimeInSeconds
         }
 
         profile.updatedAt = Date()
