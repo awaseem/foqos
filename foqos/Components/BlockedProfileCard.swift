@@ -6,13 +6,14 @@ struct BlockedProfileCard: View {
     var isActive: Bool = false
     var elapsedTime: TimeInterval? = nil
     var onStartTapped: () -> Void
+    var onStopTapped: () -> Void
     var onEditTapped: () -> Void
-    
+
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
         CardBackground(name: profile.name, isActive: isActive)
     }
-    
+
     // Format TimeInterval to HH:MM:SS
     private func timeString(from timeInterval: TimeInterval) -> String {
         let hours = Int(timeInterval) / 3600
@@ -26,16 +27,20 @@ struct BlockedProfileCard: View {
         guard let strategyId = profile.blockingStrategyId else { return "None" }
         return StrategyManager.getStrategyFromId(id: strategyId).name
     }
-    
+
     // Get blocking strategy description
     private var blockingStrategyDescription: String {
-        guard let strategyId = profile.blockingStrategyId else { return "No strategy selected" }
+        guard let strategyId = profile.blockingStrategyId else {
+            return "No strategy selected"
+        }
         return StrategyManager.getStrategyFromId(id: strategyId).description
     }
-    
+
     // Get blocking strategy icon
     private var blockingStrategyIcon: String {
-        guard let strategyId = profile.blockingStrategyId else { return "questionmark.circle.fill" }
+        guard let strategyId = profile.blockingStrategyId else {
+            return "questionmark.circle.fill"
+        }
         return StrategyManager.getStrategyFromId(id: strategyId).iconType
     }
 
@@ -43,7 +48,7 @@ struct BlockedProfileCard: View {
         ZStack {
             // Use the CardBackground component
             cardBackground
-            
+
             // Content
             VStack(alignment: .leading, spacing: 16) {
                 // Header section - Profile name, edit button, and indicators
@@ -89,9 +94,9 @@ struct BlockedProfileCard: View {
                             }
                         }
                     }
-                    
+
                     Spacer()
-                    
+
                     // Edit button moved to top right
                     Button(action: onEditTapped) {
                         Image(systemName: "pencil")
@@ -103,7 +108,9 @@ struct BlockedProfileCard: View {
                                     .fill(.thinMaterial)
                                     .overlay(
                                         Circle()
-                                            .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                            .stroke(
+                                                Color.primary.opacity(0.2),
+                                                lineWidth: 1)
                                     )
                             )
                     }
@@ -119,7 +126,9 @@ struct BlockedProfileCard: View {
                             .frame(width: 28, height: 28)
                             .background(
                                 Circle()
-                                    .fill(cardBackground.getCardColor().opacity(0.15))
+                                    .fill(
+                                        cardBackground.getCardColor().opacity(
+                                            0.15))
                             )
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -155,10 +164,11 @@ struct BlockedProfileCard: View {
                                 .foregroundColor(.secondary)
 
                             Text(
-                                profile.sessions.count.description.localizedLowercase
+                                profile.sessions.count.description
+                                    .localizedLowercase
                             )
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
                         }
                     }
                 }
@@ -174,7 +184,7 @@ struct BlockedProfileCard: View {
                             Image(systemName: "clock.fill")
                                 .font(.system(size: 14))
                                 .foregroundColor(.primary.opacity(0.7))
-                            
+
                             Text(timeString(from: elapsedTime))
                                 .foregroundColor(.primary)
                                 .font(.system(size: 16, weight: .semibold))
@@ -187,10 +197,12 @@ struct BlockedProfileCard: View {
                                 .fill(.thinMaterial)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                        .stroke(
+                                            Color.primary.opacity(0.2),
+                                            lineWidth: 1)
                                 )
                         )
-                        
+
                         // Stop button
                         GlassButton(
                             title: "Stop",
@@ -198,7 +210,7 @@ struct BlockedProfileCard: View {
                             fullWidth: false,
                             equalWidth: true
                         ) {
-                            onStartTapped()
+                            onStopTapped()
                         }
                     } else {
                         // Start button (full width when no timer is shown)
@@ -236,7 +248,10 @@ struct GlassButton: View {
                     .fontWeight(.semibold)
                     .font(.subheadline)
             }
-            .frame(minWidth: 0, maxWidth: fullWidth ? .infinity : (equalWidth ? .infinity : nil))
+            .frame(
+                minWidth: 0,
+                maxWidth: fullWidth ? .infinity : (equalWidth ? .infinity : nil)
+            )
             .padding(.vertical, 10)
             .padding(.horizontal, fullWidth ? nil : 20)
             .background(
@@ -270,9 +285,10 @@ struct GlassButton: View {
                     reminderTimeInSeconds: 3600
                 ),
                 onStartTapped: {},
+                onStopTapped: {},
                 onEditTapped: {}
             )
-            
+
             // Active card with timer
             BlockedProfileCard(
                 profile: BlockedProfiles(
@@ -284,8 +300,9 @@ struct GlassButton: View {
                     reminderTimeInSeconds: 3600
                 ),
                 isActive: true,
-                elapsedTime: 1845, // 30 minutes and 45 seconds
+                elapsedTime: 1845,  // 30 minutes and 45 seconds
                 onStartTapped: {},
+                onStopTapped: {},
                 onEditTapped: {}
             )
         }
