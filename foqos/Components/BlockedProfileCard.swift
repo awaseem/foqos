@@ -4,12 +4,21 @@ import SwiftUI
 struct BlockedProfileCard: View {
     let profile: BlockedProfiles
     var isActive: Bool = false
+    var elapsedTime: TimeInterval? = nil
     var onStartTapped: () -> Void
     var onEditTapped: () -> Void
     
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
         CardBackground(name: profile.name, isActive: isActive)
+    }
+    
+    // Format TimeInterval to HH:MM:SS
+    private func timeString(from timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = Int(timeInterval) / 60 % 60
+        let seconds = Int(timeInterval) % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 
     // Get blocking strategy name
@@ -154,15 +163,28 @@ struct BlockedProfileCard: View {
                     }
                 }
 
-                // Spacer to push buttons to bottom
-                Spacer(minLength: 4)
+                // Spacer to push content to bottom - less space when showing elapsed time
+                Spacer(minLength: isActive && elapsedTime != nil ? 0 : 4)
 
-                // Bottom section - Start or Stop button based on active state
-                GlassButton(
-                    title: isActive ? "Stop" : "Start",
-                    icon: isActive ? "stop.fill" : "play.fill"
-                ) {
-                    onStartTapped()
+                // Bottom section with elapsed time and Start/Stop button
+                VStack(spacing: 12) {
+                    // Show elapsed time when active
+                    if isActive, let elapsedTime = elapsedTime {
+                        Text(timeString(from: elapsedTime))
+                            .foregroundColor(.primary)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom)
+                    }
+                    
+                    // Start or Stop button based on active state
+                    GlassButton(
+                        title: isActive ? "Stop" : "Start",
+                        icon: isActive ? "stop.fill" : "play.fill"
+                    ) {
+                        onStartTapped()
+                    }
                 }
             }
             .padding(16)
@@ -233,6 +255,7 @@ struct GlassButton: View {
                     reminderTimeInSeconds: 3600
                 ),
                 isActive: true,
+                elapsedTime: 1845, // 30 minutes and 45 seconds
                 onStartTapped: {},
                 onEditTapped: {}
             )
