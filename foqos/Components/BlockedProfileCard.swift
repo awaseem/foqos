@@ -226,7 +226,6 @@ struct BlockedProfileCard: View {
             }
             .padding(16)
         }
-        .frame(height: 200)
         .padding(.horizontal)
     }
 }
@@ -273,7 +272,7 @@ struct GlassButton: View {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
 
-        VStack {
+        VStack (spacing: 40) {
             // Inactive card
             BlockedProfileCard(
                 profile: BlockedProfiles(
