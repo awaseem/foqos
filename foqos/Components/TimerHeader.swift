@@ -14,24 +14,11 @@ struct TimeHeader: View {
                 .font(.system(size: adaptiveFontSize))
                 .fontWeight(.semibold)
                 .foregroundColor(
-                    isBlocking ? Color(hex: "#32CD32") : .primary
+                    .primary
                 )
                 .opacity(isBlocking ? opacityValue : 1)
-                .animation(
-                    .easeInOut(duration: 0.7).repeatForever(),
-                    value: opacityValue
-                )
-                .onChange(of: isBlocking) { _, newValue in
-                    if newValue {
-                        withAnimation(
-                            .easeInOut(duration: 1).repeatForever()
-                        ) {
-                            opacityValue = 0.3
-                        }
-                    } else {
-                        opacityValue = 1
-                    }
-                }
+                .contentTransition(.numericText())
+                .animation(.default, value: elapsedTime)
         }
     }
     
