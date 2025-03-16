@@ -163,33 +163,58 @@ struct BlockedProfileCard: View {
                     }
                 }
 
-                // Spacer to push content to bottom - less space when showing elapsed time
-                Spacer(minLength: isActive && elapsedTime != nil ? 0 : 4)
+                // Spacer to push content to bottom
+                Spacer(minLength: 4)
 
-                // Bottom section with elapsed time and Start/Stop button
-                VStack(spacing: 12) {
-                    // Show elapsed time when active
+                // Bottom section with timer and Start/Stop button side by side when active
+                HStack(spacing: 12) {
                     if isActive, let elapsedTime = elapsedTime {
-                        Text(timeString(from: elapsedTime))
-                            .foregroundColor(.primary)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.bottom)
-                    }
-                    
-                    // Start or Stop button based on active state
-                    GlassButton(
-                        title: isActive ? "Stop" : "Start",
-                        icon: isActive ? "stop.fill" : "play.fill"
-                    ) {
-                        onStartTapped()
+                        // Timer with clock icon
+                        HStack(spacing: 8) {
+                            Image(systemName: "clock.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.primary.opacity(0.7))
+                            
+                            Text(timeString(from: elapsedTime))
+                                .foregroundColor(.primary)
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(.thinMaterial)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                        
+                        // Stop button
+                        GlassButton(
+                            title: "Stop",
+                            icon: "stop.fill",
+                            fullWidth: false,
+                            equalWidth: true
+                        ) {
+                            onStartTapped()
+                        }
+                    } else {
+                        // Start button (full width when no timer is shown)
+                        GlassButton(
+                            title: "Start",
+                            icon: "play.fill",
+                            fullWidth: true
+                        ) {
+                            onStartTapped()
+                        }
                     }
                 }
             }
             .padding(16)
         }
-        .frame(height: 190)
+        .frame(height: 200)
         .padding(.horizontal)
     }
 }
@@ -198,6 +223,8 @@ struct BlockedProfileCard: View {
 struct GlassButton: View {
     let title: String
     let icon: String
+    var fullWidth: Bool = true
+    var equalWidth: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -209,8 +236,9 @@ struct GlassButton: View {
                     .fontWeight(.semibold)
                     .font(.subheadline)
             }
-            .frame(maxWidth: .infinity)
+            .frame(minWidth: 0, maxWidth: fullWidth ? .infinity : (equalWidth ? .infinity : nil))
             .padding(.vertical, 10)
+            .padding(.horizontal, fullWidth ? nil : 20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(.thinMaterial)
@@ -222,6 +250,7 @@ struct GlassButton: View {
             .foregroundColor(.primary)
         }
         .contentShape(Rectangle())  // Improve tap area
+        .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
     }
 }
 
@@ -229,7 +258,7 @@ struct GlassButton: View {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
 
-        VStack(spacing: 100) {
+        VStack {
             // Inactive card
             BlockedProfileCard(
                 profile: BlockedProfiles(
@@ -244,13 +273,13 @@ struct GlassButton: View {
                 onEditTapped: {}
             )
             
-            // Active card
+            // Active card with timer
             BlockedProfileCard(
                 profile: BlockedProfiles(
                     id: UUID(),
                     name: "Gaming",
                     selectedActivity: FamilyActivitySelection(),
-                    blockingStrategyId: NFCBlockingStrategy.id,
+                    blockingStrategyId: QRCodeBlockingStrategy.id,
                     enableLiveActivity: true,
                     reminderTimeInSeconds: 3600
                 ),
