@@ -78,10 +78,7 @@ struct HomeView: View {
             }
             
             VStack(alignment: .leading, spacing: 20) {
-                if !profiles.isEmpty {
-                    BlockedSessionsHabitTracker(sessions: recentCompletedSessions)
-                        .padding(.horizontal, 16)
-                } else {
+                if profiles.isEmpty {
                     Spacer()
                         .frame(height: 60)
                     Welcome(onTap: {
@@ -91,6 +88,9 @@ struct HomeView: View {
                 }
                 
                 if !profiles.isEmpty {
+                    BlockedSessionsHabitTracker(sessions: recentCompletedSessions)
+                        .padding(.horizontal, 16)
+                    
                     BlockedProfileCarousel(
                         profiles: profiles,
                         isBlocking: isBlocking,

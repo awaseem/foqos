@@ -148,7 +148,7 @@ struct BlockedProfileCarousel: View {
         .onAppear {
             initialSetup()
         }
-        .onChange(of: activeSessionProfileId) { _ in
+        .onChange(of: activeSessionProfileId) { _,_ in
             initialSetup()
         }
     }
