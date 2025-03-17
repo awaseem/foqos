@@ -122,42 +122,31 @@ struct HomeView: View {
                     )
                 }
                 
-                VStack(alignment: .leading, spacing: 10) {
-                    SectionTitle("Manage")
-                    
-                    Grid(horizontalSpacing: 10, verticalSpacing: 16) {
-                        GridRow {
-                            ActionCard(
-                                icon: "person.crop.circle.fill",
-                                count: nil,
-                                label: "Profiles",
-                                color: .purple
-                            ) {
-                                isProfileListPresent = true
-                            }
-                            ActionCard(
-                                icon: "cart.fill",
-                                count: nil,
-                                label: "Purchase NFC tags",
-                                color: .gray
-                            ) {
-                                if let url = URL(string: AMZN_STORE_LINK) {
-                                    openURL(url)
-                                }
+                ManageSection(actions: [
+                    ManageAction(
+                        icon: "person.crop.circle.fill",
+                        label: "Profiles",
+                        color: .purple,
+                        action: { isProfileListPresent = true }
+                    ),
+                    ManageAction(
+                        icon: "cart.fill",
+                        label: "Purchase NFC tags",
+                        color: .gray,
+                        action: {
+                            if let url = URL(string: AMZN_STORE_LINK) {
+                                openURL(url)
                             }
                         }
-                        GridRow {
-                            ActionCard(
-                                icon: "heart.fill",
-                                count: nil,
-                                label: "Support us",
-                                color: .pink
-                            ) {
-                                donationManager.tip()
-                            }
-                        }
-                    }
-                }
+                    ),
+                    ManageAction(
+                        icon: "heart.fill",
+                        label: "Support us",
+                        color: .pink,
+                        action: { donationManager.tip() }
+                    )
+                ])
+                .padding(.horizontal, 16)
                 
                 Spacer()
                 
