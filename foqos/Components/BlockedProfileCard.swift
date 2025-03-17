@@ -178,16 +178,18 @@ struct BlockedProfileCard: View {
 
                 // Bottom section with timer and Start/Stop button side by side when active
                 HStack(spacing: 12) {
-                    if isActive, let elapsedTime = elapsedTime {
+                    if isActive, let elapsedTimeVal = elapsedTime {
                         // Timer with clock icon
                         HStack(spacing: 8) {
                             Image(systemName: "clock.fill")
                                 .font(.system(size: 14))
                                 .foregroundColor(.primary.opacity(0.7))
 
-                            Text(timeString(from: elapsedTime))
+                            Text(timeString(from: elapsedTimeVal))
                                 .foregroundColor(.primary)
                                 .font(.system(size: 16, weight: .semibold))
+                                .contentTransition(.numericText())
+                                .animation(.default, value: elapsedTimeVal)
                         }
                         .padding(.vertical, 10)
                         .padding(.horizontal, 12)

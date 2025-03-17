@@ -50,89 +50,99 @@ struct BlockedProfileCarousel: View {
         VStack(alignment: .leading, spacing: 40) {
             // Title
             SectionTitle("Profiles")
+                .padding(.horizontal, 16)
 
-            // Card carousel
-            ZStack {
-                // Carousel container
-                GeometryReader { geometry in
-                    let cardWidth = geometry.size.width - 32  // Padding on sides
+            VStack(spacing: 16) {
+                // Card carousel
+                ZStack {
+                    // Carousel container
+                    GeometryReader { geometry in
+                        let cardWidth = geometry.size.width - 32  // Padding on sides
 
-                    HStack(spacing: cardSpacing) {
-                        ForEach(profiles.indices, id: \.self) { index in
-                            BlockedProfileCard(
-                                profile: profiles[index],
-                                isActive: profiles[index].id
-                                    == activeSessionProfileId,
-                                elapsedTime: elapsedTime,
-                                onStartTapped: {
-                                    onStartTapped(profiles[index])
-                                },
-                                onStopTapped: { onStopTapped(profiles[index]) },
-                                onEditTapped: { onEditTapped(profiles[index]) }
-                            )
-                            .frame(width: cardWidth, height: cardHeight)
-                        }
-                    }
-                    .offset(
-                        x: calculateOffset(
-                            geometry: geometry, cardWidth: cardWidth)
-                    )
-                    .animation(
-                        .spring(response: 0.4, dampingFraction: 0.8),
-                        value: currentIndex
-                    )
-                    .animation(
-                        .spring(response: 0.4, dampingFraction: 0.8),
-                        value: dragOffset
-                    )
-                    .gesture(
-                        DragGesture()
-                            .onChanged { value in
-                                if !isBlocking {  // Only allow dragging when not blocking
-                                    dragOffset = value.translation.width
-                                }
-                            }
-                            .onEnded { value in
-                                if !isBlocking {  // Only allow dragging when not blocking
-                                    let offsetAmount = value.translation.width
-                                    let swipedRight =
-                                        offsetAmount > dragThreshold
-                                    let swipedLeft =
-                                        offsetAmount < -dragThreshold
-
-                                    if swipedLeft
-                                        && currentIndex < profiles.count - 1
-                                    {
-                                        currentIndex += 1
-                                    } else if swipedRight && currentIndex > 0 {
-                                        currentIndex -= 1
+                        HStack(spacing: cardSpacing) {
+                            ForEach(profiles.indices, id: \.self) { index in
+                                BlockedProfileCard(
+                                    profile: profiles[index],
+                                    isActive: profiles[index].id
+                                        == activeSessionProfileId,
+                                    elapsedTime: elapsedTime,
+                                    onStartTapped: {
+                                        onStartTapped(profiles[index])
+                                    },
+                                    onStopTapped: {
+                                        onStopTapped(profiles[index])
+                                    },
+                                    onEditTapped: {
+                                        onEditTapped(profiles[index])
                                     }
-
-                                    dragOffset = 0
-                                }
+                                )
+                                .frame(width: cardWidth, height: cardHeight)
                             }
-                    )
-                }
-            }
-            .frame(height: cardHeight)
+                        }
+                        .offset(
+                            x: calculateOffset(
+                                geometry: geometry, cardWidth: cardWidth)
+                        )
+                        .animation(
+                            .spring(response: 0.4, dampingFraction: 0.8),
+                            value: currentIndex
+                        )
+                        .animation(
+                            .spring(response: 0.4, dampingFraction: 0.8),
+                            value: dragOffset
+                        )
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if !isBlocking {  // Only allow dragging when not blocking
+                                        dragOffset = value.translation.width
+                                    }
+                                }
+                                .onEnded { value in
+                                    if !isBlocking {  // Only allow dragging when not blocking
+                                        let offsetAmount = value.translation
+                                            .width
+                                        let swipedRight =
+                                            offsetAmount > dragThreshold
+                                        let swipedLeft =
+                                            offsetAmount < -dragThreshold
 
-            // Page indicator dots
-            if profiles.count > 1 {
-                HStack(spacing: 8) {
-                    Spacer()
-                    ForEach(0..<profiles.count, id: \.self) { index in
-                        Circle()
-                            .fill(
-                                index == currentIndex
-                                    ? Color.primary
-                                    : Color.secondary.opacity(0.3)
-                            )
-                            .frame(width: 8, height: 8)
-                            .animation(.easeInOut, value: currentIndex)
+                                        if swipedLeft
+                                            && currentIndex < profiles.count - 1
+                                        {
+                                            currentIndex += 1
+                                        } else if swipedRight
+                                            && currentIndex > 0
+                                        {
+                                            currentIndex -= 1
+                                        }
+
+                                        dragOffset = 0
+                                    }
+                                }
+                        )
                     }
-                    Spacer()
                 }
-                .padding(.top, 16)
+                .frame(height: cardHeight)
+
+                // Page indicator dots
+                if profiles.count > 1 {
+                    HStack(spacing: 8) {
+                        Spacer()
+                        ForEach(0..<profiles.count, id: \.self) { index in
+                            Circle()
+                                .fill(
+                                    index == currentIndex
+                                        ? Color.primary
+                                        : Color.secondary.opacity(0.3)
+                                )
+                                .frame(width: 8, height: 8)
+                                .animation(.easeInOut, value: currentIndex)
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 30)
+                }
             }
         }
         .onAppear {
