@@ -60,138 +60,139 @@ struct BlockedSessionsHabitTracker: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header section using SectionTitle
             SectionTitle("4 Week Activity")
             
-            VStack(alignment: .leading, spacing: 12) {
-                // Legend section - more compact
-                HStack {
-                    Spacer()
-                    
-                    HStack(spacing: 12) {
-                        ForEach([("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)], id: \.0) { label, opacity in
-                            HStack(spacing: 4) {
-                                Rectangle()
-                                    .fill(Color.green.opacity(opacity))
-                                    .frame(width: 10, height: 10)
-                                    .cornerRadius(2)
-                                
-                                Text(label)
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                }
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(.ultraThinMaterial.opacity(0.7))
                 
-                // Grid layout with fixed 7 columns for days of week
-                LazyVStack(spacing: 8) {
-                    let allDates = dates()
-                    let weeks = stride(from: 0, to: allDates.count, by: 7).map {
-                        Array(allDates[min($0, allDates.count)..<min($0 + 7, allDates.count)])
-                    }
-                    
-                    ForEach(weeks.indices, id: \.self) { weekIndex in
-                        let week = weeks[weekIndex]
+                VStack(alignment: .leading, spacing: 12) {
+                    // Legend section - more compact
+                    HStack {
+                        Spacer()
                         
-                        HStack(spacing: 4) {
-                            ForEach(week, id: \.timeIntervalSince1970) { date in
-                                let hours = sessionHoursForDate(date)
-                                let isSelected = selectedDate == date
-                                
-                                VStack(spacing: 2) {
-                                    Text(formatDay(date))
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.secondary)
-                                    
+                        HStack(spacing: 12) {
+                            ForEach([("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)], id: \.0) { label, opacity in
+                                HStack(spacing: 4) {
                                     Rectangle()
-                                        .fill(colorForHours(hours))
-                                        .aspectRatio(1, contentMode: .fit)
-                                        .cornerRadius(4)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .stroke(
-                                                    isSelected ? Color.purple : Color.clear,
-                                                    lineWidth: 2
-                                                )
-                                        )
-                                        .onTapGesture {
-                                            if isSelected {
-                                                // Deselect if already selected
-                                                selectedDate = nil
-                                                selectedSessions = []
-                                                showingSessionDetails = false
-                                            } else {
-                                                // Select a new date
-                                                selectedDate = date
-                                                selectedSessions = sessionsByDay[date, default: []]
-                                                    .sorted(by: { $0.duration > $1.duration })
-                                                
-                                                showingSessionDetails = true
-                                            }
-                                        }
-                                        .contentShape(Rectangle())
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
-                if showingSessionDetails, let date = selectedDate {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(formatDate(date))
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        if selectedSessions.isEmpty {
-                            Text("No sessions on this day")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        } else {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(selectedSessions.prefix(3), id: \.id) { session in
-                                    HStack {
-                                        Text(session.blockedProfile.name)
-                                            .font(.subheadline)
-                                            .foregroundColor(.primary)
-                                        
-                                        Spacer()
-                                        
-                                        Text(String(format: "%.1f hrs", session.duration / 3600))
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .padding(.vertical, 4)
+                                        .fill(Color.green.opacity(opacity))
+                                        .frame(width: 10, height: 10)
+                                        .cornerRadius(2)
                                     
-                                    if session != selectedSessions.prefix(3).last {
-                                        Divider()
-                                    }
-                                }
-                                
-                                if selectedSessions.count > 3 {
-                                    Text("+ \(selectedSessions.count - 3) more sessions")
-                                        .font(.caption)
+                                    Text(label)
+                                        .font(.caption2)
                                         .foregroundColor(.secondary)
-                                        .padding(.top, 4)
                                 }
                             }
                         }
                     }
-                    .padding(.top, 8)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(.easeInOut, value: showingSessionDetails)
+                    
+                    // Grid layout with fixed 7 columns for days of week
+                    LazyVStack(spacing: 8) {
+                        let allDates = dates()
+                        let weeks = stride(from: 0, to: allDates.count, by: 7).map {
+                            Array(allDates[min($0, allDates.count)..<min($0 + 7, allDates.count)])
+                        }
+                        
+                        ForEach(weeks.indices, id: \.self) { weekIndex in
+                            let week = weeks[weekIndex]
+                            
+                            HStack(spacing: 4) {
+                                ForEach(week, id: \.timeIntervalSince1970) { date in
+                                    let hours = sessionHoursForDate(date)
+                                    let isSelected = selectedDate == date
+                                    
+                                    VStack(spacing: 2) {
+                                        Text(formatDay(date))
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.secondary)
+                                        
+                                        Rectangle()
+                                            .fill(colorForHours(hours))
+                                            .aspectRatio(1, contentMode: .fit)
+                                            .cornerRadius(4)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .stroke(
+                                                        isSelected ? Color.purple : Color.clear,
+                                                        lineWidth: 2
+                                                    )
+                                            )
+                                            .onTapGesture {
+                                                if isSelected {
+                                                    // Deselect if already selected
+                                                    selectedDate = nil
+                                                    selectedSessions = []
+                                                    showingSessionDetails = false
+                                                } else {
+                                                    // Select a new date
+                                                    selectedDate = date
+                                                    selectedSessions = sessionsByDay[date, default: []]
+                                                        .sorted(by: { $0.duration > $1.duration })
+                                                    
+                                                    showingSessionDetails = true
+                                                }
+                                            }
+                                            .contentShape(Rectangle())
+                                    }
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    if showingSessionDetails, let date = selectedDate {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(formatDate(date))
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            
+                            if selectedSessions.isEmpty {
+                                Text("No sessions on this day")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ForEach(selectedSessions.prefix(3), id: \.id) { session in
+                                        HStack {
+                                            Text(session.blockedProfile.name)
+                                                .font(.subheadline)
+                                                .foregroundColor(.primary)
+                                            
+                                            Spacer()
+                                            
+                                            Text(String(format: "%.1f hrs", session.duration / 3600))
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .padding(.vertical, 4)
+                                        
+                                        if session != selectedSessions.prefix(3).last {
+                                            Divider()
+                                        }
+                                    }
+                                    
+                                    if selectedSessions.count > 3 {
+                                        Text("+ \(selectedSessions.count - 3) more sessions")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .padding(.top, 4)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.easeInOut, value: showingSessionDetails)
+                    }
                 }
+                .padding(16)
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial.opacity(0.7))
-        )
     }
 }
 
@@ -244,7 +245,10 @@ struct BlockedSessionsHabitTracker: View {
         }
     }
     
-    return BlockedSessionsHabitTracker(sessions: sampleSessions)
-        .padding()
-        .background(Color(.systemGroupedBackground))
+    return ZStack {
+        Color(.systemGroupedBackground).ignoresSafeArea()
+        
+        BlockedSessionsHabitTracker(sessions: sampleSessions)
+            .padding()
+    }
 }
