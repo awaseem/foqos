@@ -101,28 +101,25 @@ struct HomeView: View {
                     Spacer()
                 }
                 
-                if let mostRecent = activeProfile {
-                    VStack(alignment: .leading, spacing: 10) {
-                        SectionTitle("Active Profile")
-                        
-                        BlockedProfileSelector(
-                            profile: mostRecent,
-                            isActive: mostRecent.id
-                            == activeSessionProfileId,
-                            onSwipeLeft: {
-                                incrementProfiles()
-                            },
-                            onSwipeRight: {
-                                decrementProfiles()
-                            },
-                            onTap: {
-                                showActiveProfileView = true
-                            },
-                            onLongPress: {
-                                strategyButtonPress()
-                            }
-                        )
-                    }
+                if !profiles.isEmpty {
+                    BlockedProfileCarousel(
+                        profiles: profiles,
+                        isBlocking: isBlocking,
+                        activeSessionProfileId: activeSessionProfileId,
+                        elapsedTime: strategyManager.elapsedTime,
+                        onStartTapped: { profile in
+                            activeProfile = profile
+                            strategyButtonPress()
+                        },
+                        onStopTapped: { profile in
+                            activeProfile = profile
+                            strategyButtonPress()
+                        },
+                        onEditTapped: { profile in
+                            activeProfile = profile
+                            showActiveProfileView = true
+                        }
+                    )
                 }
                 
                 VStack(alignment: .leading, spacing: 10) {
@@ -130,16 +127,6 @@ struct HomeView: View {
                     
                     Grid(horizontalSpacing: 10, verticalSpacing: 16) {
                         GridRow {
-                            if !profiles.isEmpty {
-                                ActionCard(
-                                    icon: activeProfileStrategy.iconType,
-                                    count: nil,
-                                    label: sessionStatusStr,
-                                    color: isBlocking ? .red : .green
-                                ) {
-                                    strategyButtonPress()
-                                }
-                            }
                             ActionCard(
                                 icon: "person.crop.circle.fill",
                                 count: nil,
@@ -148,8 +135,6 @@ struct HomeView: View {
                             ) {
                                 isProfileListPresent = true
                             }
-                        }
-                        GridRow {
                             ActionCard(
                                 icon: "cart.fill",
                                 count: nil,
@@ -160,6 +145,8 @@ struct HomeView: View {
                                     openURL(url)
                                 }
                             }
+                        }
+                        GridRow {
                             ActionCard(
                                 icon: "heart.fill",
                                 count: nil,
@@ -179,7 +166,6 @@ struct HomeView: View {
             }
         }
         .padding(.top, 1)
-        .padding(.horizontal, 20)
         .sheet(
             isPresented: $isProfileListPresent,
             onDismiss: {
@@ -301,6 +287,7 @@ struct HomeView: View {
         .environmentObject(RequestAuthorizer())
         .environmentObject(TipManager())
         .environmentObject(NavigationManager())
+        .environmentObject(StrategyManager())
         .defaultAppStorage(UserDefaults(suiteName: "preview")!)
         .onAppear {
             UserDefaults(suiteName: "preview")!.set(

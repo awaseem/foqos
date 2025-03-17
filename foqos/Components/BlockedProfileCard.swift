@@ -226,7 +226,6 @@ struct BlockedProfileCard: View {
             }
             .padding(16)
         }
-        .padding(.horizontal)
     }
 }
 
