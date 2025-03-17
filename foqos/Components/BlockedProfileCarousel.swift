@@ -124,6 +124,7 @@ struct BlockedProfileCarousel: View {
                     }
                 }
                 .frame(height: cardHeight)
+                .padding(.bottom, 30)
 
                 // Page indicator dots
                 if profiles.count > 1 {
@@ -141,7 +142,6 @@ struct BlockedProfileCarousel: View {
                         }
                         Spacer()
                     }
-                    .padding(.top, 30)
                 }
             }
         }
