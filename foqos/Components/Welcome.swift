@@ -11,7 +11,7 @@ struct Welcome: View {
                     Text("Physically block distracting apps ")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.primary)
                     
                     Spacer()
                     
@@ -21,7 +21,7 @@ struct Welcome: View {
                         .padding(8)
                         .background(
                             Circle()
-                                .fill(.white.opacity(0.2))
+                                .fill(Color(hex: "a434eb").opacity(0.8))
                         )
                 }
                 
@@ -32,27 +32,38 @@ struct Welcome: View {
                 Text("Welcome to Foqos")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 
                 Text("Tap here to get started on your first profile. You can use NFC Tags or even QR codes.")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.secondary)
                     .lineLimit(3)
             }
             .padding(20)
             .frame(maxWidth: .infinity, minHeight: 150)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "a434eb"),  // Deep purple
-                                Color(hex: "4B3AA9")   // Darker purple
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                    .fill(Color(UIColor.systemBackground))
+                    .overlay(
+                        GeometryReader { geometry in
+                            ZStack {
+                                // Purple circle blob
+                                Circle()
+                                    .fill(Color(hex: "a434eb").opacity(0.5))
+                                    .frame(width: geometry.size.width * 0.5)
+                                    .position(
+                                        x: geometry.size.width * 0.9,
+                                        y: geometry.size.height / 2
+                                    )
+                                    .blur(radius: 15)
+                            }
+                        }
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(.ultraThinMaterial.opacity(0.7))
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
             )
         }
         .buttonStyle(ScaleButtonStyle())
