@@ -148,8 +148,6 @@ struct HomeView: View {
                 ])
                 .padding(.horizontal, 16)
                 
-                Spacer()
-                
                 VersionFooter()
                     .frame(maxWidth: .infinity)
             }
