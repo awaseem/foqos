@@ -37,13 +37,13 @@ struct BlockedSessionsHabitTracker: View {
         case 0:
             return Color.gray.opacity(0.15)
         case 0..<1:
-            return Color.green.opacity(0.3)
+            return Color.purple.opacity(0.3)
         case 1..<3:
-            return Color.green.opacity(0.5)
+            return Color.purple.opacity(0.5)
         case 3..<5:
-            return Color.green.opacity(0.7)
+            return Color.purple.opacity(0.7)
         default:
-            return Color.green.opacity(0.9)
+            return Color.purple.opacity(0.9)
         }
     }
     
@@ -69,7 +69,6 @@ struct BlockedSessionsHabitTracker: View {
                     .fill(.ultraThinMaterial.opacity(0.7))
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    // Legend section - more compact
                     HStack {
                         Spacer()
                         
@@ -77,7 +76,7 @@ struct BlockedSessionsHabitTracker: View {
                             ForEach([("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)], id: \.0) { label, opacity in
                                 HStack(spacing: 4) {
                                     Rectangle()
-                                        .fill(Color.green.opacity(opacity))
+                                        .fill(Color.purple.opacity(opacity))
                                         .frame(width: 10, height: 10)
                                         .cornerRadius(2)
                                     
@@ -89,7 +88,6 @@ struct BlockedSessionsHabitTracker: View {
                         }
                     }
                     
-                    // Grid layout with fixed 7 columns for days of week
                     LazyVStack(spacing: 8) {
                         let allDates = dates()
                         let weeks = stride(from: 0, to: allDates.count, by: 7).map {
