@@ -79,19 +79,8 @@ struct HomeView: View {
             
             VStack(alignment: .leading, spacing: 20) {
                 if !profiles.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        TimeHeader(
-                            elapsedTime: strategyManager.elapsedTime,
-                            isBlocking: isBlocking
-                        )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-                        SectionTitle("Weekly Usage")
-                        
-                        BlockedSessionsChart(
-                            sessions: recentCompletedSessions)
-                    }
+                    BlockedSessionsHabitTracker(sessions: recentCompletedSessions)
+                        .padding(.horizontal, 16)
                 } else {
                     Spacer()
                         .frame(height: 60)

@@ -22,10 +22,6 @@ struct ManageSection: View {
                         RoundedRectangle(cornerRadius: 24)
                             .fill(.ultraThinMaterial)
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-                    )
                 
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(actions) { action in
