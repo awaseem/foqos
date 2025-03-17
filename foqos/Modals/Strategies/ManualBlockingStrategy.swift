@@ -7,6 +7,7 @@ class ManualBlockingStrategy: BlockingStrategy {
     var name: String = "Manual"
     var description: String = "Block and unblock profiles manually through the app"
     var iconType: String = "button.horizontal.top.press.fill"
+    var color: Color = .blue
     
     var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?

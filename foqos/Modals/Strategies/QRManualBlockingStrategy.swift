@@ -8,6 +8,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
     var name: String = "QR + Manual"
     var description: String = "Block manually, but unblock by using a QR code"
     var iconType: String = "bolt.square"
+    var color: Color = .pink
     
     var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?

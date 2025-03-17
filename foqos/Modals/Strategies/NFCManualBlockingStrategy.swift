@@ -7,6 +7,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     var name: String = "NFC + Manual"
     var description: String = "Block manually, but unblock by using a NFC tag"
     var iconType: String = "badge.plus.radiowaves.forward"
+    var color: Color = .yellow
     
     var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?

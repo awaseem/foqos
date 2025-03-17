@@ -11,7 +11,7 @@ struct BlockedProfileCard: View {
 
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
-        CardBackground(name: profile.name, isActive: isActive)
+        CardBackground(isActive: isActive, customColor: blockingStrategyColor)
     }
 
     // Format TimeInterval to HH:MM:SS
@@ -42,6 +42,14 @@ struct BlockedProfileCard: View {
             return "questionmark.circle.fill"
         }
         return StrategyManager.getStrategyFromId(id: strategyId).iconType
+    }
+    
+    // Get blocking strategy color
+    private var blockingStrategyColor: Color {
+        guard let strategyId = profile.blockingStrategyId else {
+            return .gray
+        }
+        return StrategyManager.getStrategyFromId(id: strategyId).color
     }
 
     var body: some View {
@@ -121,13 +129,13 @@ struct BlockedProfileCard: View {
                     // Strategy info with icon
                     HStack {
                         Image(systemName: blockingStrategyIcon)
-                            .foregroundColor(cardBackground.getCardColor())
+                            .foregroundColor(blockingStrategyColor)
                             .font(.system(size: 16))
                             .frame(width: 28, height: 28)
                             .background(
                                 Circle()
                                     .fill(
-                                        cardBackground.getCardColor().opacity(
+                                        blockingStrategyColor.opacity(
                                             0.15))
                             )
 

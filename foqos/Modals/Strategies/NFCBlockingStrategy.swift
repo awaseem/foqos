@@ -7,6 +7,7 @@ class NFCBlockingStrategy: BlockingStrategy {
     var name: String = "NFC Tags"
     var description: String = "Block and unblock profiles by using the exact same NFC tag"
     var iconType: String = "wave.3.right.circle.fill"
+    var color: Color = .yellow
     
     var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?

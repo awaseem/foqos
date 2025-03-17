@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct CardBackground: View {
-    let name: String
     var isActive: Bool = false
+    var customColor: Color? = nil
     
     // Animation properties for lava lamp effect
     @State private var blob1Offset: CGSize = .zero
@@ -12,38 +12,21 @@ struct CardBackground: View {
     @State private var blob2Scale: CGFloat = 0.9
     @State private var blob3Scale: CGFloat = 0.8
     
-    // Predefined bright iOS-friendly solid colors that work well with white text
-    private let predefinedColors: [Color] = [
-        Color.blue,
-        Color.indigo,
-        Color.purple,
-        Color.pink,
-        Color.orange,
-        Color.red,
-    ]
-    
     // Active state color - slightly darker green
     private let activeColor: Color = Color(red: 0, green: 0.75, blue: 0)
     
+    // Default color if no custom color is provided
+    private let defaultColor: Color = .blue
+    
     // No position calculations needed for the simplified design
     
-    // Select a color based on the name or active state
+    // Select a color based on custom color or active state
     private var cardColor: Color {
         if isActive {
             return activeColor
         }
         
-        if name.isEmpty {
-            // Fallback to the first color if name is empty
-            return predefinedColors[0]
-        }
-        
-        // Sum the Unicode values of characters in the name for a deterministic result
-        let nameSum = name.unicodeScalars.reduce(0) { $0 + Int($1.value) }
-        
-        // Use modulo to get an index within the array bounds
-        let index = nameSum % predefinedColors.count
-        return predefinedColors[index]
+        return customColor ?? defaultColor
     }
     
     var body: some View {
@@ -154,15 +137,15 @@ struct CardBackground: View {
         Color(.systemGroupedBackground).ignoresSafeArea()
         
         VStack(spacing: 16) {
-            CardBackground(name: "Work Focus")
+            CardBackground(customColor: .blue)
                 .frame(height: 170)
                 .padding(.horizontal)
                 
-            CardBackground(name: "Gaming")
+            CardBackground(customColor: .red)
                 .frame(height: 170)
                 .padding(.horizontal)
                 
-            CardBackground(name: "Social Media")
+            CardBackground(customColor: .purple)
                 .frame(height: 170)
                 .padding(.horizontal)
         }

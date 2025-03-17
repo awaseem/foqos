@@ -8,6 +8,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     var name: String = "QR Codes"
     var description: String = "Block and unblock profiles by scanning the same QR code"
     var iconType: String = "qrcode.viewfinder"
+    var color: Color = .pink
     
     var onSessionCreation: ((SessionStatus) -> Void)?
     var onErrorMessage: ((String) -> Void)?
