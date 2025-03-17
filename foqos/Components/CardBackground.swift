@@ -110,6 +110,12 @@ struct CardBackground: View {
                     animateLavaLamp()
                 }
             }
+            .onChange(of: isActive) { _, newValue in
+                if newValue {
+                    // Start animation when card becomes active
+                    animateLavaLamp()
+                }
+            }
     }
     
     // Utility method to get the card color for other components
