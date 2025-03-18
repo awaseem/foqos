@@ -43,7 +43,7 @@ struct BlockedProfileCard: View {
         }
         return StrategyManager.getStrategyFromId(id: strategyId).iconType
     }
-    
+
     // Get blocking strategy color
     private var blockingStrategyColor: Color {
         guard let strategyId = profile.blockingStrategyId else {
@@ -228,8 +228,7 @@ struct BlockedProfileCard: View {
                             title: "Hold to Start",
                             icon: "play.fill",
                             fullWidth: true,
-                            longPressEnabled: true,
-                            longPressDuration: 3.0
+                            longPressEnabled: true
                         ) {
                             onStartTapped()
                         }
@@ -245,7 +244,7 @@ struct BlockedProfileCard: View {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
 
-        VStack (spacing: 40) {
+        VStack(spacing: 40) {
             // Inactive card
             BlockedProfileCard(
                 profile: BlockedProfiles(

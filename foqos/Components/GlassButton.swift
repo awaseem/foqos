@@ -33,10 +33,15 @@ struct GlassButton: View {
         buttonContent
             .contentShape(Rectangle())
             .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
+            .scaleEffect(isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.4), value: isPressed)
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: longPressDuration)
                     .onEnded { _ in
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        }
                         action()
                         isPressed = false
                         progress = 0
