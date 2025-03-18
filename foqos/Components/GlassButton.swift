@@ -38,10 +38,8 @@ struct GlassButton: View {
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: longPressDuration)
                     .onEnded { _ in
-                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        }
+                        UIImpactFeedbackGenerator(style: .medium)
+                            .impactOccurred()
                         action()
                         isPressed = false
                         progress = 0
@@ -82,6 +80,7 @@ struct GlassButton: View {
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 16))
+                .scaleEffect(0.9)
             )
     }
     
