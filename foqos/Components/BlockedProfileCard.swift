@@ -225,9 +225,11 @@ struct BlockedProfileCard: View {
                     } else {
                         // Start button (full width when no timer is shown)
                         GlassButton(
-                            title: "Start",
+                            title: "Hold to Start",
                             icon: "play.fill",
-                            fullWidth: true
+                            fullWidth: true,
+                            longPressEnabled: true,
+                            longPressDuration: 3.0
                         ) {
                             onStartTapped()
                         }
@@ -236,44 +238,6 @@ struct BlockedProfileCard: View {
             }
             .padding(16)
         }
-    }
-}
-
-// Glass button component
-struct GlassButton: View {
-    let title: String
-    let icon: String
-    var fullWidth: Bool = true
-    var equalWidth: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .medium))
-                Text(title)
-                    .fontWeight(.semibold)
-                    .font(.subheadline)
-            }
-            .frame(
-                minWidth: 0,
-                maxWidth: fullWidth ? .infinity : (equalWidth ? .infinity : nil)
-            )
-            .padding(.vertical, 10)
-            .padding(.horizontal, fullWidth ? nil : 20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.thinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                    )
-            )
-            .foregroundColor(.primary)
-        }
-        .contentShape(Rectangle())  // Improve tap area
-        .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
     }
 }
 
