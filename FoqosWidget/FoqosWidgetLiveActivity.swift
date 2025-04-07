@@ -48,27 +48,28 @@ struct FoqosWidgetLiveActivity: Widget {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                
+                
+                    Text(
+                        Date(
+                            timeIntervalSinceNow: context.state
+                                .getTimeIntervalSinceNow()
+                        ),
+                        style: .timer
+                    )
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.trailing)
+                
 
-                Spacer()
-
-                // Right side - Timer
-                Text(
-                    Date(
-                        timeIntervalSinceNow: context.state
-                            .getTimeIntervalSinceNow()
-                    ),
-                    style: .timer
-                )
-                .font(.title)
-                .fontWeight(.semibold)
-                .foregroundColor(.secondary)
             }
             .padding()
 
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
-                    VStack(spacing: 4) {
+                    VStack(spacing: 8) {
                         Image(systemName: "hourglass")
                             .foregroundColor(.purple)
 
@@ -87,8 +88,9 @@ struct FoqosWidgetLiveActivity: Widget {
                             ),
                             style: .timer
                         )
-                        .font(.body)
+                        .font(.title2)
                         .fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
                     }
                 }
             } compactLeading: {
@@ -98,11 +100,7 @@ struct FoqosWidgetLiveActivity: Widget {
             } compactTrailing: {
                 // Compact trailing state
                 Text(
-                    Date(
-                        timeIntervalSinceNow: context.state
-                            .getTimeIntervalSinceNow()
-                    ),
-                    style: .timer
+                    context.attributes.name
                 )
                 .font(.caption)
                 .fontWeight(.semibold)
