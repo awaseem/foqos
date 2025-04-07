@@ -38,7 +38,9 @@ class LiveActivityManager: ObservableObject {
         let profileName = session.blockedProfile.name
         let message = FocusMessages.getRandomMessage()
         let attributes = FoqosWidgetAttributes(name: profileName, message: message)
-        let contentState = FoqosWidgetAttributes.ContentState(elapsedTime: 0)
+        let contentState = FoqosWidgetAttributes.ContentState(
+            startTime: session
+                .startTime)
         
         do {
             let activity = try Activity.request(
@@ -54,21 +56,6 @@ class LiveActivityManager: ObservableObject {
         }
     }
     
-    func updateSessionActivity(elapsedTime: TimeInterval) -> Bool {
-        guard let activity = currentActivity else {
-            print("No Live Activity to update")
-            return false
-        }
-        
-        // Update with elapsed time
-        let updatedContentState = FoqosWidgetAttributes.ContentState(elapsedTime: elapsedTime)
-        
-        Task {
-            await activity.update(using: updatedContentState)
-        }
-        
-        return true
-    }
     
     func endSessionActivity() -> Bool {
         guard let activity = currentActivity else {
@@ -77,7 +64,9 @@ class LiveActivityManager: ObservableObject {
         }
         
         // End the activity
-        let completedState = FoqosWidgetAttributes.ContentState(elapsedTime: 0)
+        let completedState = FoqosWidgetAttributes.ContentState(
+            startTime: Date.now
+        )
         
         Task {
             await activity

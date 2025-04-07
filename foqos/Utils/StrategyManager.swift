@@ -52,14 +52,6 @@ class StrategyManager: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if let startTime = self.activeSession?.startTime {
                 self.elapsedTime = Date().timeIntervalSince(startTime)
-
-                // Update live activity with new elapsed time
-                if let profile = self.activeSession?.blockedProfile,
-                    profile.enableLiveActivity
-                {
-                    self.liveActivityManager.updateSessionActivity(
-                        elapsedTime: self.elapsedTime)
-                }
             }
         }
     }
