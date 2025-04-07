@@ -19,6 +19,13 @@ struct AppPicker: View {
                 .padding([.top, .trailing], 16)
             }
             
+            Text("Note: Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for a offical fix.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            
             ZStack {
                 Text(verbatim: "Updating view state because of bug in iOS...")
                     .foregroundStyle(.clear)
@@ -33,3 +40,14 @@ struct AppPicker: View {
         }
     }
 }
+
+#if DEBUG
+struct AppPicker_Previews: PreviewProvider {
+    static var previews: some View {
+        AppPicker(
+            selection: .constant(FamilyActivitySelection()),
+            isPresented: .constant(true)
+        )
+    }
+}
+#endif
