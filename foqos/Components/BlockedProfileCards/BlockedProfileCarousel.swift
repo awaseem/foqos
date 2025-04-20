@@ -28,7 +28,7 @@ struct BlockedProfileCarousel: View {
     }
     
     private var titleMessage: String {
-        return isBlocking ? "Active profile" : "Profile"
+        return isBlocking ? "Active Profile" : "Profile"
     }
 
     init(

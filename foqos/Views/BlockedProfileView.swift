@@ -102,7 +102,7 @@ struct BlockedProfileView: View {
                         Toggle("Enable Breaks", isOn: $enableBreaks)
                             .disabled(isBlocking)
                         Text(
-                            "Have the option to take a single 15 minute"
+                            "Have the option to take a single break, you choose when to start/stop the break"
                         )
                         .font(.caption)
                         .foregroundColor(.secondary)
