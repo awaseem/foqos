@@ -11,9 +11,20 @@ class BlockedProfileSession {
 
     var startTime: Date
     var endTime: Date?
+    
+    var breakStartTime: Date?
+    var breakEndTime: Date?
 
     var isActive: Bool {
         return endTime == nil
+    }
+    
+    var isBreakActive: Bool {
+        return breakStartTime != nil && breakEndTime == nil
+    }
+    
+    var isBreakAvailable: Bool {
+        return breakStartTime != nil && breakEndTime != nil
     }
 
     var duration: TimeInterval {
@@ -29,6 +40,14 @@ class BlockedProfileSession {
 
         // Add this session to the profile's sessions array
         blockedProfile.sessions.append(self)
+    }
+    
+    func startBreak() {
+        self.breakStartTime = Date()
+    }
+    
+    func endBreak() {
+        self.breakEndTime = Date()
     }
 
     func endSession() {
