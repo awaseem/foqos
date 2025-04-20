@@ -58,7 +58,7 @@ struct BlockedProfileCard: View {
             cardBackground
 
             // Content
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 10) {
                 // Header section - Profile name, edit button, and indicators
                 HStack {
                     VStack(alignment: .leading, spacing: 10) {
@@ -67,11 +67,8 @@ struct BlockedProfileCard: View {
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
 
-                        // Notification indicators
                         HStack(spacing: 16) {
-                            // Live Activity indicator
                             HStack(spacing: 6) {
-                                // Simple dot with no border
                                 Circle()
                                     .fill(
                                         profile.enableLiveActivity
@@ -85,9 +82,7 @@ struct BlockedProfileCard: View {
                                     .foregroundColor(.secondary)
                             }
 
-                            // Reminder indicator
                             HStack(spacing: 6) {
-                                // Simple dot with no border
                                 Circle()
                                     .fill(
                                         profile.reminderTimeInSeconds != nil
@@ -97,6 +92,20 @@ struct BlockedProfileCard: View {
                                     .frame(width: 6, height: 6)
 
                                 Text("Reminders")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(
+                                        profile.enableBreaks
+                                            ? Color.green.opacity(0.85)
+                                            : Color.gray.opacity(0.35)
+                                    )
+                                    .frame(width: 6, height: 6)
+
+                                Text("Breaks")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
@@ -188,7 +197,7 @@ struct BlockedProfileCard: View {
                 Spacer(minLength: 4)
 
                 // Bottom section with timer and Start/Stop button side by side when active
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     if isActive, let elapsedTimeVal = elapsedTime {
                         // Timer with clock icon
                         HStack(spacing: 8) {
@@ -261,7 +270,7 @@ struct BlockedProfileCard: View {
                 ),
                 onStartTapped: {},
                 onStopTapped: {},
-                onEditTapped: {}
+                onEditTapped: {},
             )
 
             // Active card with timer
@@ -278,7 +287,7 @@ struct BlockedProfileCard: View {
                 elapsedTime: 1845,  // 30 minutes and 45 seconds
                 onStartTapped: {},
                 onStopTapped: {},
-                onEditTapped: {}
+                onEditTapped: {},
             )
         }
     }

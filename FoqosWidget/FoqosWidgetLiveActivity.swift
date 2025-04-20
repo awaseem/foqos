@@ -19,7 +19,6 @@ struct FoqosWidgetAttributes: ActivityAttributes {
         }
     }
 
-    // Fixed non-changing properties about your activity go here!
     var name: String
     var message: String
 }
