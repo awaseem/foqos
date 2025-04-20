@@ -16,6 +16,7 @@ struct BlockedProfileView: View {
     @State private var catAndAppCount: Int = 0
     @State private var enableLiveActivity: Bool = false
     @State private var enableReminder: Bool = false
+    @State private var enableBreaks: Bool = false
     @State private var reminderTimeInMinutes: Int = 15
 
     // QR code generator
@@ -53,6 +54,9 @@ struct BlockedProfileView: View {
         _enableLiveActivity = State(
             initialValue: profile?.enableLiveActivity ?? false
         )
+        _enableBreaks = State(
+            initialValue: profile?.enableBreaks ?? false
+        )
         _enableReminder = State(
             initialValue: profile?.reminderTimeInSeconds != nil
         )
@@ -64,7 +68,8 @@ struct BlockedProfileView: View {
             _selectedStrategy = State(
                 initialValue:
                     StrategyManager
-                    .getStrategyFromId(id: profileStrategyId))
+                    .getStrategyFromId(id: profileStrategyId)
+            )
         } else {
             _selectedStrategy = State(initialValue: NFCBlockingStrategy())
         }
@@ -92,6 +97,24 @@ struct BlockedProfileView: View {
                     disabledText: "Disable the current session to edit"
                 )
 
+                Section("Breaks") {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Enable Breaks", isOn: $enableLiveActivity)
+                            .disabled(isBlocking)
+                        Text(
+                            "Have the option to take a 15 minute"
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+
+                    if isBlocking {
+                        Text("Disable current session to change")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+
                 Section("Notifications") {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Live Activity", isOn: $enableLiveActivity)
@@ -116,7 +139,8 @@ struct BlockedProfileView: View {
                                 Text("Reminder time")
                                 Spacer()
                                 TextField(
-                                    "", value: $reminderTimeInMinutes,
+                                    "",
+                                    value: $reminderTimeInMinutes,
                                     format: .number
                                 )
                                 .keyboardType(.numberPad)
@@ -125,7 +149,7 @@ struct BlockedProfileView: View {
                                 .disabled(isBlocking)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                                
+
                                 Text("minutes")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
@@ -142,8 +166,8 @@ struct BlockedProfileView: View {
                     if !isBlocking {
                         Button {
                             if let url = URL(
-                                string: UIApplication.openSettingsURLString)
-                            {
+                                string: UIApplication.openSettingsURLString
+                            ) {
                                 UIApplication.shared.open(url)
                             }
                         } label: {
@@ -214,7 +238,8 @@ struct BlockedProfileView: View {
                     QRCodeView(
                         url: url,
                         profileName: profileToWrite
-                            .name)
+                            .name
+                    )
                 }
             }
             .alert("Error", isPresented: $showError) {
@@ -247,7 +272,8 @@ struct BlockedProfileView: View {
                     selection: selectedActivity,
                     blockingStrategyId: selectedStrategy?.getIdentifier(),
                     enableLiveActivity: enableLiveActivity,
-                    reminderTime: reminderTimeSeconds
+                    reminderTime: reminderTimeSeconds,
+                    enableBreaks: enableBreaks
                 )
             } else {
                 // Create new profile
@@ -257,7 +283,8 @@ struct BlockedProfileView: View {
                     blockingStrategyId: selectedStrategy?
                         .getIdentifier() ?? NFCBlockingStrategy.id,
                     enableLiveActivity: enableLiveActivity,
-                    reminderTimeInSeconds: reminderTimeSeconds
+                    reminderTimeInSeconds: reminderTimeSeconds,
+                    enableBreaks: enableBreaks
                 )
                 modelContext.insert(newProfile)
                 try modelContext.save()
