@@ -99,10 +99,10 @@ struct BlockedProfileView: View {
 
                 Section("Breaks") {
                     VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Enable Breaks", isOn: $enableLiveActivity)
+                        Toggle("Enable Breaks", isOn: $enableBreaks)
                             .disabled(isBlocking)
                         Text(
-                            "Have the option to take a 15 minute"
+                            "Have the option to take a single 15 minute"
                         )
                         .font(.caption)
                         .foregroundColor(.secondary)
