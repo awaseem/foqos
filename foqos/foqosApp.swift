@@ -21,16 +21,6 @@ struct foqosApp: App {
     
     init() {
         TimersUtil.registerBackgroundTasks()
-        
-        TimersUtil()
-            .scheduleNotificationWithCallback(
-                title: "hello",
-                message: "this is a test",
-                seconds: 30,
-                onFire: {
-                    print("hello world")
-                }
-            )
     }
 
     var body: some Scene {

@@ -3,11 +3,16 @@ import SwiftUI
 
 struct BlockedProfileCard: View {
     let profile: BlockedProfiles
+    
     var isActive: Bool = false
+    var isBreakAvailable: Bool = false
+    
     var elapsedTime: TimeInterval? = nil
+    
     var onStartTapped: () -> Void
     var onStopTapped: () -> Void
     var onEditTapped: () -> Void
+    var onBreakTapped: () -> Void
 
     // Keep a reference to the CardBackground to access color
     private var cardBackground: CardBackground {
@@ -83,9 +88,11 @@ struct BlockedProfileCard: View {
 
                 ProfileTimerButton(
                     isActive: isActive,
+                    isBreakAvailable: isBreakAvailable,
                     elapsedTime: elapsedTime,
                     onStartTapped: onStartTapped,
-                    onStopTapped: onStopTapped
+                    onStopTapped: onStopTapped,
+                    onBreakTapped: onBreakTapped
                 )
             }
             .padding(16)
@@ -111,6 +118,7 @@ struct BlockedProfileCard: View {
                 onStartTapped: {},
                 onStopTapped: {},
                 onEditTapped: {},
+                onBreakTapped: {}
             )
 
             // Active card with timer
@@ -124,10 +132,12 @@ struct BlockedProfileCard: View {
                     reminderTimeInSeconds: 3600
                 ),
                 isActive: true,
+                isBreakAvailable: true,
                 elapsedTime: 1845,  // 30 minutes and 45 seconds
                 onStartTapped: {},
                 onStopTapped: {},
                 onEditTapped: {},
+                onBreakTapped: {}
             )
         }
     }

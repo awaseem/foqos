@@ -19,12 +19,16 @@ class BlockedProfileSession {
         return endTime == nil
     }
     
-    var isBreakActive: Bool {
-        return breakStartTime != nil && breakEndTime == nil
+    var isBreakAvailable: Bool {
+        return blockedProfile.enableBreaks == true
+            && breakStartTime == nil
+            && breakEndTime == nil
     }
     
-    var isBreakAvailable: Bool {
-        return breakStartTime != nil && breakEndTime != nil
+    var isBreakActive: Bool {
+        return blockedProfile.enableBreaks == true
+            && breakStartTime != nil
+            && breakEndTime == nil
     }
 
     var duration: TimeInterval {

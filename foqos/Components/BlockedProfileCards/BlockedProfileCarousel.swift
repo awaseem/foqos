@@ -4,12 +4,14 @@ import SwiftUI
 struct BlockedProfileCarousel: View {
     let profiles: [BlockedProfiles]
     let isBlocking: Bool
+    let isBreakAvailable: Bool
     let activeSessionProfileId: UUID?
     let elapsedTime: TimeInterval
 
     var onStartTapped: (BlockedProfiles) -> Void
     var onStopTapped: (BlockedProfiles) -> Void
     var onEditTapped: (BlockedProfiles) -> Void
+    var onBreakTapped: (BlockedProfiles) -> Void
 
     // State for tracking current profile index and drag gesture
     @State private var currentIndex: Int = 0
@@ -22,19 +24,25 @@ struct BlockedProfileCarousel: View {
     private let dragThreshold: CGFloat = 50
 
     init(
-        profiles: [BlockedProfiles], isBlocking: Bool,
-        activeSessionProfileId: UUID?, elapsedTime: TimeInterval,
+        profiles: [BlockedProfiles],
+        isBlocking: Bool,
+        isBreakAvailable: Bool,
+        activeSessionProfileId: UUID?,
+        elapsedTime: TimeInterval,
         onStartTapped: @escaping (BlockedProfiles) -> Void,
         onStopTapped: @escaping (BlockedProfiles) -> Void,
-        onEditTapped: @escaping (BlockedProfiles) -> Void
+        onEditTapped: @escaping (BlockedProfiles) -> Void,
+        onBreakTapped: @escaping (BlockedProfiles) -> Void
     ) {
         self.profiles = profiles
         self.isBlocking = isBlocking
+        self.isBreakAvailable = isBreakAvailable
         self.activeSessionProfileId = activeSessionProfileId
         self.elapsedTime = elapsedTime
         self.onStartTapped = onStartTapped
         self.onStopTapped = onStopTapped
         self.onEditTapped = onEditTapped
+        self.onBreakTapped = onBreakTapped
     }
 
     // Initialize current index based on active profile
@@ -65,6 +73,7 @@ struct BlockedProfileCarousel: View {
                                     profile: profiles[index],
                                     isActive: profiles[index].id
                                         == activeSessionProfileId,
+                                    isBreakAvailable: isBreakAvailable,
                                     elapsedTime: elapsedTime,
                                     onStartTapped: {
                                         onStartTapped(profiles[index])
@@ -74,6 +83,9 @@ struct BlockedProfileCarousel: View {
                                     },
                                     onEditTapped: {
                                         onEditTapped(profiles[index])
+                                    },
+                                    onBreakTapped: {
+                                        onBreakTapped(profiles[index])
                                     }
                                 )
                                 .frame(width: cardWidth, height: cardHeight)
@@ -81,7 +93,9 @@ struct BlockedProfileCarousel: View {
                         }
                         .offset(
                             x: calculateOffset(
-                                geometry: geometry, cardWidth: cardWidth)
+                                geometry: geometry,
+                                cardWidth: cardWidth
+                            )
                         )
                         .animation(
                             .spring(response: 0.4, dampingFraction: 0.8),
@@ -196,11 +210,13 @@ struct BlockedProfileCarousel: View {
                 ),
             ],
             isBlocking: true,
+            isBreakAvailable: true,
             activeSessionProfileId: nil,
             elapsedTime: 1234,
             onStartTapped: { _ in },
             onStopTapped: { _ in },
-            onEditTapped: { _ in }
+            onEditTapped: { _ in },
+            onBreakTapped: { _ in }
         )
     }
 }

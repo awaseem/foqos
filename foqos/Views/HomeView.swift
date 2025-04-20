@@ -62,6 +62,10 @@ struct HomeView: View {
         return strategyManager.activeSession?.blockedProfile.id
     }
     
+    var isBreakAvailable: Bool {
+        return strategyManager.isBreakAvailable
+    }
+    
     var sessionStatusStr: String {
         if let activeSession = strategyManager.activeSession {
             return "Stop " + activeSession.blockedProfile.name
@@ -98,6 +102,7 @@ struct HomeView: View {
                     BlockedProfileCarousel(
                         profiles: profiles,
                         isBlocking: isBlocking,
+                        isBreakAvailable: isBreakAvailable,
                         activeSessionProfileId: activeSessionProfileId,
                         elapsedTime: strategyManager.elapsedTime,
                         onStartTapped: { profile in
@@ -111,6 +116,9 @@ struct HomeView: View {
                         onEditTapped: { profile in
                             activeProfile = profile
                             showActiveProfileView = true
+                        },
+                        onBreakTapped: { _ in
+                            strategyManager.toggleBreak()
                         }
                     )
                 }

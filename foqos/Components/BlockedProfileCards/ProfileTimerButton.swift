@@ -2,9 +2,14 @@ import SwiftUI
 
 struct ProfileTimerButton: View {
     let isActive: Bool
+    let isBreakAvailable: Bool
+    
     let elapsedTime: TimeInterval?
+    
     let onStartTapped: () -> Void
     let onStopTapped: () -> Void
+    
+    let onBreakTapped: () -> Void
     
     var body: some View {
         HStack(spacing: 8) {
@@ -57,6 +62,17 @@ struct ProfileTimerButton: View {
                 }
             }
         }
+        
+        if isBreakAvailable {
+            GlassButton(
+                title: "Take a break",
+                icon: "cup.and.heat.waves.fill",
+                fullWidth: true,
+                longPressEnabled: true
+            ) {
+                onBreakTapped()
+            }
+        }
     }
     
     // Format TimeInterval to HH:MM:SS
@@ -72,16 +88,20 @@ struct ProfileTimerButton: View {
     VStack(spacing: 20) {
         ProfileTimerButton(
             isActive: false,
+            isBreakAvailable: false,
             elapsedTime: nil,
             onStartTapped: {},
-            onStopTapped: {}
+            onStopTapped: {},
+            onBreakTapped: {}
         )
         
         ProfileTimerButton(
             isActive: true,
+            isBreakAvailable: true,
             elapsedTime: 3665,
             onStartTapped: {},
-            onStopTapped: {}
+            onStopTapped: {},
+            onBreakTapped: {}
         )
     }
     .padding()

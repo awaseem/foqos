@@ -19,11 +19,21 @@ class StrategyManager: ObservableObject {
 
     @Published var errorMessage: String?
 
-    private let timersUtil = TimersUtil()
     private let liveActivityManager = LiveActivityManager.shared
+
+    private let timersUtil = TimersUtil()
+    private let appBlocker = AppBlockerUtil()
 
     var isBlocking: Bool {
         return activeSession?.isActive == true
+    }
+    
+    var isBreakActive: Bool {
+        return activeSession?.isBreakActive == true
+    }
+    
+    var isBreakAvailable: Bool {
+        return activeSession?.isBreakAvailable ?? false
     }
 
     func loadActiveSession(context: ModelContext) {
@@ -45,6 +55,20 @@ class StrategyManager: ObservableObject {
             stopBlocking(context: context)
         } else {
             startBlocking(context: context, activeProfile: activeProfile)
+        }
+    }
+    
+    func toggleBreak()
+    {
+        guard let session = activeSession else {
+            print("active session does not exist")
+            return
+        }
+        
+        if session.isBreakActive {
+            stopBreak()
+        } else {
+            startBreak()
         }
     }
 
@@ -94,7 +118,7 @@ class StrategyManager: ObservableObject {
             self.errorMessage = "Something went wrong fetching profile"
         }
     }
-
+    
     static func getStrategyFromId(id: String) -> BlockingStrategy {
         if let strategy = availableStrategies.first(
             where: {
@@ -112,7 +136,7 @@ class StrategyManager: ObservableObject {
 
         strategy.onSessionCreation = { session in
             self.dismissView()
-            
+
             switch session {
             case .started(let session):
                 self.activeSession = session
@@ -125,7 +149,7 @@ class StrategyManager: ObservableObject {
                 self.liveActivityManager.endSessionActivity()
                 self.timersUtil.cancelAll()
                 self.scheduleReminder(profile: endedProfile)
-                
+
                 self.stopTimer()
                 self.elapsedTime = 0
             }
@@ -138,6 +162,40 @@ class StrategyManager: ObservableObject {
         }
 
         return strategy
+    }
+    
+    private func startBreak() {
+        guard let session = activeSession else {
+            print("Breaks only available in active session")
+            return
+        }
+        
+        if !session.isBreakAvailable {
+            print("Breaks is not availble")
+            return
+        }
+        
+        appBlocker.deactivateRestrictions()
+        session.startBreak()
+    }
+    
+    
+    private func stopBreak() {
+        guard let session = activeSession else {
+            print("Breaks only available in active session")
+            return
+        }
+        
+        if !session.isBreakAvailable {
+            print("Breaks is not availble")
+            return
+        }
+        
+        appBlocker
+            .activateRestrictions(
+                selection: session.blockedProfile.selectedActivity
+            )
+        session.endBreak()
     }
 
     private func dismissView() {
@@ -158,7 +216,8 @@ class StrategyManager: ObservableObject {
     }
 
     private func startBlocking(
-        context: ModelContext, activeProfile: BlockedProfiles?
+        context: ModelContext,
+        activeProfile: BlockedProfiles?
     ) {
         guard let definedProfile = activeProfile else {
             print(
@@ -199,12 +258,12 @@ class StrategyManager: ObservableObject {
             }
         }
     }
-    
+
     private func scheduleReminder(profile: BlockedProfiles) {
         guard let reminderTimeInSeconds = profile.reminderTimeInSeconds else {
             return
         }
-        
+
         let profileName = profile.name
         timersUtil
             .scheduleNotification(
