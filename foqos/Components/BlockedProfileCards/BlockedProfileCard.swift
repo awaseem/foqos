@@ -13,38 +13,8 @@ struct BlockedProfileCard: View {
     private var cardBackground: CardBackground {
         CardBackground(isActive: isActive, customColor: blockingStrategyColor)
     }
-
-    // Format TimeInterval to HH:MM:SS
-    private func timeString(from timeInterval: TimeInterval) -> String {
-        let hours = Int(timeInterval) / 3600
-        let minutes = Int(timeInterval) / 60 % 60
-        let seconds = Int(timeInterval) % 60
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-    }
-
-    // Get blocking strategy name
-    private var blockingStrategyName: String {
-        guard let strategyId = profile.blockingStrategyId else { return "None" }
-        return StrategyManager.getStrategyFromId(id: strategyId).name
-    }
-
-    // Get blocking strategy description
-    private var blockingStrategyDescription: String {
-        guard let strategyId = profile.blockingStrategyId else {
-            return "No strategy selected"
-        }
-        return StrategyManager.getStrategyFromId(id: strategyId).description
-    }
-
-    // Get blocking strategy icon
-    private var blockingStrategyIcon: String {
-        guard let strategyId = profile.blockingStrategyId else {
-            return "questionmark.circle.fill"
-        }
-        return StrategyManager.getStrategyFromId(id: strategyId).iconType
-    }
-
-    // Get blocking strategy color
+    
+    // Get blocking strategy color for the background
     private var blockingStrategyColor: Color {
         guard let strategyId = profile.blockingStrategyId else {
             return .gray
@@ -67,49 +37,12 @@ struct BlockedProfileCard: View {
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
 
-                        HStack(spacing: 16) {
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(
-                                        profile.enableLiveActivity
-                                            ? Color.green.opacity(0.85)
-                                            : Color.gray.opacity(0.35)
-                                    )
-                                    .frame(width: 6, height: 6)
-
-                                Text("Live Activity")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(
-                                        profile.reminderTimeInSeconds != nil
-                                            ? Color.green.opacity(0.85)
-                                            : Color.gray.opacity(0.35)
-                                    )
-                                    .frame(width: 6, height: 6)
-
-                                Text("Reminders")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(
-                                        profile.enableBreaks
-                                            ? Color.green.opacity(0.85)
-                                            : Color.gray.opacity(0.35)
-                                    )
-                                    .frame(width: 6, height: 6)
-
-                                Text("Breaks")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                        // Using the new ProfileIndicators component
+                        ProfileIndicators(
+                            enableLiveActivity: profile.enableLiveActivity,
+                            hasReminders: profile.reminderTimeInSeconds != nil,
+                            enableBreaks: profile.enableBreaks
+                        )
                     }
 
                     Spacer()
@@ -136,117 +69,24 @@ struct BlockedProfileCard: View {
 
                 // Middle section - Strategy and apps info
                 VStack(alignment: .leading, spacing: 16) {
-                    // Strategy info with icon
-                    HStack {
-                        Image(systemName: blockingStrategyIcon)
-                            .foregroundColor(blockingStrategyColor)
-                            .font(.system(size: 16))
-                            .frame(width: 28, height: 28)
-                            .background(
-                                Circle()
-                                    .fill(
-                                        blockingStrategyColor.opacity(
-                                            0.15
-                                        )
-                                    )
-                            )
+                    // Using the new StrategyInfoView component
+                    StrategyInfoView(strategyId: profile.blockingStrategyId)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(blockingStrategyName)
-                                .foregroundColor(.primary)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                        }
-                    }
-
-                    // Apps and sessions info
-                    HStack(spacing: 16) {
-                        // Apps count
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Apps & Categories")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            Text(
-                                "\(BlockedProfiles.countSelectedActivities(profile.selectedActivity))"
-                            )
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        }
-
-                        Divider()
-                            .frame(height: 24)
-
-                        // Active sessions
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Total Sessions")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            Text(
-                                profile.sessions.count.description
-                                    .localizedLowercase
-                            )
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        }
-                    }
+                    // Using the new ProfileStatsRow component
+                    ProfileStatsRow(
+                        selectedActivity: profile.selectedActivity,
+                        sessionCount: profile.sessions.count
+                    )
                 }
 
-                // Spacer to push content to bottom
                 Spacer(minLength: 4)
 
-                // Bottom section with timer and Start/Stop button side by side when active
-                HStack(spacing: 8) {
-                    if isActive, let elapsedTimeVal = elapsedTime {
-                        // Timer with clock icon
-                        HStack(spacing: 8) {
-                            Image(systemName: "clock.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(.primary.opacity(0.7))
-
-                            Text(timeString(from: elapsedTimeVal))
-                                .foregroundColor(.primary)
-                                .font(.system(size: 16, weight: .semibold))
-                                .contentTransition(.numericText())
-                                .animation(.default, value: elapsedTimeVal)
-                        }
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 12)
-                        .frame(minWidth: 0, maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(.thinMaterial)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(
-                                            Color.primary.opacity(0.2),
-                                            lineWidth: 1
-                                        )
-                                )
-                        )
-
-                        // Stop button
-                        GlassButton(
-                            title: "Stop",
-                            icon: "stop.fill",
-                            fullWidth: false,
-                            equalWidth: true
-                        ) {
-                            onStopTapped()
-                        }
-                    } else {
-                        // Start button (full width when no timer is shown)
-                        GlassButton(
-                            title: "Hold to Start",
-                            icon: "play.fill",
-                            fullWidth: true,
-                            longPressEnabled: true
-                        ) {
-                            onStartTapped()
-                        }
-                    }
-                }
+                ProfileTimerButton(
+                    isActive: isActive,
+                    elapsedTime: elapsedTime,
+                    onStartTapped: onStartTapped,
+                    onStopTapped: onStopTapped
+                )
             }
             .padding(16)
         }
