@@ -66,6 +66,10 @@ struct HomeView: View {
         return strategyManager.isBreakAvailable
     }
     
+    var isBreakActive: Bool {
+        return strategyManager.isBreakActive
+    }
+    
     var sessionStatusStr: String {
         if let activeSession = strategyManager.activeSession {
             return "Stop " + activeSession.blockedProfile.name
@@ -103,6 +107,7 @@ struct HomeView: View {
                         profiles: profiles,
                         isBlocking: isBlocking,
                         isBreakAvailable: isBreakAvailable,
+                        isBreakActive: isBreakActive,
                         activeSessionProfileId: activeSessionProfileId,
                         elapsedTime: strategyManager.elapsedTime,
                         onStartTapped: { profile in

@@ -5,6 +5,7 @@ struct BlockedProfileCarousel: View {
     let profiles: [BlockedProfiles]
     let isBlocking: Bool
     let isBreakAvailable: Bool
+    let isBreakActive: Bool
     let activeSessionProfileId: UUID?
     let elapsedTime: TimeInterval
 
@@ -27,6 +28,7 @@ struct BlockedProfileCarousel: View {
         profiles: [BlockedProfiles],
         isBlocking: Bool,
         isBreakAvailable: Bool,
+        isBreakActive: Bool,
         activeSessionProfileId: UUID?,
         elapsedTime: TimeInterval,
         onStartTapped: @escaping (BlockedProfiles) -> Void,
@@ -37,6 +39,7 @@ struct BlockedProfileCarousel: View {
         self.profiles = profiles
         self.isBlocking = isBlocking
         self.isBreakAvailable = isBreakAvailable
+        self.isBreakActive = isBreakActive
         self.activeSessionProfileId = activeSessionProfileId
         self.elapsedTime = elapsedTime
         self.onStartTapped = onStartTapped
@@ -56,7 +59,7 @@ struct BlockedProfileCarousel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 40) {
-            // Title
+
             SectionTitle("Profiles")
                 .padding(.horizontal, 16)
 
@@ -74,6 +77,7 @@ struct BlockedProfileCarousel: View {
                                     isActive: profiles[index].id
                                         == activeSessionProfileId,
                                     isBreakAvailable: isBreakAvailable,
+                                    isBreakActive: isBreakActive,
                                     elapsedTime: elapsedTime,
                                     onStartTapped: {
                                         onStartTapped(profiles[index])
@@ -141,7 +145,7 @@ struct BlockedProfileCarousel: View {
                 .padding(.bottom, 30)
 
                 // Page indicator dots
-                if profiles.count > 1 {
+                if !isBlocking && profiles.count > 1 {
                     HStack(spacing: 8) {
                         Spacer()
                         ForEach(0..<profiles.count, id: \.self) { index in
@@ -178,6 +182,53 @@ struct BlockedProfileCarousel: View {
     }
 }
 
+// Active preview
+#Preview {
+    let activeId = UUID()
+
+    ZStack {
+        Color(.systemGroupedBackground).ignoresSafeArea()
+
+        BlockedProfileCarousel(
+            profiles: [
+                BlockedProfiles(
+                    id: activeId,
+                    name: "Work",
+                    selectedActivity: FamilyActivitySelection(),
+                    blockingStrategyId: NFCBlockingStrategy.id,
+                    enableLiveActivity: true,
+                    reminderTimeInSeconds: 3600
+                ),
+                BlockedProfiles(
+                    id: UUID(),
+                    name: "Gaming",
+                    selectedActivity: FamilyActivitySelection(),
+                    blockingStrategyId: QRCodeBlockingStrategy.id,
+                    enableLiveActivity: false,
+                    reminderTimeInSeconds: nil
+                ),
+                BlockedProfiles(
+                    id: UUID(),
+                    name: "Social Media",
+                    selectedActivity: FamilyActivitySelection(),
+                    blockingStrategyId: ManualBlockingStrategy.id,
+                    enableLiveActivity: true,
+                    reminderTimeInSeconds: 1800
+                ),
+            ],
+            isBlocking: true,
+            isBreakAvailable: true,
+            isBreakActive: false,
+            activeSessionProfileId: activeId,
+            elapsedTime: 1234,
+            onStartTapped: { _ in },
+            onStopTapped: { _ in },
+            onEditTapped: { _ in },
+            onBreakTapped: { _ in }
+        )
+    }
+}
+
 #Preview {
     ZStack {
         Color(.systemGroupedBackground).ignoresSafeArea()
@@ -209,8 +260,9 @@ struct BlockedProfileCarousel: View {
                     reminderTimeInSeconds: 1800
                 ),
             ],
-            isBlocking: true,
-            isBreakAvailable: true,
+            isBlocking: false,
+            isBreakAvailable: false,
+            isBreakActive: false,
             activeSessionProfileId: nil,
             elapsedTime: 1234,
             onStartTapped: { _ in },

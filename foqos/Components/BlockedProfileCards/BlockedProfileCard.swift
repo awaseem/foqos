@@ -6,6 +6,7 @@ struct BlockedProfileCard: View {
     
     var isActive: Bool = false
     var isBreakAvailable: Bool = false
+    var isBreakActive: Bool = false
     
     var elapsedTime: TimeInterval? = nil
     
@@ -89,6 +90,7 @@ struct BlockedProfileCard: View {
                 ProfileTimerButton(
                     isActive: isActive,
                     isBreakAvailable: isBreakAvailable,
+                    isBreakActive: isBreakActive,
                     elapsedTime: elapsedTime,
                     onStartTapped: onStartTapped,
                     onStopTapped: onStopTapped,
