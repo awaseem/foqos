@@ -118,7 +118,8 @@ struct BlockedProfileCard: View {
                                         Circle()
                                             .stroke(
                                                 Color.primary.opacity(0.2),
-                                                lineWidth: 1)
+                                                lineWidth: 1
+                                            )
                                     )
                             )
                     }
@@ -136,7 +137,9 @@ struct BlockedProfileCard: View {
                                 Circle()
                                     .fill(
                                         blockingStrategyColor.opacity(
-                                            0.15))
+                                            0.15
+                                        )
+                                    )
                             )
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -209,7 +212,8 @@ struct BlockedProfileCard: View {
                                     RoundedRectangle(cornerRadius: 16)
                                         .stroke(
                                             Color.primary.opacity(0.2),
-                                            lineWidth: 1)
+                                            lineWidth: 1
+                                        )
                                 )
                         )
 
