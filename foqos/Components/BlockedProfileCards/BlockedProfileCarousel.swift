@@ -21,8 +21,15 @@ struct BlockedProfileCarousel: View {
 
     // Constants for the carousel
     private let cardSpacing: CGFloat = 12
-    private let cardHeight: CGFloat = 180
     private let dragThreshold: CGFloat = 50
+    
+    private var cardHeight: CGFloat {
+        return isBlocking && isBreakAvailable ? 220 : 180
+    }
+    
+    private var titleMessage: String {
+        return isBlocking ? "Active profile" : "Profile"
+    }
 
     init(
         profiles: [BlockedProfiles],
@@ -60,7 +67,7 @@ struct BlockedProfileCarousel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 40) {
 
-            SectionTitle("Profiles")
+            SectionTitle(titleMessage)
                 .padding(.horizontal, 16)
 
             VStack(spacing: 16) {

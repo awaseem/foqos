@@ -21,7 +21,6 @@ class BlockedProfileSession {
     
     var isBreakAvailable: Bool {
         return blockedProfile.enableBreaks == true
-            && breakStartTime == nil
             && breakEndTime == nil
     }
     
