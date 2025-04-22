@@ -55,8 +55,10 @@ struct ManageSection: View {
                         }
                     }
                 }
+                .padding(.vertical, 4)
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 

@@ -14,69 +14,71 @@ struct ProfileTimerButton: View {
     let onBreakTapped: () -> Void
     
     var breakMessage: String {
-        return isBreakActive ? "Stop break" : "Take a break"
+        return "Hold to" + (isBreakActive ? " Stop Break" : " Start Break")
     }
     
     var body: some View {
-        HStack(spacing: 8) {
-            if isActive, let elapsedTimeVal = elapsedTime {
-                // Timer with clock icon
-                HStack(spacing: 8) {
-                    Image(systemName: "clock.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary.opacity(0.7))
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                if isActive, let elapsedTimeVal = elapsedTime {
+                    // Timer with clock icon
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.primary.opacity(0.7))
+                        
+                        Text(timeString(from: elapsedTimeVal))
+                            .foregroundColor(.primary)
+                            .font(.system(size: 16, weight: .semibold))
+                            .contentTransition(.numericText())
+                            .animation(.default, value: elapsedTimeVal)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.thinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(
+                                        Color.primary.opacity(0.2),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
                     
-                    Text(timeString(from: elapsedTimeVal))
-                        .foregroundColor(.primary)
-                        .font(.system(size: 16, weight: .semibold))
-                        .contentTransition(.numericText())
-                        .animation(.default, value: elapsedTimeVal)
+                    // Stop button
+                    GlassButton(
+                        title: "Stop",
+                        icon: "stop.fill",
+                        fullWidth: false,
+                        equalWidth: true
+                    ) {
+                        onStopTapped()
+                    }
+                } else {
+                    // Start button (full width when no timer is shown)
+                    GlassButton(
+                        title: "Hold to Start",
+                        icon: "play.fill",
+                        fullWidth: true,
+                        longPressEnabled: true
+                    ) {
+                        onStartTapped()
+                    }
                 }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 12)
-                .frame(minWidth: 0, maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(.thinMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(
-                                    Color.primary.opacity(0.2),
-                                    lineWidth: 1
-                                )
-                        )
-                )
-                
-                // Stop button
+            }
+            
+            if isBreakAvailable {
                 GlassButton(
-                    title: "Stop",
-                    icon: "stop.fill",
-                    fullWidth: false,
-                    equalWidth: true
-                ) {
-                    onStopTapped()
-                }
-            } else {
-                // Start button (full width when no timer is shown)
-                GlassButton(
-                    title: "Hold to Start",
-                    icon: "play.fill",
+                    title: breakMessage,
+                    icon: "cup.and.heat.waves.fill",
                     fullWidth: true,
                     longPressEnabled: true
                 ) {
-                    onStartTapped()
+                    onBreakTapped()
                 }
-            }
-        }
-        
-        if isBreakAvailable {
-            GlassButton(
-                title: breakMessage,
-                icon: "cup.and.heat.waves.fill",
-                fullWidth: true,
-                longPressEnabled: true
-            ) {
-                onBreakTapped()
             }
         }
     }
@@ -105,7 +107,7 @@ struct ProfileTimerButton: View {
         ProfileTimerButton(
             isActive: true,
             isBreakAvailable: true,
-            isBreakActive: true,
+            isBreakActive: false,
             elapsedTime: 3665,
             onStartTapped: {},
             onStopTapped: {},

@@ -24,7 +24,10 @@ struct BlockedProfileCarousel: View {
     private let dragThreshold: CGFloat = 50
     
     private var cardHeight: CGFloat {
-        return isBlocking && isBreakAvailable ? 220 : 180
+        if isBlocking {
+            return isBreakAvailable ? 240 : 180
+        }
+        return 180
     }
     
     private var titleMessage: String {
