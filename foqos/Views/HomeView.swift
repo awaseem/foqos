@@ -85,12 +85,11 @@ struct HomeView: View {
                 loadApp()
             }
             
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 30) {
                 Text("Foqos")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
                 
                 if profiles.isEmpty {
                     Welcome(onTap: {

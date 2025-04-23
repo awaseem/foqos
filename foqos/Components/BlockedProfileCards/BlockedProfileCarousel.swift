@@ -22,14 +22,9 @@ struct BlockedProfileCarousel: View {
     // Constants for the carousel
     private let cardSpacing: CGFloat = 12
     private let dragThreshold: CGFloat = 50
-    
-    private var cardHeight: CGFloat {
-        if isBlocking {
-            return isBreakAvailable ? 240 : 180
-        }
-        return 180
-    }
-    
+
+    private var cardHeight: CGFloat = 240
+
     private var titleMessage: String {
         return isBlocking ? "Active Profile" : "Profile"
     }
@@ -68,7 +63,7 @@ struct BlockedProfileCarousel: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 40) {
+        VStack(alignment: .leading, spacing: 10) {
 
             SectionTitle(titleMessage)
                 .padding(.horizontal, 16)
@@ -102,7 +97,7 @@ struct BlockedProfileCarousel: View {
                                         onBreakTapped(profiles[index])
                                     }
                                 )
-                                .frame(width: cardWidth, height: cardHeight)
+                                .frame(width: cardWidth)
                             }
                         }
                         .offset(
@@ -152,12 +147,11 @@ struct BlockedProfileCarousel: View {
                     }
                 }
                 .frame(height: cardHeight)
-                .padding(.bottom, 30)
+                .padding(.bottom, 10)
 
                 // Page indicator dots
-                if !isBlocking && profiles.count > 1 {
-                    HStack(spacing: 8) {
-                        Spacer()
+                HStack(spacing: 8) {
+                    if !isBlocking && profiles.count > 1 {
                         ForEach(0..<profiles.count, id: \.self) { index in
                             Circle()
                                 .fill(
@@ -168,9 +162,11 @@ struct BlockedProfileCarousel: View {
                                 .frame(width: 8, height: 8)
                                 .animation(.easeInOut, value: currentIndex)
                         }
-                        Spacer()
                     }
                 }
+                .frame(height: 8)
+                .opacity(!isBlocking && profiles.count > 1 ? 1 : 0)
+                .animation(.easeInOut, value: isBlocking)
             }
         }
         .onAppear {
