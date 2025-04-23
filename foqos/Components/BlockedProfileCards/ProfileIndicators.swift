@@ -8,10 +8,10 @@ struct ProfileIndicators: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            indicatorView(isEnabled: enableLiveActivity, label: "Live Activity")
-            indicatorView(isEnabled: hasReminders, label: "Reminders")
             indicatorView(isEnabled: enableBreaks, label: "Breaks")
             indicatorView(isEnabled: enableStrictMode, label: "Strict")
+            indicatorView(isEnabled: enableLiveActivity, label: "Live Activity")
+            indicatorView(isEnabled: hasReminders, label: "Reminders")
         }
     }
 
