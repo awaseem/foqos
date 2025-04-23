@@ -22,7 +22,10 @@ class NFCBlockingStrategy: BlockingStrategy {
     func startBlocking(context: ModelContext, profile: BlockedProfiles)  -> (any View)? {
         nfcScanner.onTagScanned = { tag in
             self.appBlocker
-                .activateRestrictions(selection: profile.selectedActivity)
+                .activateRestrictions(
+                    selection: profile.selectedActivity,
+                    strict: profile.enableStrictMode
+                )
             
             let tag = tag.url ?? tag.id
             let activeSession = BlockedProfileSession

@@ -11,9 +11,11 @@ class BlockedProfiles {
     var createdAt: Date
     var updatedAt: Date
     var blockingStrategyId: String?
+    
     var enableLiveActivity: Bool = false
     var reminderTimeInSeconds: UInt32?
     var enableBreaks: Bool = false
+    var enableStrictMode: Bool = false
 
     @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -26,7 +28,8 @@ class BlockedProfiles {
         blockingStrategyId: String = NFCBlockingStrategy.id,
         enableLiveActivity: Bool = false,
         reminderTimeInSeconds: UInt32? = nil,
-        enableBreaks: Bool = false
+        enableBreaks: Bool = false,
+        enableStrictMode: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -34,9 +37,11 @@ class BlockedProfiles {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.blockingStrategyId = blockingStrategyId
+        
         self.enableLiveActivity = enableLiveActivity
         self.reminderTimeInSeconds = reminderTimeInSeconds
         self.enableLiveActivity = enableBreaks
+        self.enableStrictMode = enableStrictMode
     }
 
     static func fetchProfiles(in context: ModelContext) throws
@@ -74,7 +79,8 @@ class BlockedProfiles {
         blockingStrategyId: String? = nil,
         enableLiveActivity: Bool? = nil,
         reminderTime: UInt32? = nil,
-        enableBreaks: Bool? = nil
+        enableBreaks: Bool? = nil,
+        enableStrictMode: Bool? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -94,6 +100,10 @@ class BlockedProfiles {
         
         if let newEnableBreaks = enableBreaks {
             profile.enableBreaks = newEnableBreaks
+        }
+        
+        if let newEnableStrictMode = enableStrictMode {
+            profile.enableStrictMode = newEnableStrictMode
         }
         
         profile.reminderTimeInSeconds = reminderTime

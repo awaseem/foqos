@@ -1,7 +1,7 @@
 import FamilyControls
+import Foundation
 import SwiftData
 import SwiftUI
-import Foundation
 
 struct BlockedProfileView: View {
     @Environment(\.modelContext) private var modelContext
@@ -18,6 +18,7 @@ struct BlockedProfileView: View {
     @State private var enableLiveActivity: Bool = false
     @State private var enableReminder: Bool = false
     @State private var enableBreaks: Bool = false
+    @State private var enableStrictMode: Bool = false
     @State private var reminderTimeInMinutes: Int = 15
 
     // QR code generator
@@ -57,6 +58,9 @@ struct BlockedProfileView: View {
         )
         _enableBreaks = State(
             initialValue: profile?.enableBreaks ?? false
+        )
+        _enableStrictMode = State(
+            initialValue: profile?.enableStrictMode ?? false
         )
         _enableReminder = State(
             initialValue: profile?.reminderTimeInSeconds != nil
@@ -98,11 +102,20 @@ struct BlockedProfileView: View {
                     disabledText: "Disable the current session to edit"
                 )
 
-                Section("Breaks") {
+                Section("Safeguards") {
                     CustomToggle(
-                        title: "Enable Breaks",
-                        description: "Have the option to take a single break, you choose when to start/stop the break",
+                        title: "Breaks",
+                        description:
+                            "Have the option to take a single break, you choose when to start/stop the break",
                         isOn: $enableBreaks,
+                        isDisabled: isBlocking
+                    )
+                    
+                    CustomToggle(
+                        title: "Strict",
+                        description:
+                            "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
+                        isOn: $enableStrictMode,
                         isDisabled: isBlocking
                     )
                 }
@@ -110,14 +123,16 @@ struct BlockedProfileView: View {
                 Section("Notifications") {
                     CustomToggle(
                         title: "Live Activity",
-                        description: "Shows a live activity on your lock screen with some inspirational qoute",
+                        description:
+                            "Shows a live activity on your lock screen with some inspirational qoute",
                         isOn: $enableLiveActivity,
                         isDisabled: isBlocking
                     )
 
                     CustomToggle(
                         title: "Reminder",
-                        description: "Sends a reminder to start this profile when its ended",
+                        description:
+                            "Sends a reminder to start this profile when its ended",
                         isOn: $enableReminder,
                         isDisabled: isBlocking
                     )
@@ -253,7 +268,8 @@ struct BlockedProfileView: View {
                     blockingStrategyId: selectedStrategy?.getIdentifier(),
                     enableLiveActivity: enableLiveActivity,
                     reminderTime: reminderTimeSeconds,
-                    enableBreaks: enableBreaks
+                    enableBreaks: enableBreaks,
+                    enableStrictMode: enableStrictMode
                 )
             } else {
                 // Create new profile
@@ -264,8 +280,10 @@ struct BlockedProfileView: View {
                         .getIdentifier() ?? NFCBlockingStrategy.id,
                     enableLiveActivity: enableLiveActivity,
                     reminderTimeInSeconds: reminderTimeSeconds,
-                    enableBreaks: enableBreaks
+                    enableBreaks: enableBreaks,
+                    enableStrictMode: enableStrictMode
                 )
+                
                 modelContext.insert(newProfile)
                 try modelContext.save()
             }

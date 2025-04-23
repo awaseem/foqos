@@ -27,7 +27,10 @@ class QRCodeBlockingStrategy: BlockingStrategy {
             switch result {
             case .success(let result):
                 self.appBlocker
-                    .activateRestrictions(selection: profile.selectedActivity)
+                    .activateRestrictions(
+                        selection: profile.selectedActivity,
+                        strict: profile.enableStrictMode
+                    )
                 
                 let tag = result.string
                 let activeSession = BlockedProfileSession

@@ -34,7 +34,7 @@ struct BlockedProfileCard: View {
             cardBackground
 
             // Content
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 12) {
                 // Header section - Profile name, edit button, and indicators
                 HStack {
                     VStack(alignment: .leading, spacing: 10) {
@@ -47,7 +47,8 @@ struct BlockedProfileCard: View {
                         ProfileIndicators(
                             enableLiveActivity: profile.enableLiveActivity,
                             hasReminders: profile.reminderTimeInSeconds != nil,
-                            enableBreaks: profile.enableBreaks
+                            enableBreaks: profile.enableBreaks,
+                            enableStrictMode: profile.enableStrictMode
                         )
                     }
 
