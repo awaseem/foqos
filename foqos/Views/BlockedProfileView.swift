@@ -1,6 +1,7 @@
 import FamilyControls
 import SwiftData
 import SwiftUI
+import Foundation
 
 struct BlockedProfileView: View {
     @Environment(\.modelContext) private var modelContext
@@ -98,69 +99,48 @@ struct BlockedProfileView: View {
                 )
 
                 Section("Breaks") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Enable Breaks", isOn: $enableBreaks)
-                            .disabled(isBlocking)
-                        Text(
-                            "Have the option to take a single break, you choose when to start/stop the break"
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    }
-
-                    if isBlocking {
-                        Text("Disable current session to change")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
+                    CustomToggle(
+                        title: "Enable Breaks",
+                        description: "Have the option to take a single break, you choose when to start/stop the break",
+                        isOn: $enableBreaks,
+                        isDisabled: isBlocking
+                    )
                 }
 
                 Section("Notifications") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Live Activity", isOn: $enableLiveActivity)
-                            .disabled(isBlocking)
-                        Text(
-                            "Shows a live activity on your lock screen with some inspirational qoute"
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    }
+                    CustomToggle(
+                        title: "Live Activity",
+                        description: "Shows a live activity on your lock screen with some inspirational qoute",
+                        isOn: $enableLiveActivity,
+                        isDisabled: isBlocking
+                    )
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Reminder", isOn: $enableReminder)
+                    CustomToggle(
+                        title: "Reminder",
+                        description: "Sends a reminder to start this profile when its ended",
+                        isOn: $enableReminder,
+                        isDisabled: isBlocking
+                    )
+                    if enableReminder {
+                        HStack {
+                            Text("Reminder time")
+                            Spacer()
+                            TextField(
+                                "",
+                                value: $reminderTimeInMinutes,
+                                format: .number
+                            )
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 50)
                             .disabled(isBlocking)
-                        Text(
-                            "Sends a reminder to start this profile when its ended"
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        if enableReminder {
-                            HStack {
-                                Text("Reminder time")
-                                Spacer()
-                                TextField(
-                                    "",
-                                    value: $reminderTimeInMinutes,
-                                    format: .number
-                                )
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 50)
-                                .disabled(isBlocking)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                            Text("minutes")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-
-                                Text("minutes")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }.padding(.top)
-                        }
-                    }
-
-                    if isBlocking {
-                        Text("Disable current session to change")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                        }.padding(.top)
                     }
 
                     if !isBlocking {
