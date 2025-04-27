@@ -17,8 +17,6 @@ struct HomeView: View {
     // Profile management
     @Query(sort: \BlockedProfiles.createdAt, order: .reverse) private
         var profiles: [BlockedProfiles]
-    @State private var activeProfile: BlockedProfiles? = nil
-    @State private var profileIndex = 0
     @State private var isProfileListPresent = false
 
     // New profile view
@@ -48,22 +46,6 @@ struct HomeView: View {
     @State private var isRefreshing = false
     @State private var opacityValue = 1.0
 
-    var activeProfileStrategy: BlockingStrategy {
-        if let activeStrategyId = strategyManager.activeSession?.blockedProfile
-            .blockingStrategyId
-        {
-            return strategyManager.getStrategy(id: activeStrategyId)
-        }
-
-        return
-            strategyManager
-            .getStrategy(
-                id: activeProfile?.blockingStrategyId
-                    ?? NFCBlockingStrategy
-                    .id
-            )
-    }
-
     var isBlocking: Bool {
         return strategyManager.isBlocking
     }
@@ -78,15 +60,6 @@ struct HomeView: View {
 
     var isBreakActive: Bool {
         return strategyManager.isBreakActive
-    }
-
-    var sessionStatusStr: String {
-        if let activeSession = strategyManager.activeSession {
-            return "Stop " + activeSession.blockedProfile.name
-        }
-
-        let sessionName = activeProfile?.name ?? "Sesssion"
-        return "Start " + sessionName
     }
 
     var body: some View {
@@ -122,12 +95,10 @@ struct HomeView: View {
                         activeSessionProfileId: activeSessionProfileId,
                         elapsedTime: strategyManager.elapsedTime,
                         onStartTapped: { profile in
-                            activeProfile = profile
-                            strategyButtonPress()
+                            strategyButtonPress(profile)
                         },
                         onStopTapped: { profile in
-                            activeProfile = profile
-                            strategyButtonPress()
+                            strategyButtonPress(profile)
                         },
                         onEditTapped: { profile in
                             profileToEdit = profile
@@ -171,13 +142,6 @@ struct HomeView: View {
         .padding(.top, 1)
         .sheet(
             isPresented: $isProfileListPresent,
-            onDismiss: {
-                if profileIndex >= profiles.count {
-                    profileIndex = max(profiles.count - 1, 0)
-                }
-
-                activeProfile = profiles[safe: profileIndex]
-            }
         ) {
             BlockedProfileListView()
         }
@@ -188,9 +152,6 @@ struct HomeView: View {
             maxHeight: .infinity,
             alignment: .topLeading
         )
-        .onChange(of: profileIndex) { _, newValue in
-            activeProfile = profiles[safe: profileIndex]
-        }
         .onChange(of: navigationManager.profileId) { _, newValue in
             if let profileId = newValue {
                 toggleSessionFromDeeplink(profileId)
@@ -247,26 +208,15 @@ struct HomeView: View {
         strategyManager.toggleSessionFromDeeplink(profileId, context: context)
     }
 
-    private func strategyButtonPress() {
+    private func strategyButtonPress(_ profile: BlockedProfiles) {
         strategyManager
-            .toggleBlocking(context: context, activeProfile: activeProfile)
+            .toggleBlocking(context: context, activeProfile: profile)
 
         ratingManager.incrementLaunchCount()
     }
 
     private func loadApp() {
         strategyManager.loadActiveSession(context: context)
-
-        if let sessionProfileId = activeSessionProfileId,
-            let matchingProfile = profiles.first(where: {
-                (profile: BlockedProfiles) in
-                profile.id == sessionProfileId
-            })
-        {
-            activeProfile = matchingProfile
-        } else {
-            activeProfile = profiles[safe: profileIndex]
-        }
     }
 
     private func unloadApp() {
