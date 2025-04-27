@@ -20,7 +20,12 @@ struct HomeView: View {
     @State private var activeProfile: BlockedProfiles? = nil
     @State private var profileIndex = 0
     @State private var isProfileListPresent = false
-    @State private var showActiveProfileView = false
+
+    // New profile view
+    @State private var showNewProfileView = false
+
+    // Edit profile
+    @State private var profileToEdit: BlockedProfiles? = nil
 
     // Activity sessions
     @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
@@ -98,7 +103,7 @@ struct HomeView: View {
 
                 if profiles.isEmpty {
                     Welcome(onTap: {
-                        showActiveProfileView = true
+                        showNewProfileView = true
                     })
                     .padding(.horizontal, 16)
                 }
@@ -125,8 +130,7 @@ struct HomeView: View {
                             strategyButtonPress()
                         },
                         onEditTapped: { profile in
-                            activeProfile = profile
-                            showActiveProfileView = true
+                            profileToEdit = profile
                         },
                         onBreakTapped: { _ in
                             strategyManager.toggleBreak()
@@ -219,9 +223,15 @@ struct HomeView: View {
             IntroView {
                 requestAuthorizer.requestAuthorization()
             }.interactiveDismissDisabled()
-        }.sheet(isPresented: $showActiveProfileView) {
-            BlockedProfileView(profile: activeProfile)
-        }.sheet(isPresented: $strategyManager.showCustomStrategyView) {
+        }.sheet(item: $profileToEdit) { profile in
+            BlockedProfileView(profile: profile)
+        }
+        .sheet(
+            isPresented: $showNewProfileView,
+        ) {
+            BlockedProfileView(profile: nil)
+        }
+        .sheet(isPresented: $strategyManager.showCustomStrategyView) {
             BlockingStrategyActionView(
                 customView: strategyManager.customStrategyView
             )
@@ -235,18 +245,6 @@ struct HomeView: View {
 
     private func toggleSessionFromDeeplink(_ profileId: String) {
         strategyManager.toggleSessionFromDeeplink(profileId, context: context)
-    }
-
-    private func incrementProfiles() {
-        guard !profiles.isEmpty else { return }
-
-        profileIndex = (profileIndex + 1) % profiles.count
-    }
-
-    private func decrementProfiles() {
-        guard !profiles.isEmpty else { return }
-
-        profileIndex = (profileIndex - 1 + profiles.count) % profiles.count
     }
 
     private func strategyButtonPress() {
