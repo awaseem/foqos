@@ -3,17 +3,52 @@ import ActivityKit
 import SwiftUI
 
 class LiveActivityManager: ObservableObject {
+    // Published property for live activity reference
     @Published var currentActivity: Activity<FoqosWidgetAttributes>?
+    
+    // Use AppStorage for persisting the activity ID across app launches
+    @AppStorage("com.foqos.currentActivityId") private var storedActivityId: String = ""
     
     static let shared = LiveActivityManager()
     
-    private init() {}
+    private init() {
+        // Try to restore existing activity on initialization
+        restoreExistingActivity()
+    }
     
     private var isSupported: Bool {
         if #available(iOS 16.1, *) {
             return ActivityAuthorizationInfo().areActivitiesEnabled
         }
         return false
+    }
+    
+    // Save activity ID using AppStorage
+    private func saveActivityId(_ id: String) {
+        storedActivityId = id
+    }
+    
+    // Remove activity ID from AppStorage
+    private func removeActivityId() {
+        storedActivityId = ""
+    }
+    
+    // Restore existing activity from system if available
+    private func restoreExistingActivity() {
+        guard isSupported else { return }
+        
+        // Check if we have a saved activity ID
+        if !storedActivityId.isEmpty {
+            if let existingActivity = Activity<FoqosWidgetAttributes>.activities.first(where: { $0.id == storedActivityId }) {
+                // Found the existing activity
+                self.currentActivity = existingActivity
+                print("Restored existing Live Activity with ID: \(existingActivity.id)")
+            } else {
+                // The activity no longer exists, clean up the stored ID
+                print("No existing activity found with saved ID, removing reference")
+                removeActivityId()
+            }
+        }
     }
     
     func startSessionActivity(session: BlockedProfileSession) -> Void {
@@ -23,9 +58,15 @@ class LiveActivityManager: ObservableObject {
             return
         }
         
+        // Check if we can restore an existing activity first
+        if currentActivity == nil {
+            restoreExistingActivity()
+        }
+        
         // Check if we already have an activity running
         if currentActivity != nil {
-            print("Live Activity is already running")
+            print("Live Activity is already running, will update instead")
+            updateSessionActivity(session: session)
             return
         }
         
@@ -39,8 +80,7 @@ class LiveActivityManager: ObservableObject {
         let message = FocusMessages.getRandomMessage()
         let attributes = FoqosWidgetAttributes(name: profileName, message: message)
         let contentState = FoqosWidgetAttributes.ContentState(
-            startTime: session
-                .startTime)
+            startTime: session.startTime)
         
         do {
             let activity = try Activity.request(
@@ -48,6 +88,8 @@ class LiveActivityManager: ObservableObject {
                 contentState: contentState
             )
             currentActivity = activity
+
+            saveActivityId(activity.id)
             print("Started Live Activity with ID: \(activity.id) for profile: \(profileName)")
             return
         } catch {
@@ -56,6 +98,21 @@ class LiveActivityManager: ObservableObject {
         }
     }
     
+    func updateSessionActivity(session: BlockedProfileSession) {
+        guard let activity = currentActivity else {
+            print("No Live Activity to update")
+            return
+        }
+        
+        let updatedState = FoqosWidgetAttributes.ContentState(
+            startTime: session.startTime
+        )
+        
+        Task {
+            await activity.update(using: updatedState)
+            print("Updated Live Activity with ID: \(activity.id)")
+        }
+    }
     
     func endSessionActivity() -> Void {
         guard let activity = currentActivity else {
@@ -69,11 +126,12 @@ class LiveActivityManager: ObservableObject {
         )
         
         Task {
-            await activity
-                .end(using: completedState, dismissalPolicy: .immediate)
+            await activity.end(using: completedState, dismissalPolicy: .immediate)
             print("Ended Live Activity")
         }
         
+        // Remove the stored activity ID when ending the activity
+        removeActivityId()
         currentActivity = nil
     }
 }
