@@ -11,7 +11,8 @@ class AppBlockerUtil {
 
     func activateRestrictions(
         selection: FamilyActivitySelection,
-        strict: Bool = false
+        strict: Bool = false,
+        allowOnly: Bool = false
     ) {
         print("Starting restrictions...")
 
@@ -19,9 +20,15 @@ class AppBlockerUtil {
         let categoriesTokens = selection.categoryTokens
         let webTokens = selection.webDomainTokens
 
-        store.shield.applications = applicationTokens
-        store.shield.applicationCategories = .specific(categoriesTokens)
-        store.shield.webDomains = webTokens
+        if (allowOnly) {
+            store.shield.applicationCategories =
+                .all(except: applicationTokens)
+            store.shield.webDomainCategories = .all(except: webTokens)
+        } else {
+            store.shield.applications =  applicationTokens
+            store.shield.applicationCategories = .specific(categoriesTokens)
+            store.shield.webDomains = webTokens
+        }
         
         store.application.denyAppRemoval = strict
 

@@ -16,6 +16,7 @@ class BlockedProfiles {
     var reminderTimeInSeconds: UInt32?
     var enableBreaks: Bool = false
     var enableStrictMode: Bool = false
+    var enableAllowMode: Bool = false
 
     @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -29,7 +30,8 @@ class BlockedProfiles {
         enableLiveActivity: Bool = false,
         reminderTimeInSeconds: UInt32? = nil,
         enableBreaks: Bool = false,
-        enableStrictMode: Bool = false
+        enableStrictMode: Bool = false,
+        enableAllowMode: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -42,6 +44,7 @@ class BlockedProfiles {
         self.reminderTimeInSeconds = reminderTimeInSeconds
         self.enableLiveActivity = enableBreaks
         self.enableStrictMode = enableStrictMode
+        self.enableAllowMode = enableAllowMode
     }
 
     static func fetchProfiles(in context: ModelContext) throws
@@ -80,7 +83,8 @@ class BlockedProfiles {
         enableLiveActivity: Bool? = nil,
         reminderTime: UInt32? = nil,
         enableBreaks: Bool? = nil,
-        enableStrictMode: Bool? = nil
+        enableStrictMode: Bool? = nil,
+        enableAllowMode: Bool? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -104,6 +108,13 @@ class BlockedProfiles {
         
         if let newEnableStrictMode = enableStrictMode {
             profile.enableStrictMode = newEnableStrictMode
+        }
+        
+        if let newEnableAllowMode = enableAllowMode {
+            profile.enableAllowMode = newEnableAllowMode
+            profile.selectedActivity = FamilyActivitySelection(
+                includeEntireCategory: newEnableAllowMode
+            )
         }
         
         profile.reminderTimeInSeconds = reminderTime
