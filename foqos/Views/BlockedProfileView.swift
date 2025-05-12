@@ -235,7 +235,8 @@ struct BlockedProfileView: View {
             .sheet(isPresented: $showingActivityPicker) {
                 AppPicker(
                     selection: $selectedActivity,
-                    isPresented: $showingActivityPicker
+                    isPresented: $showingActivityPicker,
+                    allowMode: enableAllowMode
                 )
             }
             .sheet(isPresented: $showingGeneratedQRCode) {
