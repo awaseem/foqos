@@ -13,7 +13,10 @@ struct AppPicker: View {
     @State private var updateFlag: Bool = false
 
     private var title: String {
-        return allowMode ? "Apps to allow" : "Apps to block"
+        let action = allowMode ? "allowed" : "blocked"
+        let count = BlockedProfiles.countSelectedActivities(selection)
+        
+        return "\(count) \(action)"
     }
 
     private var message: String {
