@@ -11,7 +11,7 @@ class BlockedProfiles {
     var createdAt: Date
     var updatedAt: Date
     var blockingStrategyId: String?
-    
+
     var enableLiveActivity: Bool = false
     var reminderTimeInSeconds: UInt32?
     var enableBreaks: Bool = false
@@ -39,7 +39,7 @@ class BlockedProfiles {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.blockingStrategyId = blockingStrategyId
-        
+
         self.enableLiveActivity = enableLiveActivity
         self.reminderTimeInSeconds = reminderTimeInSeconds
         self.enableLiveActivity = enableBreaks
@@ -93,30 +93,30 @@ class BlockedProfiles {
         if let newSelection = selection {
             profile.selectedActivity = newSelection
         }
-        
+
         if let newStrategyId = blockingStrategyId {
             profile.blockingStrategyId = newStrategyId
         }
-        
+
         if let newEnableLiveActivity = enableLiveActivity {
             profile.enableLiveActivity = newEnableLiveActivity
         }
-        
+
         if let newEnableBreaks = enableBreaks {
             profile.enableBreaks = newEnableBreaks
         }
-        
+
         if let newEnableStrictMode = enableStrictMode {
             profile.enableStrictMode = newEnableStrictMode
         }
-        
+
         if let newEnableAllowMode = enableAllowMode {
             profile.enableAllowMode = newEnableAllowMode
             profile.selectedActivity = FamilyActivitySelection(
                 includeEntireCategory: newEnableAllowMode
             )
         }
-        
+
         profile.reminderTimeInSeconds = reminderTime
 
         profile.updatedAt = Date()
@@ -124,7 +124,8 @@ class BlockedProfiles {
     }
 
     static func deleteProfile(
-        _ profile: BlockedProfiles, in context: ModelContext
+        _ profile: BlockedProfiles,
+        in context: ModelContext
     ) throws {
         // First end any active sessions
         for session in profile.sessions {
@@ -147,6 +148,7 @@ class BlockedProfiles {
         -> Int
     {
         return selection.categories.count + selection.applications.count
+            + selection.webDomains.count
     }
 
     static func getProfileDeepLink(_ profile: BlockedProfiles) -> String {

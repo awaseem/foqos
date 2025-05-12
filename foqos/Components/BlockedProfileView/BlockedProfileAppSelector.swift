@@ -4,8 +4,17 @@ import FamilyControls
 struct BlockedProfileAppSelector: View {
     var selection: FamilyActivitySelection
     var buttonAction: () -> Void
+    var allowMode: Bool = false
     var disabled: Bool = false
     var disabledText: String?
+    
+    private var title: String {
+        return allowMode ? "Allowed" : "Blocked"
+    }
+    
+    private var buttonText: String {
+        return allowMode ? "Select Apps & Websites to Allow" : "Select Apps & Websites to Restrict"
+    }
     
     private var catAndAppCount: Int {
         return BlockedProfiles
@@ -13,10 +22,10 @@ struct BlockedProfileAppSelector: View {
     }
     
     var body: some View {
-        Section("Restrictions") {
+        Section(title) {
             Button(action: buttonAction) {
                 HStack {
-                    Text("Select Apps & Websites")
+                    Text(buttonText)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.gray)
@@ -46,6 +55,14 @@ struct BlockedProfileAppSelector: View {
     BlockedProfileAppSelector(
         selection: FamilyActivitySelection(),
         buttonAction: {},
+        disabled: true,
+        disabledText: "Disable the current session to edit apps for blocking"
+    )
+    
+    BlockedProfileAppSelector(
+        selection: FamilyActivitySelection(),
+        buttonAction: {},
+        allowMode: true,
         disabled: true,
         disabledText: "Disable the current session to edit apps for blocking"
     )
