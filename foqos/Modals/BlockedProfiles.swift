@@ -112,9 +112,6 @@ class BlockedProfiles {
 
         if let newEnableAllowMode = enableAllowMode {
             profile.enableAllowMode = newEnableAllowMode
-            profile.selectedActivity = FamilyActivitySelection(
-                includeEntireCategory: newEnableAllowMode
-            )
         }
 
         profile.reminderTimeInSeconds = reminderTime

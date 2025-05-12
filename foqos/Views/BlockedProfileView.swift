@@ -14,7 +14,6 @@ struct BlockedProfileView: View {
     var profile: BlockedProfiles?
 
     @State private var name: String = ""
-    @State private var catAndAppCount: Int = 0
     @State private var enableLiveActivity: Bool = false
     @State private var enableReminder: Bool = false
     @State private var enableBreaks: Bool = false
@@ -48,11 +47,6 @@ struct BlockedProfileView: View {
         _name = State(initialValue: profile?.name ?? "")
         _selectedActivity = State(
             initialValue: profile?.selectedActivity ?? FamilyActivitySelection()
-        )
-        _catAndAppCount = State(
-            initialValue:
-                BlockedProfiles
-                .countSelectedActivities(selectedActivity)
         )
         _enableLiveActivity = State(
             initialValue: profile?.enableLiveActivity ?? false
@@ -96,6 +90,7 @@ struct BlockedProfileView: View {
                     BlockedProfileAppSelector(
                         selection: selectedActivity,
                         buttonAction: { showingActivityPicker = true },
+                        allowMode: enableAllowMode,
                         disabled: isBlocking,
                         disabledText: "Disable the current session to edit"
                     )
@@ -214,10 +209,12 @@ struct BlockedProfileView: View {
                     BlockedProfileStats(profile: validProfile)
                 }
             }
-            .onChange(of: selectedActivity) { _, newValue in
-                catAndAppCount =
-                    BlockedProfiles
-                    .countSelectedActivities(newValue)
+            .onChange(of: enableAllowMode) {
+                _,
+                newValue in
+                selectedActivity = FamilyActivitySelection(
+                    includeEntireCategory: newValue
+                )
             }
             .navigationTitle(isEditing ? "Profile Details" : "New Profile")
             .navigationBarTitleDisplayMode(.inline)
