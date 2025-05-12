@@ -20,6 +20,7 @@ struct BlockedProfileView: View {
     @State private var enableBreaks: Bool = false
     @State private var enableStrictMode: Bool = false
     @State private var reminderTimeInMinutes: Int = 15
+    @State private var enableAllowMode: Bool = false
 
     // QR code generator
     @State private var showingGeneratedQRCode = false
@@ -62,6 +63,9 @@ struct BlockedProfileView: View {
         _enableStrictMode = State(
             initialValue: profile?.enableStrictMode ?? false
         )
+        _enableAllowMode = State(
+            initialValue: profile?.enableAllowMode ?? false
+        )
         _enableReminder = State(
             initialValue: profile?.reminderTimeInSeconds != nil
         )
@@ -88,12 +92,22 @@ struct BlockedProfileView: View {
                         .textContentType(.none)
                 }
 
-                BlockedProfileAppSelector(
-                    selection: selectedActivity,
-                    buttonAction: { showingActivityPicker = true },
-                    disabled: isBlocking,
-                    disabledText: "Disable the current session to edit"
-                )
+                Section(enableAllowMode ? "Allowed" : "Blocked") {
+                    BlockedProfileAppSelector(
+                        selection: selectedActivity,
+                        buttonAction: { showingActivityPicker = true },
+                        disabled: isBlocking,
+                        disabledText: "Disable the current session to edit"
+                    )
+
+                    CustomToggle(
+                        title: "Allow Mode",
+                        description:
+                            "Pick apps or websites to allow and block everything else. This will earse any other selection you've made.",
+                        isOn: $enableAllowMode,
+                        isDisabled: isBlocking
+                    )
+                }
 
                 BlockingStrategyList(
                     strategies: StrategyManager.availableStrategies,
@@ -110,7 +124,7 @@ struct BlockedProfileView: View {
                         isOn: $enableBreaks,
                         isDisabled: isBlocking
                     )
-                    
+
                     CustomToggle(
                         title: "Strict",
                         description:
@@ -269,7 +283,8 @@ struct BlockedProfileView: View {
                     enableLiveActivity: enableLiveActivity,
                     reminderTime: reminderTimeSeconds,
                     enableBreaks: enableBreaks,
-                    enableStrictMode: enableStrictMode
+                    enableStrictMode: enableStrictMode,
+                    enableAllowMode: enableAllowMode
                 )
             } else {
                 // Create new profile
@@ -281,9 +296,10 @@ struct BlockedProfileView: View {
                     enableLiveActivity: enableLiveActivity,
                     reminderTimeInSeconds: reminderTimeSeconds,
                     enableBreaks: enableBreaks,
-                    enableStrictMode: enableStrictMode
+                    enableStrictMode: enableStrictMode,
+                    enableAllowMode: enableAllowMode
                 )
-                
+
                 modelContext.insert(newProfile)
                 try modelContext.save()
             }
