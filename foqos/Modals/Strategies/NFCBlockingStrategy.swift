@@ -24,7 +24,8 @@ class NFCBlockingStrategy: BlockingStrategy {
             self.appBlocker
                 .activateRestrictions(
                     selection: profile.selectedActivity,
-                    strict: profile.enableStrictMode
+                    strict: profile.enableStrictMode,
+                    allowOnly: profile.enableAllowMode
                 )
             
             let tag = tag.url ?? tag.id

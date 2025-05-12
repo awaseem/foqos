@@ -29,7 +29,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
                 self.appBlocker
                     .activateRestrictions(
                         selection: profile.selectedActivity,
-                        strict: profile.enableStrictMode
+                        strict: profile.enableStrictMode,
+                        allowOnly: profile.enableAllowMode
                     )
                 
                 let tag = result.string

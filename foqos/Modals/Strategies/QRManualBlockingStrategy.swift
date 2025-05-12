@@ -24,7 +24,8 @@ class QRManualBlockingStrategy: BlockingStrategy {
             .activateRestrictions(
                 selection: profile.selectedActivity,
                 strict: profile
-                    .enableStrictMode)
+                    .enableStrictMode,
+                allowOnly: profile.enableAllowMode)
         
         let activeSession = BlockedProfileSession
             .createSession(
