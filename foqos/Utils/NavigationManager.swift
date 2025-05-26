@@ -2,6 +2,7 @@ import SwiftUI
 
 class NavigationManager: ObservableObject {
     @Published var profileId: String? = nil
+    @Published var link: URL? = nil
     
     func handleLink(_ url: URL) {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
@@ -12,13 +13,15 @@ class NavigationManager: ObservableObject {
             switch String(basePath) {
             case "profile":
                 self.profileId = String(profileId)
+                self.link = url
             default:
                 break
             }
         }
     }
     
-    func clearProfileId() {
+    func clearNavigation() {
         profileId = nil
+        link = nil
     }
 }

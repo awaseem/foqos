@@ -153,9 +153,9 @@ struct HomeView: View {
             alignment: .topLeading
         )
         .onChange(of: navigationManager.profileId) { _, newValue in
-            if let profileId = newValue {
-                toggleSessionFromDeeplink(profileId)
-                navigationManager.clearProfileId()
+            if let profileId = newValue, let url = navigationManager.link {
+                toggleSessionFromDeeplink(profileId, link: url)
+                navigationManager.clearNavigation()
             }
         }
         .onChange(of: requestAuthorizer.isAuthorized) { _, newValue in
@@ -204,8 +204,9 @@ struct HomeView: View {
         }
     }
 
-    private func toggleSessionFromDeeplink(_ profileId: String) {
-        strategyManager.toggleSessionFromDeeplink(profileId, context: context)
+    private func toggleSessionFromDeeplink(_ profileId: String, link: URL) {
+        strategyManager
+            .toggleSessionFromDeeplink(profileId, url: link, context: context)
     }
 
     private func strategyButtonPress(_ profile: BlockedProfiles) {

@@ -27,11 +27,11 @@ class StrategyManager: ObservableObject {
     var isBlocking: Bool {
         return activeSession?.isActive == true
     }
-    
+
     var isBreakActive: Bool {
         return activeSession?.isBreakActive == true
     }
-    
+
     var isBreakAvailable: Bool {
         return activeSession?.isBreakAvailable ?? false
     }
@@ -57,14 +57,13 @@ class StrategyManager: ObservableObject {
             startBlocking(context: context, activeProfile: activeProfile)
         }
     }
-    
-    func toggleBreak()
-    {
+
+    func toggleBreak() {
         guard let session = activeSession else {
             print("active session does not exist")
             return
         }
-        
+
         if session.isBreakActive {
             stopBreak()
         } else {
@@ -85,7 +84,11 @@ class StrategyManager: ObservableObject {
         timer = nil
     }
 
-    func toggleSessionFromDeeplink(_ profileId: String, context: ModelContext) {
+    func toggleSessionFromDeeplink(
+        _ profileId: String,
+        url: URL,
+        context: ModelContext
+    ) {
         guard let profileUUID = UUID(uuidString: profileId) else {
             self.errorMessage = "failed to parse profile in tag"
             return
@@ -112,13 +115,17 @@ class StrategyManager: ObservableObject {
                         session: localActiveSession
                     )
             } else {
-                manualStrategy.startBlocking(context: context, profile: profile)
+                manualStrategy.startBlocking(
+                    context: context,
+                    profile: profile,
+                    sessionId: url.absoluteString
+                )
             }
         } catch {
             self.errorMessage = "Something went wrong fetching profile"
         }
     }
-    
+
     static func getStrategyFromId(id: String) -> BlockingStrategy {
         if let strategy = availableStrategies.first(
             where: {
@@ -163,34 +170,33 @@ class StrategyManager: ObservableObject {
 
         return strategy
     }
-    
+
     private func startBreak() {
         guard let session = activeSession else {
             print("Breaks only available in active session")
             return
         }
-        
+
         if !session.isBreakAvailable {
             print("Breaks is not availble")
             return
         }
-        
+
         appBlocker.deactivateRestrictions()
         session.startBreak()
     }
-    
-    
+
     private func stopBreak() {
         guard let session = activeSession else {
             print("Breaks only available in active session")
             return
         }
-        
+
         if !session.isBreakAvailable {
             print("Breaks is not availble")
             return
         }
-        
+
         appBlocker
             .activateRestrictions(
                 selection: session.blockedProfile.selectedActivity
@@ -230,7 +236,8 @@ class StrategyManager: ObservableObject {
             let strategy = getStrategy(id: strategyId)
             let view = strategy.startBlocking(
                 context: context,
-                profile: definedProfile
+                profile: definedProfile,
+                sessionId: nil
             )
 
             if let customView = view {
