@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8017130B2DE6C78C00B77FE1 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80DBF6132CB776D100EEA8A6 /* DeviceActivity.framework */; };
+		801713132DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		803989B32CCC06D600E87F57 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 803989B22CCC06D600E87F57 /* StoreKit.framework */; };
 		80F674AB2D6185510056977F /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 80F674AA2D6185510056977F /* CodeScanner */; };
 		80FF388E2D80DB540032BC5E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80C6CAFA2D4301B3008680F4 /* WidgetKit.framework */; };
@@ -15,6 +17,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		801713112DE6C78C00B77FE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 801B208D2CB363A10073E9E2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 801713092DE6C78C00B77FE1;
+			remoteInfo = FoqosDeviceMonitor;
+		};
 		801B20A72CB363A20073E9E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 801B208D2CB363A10073E9E2 /* Project object */;
@@ -45,6 +54,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				801713132DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex in Embed Foundation Extensions */,
 				80FF389C2D80DB560032BC5E /* FoqosWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -54,6 +64,7 @@
 
 /* Begin PBXFileReference section */
 		8015A1F42D80E1BA0037DFE9 /* FoqosWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FoqosWidgetExtension.entitlements; sourceTree = "<group>"; };
+		8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FoqosDeviceMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20952CB363A10073E9E2 /* foqos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = foqos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20A62CB363A20073E9E2 /* foqosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = foqosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20B02CB363A20073E9E2 /* foqosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = foqosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,6 +83,27 @@
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 		};
+		801713172DE6C78C00B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "FoqosDeviceMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
+		};
+		801713192DE6CCF400B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "foqos" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DeviceActivityMonitorExtension.swift,
+			);
+			target = 801B20942CB363A10073E9E2 /* foqos */;
+		};
+		804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Modals/Shared.swift,
+			);
+			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
+		};
 		807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -89,10 +121,20 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				801713192DE6CCF400B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "foqos" target */,
+				801713172DE6C78C00B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "FoqosDeviceMonitor" target */,
+			);
+			path = FoqosDeviceMonitor;
+			sourceTree = "<group>";
+		};
 		801B20972CB363A10073E9E2 /* foqos */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */,
+				804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */,
 			);
 			path = foqos;
 			sourceTree = "<group>";
@@ -119,6 +161,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		801713072DE6C78C00B77FE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8017130B2DE6C78C00B77FE1 /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		801B20922CB363A10073E9E2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -162,6 +212,7 @@
 				801B20A92CB363A20073E9E2 /* foqosTests */,
 				801B20B32CB363A20073E9E2 /* foqosUITests */,
 				80FF38902D80DB540032BC5E /* FoqosWidget */,
+				8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
 				801B20962CB363A10073E9E2 /* Products */,
 			);
@@ -174,6 +225,7 @@
 				801B20A62CB363A20073E9E2 /* foqosTests.xctest */,
 				801B20B02CB363A20073E9E2 /* foqosUITests.xctest */,
 				80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */,
+				8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -192,6 +244,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 801713162DE6C78C00B77FE1 /* Build configuration list for PBXNativeTarget "FoqosDeviceMonitor" */;
+			buildPhases = (
+				801713062DE6C78C00B77FE1 /* Sources */,
+				801713072DE6C78C00B77FE1 /* Frameworks */,
+				801713082DE6C78C00B77FE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
+			);
+			name = FoqosDeviceMonitor;
+			packageProductDependencies = (
+			);
+			productName = FoqosDeviceMonitor;
+			productReference = 8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		801B20942CB363A10073E9E2 /* foqos */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 801B20BA2CB363A20073E9E2 /* Build configuration list for PBXNativeTarget "foqos" */;
@@ -205,6 +279,7 @@
 			);
 			dependencies = (
 				80FF389B2D80DB560032BC5E /* PBXTargetDependency */,
+				801713122DE6C78C00B77FE1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				801B20972CB363A10073E9E2 /* foqos */,
@@ -292,9 +367,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
+					801713092DE6C78C00B77FE1 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					801B20942CB363A10073E9E2 = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -332,11 +410,19 @@
 				801B20A52CB363A20073E9E2 /* foqosTests */,
 				801B20AF2CB363A20073E9E2 /* foqosUITests */,
 				80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */,
+				801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		801713082DE6C78C00B77FE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		801B20932CB363A10073E9E2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -368,6 +454,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		801713062DE6C78C00B77FE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		801B20912CB363A10073E9E2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -399,6 +492,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		801713122DE6C78C00B77FE1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
+			targetProxy = 801713112DE6C78C00B77FE1 /* PBXContainerItemProxy */;
+		};
 		801B20A82CB363A20073E9E2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 801B20942CB363A10073E9E2 /* foqos */;
@@ -417,6 +515,73 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		801713142DE6C78C00B77FE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FoqosDeviceMonitor/FoqosDeviceMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YR54789JNV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FoqosDeviceMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FoqosDeviceMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.10.3;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosDeviceMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		801713152DE6C78C00B77FE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FoqosDeviceMonitor/FoqosDeviceMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YR54789JNV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FoqosDeviceMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FoqosDeviceMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.10.3;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosDeviceMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		801B20B82CB363A20073E9E2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -568,7 +733,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.10.2;
+				MARKETING_VERSION = 1.10.3;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -616,7 +781,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 1.10.2;
+				MARKETING_VERSION = 1.10.3;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -787,6 +952,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		801713162DE6C78C00B77FE1 /* Build configuration list for PBXNativeTarget "FoqosDeviceMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				801713142DE6C78C00B77FE1 /* Debug */,
+				801713152DE6C78C00B77FE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		801B20902CB363A10073E9E2 /* Build configuration list for PBXProject "foqos" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -794,7 +968,7 @@
 				801B20B92CB363A20073E9E2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		801B20BA2CB363A20073E9E2 /* Build configuration list for PBXNativeTarget "foqos" */ = {
 			isa = XCConfigurationList;
@@ -803,7 +977,7 @@
 				801B20BC2CB363A20073E9E2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		801B20BD2CB363A20073E9E2 /* Build configuration list for PBXNativeTarget "foqosTests" */ = {
 			isa = XCConfigurationList;
@@ -812,7 +986,7 @@
 				801B20BF2CB363A20073E9E2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		801B20C02CB363A20073E9E2 /* Build configuration list for PBXNativeTarget "foqosUITests" */ = {
 			isa = XCConfigurationList;
@@ -821,7 +995,7 @@
 				801B20C22CB363A20073E9E2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		80FF389F2D80DB560032BC5E /* Build configuration list for PBXNativeTarget "FoqosWidgetExtension" */ = {
 			isa = XCConfigurationList;
@@ -830,7 +1004,7 @@
 				80FF389E2D80DB560032BC5E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
