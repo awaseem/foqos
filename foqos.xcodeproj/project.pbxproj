@@ -97,6 +97,13 @@
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 		};
+		804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Modals/Shared.swift,
+			);
+			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
+		};
 		807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -127,6 +134,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */,
+				804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */,
 			);
 			path = foqos;
 			sourceTree = "<group>";

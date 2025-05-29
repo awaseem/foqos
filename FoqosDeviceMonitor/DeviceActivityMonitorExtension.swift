@@ -29,7 +29,35 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
 
-        log.info("intervalDidStart for \(activity.rawValue)")
-        store.shield.applications = nil
+        guard let selection = SharedData.selection else {
+            log.info("intervalDidStart selection is empy, doing nothing")
+            return
+        }
+
+        let allowOnly = SharedData.allowOnly ?? false
+        let applicationTokens = selection.applicationTokens
+        let categoriesTokens = selection.categoryTokens
+        let webTokens = selection.webDomainTokens
+
+        log.info(
+            "intervalDidStart for \(activity.rawValue), count for applications: \(applicationTokens.count), categories: \(categoriesTokens.count), web domains: \(webTokens.count)"
+        )
+
+        if allowOnly {
+            store.shield.applicationCategories =
+                .all(except: applicationTokens)
+            store.shield.webDomainCategories = .all(except: webTokens)
+        } else {
+            store.shield.applications = applicationTokens
+            store.shield.applicationCategories = .specific(categoriesTokens)
+            store.shield.webDomains = webTokens
+        }
+
+        store.application.denyAppRemoval = SharedData.strict ?? false
+
+        log.info(
+            "intervalDidStart for \(activity.rawValue), reapplying restrictions"
+        )
+
     }
 }
