@@ -64,6 +64,10 @@ class AppBlockerUtil {
         store.application.denyAppRemoval = false
         
         store.clearAllSettings()
+        
+        SharedData.selection = nil
+        SharedData.strict = nil
+        SharedData.allowOnly = nil
 
         let center = DeviceActivityCenter()
         center.stopMonitoring([.daily])
