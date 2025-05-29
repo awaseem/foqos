@@ -3,11 +3,14 @@ import FamilyControls
 import ManagedSettings
 import SwiftUI
 
+extension DeviceActivityName {
+    static let daily = Self("daily")
+}
+
 class AppBlockerUtil {
     let store = ManagedSettingsStore(
         named: ManagedSettingsStore.Name("foqosAppRestrictions")
     )
-    let center = DeviceActivityCenter()
 
     func activateRestrictions(
         selection: FamilyActivitySelection,
@@ -39,10 +42,9 @@ class AppBlockerUtil {
             repeats: true
         )
 
-        let activity = DeviceActivityName("foqosDeviceActivity")
-        let eventCenter = DeviceActivityCenter()
         do {
-            try eventCenter.startMonitoring(activity, during: schedule)
+            let center = DeviceActivityCenter()
+            try center.startMonitoring(.daily, during: schedule)
         } catch {
             print("Error starting monitoring: \(error)")
         }
@@ -59,6 +61,7 @@ class AppBlockerUtil {
         
         store.clearAllSettings()
 
-        center.stopMonitoring([DeviceActivityName("foqosDeviceActivity")])
+        let center = DeviceActivityCenter()
+        center.stopMonitoring([.daily])
     }
 }

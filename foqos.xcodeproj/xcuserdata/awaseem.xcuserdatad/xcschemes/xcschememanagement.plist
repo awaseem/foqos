@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>FoqosDeviceMonitor.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>FoqosWidgetExtension.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
@@ -27,6 +32,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>801713092DE6C78C00B77FE1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>801B20942CB363A10073E9E2</key>
 		<dict>
 			<key>primary</key>
@@ -38,6 +48,11 @@
 			<true/>
 		</dict>
 		<key>801B20AF2CB363A20073E9E2</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>80FF388C2D80DB540032BC5E</key>
 		<dict>
 			<key>primary</key>
 			<true/>
