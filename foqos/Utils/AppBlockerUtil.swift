@@ -34,6 +34,10 @@ class AppBlockerUtil {
         }
         
         store.application.denyAppRemoval = strict
+        
+        SharedData.selection = selection
+        SharedData.strict = strict
+        SharedData.allowOnly = allowOnly
 
         // Set up a DeviceActivitySchedule
         let schedule = DeviceActivitySchedule(
