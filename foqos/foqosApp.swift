@@ -34,7 +34,8 @@ struct foqosApp: App {
     init() {
         TimersUtil.registerBackgroundTasks()
 
-        let asyncDependency: () async -> (ModelContainer) = { @MainActor in
+        let asyncDependency: @Sendable () async -> (ModelContainer) = {
+            @MainActor in
             return container
         }
         AppDependencyManager.shared.add(
