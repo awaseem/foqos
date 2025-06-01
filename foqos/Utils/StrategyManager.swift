@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 class StrategyManager: ObservableObject {
+    static var shared = StrategyManager()
+    
     static let availableStrategies: [BlockingStrategy] = [
         NFCBlockingStrategy(),
         ManualBlockingStrategy(),
