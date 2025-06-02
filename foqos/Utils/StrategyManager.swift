@@ -3,7 +3,7 @@ import SwiftUI
 
 class StrategyManager: ObservableObject {
     static var shared = StrategyManager()
-    
+
     static let availableStrategies: [BlockingStrategy] = [
         NFCBlockingStrategy(),
         ManualBlockingStrategy(),
@@ -123,6 +123,46 @@ class StrategyManager: ObservableObject {
                     sessionId: url.absoluteString
                 )
             }
+        } catch {
+            self.errorMessage = "Something went wrong fetching profile"
+        }
+    }
+
+    func startSessionFromBackground(
+        _ profileId: String,
+        context: ModelContext
+    ) {
+        guard let profileUUID = UUID(uuidString: profileId) else {
+            self.errorMessage = "failed to parse profile in tag"
+            return
+        }
+
+        do {
+            guard
+                let profile = try BlockedProfiles.findProfile(
+                    byID: profileUUID,
+                    in: context
+                )
+            else {
+                self.errorMessage =
+                    "Failed to find a profile stored locally that matches the tag"
+                return
+            }
+
+            let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+
+            if let localActiveSession = getActiveSession(context: context) {
+                print(
+                    "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
+                )
+                return
+            }
+
+            manualStrategy.startBlocking(
+                context: context,
+                profile: profile,
+                sessionId: url.absoluteString
+            )
         } catch {
             self.errorMessage = "Something went wrong fetching profile"
         }

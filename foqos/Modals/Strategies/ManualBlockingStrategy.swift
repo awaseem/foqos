@@ -18,7 +18,7 @@ class ManualBlockingStrategy: BlockingStrategy {
     func getIdentifier() -> String {
         return ManualBlockingStrategy.id
     }
-
+    
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,

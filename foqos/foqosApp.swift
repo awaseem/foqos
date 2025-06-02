@@ -24,11 +24,13 @@ private let container: ModelContainer = {
 @main
 struct foqosApp: App {
     @StateObject private var requestAuthorizer = RequestAuthorizer()
-    @StateObject private var startegyManager = StrategyManager()
     @StateObject private var donationManager = TipManager()
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var nfcWriter = NFCWriter()
     @StateObject private var ratingManager = RatingManager()
+    
+    // Singletons for shared functionality
+    @StateObject private var startegyManager = StrategyManager.shared
     @StateObject private var liveActivityManager = LiveActivityManager.shared
 
     init() {

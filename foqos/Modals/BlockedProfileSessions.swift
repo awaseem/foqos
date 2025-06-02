@@ -6,24 +6,25 @@ class BlockedProfileSession {
     @Attribute(.unique) var id: String
     var tag: String
 
-    @Relationship var blockedProfile:
-        BlockedProfiles
+    @Relationship var blockedProfile: BlockedProfiles
 
     var startTime: Date
     var endTime: Date?
-    
+
     var breakStartTime: Date?
     var breakEndTime: Date?
+
+    var forceStarted: Bool = false
 
     var isActive: Bool {
         return endTime == nil
     }
-    
+
     var isBreakAvailable: Bool {
         return blockedProfile.enableBreaks == true
             && breakEndTime == nil
     }
-    
+
     var isBreakActive: Bool {
         return blockedProfile.enableBreaks == true
             && breakStartTime != nil
@@ -35,20 +36,25 @@ class BlockedProfileSession {
         return end.timeIntervalSince(startTime)
     }
 
-    init(tag: String, blockedProfile: BlockedProfiles) {
+    init(
+        tag: String,
+        blockedProfile: BlockedProfiles,
+        forceStarted: Bool = false
+    ) {
         self.id = UUID().uuidString
         self.tag = tag
         self.blockedProfile = blockedProfile
         self.startTime = Date()
+        self.forceStarted = false
 
         // Add this session to the profile's sessions array
         blockedProfile.sessions.append(self)
     }
-    
+
     func startBreak() {
         self.breakStartTime = Date()
     }
-    
+
     func endBreak() {
         self.breakEndTime = Date()
     }
@@ -70,17 +76,24 @@ class BlockedProfileSession {
     }
 
     static func createSession(
-        in context: ModelContext, withTag tag: String,
-        withProfile profile: BlockedProfiles
+        in context: ModelContext,
+        withTag tag: String,
+        withProfile profile: BlockedProfiles,
+        forceStart: Bool = false
     ) -> BlockedProfileSession {
         let newSession = BlockedProfileSession(
-            tag: tag, blockedProfile: profile)
+            tag: tag,
+            blockedProfile: profile,
+            forceStarted: forceStart
+        )
+        
         context.insert(newSession)
         return newSession
     }
 
     static func recentInactiveSessions(
-        in context: ModelContext, limit: Int = 50
+        in context: ModelContext,
+        limit: Int = 50
     ) -> [BlockedProfileSession] {
         var descriptor = FetchDescriptor<BlockedProfileSession>(
             predicate: #Predicate { $0.endTime != nil },
@@ -91,5 +104,3 @@ class BlockedProfileSession {
         return (try? context.fetch(descriptor)) ?? []
     }
 }
-
-
