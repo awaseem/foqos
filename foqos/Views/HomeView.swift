@@ -43,7 +43,6 @@ struct HomeView: View {
     @AppStorage("showIntroScreen") private var showIntroScreen = true
 
     // UI States
-    @State private var isRefreshing = false
     @State private var opacityValue = 1.0
 
     var isBlocking: Bool {
@@ -64,10 +63,6 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            RefreshControl(isRefreshing: $isRefreshing) {
-                loadApp()
-            }
-
             VStack(alignment: .leading, spacing: 30) {
                 Text("Foqos")
                     .font(.largeTitle)
@@ -138,6 +133,9 @@ struct HomeView: View {
                 VersionFooter()
                     .frame(maxWidth: .infinity)
             }
+        }
+        .refreshable {
+            loadApp()
         }
         .padding(.top, 1)
         .sheet(

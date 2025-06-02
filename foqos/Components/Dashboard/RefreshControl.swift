@@ -19,32 +19,3 @@ struct HourglassView: View {
             }
     }
 }
-
-struct RefreshControl: View {
-    @Binding var isRefreshing: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        GeometryReader { geometry in
-            let pullDistance = geometry.frame(in: .global).minY
-            let threshold: CGFloat = 50
-            
-            HStack {
-                Spacer()
-                if pullDistance > 0 {
-                    HourglassView()
-                        .opacity(min(pullDistance / threshold, 1.0))
-                        .onAppear {
-                            if pullDistance > threshold {
-                                isRefreshing = true
-                                action()
-                            }
-                        }
-                }
-                Spacer()
-            }
-        }
-        .padding(.top, -50)
-        .frame(height: 0)
-    }
-}
