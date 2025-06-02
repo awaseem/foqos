@@ -23,6 +23,6 @@ protocol BlockingStrategy {
     }
     
     func getIdentifier() -> String
-    func startBlocking(context: ModelContext, profile: BlockedProfiles, sessionId: String?) -> (any View)?
+    func startBlocking(context: ModelContext, profile: BlockedProfiles, sessionId: String?, forceStart: Bool?) -> (any View)?
     func stopBlocking(context: ModelContext, session: BlockedProfileSession) -> (any View)?
 }

@@ -10,7 +10,6 @@ struct StartProfileIntent: AppIntent {
         return modelContainer.mainContext
     }
     
-    
     @Parameter(title: "Profile") var profile: BlockedProfileEntity
 
     static var title: LocalizedStringResource = "Start Foqos Profile"
@@ -19,22 +18,12 @@ struct StartProfileIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let strategyManager = StrategyManager.shared
         
-        print(
-            "Starting profile with ID: \(strategyManager.activeSession?.blockedProfile.name ?? "Unknown")"
-        )
-        
-        let testURL = URL(string: "https://google.com")!
-        
         strategyManager
-            .toggleSessionFromDeeplink(
-                profile.id.uuidString,
-                url: testURL,
+            .startSessionFromBackground(
+                profile.id,
                 context: modelContext
             )
-        
-        strategyManager.loadActiveSession(context: modelContext)
 
-        
         return .result()
     }
 }

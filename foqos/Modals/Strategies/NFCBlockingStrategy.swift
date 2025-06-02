@@ -23,7 +23,8 @@ class NFCBlockingStrategy: BlockingStrategy {
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,
-        sessionId: String?
+        sessionId: String?,
+        forceStart: Bool?
     ) -> (any View)? {
         nfcScanner.onTagScanned = { tag in
             self.appBlocker
@@ -36,7 +37,12 @@ class NFCBlockingStrategy: BlockingStrategy {
             let tag = sessionId ?? tag.url ?? tag.id
             let activeSession =
                 BlockedProfileSession
-                .createSession(in: context, withTag: tag, withProfile: profile)
+                .createSession(
+                    in: context,
+                    withTag: tag,
+                    withProfile: profile,
+                    forceStart: forceStart ?? false
+                )
             self.onSessionCreation?(.started(activeSession))
         }
 
@@ -52,7 +58,8 @@ class NFCBlockingStrategy: BlockingStrategy {
         nfcScanner.onTagScanned = { tag in
             let tag = tag.url ?? tag.id
 
-            if session.tag != tag {
+            // If it was force started, we don't care about the tag
+            if !session.forceStarted && session.tag != tag {
                 self.onErrorMessage?(
                     "You must scan the original tag to stop focus"
                 )

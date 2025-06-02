@@ -120,7 +120,9 @@ class StrategyManager: ObservableObject {
                 manualStrategy.startBlocking(
                     context: context,
                     profile: profile,
-                    sessionId: url.absoluteString
+                    sessionId: url.absoluteString,
+                    // TODO switch to truw after removing session ID from protocol
+                    forceStart: false
                 )
             }
         } catch {
@@ -129,18 +131,13 @@ class StrategyManager: ObservableObject {
     }
 
     func startSessionFromBackground(
-        _ profileId: String,
+        _ profileId: UUID,
         context: ModelContext
     ) {
-        guard let profileUUID = UUID(uuidString: profileId) else {
-            self.errorMessage = "failed to parse profile in tag"
-            return
-        }
-
         do {
             guard
                 let profile = try BlockedProfiles.findProfile(
-                    byID: profileUUID,
+                    byID: profileId,
                     in: context
                 )
             else {
@@ -161,7 +158,8 @@ class StrategyManager: ObservableObject {
             manualStrategy.startBlocking(
                 context: context,
                 profile: profile,
-                sessionId: url.absoluteString
+                sessionId: nil,
+                forceStart: true
             )
         } catch {
             self.errorMessage = "Something went wrong fetching profile"
@@ -279,7 +277,8 @@ class StrategyManager: ObservableObject {
             let view = strategy.startBlocking(
                 context: context,
                 profile: definedProfile,
-                sessionId: nil
+                sessionId: nil,
+                forceStart: false
             )
 
             if let customView = view {

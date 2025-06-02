@@ -23,7 +23,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,
-        sessionId: String?
+        sessionId: String?,
+        forceStart: Bool?
     ) -> (any View)? {
         return LabeledCodeScannerView(
             heading: "Scan to start",
@@ -44,7 +45,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
                     .createSession(
                         in: context,
                         withTag: tag,
-                        withProfile: profile
+                        withProfile: profile,
+                        forceStart: forceStart ?? false
                     )
                 self.onSessionCreation?(.started(activeSession))
             case .failure(let error):
@@ -64,7 +66,9 @@ class QRCodeBlockingStrategy: BlockingStrategy {
             switch result {
             case .success(let result):
                 let tag = result.string
-                if session.tag != tag {
+                
+                // if the session was force started, we don't need to check the tag
+                if !session.forceStarted && session.tag != tag {
                     self.onErrorMessage?(
                         "You must scan the original QR code to stop focus"
                     )
