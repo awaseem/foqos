@@ -22,7 +22,6 @@ class QRManualBlockingStrategy: BlockingStrategy {
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,
-        sessionId: String?,
         forceStart: Bool?
     ) -> (any View)? {
         self.appBlocker
@@ -37,7 +36,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
             BlockedProfileSession
             .createSession(
                 in: context,
-                withTag: sessionId ?? ManualBlockingStrategy.id,
+                withTag: ManualBlockingStrategy.id,
                 withProfile: profile,
                 forceStart: forceStart ?? false
             )

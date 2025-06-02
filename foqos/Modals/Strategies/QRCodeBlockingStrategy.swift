@@ -23,7 +23,6 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,
-        sessionId: String?,
         forceStart: Bool?
     ) -> (any View)? {
         return LabeledCodeScannerView(
@@ -39,7 +38,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
                         allowOnly: profile.enableAllowMode
                     )
 
-                let tag = sessionId ?? result.string
+                let tag = result.string
                 let activeSession =
                     BlockedProfileSession
                     .createSession(

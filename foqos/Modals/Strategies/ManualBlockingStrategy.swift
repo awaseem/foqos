@@ -22,7 +22,6 @@ class ManualBlockingStrategy: BlockingStrategy {
     func startBlocking(
         context: ModelContext,
         profile: BlockedProfiles,
-        sessionId: String?,
         forceStart: Bool?
     ) -> (any View)? {
         self.appBlocker
@@ -36,7 +35,7 @@ class ManualBlockingStrategy: BlockingStrategy {
             BlockedProfileSession
             .createSession(
                 in: context,
-                withTag: sessionId ?? ManualBlockingStrategy.id,
+                withTag: ManualBlockingStrategy.id,
                 withProfile: profile,
                 forceStart: forceStart ?? false
             )

@@ -120,9 +120,7 @@ class StrategyManager: ObservableObject {
                 manualStrategy.startBlocking(
                     context: context,
                     profile: profile,
-                    sessionId: url.absoluteString,
-                    // TODO switch to truw after removing session ID from protocol
-                    forceStart: false
+                    forceStart: true
                 )
             }
         } catch {
@@ -158,7 +156,6 @@ class StrategyManager: ObservableObject {
             manualStrategy.startBlocking(
                 context: context,
                 profile: profile,
-                sessionId: nil,
                 forceStart: true
             )
         } catch {
@@ -277,7 +274,6 @@ class StrategyManager: ObservableObject {
             let view = strategy.startBlocking(
                 context: context,
                 profile: definedProfile,
-                sessionId: nil,
                 forceStart: false
             )
 
