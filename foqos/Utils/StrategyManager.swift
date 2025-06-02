@@ -45,6 +45,7 @@ class StrategyManager: ObservableObject {
             startTimer()
 
             // Start live activity for existing session if one exists
+            // live activities can only be started when the app is in the foreground
             if let session = activeSession {
                 liveActivityManager.startSessionActivity(session: session)
             }
