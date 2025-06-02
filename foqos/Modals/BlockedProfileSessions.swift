@@ -45,7 +45,7 @@ class BlockedProfileSession {
         self.tag = tag
         self.blockedProfile = blockedProfile
         self.startTime = Date()
-        self.forceStarted = false
+        self.forceStarted = forceStarted
 
         // Add this session to the profile's sessions array
         blockedProfile.sessions.append(self)
