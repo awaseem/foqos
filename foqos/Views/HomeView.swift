@@ -175,7 +175,7 @@ struct HomeView: View {
                 showErrorAlert(message: message)
             }
         }
-        .task {
+        .onAppear {
             loadApp()
         }
         .onDisappear {
