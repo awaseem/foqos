@@ -10,7 +10,7 @@ import BackgroundTasks
 import SwiftData
 import SwiftUI
 
-private let container: ModelContainer = {
+fileprivate let container: ModelContainer = {
     do {
         return try ModelContainer(
             for: BlockedProfileSession.self,

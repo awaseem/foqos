@@ -30,6 +30,7 @@ class AppBlockerUtil {
         } else {
             store.shield.applications =  applicationTokens
             store.shield.applicationCategories = .specific(categoriesTokens)
+            store.shield.webDomainCategories = .specific(categoriesTokens)
             store.shield.webDomains = webTokens
         }
         
