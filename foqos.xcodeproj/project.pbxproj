@@ -97,14 +97,14 @@
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 		};
-		804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */ = {
+		804415942DE7E94B0000CAE4 /* Exceptions for "Foqos" folder in "FoqosDeviceMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Modals/Shared.swift,
 			);
 			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
 		};
-		807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */ = {
+		807B2B8A2CC0ACCD00944D2B /* Exceptions for "Foqos" folder in "foqos" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -130,23 +130,23 @@
 			path = FoqosDeviceMonitor;
 			sourceTree = "<group>";
 		};
-		801B20972CB363A10073E9E2 /* foqos */ = {
+		801B20972CB363A10073E9E2 /* Foqos */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				807B2B8A2CC0ACCD00944D2B /* Exceptions for "foqos" folder in "foqos" target */,
-				804415942DE7E94B0000CAE4 /* Exceptions for "foqos" folder in "FoqosDeviceMonitor" target */,
+				807B2B8A2CC0ACCD00944D2B /* Exceptions for "Foqos" folder in "foqos" target */,
+				804415942DE7E94B0000CAE4 /* Exceptions for "Foqos" folder in "FoqosDeviceMonitor" target */,
 			);
-			path = foqos;
+			path = Foqos;
 			sourceTree = "<group>";
 		};
-		801B20A92CB363A20073E9E2 /* foqosTests */ = {
+		801B20A92CB363A20073E9E2 /* FoqosTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = foqosTests;
+			path = FoqosTests;
 			sourceTree = "<group>";
 		};
-		801B20B32CB363A20073E9E2 /* foqosUITests */ = {
+		801B20B32CB363A20073E9E2 /* FoqosUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = foqosUITests;
+			path = FoqosUITests;
 			sourceTree = "<group>";
 		};
 		80FF38902D80DB540032BC5E /* FoqosWidget */ = {
@@ -208,9 +208,9 @@
 			isa = PBXGroup;
 			children = (
 				8015A1F42D80E1BA0037DFE9 /* FoqosWidgetExtension.entitlements */,
-				801B20972CB363A10073E9E2 /* foqos */,
-				801B20A92CB363A20073E9E2 /* foqosTests */,
-				801B20B32CB363A20073E9E2 /* foqosUITests */,
+				801B20972CB363A10073E9E2 /* Foqos */,
+				801B20A92CB363A20073E9E2 /* FoqosTests */,
+				801B20B32CB363A20073E9E2 /* FoqosUITests */,
 				80FF38902D80DB540032BC5E /* FoqosWidget */,
 				8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
@@ -282,7 +282,7 @@
 				801713122DE6C78C00B77FE1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				801B20972CB363A10073E9E2 /* foqos */,
+				801B20972CB363A10073E9E2 /* Foqos */,
 			);
 			name = foqos;
 			packageProductDependencies = (
@@ -306,7 +306,7 @@
 				801B20A82CB363A20073E9E2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				801B20A92CB363A20073E9E2 /* foqosTests */,
+				801B20A92CB363A20073E9E2 /* FoqosTests */,
 			);
 			name = foqosTests;
 			packageProductDependencies = (
@@ -329,7 +329,7 @@
 				801B20B22CB363A20073E9E2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				801B20B32CB363A20073E9E2 /* foqosUITests */,
+				801B20B32CB363A20073E9E2 /* FoqosUITests */,
 			);
 			name = foqosUITests;
 			packageProductDependencies = (
