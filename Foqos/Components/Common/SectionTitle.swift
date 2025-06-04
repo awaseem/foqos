@@ -21,17 +21,7 @@ struct SectionTitle: View {
             Spacer()
             
             if let buttonText = buttonText, let buttonAction = buttonAction {
-                Button(action: buttonAction) {
-                    Text(buttonText)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.secondary.opacity(0.3))
-                        .cornerRadius(16)
-                }
-                .buttonStyle(PlainButtonStyle())
+                RoundedButton(buttonText, action: buttonAction)
             }
         }
         .padding(.bottom, 10)
