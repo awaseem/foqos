@@ -2,18 +2,21 @@ import SwiftUI
 
 let THREADS_URL = "https://www.threads.com/@softwarecuddler"
 let TWITTER_URL = "https://x.com/softwarecuddler"
+let DONATE_URL = "https://buymeacoffee.com/softwarecuddler"  // You can replace this with your actual donation URL
 
 struct SupportView: View {
+    @EnvironmentObject var donationManager: TipManager
+
     var body: some View {
         // Thank you stamp image and header
         VStack(alignment: .center, spacing: 30) {
-            // Thank you stamp image from assets
+            Spacer()
+
             Image("ThankYouStamp")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 300, height: 300)
 
-            // Thank you header
             Text("Thank you!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -49,6 +52,12 @@ struct SupportView: View {
                         .frame(width: 30, height: 30)
                 }
             }
+            
+            Spacer()
+            
+            ActionButton(title: "Donate", backgroundColor: .red, action: {
+                donationManager.tip()
+            })
         }
         .padding(.horizontal, 20)
     }
@@ -57,5 +66,6 @@ struct SupportView: View {
 #Preview {
     NavigationView {
         SupportView()
+            .environmentObject(TipManager())
     }
 }
