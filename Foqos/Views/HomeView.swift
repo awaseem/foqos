@@ -64,10 +64,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 30) {
-                Text("Foqos")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 16)
+                AppTitle()
 
                 if profiles.isEmpty {
                     Welcome(onTap: {
