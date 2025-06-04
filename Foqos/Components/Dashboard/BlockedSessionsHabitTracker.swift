@@ -62,22 +62,10 @@ struct BlockedSessionsHabitTracker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Header section with toggle
-            HStack {
-                SectionTitle("4 Week Activity")
-                Spacer()
-                Button(action: {
+            HStack(alignment: .center) {
+                SectionTitle("4 Week Activity", buttonText: "Hide", buttonAction: {
                     showHabitTracker.toggle()
-                }) {
-                    Text(showHabitTracker ? "Hide" : "Show")
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.gray)
-                        .clipShape(Capsule())
-                }
+                }, buttonIcon: "eye.slash")
             }
 
             ZStack {

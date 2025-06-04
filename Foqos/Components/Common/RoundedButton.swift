@@ -12,8 +12,8 @@ struct RoundedButton: View {
     init(
         _ text: String,
         action: @escaping () -> Void,
-        backgroundColor: Color = Color.secondary.opacity(0.3),
-        textColor: Color = .white,
+        backgroundColor: Color = Color.secondary.opacity(0.2),
+        textColor: Color = .gray,
         font: Font = .subheadline,
         fontWeight: Font.Weight = .medium,
         iconName: String? = nil

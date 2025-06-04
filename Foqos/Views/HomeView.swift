@@ -64,7 +64,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 30) {
-                HStack {
+                HStack(alignment: .center) {
                     AppTitle()
                     Spacer()
                     RoundedButton("Support Us", action: {
