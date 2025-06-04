@@ -52,12 +52,18 @@ struct SupportView: View {
                         .frame(width: 30, height: 30)
                 }
             }
-            
+
             Spacer()
-            
-            ActionButton(title: "Donate", backgroundColor: .red, action: {
-                donationManager.tip()
-            })
+
+            ActionButton(
+                title: "Donate",
+                backgroundColor: .green,
+                iconName: "heart.fill",
+                isLoading: donationManager.loadingTip,
+                action: {
+                    donationManager.tip()
+                }
+            )
         }
         .padding(.horizontal, 20)
     }
