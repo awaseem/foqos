@@ -6,6 +6,9 @@ let DONATE_URL = "https://buymeacoffee.com/softwarecuddler"  // You can replace 
 
 struct SupportView: View {
     @EnvironmentObject var donationManager: TipManager
+    @State private var stampScale: CGFloat = 0.1
+    @State private var stampRotation: Double = 0
+    @State private var stampOpacity: Double = 0.0
 
     var body: some View {
         // Thank you stamp image and header
@@ -16,6 +19,16 @@ struct SupportView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 300, height: 300)
+                .scaleEffect(stampScale)
+                .rotationEffect(.degrees(stampRotation))
+                .opacity(stampOpacity)
+                .onAppear {
+                    withAnimation() {
+                        stampScale = 1.0
+                        stampRotation = 8
+                        stampOpacity = 1.0
+                    }
+                }
 
             Text("Thank you!")
                 .font(.largeTitle)
