@@ -73,7 +73,8 @@ struct BlockedProfileCarousel: View {
                 buttonText: "Manage",
                 buttonAction: {
                     onManageTapped()
-                }
+                },
+                buttonIcon: "person.crop.circle"
             )
             .padding(.horizontal, 16)
 

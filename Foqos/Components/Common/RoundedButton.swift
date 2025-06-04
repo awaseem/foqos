@@ -7,6 +7,7 @@ struct RoundedButton: View {
     let textColor: Color
     let font: Font
     let fontWeight: Font.Weight
+    let iconName: String?
     
     init(
         _ text: String,
@@ -14,7 +15,8 @@ struct RoundedButton: View {
         backgroundColor: Color = Color.secondary.opacity(0.3),
         textColor: Color = .white,
         font: Font = .subheadline,
-        fontWeight: Font.Weight = .medium
+        fontWeight: Font.Weight = .medium,
+        iconName: String? = nil
     ) {
         self.text = text
         self.action = action
@@ -22,18 +24,27 @@ struct RoundedButton: View {
         self.textColor = textColor
         self.font = font
         self.fontWeight = fontWeight
+        self.iconName = iconName
     }
     
     var body: some View {
         Button(action: action) {
-            Text(text)
-                .font(font)
-                .fontWeight(fontWeight)
-                .foregroundColor(textColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(backgroundColor)
-                .cornerRadius(16)
+            HStack(spacing: 6) {
+                if let iconName = iconName {
+                    Image(systemName: iconName)
+                        .font(font)
+                        .fontWeight(fontWeight)
+                }
+                
+                Text(text)
+                    .font(font)
+                    .fontWeight(fontWeight)
+            }
+            .foregroundColor(textColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(backgroundColor)
+            .cornerRadius(16)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -46,21 +57,27 @@ struct RoundedButton: View {
             print("See All tapped")
         }
         
-        RoundedButton("View Report") {
-            print("View Report tapped")
-        }
+        RoundedButton("View Report", 
+                     action: { print("View Report tapped") },
+                     iconName: "chart.bar")
         
         RoundedButton("Custom Style", 
                      action: { print("Custom tapped") },
                      backgroundColor: .blue,
-                     textColor: .white)
+                     textColor: .white,
+                     iconName: "star.fill")
         
         RoundedButton("Large Button", 
                      action: { print("Large tapped") },
                      backgroundColor: .green.opacity(0.2),
                      textColor: .green,
                      font: .title3,
-                     fontWeight: .semibold)
+                     fontWeight: .semibold,
+                     iconName: "checkmark.circle")
+        
+        RoundedButton("Settings", 
+                     action: { print("Settings tapped") },
+                     iconName: "gear")
     }
     .padding(20)
 } 

@@ -4,11 +4,13 @@ struct SectionTitle: View {
     let title: String
     let buttonText: String?
     let buttonAction: (() -> Void)?
+    let buttonIcon: String?
     
-    init(_ title: String, buttonText: String? = nil, buttonAction: (() -> Void)? = nil) {
+    init(_ title: String, buttonText: String? = nil, buttonAction: (() -> Void)? = nil, buttonIcon: String? = nil) {
         self.title = title
         self.buttonText = buttonText
         self.buttonAction = buttonAction
+        self.buttonIcon = buttonIcon
     }
     
     var body: some View {
@@ -21,7 +23,7 @@ struct SectionTitle: View {
             Spacer()
             
             if let buttonText = buttonText, let buttonAction = buttonAction {
-                RoundedButton(buttonText, action: buttonAction)
+                RoundedButton(buttonText, action: buttonAction, iconName: buttonIcon)
             }
         }
         .padding(.bottom, 10)
