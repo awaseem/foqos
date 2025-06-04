@@ -64,7 +64,13 @@ struct HomeView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 30) {
-                AppTitle()
+                HStack {
+                    AppTitle()
+                    Spacer()
+                    RoundedButton("Support Us", action: {
+                        donationManager.tip()
+                    }, iconName: "heart.fill")
+                }.padding(.trailing, 16)
 
                 if profiles.isEmpty {
                     Welcome(onTap: {
@@ -103,26 +109,6 @@ struct HomeView: View {
                         }
                     )
                 }
-
-                ManageSection(actions: [
-                    ManageAction(
-                        icon: "cart.fill",
-                        label: "Purchase NFC tags",
-                        color: .gray,
-                        action: {
-                            if let url = URL(string: AMZN_STORE_LINK) {
-                                openURL(url)
-                            }
-                        }
-                    ),
-                    ManageAction(
-                        icon: "heart.fill",
-                        label: "Support us",
-                        color: .pink,
-                        action: { donationManager.tip() }
-                    ),
-                ])
-                .padding(.horizontal, 16)
 
                 VersionFooter()
                     .frame(maxWidth: .infinity)
