@@ -192,6 +192,7 @@ struct BlockedProfileView: View {
                                 Spacer()
                             }
                         }
+                        .disabled(isBlocking)
 
                         Button(action: {
                             showingGeneratedQRCode = true
@@ -202,6 +203,7 @@ struct BlockedProfileView: View {
                                 Spacer()
                             }
                         }
+                        .disabled(isBlocking)
                     }
                 }
 
