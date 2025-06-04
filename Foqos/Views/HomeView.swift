@@ -10,7 +10,6 @@ struct HomeView: View {
 
     @EnvironmentObject var requestAuthorizer: RequestAuthorizer
     @EnvironmentObject var strategyManager: StrategyManager
-    @EnvironmentObject var donationManager: TipManager
     @EnvironmentObject var navigationManager: NavigationManager
     @EnvironmentObject var ratingManager: RatingManager
 
@@ -24,6 +23,9 @@ struct HomeView: View {
 
     // Edit profile
     @State private var profileToEdit: BlockedProfiles? = nil
+
+    // Donation View
+    @State private var showDonationView = false
 
     // Activity sessions
     @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
@@ -68,7 +70,7 @@ struct HomeView: View {
                     AppTitle()
                     Spacer()
                     RoundedButton("Support Us", action: {
-                        donationManager.tip()
+                        showDonationView = true
                     }, iconName: "heart.fill")
                 }.padding(.trailing, 16)
 
@@ -174,6 +176,9 @@ struct HomeView: View {
             BlockingStrategyActionView(
                 customView: strategyManager.customStrategyView
             )
+        }
+        .sheet(isPresented: $showDonationView) {
+            SupportView()
         }
         .alert(alertTitle, isPresented: $showingAlert) {
             Button("OK", role: .cancel) { dismissAlert() }
