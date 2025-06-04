@@ -13,6 +13,7 @@ struct BlockedProfileCarousel: View {
     var onStopTapped: (BlockedProfiles) -> Void
     var onEditTapped: (BlockedProfiles) -> Void
     var onBreakTapped: (BlockedProfiles) -> Void
+    var onManageTapped: () -> Void
 
     // State for tracking current profile index and drag gesture
     @State private var currentIndex: Int = 0
@@ -39,7 +40,8 @@ struct BlockedProfileCarousel: View {
         onStartTapped: @escaping (BlockedProfiles) -> Void,
         onStopTapped: @escaping (BlockedProfiles) -> Void,
         onEditTapped: @escaping (BlockedProfiles) -> Void,
-        onBreakTapped: @escaping (BlockedProfiles) -> Void
+        onBreakTapped: @escaping (BlockedProfiles) -> Void,
+        onManageTapped: @escaping () -> Void
     ) {
         self.profiles = profiles
         self.isBlocking = isBlocking
@@ -51,6 +53,7 @@ struct BlockedProfileCarousel: View {
         self.onStopTapped = onStopTapped
         self.onEditTapped = onEditTapped
         self.onBreakTapped = onBreakTapped
+        self.onManageTapped = onManageTapped
     }
 
     // Initialize current index based on active profile
@@ -65,8 +68,14 @@ struct BlockedProfileCarousel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
 
-            SectionTitle(titleMessage)
-                .padding(.horizontal, 16)
+            SectionTitle(
+                titleMessage,
+                buttonText: "Manage",
+                buttonAction: {
+                    onManageTapped()
+                }
+            )
+            .padding(.horizontal, 16)
 
             VStack(spacing: 16) {
                 // Card carousel
@@ -230,7 +239,8 @@ struct BlockedProfileCarousel: View {
             onStartTapped: { _ in },
             onStopTapped: { _ in },
             onEditTapped: { _ in },
-            onBreakTapped: { _ in }
+            onBreakTapped: { _ in },
+            onManageTapped: {}
         )
     }
 }
@@ -274,7 +284,8 @@ struct BlockedProfileCarousel: View {
             onStartTapped: { _ in },
             onStopTapped: { _ in },
             onEditTapped: { _ in },
-            onBreakTapped: { _ in }
+            onBreakTapped: { _ in },
+            onManageTapped: {}
         )
     }
 }

@@ -100,17 +100,14 @@ struct HomeView: View {
                         },
                         onBreakTapped: { _ in
                             strategyManager.toggleBreak()
+                        },
+                        onManageTapped: {
+                            isProfileListPresent = true
                         }
                     )
                 }
 
                 ManageSection(actions: [
-                    ManageAction(
-                        icon: "person.crop.circle.fill",
-                        label: "Profiles",
-                        color: .purple,
-                        action: { isProfileListPresent = true }
-                    ),
                     ManageAction(
                         icon: "cart.fill",
                         label: "Purchase NFC tags",
