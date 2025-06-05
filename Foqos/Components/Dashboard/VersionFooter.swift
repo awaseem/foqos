@@ -1,5 +1,7 @@
 import SwiftUI
 
+let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
+
 struct VersionFooter: View {
     // Get the current app version from the bundle
     private var appVersion: String {
@@ -18,8 +20,8 @@ struct VersionFooter: View {
                 .foregroundColor(.secondary)
 
             Link(
-                "Ambition Software Inc.",
-                destination: URL(string: "https://www.ambitionsoftware.dev/")!
+                "Buy NFC Tags Here",
+                destination: URL(string: AMZN_STORE_LINK)!
             )
             .font(.footnote)
             .tint(.blue)

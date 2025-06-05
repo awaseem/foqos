@@ -3,8 +3,6 @@ import SwiftData
 import SwiftUI
 
 struct HomeView: View {
-    let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
-
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
 
@@ -69,7 +67,7 @@ struct HomeView: View {
                 HStack(alignment: .center) {
                     AppTitle()
                     Spacer()
-                    RoundedButton("Support Us", action: {
+                    RoundedButton("Support", action: {
                         showDonationView = true
                     }, iconName: "heart.fill")
                 }
