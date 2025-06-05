@@ -42,6 +42,9 @@ class TipManager: ObservableObject {
     private func handleVerifiedTransaction(_ transaction: Transaction) async {
         // Add the purchased product identifier to the purchased set
         purchasedProductIDs.insert(transaction.productID)
+        
+        // Clear any previous error since the purchase was successful
+        purchaseError = nil
 
         // Always finish a transaction once you've delivered the content
         await transaction.finish()
@@ -101,6 +104,7 @@ class TipManager: ObservableObject {
             case .verified(let transaction):
                 // Handle successful purchase
                 purchasedProductIDs.insert(transaction.productID)
+                purchaseError = nil  // Clear error on successful purchase
                 Task {
                     await transaction.finish()
                 }
@@ -121,6 +125,7 @@ class TipManager: ObservableObject {
     func tip() {
         Task {
             loadingTip = true
+            purchaseError = nil  // Clear any previous error
 
             do {
                 try await purchase()
