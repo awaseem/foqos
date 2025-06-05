@@ -55,6 +55,7 @@ struct ProfileTimerButton: View {
                         fullWidth: false,
                         equalWidth: true
                     ) {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         onStopTapped()
                     }
                 } else {

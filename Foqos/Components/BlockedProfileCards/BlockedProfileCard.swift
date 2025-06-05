@@ -55,7 +55,10 @@ struct BlockedProfileCard: View {
                     Spacer()
 
                     // Edit button moved to top right
-                    Button(action: onEditTapped) {
+                    Button(action: {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        onEditTapped()
+                    }) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
