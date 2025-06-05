@@ -204,6 +204,13 @@ struct BlockedProfileView: View {
                             }
                         }
                         .disabled(isBlocking)
+                        
+                        if isBlocking {
+                            Text("Disable current session to change")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                        }
                     }
                 }
 
