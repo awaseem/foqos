@@ -192,6 +192,7 @@ struct BlockedProfileView: View {
                                 Spacer()
                             }
                         }
+                        .disabled(isBlocking)
 
                         Button(action: {
                             showingGeneratedQRCode = true
@@ -201,6 +202,14 @@ struct BlockedProfileView: View {
                                 Text("Generate QR code")
                                 Spacer()
                             }
+                        }
+                        .disabled(isBlocking)
+                        
+                        if isBlocking {
+                            Text("Disable current session to change")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
                         }
                     }
                 }
