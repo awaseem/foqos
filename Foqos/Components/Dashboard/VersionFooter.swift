@@ -20,7 +20,7 @@ struct VersionFooter: View {
                 .foregroundColor(.secondary)
 
             Link(
-                "Buy NFC Tags Here",
+                "Buy NFC Tags",
                 destination: URL(string: AMZN_STORE_LINK)!
             )
             .font(.footnote)
