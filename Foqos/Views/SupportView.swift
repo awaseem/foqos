@@ -23,25 +23,21 @@ struct SupportView: View {
                 .rotationEffect(.degrees(stampRotation))
                 .opacity(stampOpacity)
                 .onAppear {
-                    withAnimation() {
-                        stampScale = 1.0
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0)) {
+                        stampScale = 1
                         stampRotation = 8
-                        stampOpacity = 1.0
+                        stampOpacity = 1
                     }
                 }
-
-            Text("Thank you!")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.primary)
+                .padding(.bottom, 20)
 
             Text(
-                "I set out to create Foqos to help people focus on life, wellness like this should always be free and simple. Reviews, shares and donations help us keep going!"
+                "Thank you from the bottom of my heart! I created Foqos because I believe everyone deserves tools to live with more focus and intention. Your support, whether through reviews, shares, or donations helps keep this dream alive and accessible to everyone who needs it"
             )
             .font(.body)
             .multilineTextAlignment(.center)
             .foregroundColor(.secondary)
+            .fadeInSlide(delay: 0.3)
 
             Text(
                 "Questions? Reach out to me."
@@ -49,6 +45,7 @@ struct SupportView: View {
             .font(.body)
             .multilineTextAlignment(.center)
             .foregroundColor(.secondary)
+            .fadeInSlide(delay: 0.4)
 
             HStack(alignment: .center, spacing: 20) {
                 Link(destination: URL(string: THREADS_URL)!) {
@@ -65,6 +62,7 @@ struct SupportView: View {
                         .frame(width: 30, height: 30)
                 }
             }
+            .fadeInSlide(delay: 0.5)
 
             Spacer()
 
@@ -77,6 +75,7 @@ struct SupportView: View {
                     donationManager.tip()
                 }
             )
+            .fadeInSlide(delay: 0.6)
         }
         .padding(.horizontal, 20)
     }
