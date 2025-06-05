@@ -42,7 +42,7 @@ struct RoundedButton: View {
             }
             .foregroundColor(textColor)
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.vertical, 8)
             .background(backgroundColor)
             .cornerRadius(16)
         }
