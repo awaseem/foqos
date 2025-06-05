@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct RoundedButton: View {
     let text: String
@@ -28,7 +29,12 @@ struct RoundedButton: View {
     }
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+            
+            action()
+        }) {
             HStack(spacing: 6) {
                 if let iconName = iconName {
                     Image(systemName: iconName)
