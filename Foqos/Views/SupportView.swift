@@ -67,12 +67,15 @@ struct SupportView: View {
             Spacer()
 
             ActionButton(
-                title: "Donate",
-                backgroundColor: .green,
+                title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
+                backgroundColor: donationManager.hasPurchasedTip ? .gray : .green,
                 iconName: "heart.fill",
+                iconColor: donationManager.hasPurchasedTip ? .red : nil,
                 isLoading: donationManager.loadingTip,
                 action: {
-                    donationManager.tip()
+                    if !donationManager.hasPurchasedTip {
+                        donationManager.tip()
+                    }
                 }
             )
             .fadeInSlide(delay: 0.6)

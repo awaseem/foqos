@@ -4,6 +4,7 @@ struct ActionButton: View {
     let title: String
     let backgroundColor: Color?
     let iconName: String?
+    let iconColor: Color?
     let isLoading: Bool
     
     let action: () -> Void
@@ -12,12 +13,14 @@ struct ActionButton: View {
         title: String,
         backgroundColor: Color? = nil,
         iconName: String? = nil,
+        iconColor: Color? = nil,
         isLoading: Bool = false,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.backgroundColor = backgroundColor
         self.iconName = iconName
+        self.iconColor = iconColor
         self.isLoading = isLoading
         self.action = action
     }
@@ -33,13 +36,14 @@ struct ActionButton: View {
                     if let iconName = iconName {
                         Image(systemName: iconName)
                             .font(.headline)
+                            .foregroundColor(iconColor ?? .white)
                     }
                     
                     Text(title)
                         .font(.headline)
+                        .foregroundColor(.white)
                 }
             }
-            .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(backgroundColor ?? Color.indigo)
@@ -91,6 +95,16 @@ struct ActionButton: View {
             iconName: "checkmark.circle"
         ) {
             print("Complete tapped")
+        }
+        
+        // Custom icon color example
+        ActionButton(
+            title: "Favorite",
+            backgroundColor: .gray,
+            iconName: "heart.fill",
+            iconColor: .red
+        ) {
+            print("Favorite tapped")
         }
         
         // Loading with custom color

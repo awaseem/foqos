@@ -8,6 +8,11 @@ class TipManager: ObservableObject {
     @Published var loadingTip = false
 
     private let productID = "tip_developer_support"
+    
+    // Computed property to check if tip has been purchased
+    var hasPurchasedTip: Bool {
+        return purchasedProductIDs.contains(productID)
+    }
 
     init() {
         Task {
