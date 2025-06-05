@@ -72,7 +72,9 @@ struct HomeView: View {
                     RoundedButton("Support Us", action: {
                         showDonationView = true
                     }, iconName: "heart.fill")
-                }.padding(.trailing, 16)
+                }
+                .padding(.trailing, 16)
+                .padding(.top, 16)
 
                 if profiles.isEmpty {
                     Welcome(onTap: {
