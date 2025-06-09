@@ -11,6 +11,7 @@ class BlockedProfiles {
     var createdAt: Date
     var updatedAt: Date
     var blockingStrategyId: String?
+    var order: Int = 0
 
     var enableLiveActivity: Bool = false
     var reminderTimeInSeconds: UInt32?
@@ -31,7 +32,8 @@ class BlockedProfiles {
         reminderTimeInSeconds: UInt32? = nil,
         enableBreaks: Bool = false,
         enableStrictMode: Bool = false,
-        enableAllowMode: Bool = false
+        enableAllowMode: Bool = false,
+        order: Int = 0
     ) {
         self.id = id
         self.name = name
@@ -39,6 +41,7 @@ class BlockedProfiles {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.blockingStrategyId = blockingStrategyId
+        self.order = order
 
         self.enableLiveActivity = enableLiveActivity
         self.reminderTimeInSeconds = reminderTimeInSeconds
@@ -51,7 +54,7 @@ class BlockedProfiles {
         -> [BlockedProfiles]
     {
         let descriptor = FetchDescriptor<BlockedProfiles>(
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            sortBy: [SortDescriptor(\.order, order: .forward), SortDescriptor(\.createdAt, order: .reverse)]
         )
         return try context.fetch(descriptor)
     }
@@ -84,7 +87,8 @@ class BlockedProfiles {
         reminderTime: UInt32? = nil,
         enableBreaks: Bool? = nil,
         enableStrictMode: Bool? = nil,
-        enableAllowMode: Bool? = nil
+        enableAllowMode: Bool? = nil,
+        order: Int? = nil
     ) throws {
         if let newName = name {
             profile.name = newName
@@ -112,6 +116,10 @@ class BlockedProfiles {
 
         if let newEnableAllowMode = enableAllowMode {
             profile.enableAllowMode = newEnableAllowMode
+        }
+
+        if let newOrder = order {
+            profile.order = newOrder
         }
 
         profile.reminderTimeInSeconds = reminderTime
@@ -150,5 +158,25 @@ class BlockedProfiles {
 
     static func getProfileDeepLink(_ profile: BlockedProfiles) -> String {
         return "https://foqos.app/profile/" + profile.id.uuidString
+    }
+
+    static func reorderProfiles(
+        _ profiles: [BlockedProfiles],
+        in context: ModelContext
+    ) throws {
+        for (index, profile) in profiles.enumerated() {
+            profile.order = index
+        }
+        try context.save()
+    }
+
+    static func getNextOrder(in context: ModelContext) -> Int {
+        let descriptor = FetchDescriptor<BlockedProfiles>(
+            sortBy: [SortDescriptor(\.order, order: .reverse)]
+        )
+        guard let lastProfile = try? context.fetch(descriptor).first else {
+            return 0
+        }
+        return lastProfile.order + 1
     }
 }

@@ -12,7 +12,7 @@ struct HomeView: View {
     @EnvironmentObject var ratingManager: RatingManager
 
     // Profile management
-    @Query(sort: \BlockedProfiles.createdAt, order: .reverse) private
+    @Query(sort: [SortDescriptor(\BlockedProfiles.order, order: .forward), SortDescriptor(\BlockedProfiles.createdAt, order: .reverse)]) private
         var profiles: [BlockedProfiles]
     @State private var isProfileListPresent = false
 
