@@ -2,319 +2,321 @@ import SwiftData
 import SwiftUI
 
 class StrategyManager: ObservableObject {
-    static var shared = StrategyManager()
+  static var shared = StrategyManager()
 
-    static let availableStrategies: [BlockingStrategy] = [
-        NFCBlockingStrategy(),
-        ManualBlockingStrategy(),
-        NFCManualBlockingStrategy(),
-        QRCodeBlockingStrategy(),
-        QRManualBlockingStrategy(),
-    ]
+  static let availableStrategies: [BlockingStrategy] = [
+    NFCBlockingStrategy(),
+    ManualBlockingStrategy(),
+    NFCManualBlockingStrategy(),
+    QRCodeBlockingStrategy(),
+    QRManualBlockingStrategy(),
+  ]
 
-    @Published var elapsedTime: TimeInterval = 0
-    @Published var timer: Timer?
-    @Published var activeSession: BlockedProfileSession?
+  @Published var elapsedTime: TimeInterval = 0
+  @Published var timer: Timer?
+  @Published var activeSession: BlockedProfileSession?
 
-    @Published var showCustomStrategyView: Bool = false
-    @Published var customStrategyView: (any View)? = nil
+  @Published var showCustomStrategyView: Bool = false
+  @Published var customStrategyView: (any View)? = nil
 
-    @Published var errorMessage: String?
+  @Published var errorMessage: String?
 
-    private let liveActivityManager = LiveActivityManager.shared
+  private let liveActivityManager = LiveActivityManager.shared
 
-    private let timersUtil = TimersUtil()
-    private let appBlocker = AppBlockerUtil()
+  private let timersUtil = TimersUtil()
+  private let appBlocker = AppBlockerUtil()
 
-    var isBlocking: Bool {
-        return activeSession?.isActive == true
+  var isBlocking: Bool {
+    return activeSession?.isActive == true
+  }
+
+  var isBreakActive: Bool {
+    return activeSession?.isBreakActive == true
+  }
+
+  var isBreakAvailable: Bool {
+    return activeSession?.isBreakAvailable ?? false
+  }
+
+  func loadActiveSession(context: ModelContext) {
+    activeSession = getActiveSession(context: context)
+
+    if activeSession?.isActive == true {
+      startTimer()
+
+      // Start live activity for existing session if one exists
+      // live activities can only be started when the app is in the foreground
+      if let session = activeSession {
+        liveActivityManager.startSessionActivity(session: session)
+      }
+    }
+  }
+
+  func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
+    if isBlocking {
+      stopBlocking(context: context)
+    } else {
+      startBlocking(context: context, activeProfile: activeProfile)
+    }
+  }
+
+  func toggleBreak() {
+    guard let session = activeSession else {
+      print("active session does not exist")
+      return
     }
 
-    var isBreakActive: Bool {
-        return activeSession?.isBreakActive == true
+    if session.isBreakActive {
+      stopBreak()
+    } else {
+      startBreak()
+    }
+  }
+
+  func startTimer() {
+    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+      if let startTime = self.activeSession?.startTime {
+        self.elapsedTime = Date().timeIntervalSince(startTime)
+      }
+    }
+  }
+
+  func stopTimer() {
+    timer?.invalidate()
+    timer = nil
+  }
+
+  func toggleSessionFromDeeplink(
+    _ profileId: String,
+    url: URL,
+    context: ModelContext
+  ) {
+    guard let profileUUID = UUID(uuidString: profileId) else {
+      self.errorMessage = "failed to parse profile in tag"
+      return
     }
 
-    var isBreakAvailable: Bool {
-        return activeSession?.isBreakAvailable ?? false
-    }
-
-    func loadActiveSession(context: ModelContext) {
-        activeSession = getActiveSession(context: context)
-
-        if activeSession?.isActive == true {
-            startTimer()
-
-            // Start live activity for existing session if one exists
-            // live activities can only be started when the app is in the foreground
-            if let session = activeSession {
-                liveActivityManager.startSessionActivity(session: session)
-            }
-        }
-    }
-
-    func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?)
-    {
-        if isBlocking {
-            stopBlocking(context: context)
-        } else {
-            startBlocking(context: context, activeProfile: activeProfile)
-        }
-    }
-
-    func toggleBreak() {
-        guard let session = activeSession else {
-            print("active session does not exist")
-            return
-        }
-
-        if session.isBreakActive {
-            stopBreak()
-        } else {
-            startBreak()
-        }
-    }
-
-    func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if let startTime = self.activeSession?.startTime {
-                self.elapsedTime = Date().timeIntervalSince(startTime)
-            }
-        }
-    }
-
-    func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    func toggleSessionFromDeeplink(
-        _ profileId: String,
-        url: URL,
-        context: ModelContext
-    ) {
-        guard let profileUUID = UUID(uuidString: profileId) else {
-            self.errorMessage = "failed to parse profile in tag"
-            return
-        }
-
-        do {
-            guard
-                let profile = try BlockedProfiles.findProfile(
-                    byID: profileUUID,
-                    in: context
-                )
-            else {
-                self.errorMessage =
-                    "Failed to find a profile stored locally that matches the tag"
-                return
-            }
-
-            let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
-
-            if let localActiveSession = getActiveSession(context: context) {
-                manualStrategy
-                    .stopBlocking(
-                        context: context,
-                        session: localActiveSession
-                    )
-            } else {
-                manualStrategy.startBlocking(
-                    context: context,
-                    profile: profile,
-                    forceStart: true
-                )
-            }
-        } catch {
-            self.errorMessage = "Something went wrong fetching profile"
-        }
-    }
-
-    func startSessionFromBackground(
-        _ profileId: UUID,
-        context: ModelContext
-    ) {
-        do {
-            guard
-                let profile = try BlockedProfiles.findProfile(
-                    byID: profileId,
-                    in: context
-                )
-            else {
-                self.errorMessage =
-                    "Failed to find a profile stored locally that matches the tag"
-                return
-            }
-
-            let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
-
-            if let localActiveSession = getActiveSession(context: context) {
-                print(
-                    "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
-                )
-                return
-            }
-
-            manualStrategy.startBlocking(
-                context: context,
-                profile: profile,
-                forceStart: true
-            )
-        } catch {
-            self.errorMessage = "Something went wrong fetching profile"
-        }
-    }
-
-    static func getStrategyFromId(id: String) -> BlockingStrategy {
-        if let strategy = availableStrategies.first(
-            where: {
-                $0.getIdentifier() == id
-            })
-        {
-            return strategy
-        } else {
-            return NFCBlockingStrategy()
-        }
-    }
-
-    func getStrategy(id: String) -> BlockingStrategy {
-        var strategy = StrategyManager.getStrategyFromId(id: id)
-
-        strategy.onSessionCreation = { session in
-            self.dismissView()
-
-            switch session {
-            case .started(let session):
-                self.activeSession = session
-                self.startTimer()
-                self.errorMessage = nil
-                self.liveActivityManager
-                    .startSessionActivity(session: session)
-            case .ended(let endedProfile):
-                self.activeSession = nil
-                self.liveActivityManager.endSessionActivity()
-                self.timersUtil.cancelAll()
-                self.scheduleReminder(profile: endedProfile)
-
-                self.stopTimer()
-                self.elapsedTime = 0
-            }
-        }
-
-        strategy.onErrorMessage = { message in
-            self.dismissView()
-
-            self.errorMessage = message
-        }
-
-        return strategy
-    }
-
-    private func startBreak() {
-        guard let session = activeSession else {
-            print("Breaks only available in active session")
-            return
-        }
-
-        if !session.isBreakAvailable {
-            print("Breaks is not availble")
-            return
-        }
-
-        appBlocker.deactivateRestrictions()
-        session.startBreak()
-    }
-
-    private func stopBreak() {
-        guard let session = activeSession else {
-            print("Breaks only available in active session")
-            return
-        }
-
-        if !session.isBreakAvailable {
-            print("Breaks is not availble")
-            return
-        }
-
-        appBlocker
-            .activateRestrictions(
-                selection: session.blockedProfile.selectedActivity
-            )
-        session.endBreak()
-    }
-
-    private func dismissView() {
-        showCustomStrategyView = false
-        customStrategyView = nil
-    }
-
-    private func getActiveSession(context: ModelContext)
-        -> BlockedProfileSession?
-    {
+    do {
+      guard
+        let profile = try BlockedProfiles.findProfile(
+          byID: profileUUID,
+          in: context
+        )
+      else {
+        self.errorMessage =
+          "Failed to find a profile stored locally that matches the tag"
         return
-            BlockedProfileSession
-            .mostRecentActiveSession(in: context)
+      }
+
+      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+
+      if let localActiveSession = getActiveSession(context: context) {
+        manualStrategy
+          .stopBlocking(
+            context: context,
+            session: localActiveSession
+          )
+      } else {
+        manualStrategy.startBlocking(
+          context: context,
+          profile: profile,
+          forceStart: true
+        )
+      }
+    } catch {
+      self.errorMessage = "Something went wrong fetching profile"
+    }
+  }
+
+  func startSessionFromBackground(
+    _ profileId: UUID,
+    context: ModelContext
+  ) {
+    do {
+      guard
+        let profile = try BlockedProfiles.findProfile(
+          byID: profileId,
+          in: context
+        )
+      else {
+        self.errorMessage =
+          "Failed to find a profile stored locally that matches the tag"
+        return
+      }
+
+      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+
+      if let localActiveSession = getActiveSession(context: context) {
+        print(
+          "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
+        )
+        return
+      }
+
+      manualStrategy.startBlocking(
+        context: context,
+        profile: profile,
+        forceStart: true
+      )
+    } catch {
+      self.errorMessage = "Something went wrong fetching profile"
+    }
+  }
+
+  static func getStrategyFromId(id: String) -> BlockingStrategy {
+    if let strategy = availableStrategies.first(
+      where: {
+        $0.getIdentifier() == id
+      })
+    {
+      return strategy
+    } else {
+      return NFCBlockingStrategy()
+    }
+  }
+
+  func getStrategy(id: String) -> BlockingStrategy {
+    var strategy = StrategyManager.getStrategyFromId(id: id)
+
+    strategy.onSessionCreation = { session in
+      self.dismissView()
+
+      switch session {
+      case .started(let session):
+        self.activeSession = session
+        self.startTimer()
+        self.errorMessage = nil
+        self.liveActivityManager
+          .startSessionActivity(session: session)
+      case .ended(let endedProfile):
+        self.activeSession = nil
+        self.liveActivityManager.endSessionActivity()
+        self.timersUtil.cancelAll()
+        self.scheduleReminder(profile: endedProfile)
+
+        self.stopTimer()
+        self.elapsedTime = 0
+      }
     }
 
-    private func resultFromURL(_ url: String) -> NFCResult {
-        return NFCResult(id: url, url: url, DateScanned: Date())
+    strategy.onErrorMessage = { message in
+      self.dismissView()
+
+      self.errorMessage = message
     }
 
-    private func startBlocking(
-        context: ModelContext,
-        activeProfile: BlockedProfiles?
-    ) {
-        guard let definedProfile = activeProfile else {
-            print(
-                "No active profile found, calling stop blocking with no session"
-            )
-            return
-        }
+    return strategy
+  }
 
-        if let strategyId = definedProfile.blockingStrategyId {
-            let strategy = getStrategy(id: strategyId)
-            let view = strategy.startBlocking(
-                context: context,
-                profile: definedProfile,
-                forceStart: false
-            )
-
-            if let customView = view {
-                showCustomStrategyView = true
-                customStrategyView = customView
-            }
-        }
+  private func startBreak() {
+    guard let session = activeSession else {
+      print("Breaks only available in active session")
+      return
     }
 
-    private func stopBlocking(context: ModelContext) {
-        guard let session = activeSession else {
-            print(
-                "No active session found, calling stop blocking with no session"
-            )
-            return
-        }
-
-        if let strategyId = session.blockedProfile.blockingStrategyId {
-            let strategy = getStrategy(id: strategyId)
-            let view = strategy.stopBlocking(context: context, session: session)
-
-            if let customView = view {
-                showCustomStrategyView = true
-                customStrategyView = customView
-            }
-        }
+    if !session.isBreakAvailable {
+      print("Breaks is not availble")
+      return
     }
 
-    private func scheduleReminder(profile: BlockedProfiles) {
-        guard let reminderTimeInSeconds = profile.reminderTimeInSeconds else {
-            return
-        }
+    appBlocker.deactivateRestrictions()
+    session.startBreak()
+  }
 
-        let profileName = profile.name
-        timersUtil
-            .scheduleNotification(
-                title: profileName + " time!",
-                message: "Get back to productivity by enabling " + profileName,
-                seconds: TimeInterval(reminderTimeInSeconds)
-            )
+  private func stopBreak() {
+    guard let session = activeSession else {
+      print("Breaks only available in active session")
+      return
     }
+
+    if !session.isBreakAvailable {
+      print("Breaks is not availble")
+      return
+    }
+
+    let profile = session.blockedProfile
+    appBlocker
+      .activateRestrictions(
+        selection: profile.selectedActivity,
+        strict: profile.enableStrictMode,
+        allowOnly: profile.enableAllowMode
+      )
+    session.endBreak()
+  }
+
+  private func dismissView() {
+    showCustomStrategyView = false
+    customStrategyView = nil
+  }
+
+  private func getActiveSession(context: ModelContext)
+    -> BlockedProfileSession?
+  {
+    return
+      BlockedProfileSession
+      .mostRecentActiveSession(in: context)
+  }
+
+  private func resultFromURL(_ url: String) -> NFCResult {
+    return NFCResult(id: url, url: url, DateScanned: Date())
+  }
+
+  private func startBlocking(
+    context: ModelContext,
+    activeProfile: BlockedProfiles?
+  ) {
+    guard let definedProfile = activeProfile else {
+      print(
+        "No active profile found, calling stop blocking with no session"
+      )
+      return
+    }
+
+    if let strategyId = definedProfile.blockingStrategyId {
+      let strategy = getStrategy(id: strategyId)
+      let view = strategy.startBlocking(
+        context: context,
+        profile: definedProfile,
+        forceStart: false
+      )
+
+      if let customView = view {
+        showCustomStrategyView = true
+        customStrategyView = customView
+      }
+    }
+  }
+
+  private func stopBlocking(context: ModelContext) {
+    guard let session = activeSession else {
+      print(
+        "No active session found, calling stop blocking with no session"
+      )
+      return
+    }
+
+    if let strategyId = session.blockedProfile.blockingStrategyId {
+      let strategy = getStrategy(id: strategyId)
+      let view = strategy.stopBlocking(context: context, session: session)
+
+      if let customView = view {
+        showCustomStrategyView = true
+        customStrategyView = customView
+      }
+    }
+  }
+
+  private func scheduleReminder(profile: BlockedProfiles) {
+    guard let reminderTimeInSeconds = profile.reminderTimeInSeconds else {
+      return
+    }
+
+    let profileName = profile.name
+    timersUtil
+      .scheduleNotification(
+        title: profileName + " time!",
+        message: "Get back to productivity by enabling " + profileName,
+        seconds: TimeInterval(reminderTimeInSeconds)
+      )
+  }
 }
