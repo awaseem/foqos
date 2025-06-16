@@ -294,7 +294,8 @@ struct BlockedProfileView: View {
                     enableAllowMode: enableAllowMode
                 )
             } else {
-                // Create new profile
+                // Create new profile with next available order
+                let nextOrder = BlockedProfiles.getNextOrder(in: modelContext)
                 let newProfile = BlockedProfiles(
                     name: name,
                     selectedActivity: selectedActivity,
@@ -304,7 +305,8 @@ struct BlockedProfileView: View {
                     reminderTimeInSeconds: reminderTimeSeconds,
                     enableBreaks: enableBreaks,
                     enableStrictMode: enableStrictMode,
-                    enableAllowMode: enableAllowMode
+                    enableAllowMode: enableAllowMode,
+                    order: nextOrder
                 )
 
                 modelContext.insert(newProfile)

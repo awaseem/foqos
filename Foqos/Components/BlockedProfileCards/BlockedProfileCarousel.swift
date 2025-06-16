@@ -62,6 +62,12 @@ struct BlockedProfileCarousel: View {
             let index = profiles.firstIndex(where: { $0.id == activeId })
         {
             currentIndex = index
+            return
+        }
+
+        if profiles.first != nil {
+            currentIndex = 0
+            return
         }
     }
 
@@ -183,6 +189,9 @@ struct BlockedProfileCarousel: View {
             initialSetup()
         }
         .onChange(of: activeSessionProfileId) { _, _ in
+            initialSetup()
+        }
+        .onChange(of: profiles) { _, _ in
             initialSetup()
         }
     }

@@ -5,7 +5,7 @@ import SwiftUI
 struct BlockedProfileListView: View {
     @Environment(\.modelContext) private var context
 
-    @Query private var profiles: [BlockedProfiles]
+    @Query(sort: [SortDescriptor(\BlockedProfiles.order, order: .forward), SortDescriptor(\BlockedProfiles.createdAt, order: .reverse)]) private var profiles: [BlockedProfiles]
     @State private var showingCreateProfile = false
     @State private var profileToEdit: BlockedProfiles?
     @State private var showErrorAlert = false
@@ -29,11 +29,12 @@ struct BlockedProfileListView: View {
                                 }
                         }
                         .onDelete(perform: deleteProfiles)
+                        .onMove(perform: moveProfiles)
                     }
                 }
             }
             .navigationTitle("Profiles")
-            .toolbar {
+            .toolbar {                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingCreateProfile = true
@@ -67,14 +68,38 @@ struct BlockedProfileListView: View {
         let activeSession = BlockedProfileSession.mostRecentActiveSession(
             in: context)
 
+        // Check if any of the profiles to delete are active
         for index in offsets {
             let profile = profiles[index]
             if profile.id == activeSession?.blockedProfile.id {
                 showErrorAlert = true
                 return
             }
+        }
 
-            try? BlockedProfiles.deleteProfile(profile, in: context)
+        // Delete the profiles and reorder
+        do {
+            for index in offsets {
+                let profile = profiles[index]
+                try BlockedProfiles.deleteProfile(profile, in: context)
+            }
+            
+            // Reorder remaining profiles to fix gaps in ordering
+            let remainingProfiles = try BlockedProfiles.fetchProfiles(in: context)
+            try BlockedProfiles.reorderProfiles(remainingProfiles, in: context)
+        } catch {
+            print("Failed to delete or reorder profiles: \(error)")
+        }
+    }
+    
+    private func moveProfiles(from source: IndexSet, to destination: Int) {
+        var reorderedProfiles = Array(profiles)
+        reorderedProfiles.move(fromOffsets: source, toOffset: destination)
+        
+        do {
+            try BlockedProfiles.reorderProfiles(reorderedProfiles, in: context)
+        } catch {
+            print("Failed to reorder profiles: \(error)")
         }
     }
 }
