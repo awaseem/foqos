@@ -45,7 +45,8 @@ class BlockedProfiles {
 
     self.enableLiveActivity = enableLiveActivity
     self.reminderTimeInSeconds = reminderTimeInSeconds
-    self.enableLiveActivity = enableBreaks
+    self.enableLiveActivity = enableLiveActivity
+    self.enableBreaks = enableBreaks
     self.enableStrictMode = enableStrictMode
     self.enableAllowMode = enableAllowMode
   }
