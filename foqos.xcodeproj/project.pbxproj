@@ -63,7 +63,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8015A1F42D80E1BA0037DFE9 /* FoqosWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FoqosWidgetExtension.entitlements; sourceTree = "<group>"; };
 		8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FoqosDeviceMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20952CB363A10073E9E2 /* foqos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = foqos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		801B20A62CB363A20073E9E2 /* foqosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = foqosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,16 +138,6 @@
 			path = Foqos;
 			sourceTree = "<group>";
 		};
-		801B20A92CB363A20073E9E2 /* FoqosTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FoqosTests;
-			sourceTree = "<group>";
-		};
-		801B20B32CB363A20073E9E2 /* FoqosUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FoqosUITests;
-			sourceTree = "<group>";
-		};
 		80FF38902D80DB540032BC5E /* FoqosWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -207,10 +196,7 @@
 		801B208C2CB363A10073E9E2 = {
 			isa = PBXGroup;
 			children = (
-				8015A1F42D80E1BA0037DFE9 /* FoqosWidgetExtension.entitlements */,
 				801B20972CB363A10073E9E2 /* Foqos */,
-				801B20A92CB363A20073E9E2 /* FoqosTests */,
-				801B20B32CB363A20073E9E2 /* FoqosUITests */,
 				80FF38902D80DB540032BC5E /* FoqosWidget */,
 				8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
@@ -305,9 +291,6 @@
 			dependencies = (
 				801B20A82CB363A20073E9E2 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				801B20A92CB363A20073E9E2 /* FoqosTests */,
-			);
 			name = foqosTests;
 			packageProductDependencies = (
 			);
@@ -327,9 +310,6 @@
 			);
 			dependencies = (
 				801B20B22CB363A20073E9E2 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				801B20B32CB363A20073E9E2 /* FoqosUITests */,
 			);
 			name = foqosUITests;
 			packageProductDependencies = (
@@ -893,7 +873,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = FoqosWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FoqosWidget/FoqosWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YR54789JNV;
@@ -923,7 +903,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = FoqosWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FoqosWidget/FoqosWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YR54789JNV;
