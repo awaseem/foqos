@@ -1,7 +1,7 @@
 import FamilyControls
 import SwiftUI
 
-struct BlockedProfileDomainSelector: View {
+struct DomainSelector: View {
   @Binding var domains: [String]
   var allowMode: Bool = false
   var disabled: Bool = false
@@ -157,16 +157,16 @@ struct BlockedProfileDomainSelector: View {
   @State var domains: [String] = ["example.com", "test.org"]
 
   VStack(spacing: 20) {
-    BlockedProfileDomainSelector(
+    DomainSelector(
       domains: $domains
     )
 
-    BlockedProfileDomainSelector(
+    DomainSelector(
       domains: $domains,
       allowMode: true
     )
 
-    BlockedProfileDomainSelector(
+    DomainSelector(
       domains: $domains,
       disabled: true,
       disabledText: "Disable the current session to edit domains"

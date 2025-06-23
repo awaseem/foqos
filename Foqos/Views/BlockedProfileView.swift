@@ -20,6 +20,7 @@ struct BlockedProfileView: View {
   @State private var enableStrictMode: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
   @State private var enableAllowMode: Bool = false
+  @State private var domains: [String] = []
 
   // QR code generator
   @State private var showingGeneratedQRCode = false
@@ -65,6 +66,9 @@ struct BlockedProfileView: View {
     )
     _reminderTimeInMinutes = State(
       initialValue: Int(profile?.reminderTimeInSeconds ?? 900) / 60
+    )
+    _domains = State(
+      initialValue: profile?.domains ?? []
     )
 
     if let profileStrategyId = profile?.blockingStrategyId {
@@ -291,7 +295,8 @@ struct BlockedProfileView: View {
           reminderTime: reminderTimeSeconds,
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
-          enableAllowMode: enableAllowMode
+          enableAllowMode: enableAllowMode,
+          domains: domains
         )
       } else {
         // Create new profile with next available order
@@ -306,7 +311,8 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
-          order: nextOrder
+          order: nextOrder,
+          domains: domains
         )
 
         modelContext.insert(newProfile)
