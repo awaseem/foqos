@@ -1,11 +1,10 @@
-import FamilyControls
 import SwiftUI
 
-struct DomainSelector: View {
+struct DomainPicker: View {
   @Binding var domains: [String]
+  @Binding var isPresented: Bool
+
   var allowMode: Bool = false
-  var disabled: Bool = false
-  var disabledText: String?
 
   @State private var newDomain: String = ""
   @State private var showingError: Bool = false
@@ -14,79 +13,86 @@ struct DomainSelector: View {
   private let maxDomains = 50
 
   private var title: String {
-    return allowMode ? "Allowed Domains" : "Blocked Domains"
+    let action = allowMode ? "allowed" : "blocked"
+    return "\(domains.count) \(action)"
   }
 
-  private var addButtonText: String {
-    return allowMode ? "Add allowed domain" : "Add blocked domain"
+  private var message: String {
+    return allowMode
+      ? "Up to 50 domains can be allowed. Add domains that you want to remain accessible during focus sessions."
+      : "Up to 50 domains can be blocked. Add domains that you want to restrict during focus sessions."
   }
 
   var body: some View {
-    Form {
+    VStack(alignment: .leading, spacing: 16) {
       // Add domain section
-      if !disabled {
-        Section("Add Domain") {
-          HStack {
-            TextField("Enter domain (e.g., example.com)", text: $newDomain)
-              .autocapitalization(.none)
-              .keyboardType(.URL)
-              .onSubmit {
-                addDomain()
-              }
-
-            Button(action: addDomain) {
-              Image(systemName: "plus.circle.fill")
-                .foregroundStyle(.blue)
+      VStack(alignment: .leading, spacing: 8) {
+        HStack {
+          TextField("Enter domain (e.g., example.com)", text: $newDomain)
+            .autocapitalization(.none)
+            .keyboardType(.URL)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .onSubmit {
+              addDomain()
             }
-            .disabled(newDomain.isEmpty || domains.count >= maxDomains)
-          }
 
-          if showingError {
-            Text(errorMessage)
-              .font(.caption)
-              .foregroundStyle(.red)
+          Button(action: addDomain) {
+            Image(systemName: "plus.circle.fill")
+              .foregroundStyle(.blue)
+              .font(.title2)
           }
+          .disabled(newDomain.isEmpty || domains.count >= maxDomains)
+        }
+        .padding(.horizontal, 16)
+
+        if showingError {
+          Text(errorMessage)
+            .font(.caption)
+            .foregroundStyle(.red)
+            .padding(.horizontal, 16)
         }
       }
 
-      // Domain list section
-      Section {
-        // Disabled text
-        if let disabledText = disabledText, disabled {
-          Text(disabledText)
-            .foregroundStyle(.red)
-            .font(.caption)
+      // Domain list
+      List {
+        ForEach(domains, id: \.self) { domain in
+          Text(domain)
+            .font(.subheadline)
         }
+        .onDelete(perform: deleteDomains)
 
-        // Domain list
         if domains.isEmpty {
           Text("No domains added")
             .foregroundStyle(.secondary)
             .font(.subheadline)
-        } else {
-          ForEach(domains, id: \.self) { domain in
-            Text(domain)
-              .font(.subheadline)
-          }
-          .onDelete(perform: disabled ? nil : deleteDomains)
         }
+      }
+      .listStyle(PlainListStyle())
 
-        // Domain count limit warning
+      // Status and info
+      VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+          .font(.title3)
+          .padding(.horizontal, 16)
+          .bold()
+
+        Text(message)
+          .font(.caption)
+          .padding(.horizontal, 16)
+
         if domains.count >= maxDomains {
           Text("Maximum number of domains reached")
             .font(.caption)
             .foregroundStyle(.orange)
-        }
-      } header: {
-        HStack {
-          Text(title)
-          Spacer()
-          Text("\(domains.count)/\(maxDomains)")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
         }
       }
+
+      ActionButton(title: "Done", backgroundColor: .blue) {
+        isPresented = false
+      }
     }
+    .padding()
     .animation(.easeInOut(duration: 0.2), value: domains.count)
     .animation(.easeInOut(duration: 0.2), value: showingError)
   }
@@ -157,19 +163,15 @@ struct DomainSelector: View {
   @State var domains: [String] = ["example.com", "test.org"]
 
   VStack(spacing: 20) {
-    DomainSelector(
-      domains: $domains
+    DomainPicker(
+      domains: $domains,
+      isPresented: .constant(true)
     )
 
-    DomainSelector(
+    DomainPicker(
       domains: $domains,
+      isPresented: .constant(true),
       allowMode: true
-    )
-
-    DomainSelector(
-      domains: $domains,
-      disabled: true,
-      disabledText: "Disable the current session to edit domains"
     )
   }
   .padding()

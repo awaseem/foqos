@@ -28,6 +28,9 @@ struct BlockedProfileView: View {
   // Sheet for activity picker
   @State private var showingActivityPicker = false
 
+  // Sheet for domain picker
+  @State private var showingDomainPicker = false
+
   // Error states
   @State private var errorMessage: String?
   @State private var showError = false
@@ -94,6 +97,14 @@ struct BlockedProfileView: View {
           BlockedProfileAppSelector(
             selection: selectedActivity,
             buttonAction: { showingActivityPicker = true },
+            allowMode: enableAllowMode,
+            disabled: isBlocking,
+            disabledText: "Disable the current session to edit"
+          )
+
+          BlockedProfileDomainSelector(
+            domains: domains,
+            buttonAction: { showingDomainPicker = true },
             allowMode: enableAllowMode,
             disabled: isBlocking,
             disabledText: "Disable the current session to edit"
@@ -249,6 +260,13 @@ struct BlockedProfileView: View {
         AppPicker(
           selection: $selectedActivity,
           isPresented: $showingActivityPicker,
+          allowMode: enableAllowMode
+        )
+      }
+      .sheet(isPresented: $showingDomainPicker) {
+        DomainPicker(
+          domains: $domains,
+          isPresented: $showingDomainPicker,
           allowMode: enableAllowMode
         )
       }
