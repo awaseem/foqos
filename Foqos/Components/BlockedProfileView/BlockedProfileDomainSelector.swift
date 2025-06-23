@@ -94,7 +94,6 @@ struct BlockedProfileDomainSelector: View {
   private func addDomain() {
     let trimmedDomain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
-    // Validate domain
     guard !trimmedDomain.isEmpty else {
       showError("Please enter a domain")
       return
@@ -115,7 +114,6 @@ struct BlockedProfileDomainSelector: View {
       return
     }
 
-    // Add domain
     domains.append(trimmedDomain)
     newDomain = ""
     hideError()
@@ -129,7 +127,6 @@ struct BlockedProfileDomainSelector: View {
     errorMessage = message
     showingError = true
 
-    // Auto-hide error after 3 seconds
     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
       hideError()
     }
