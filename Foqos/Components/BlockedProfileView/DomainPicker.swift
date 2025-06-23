@@ -21,7 +21,7 @@ struct DomainPicker: View {
   var body: some View {
     NavigationStack {
       Form {
-        Section("Add Domain") {
+        Section {
           HStack {
             TextField("Enter domain (e.g., example.com)", text: $newDomain)
               .autocapitalization(.none)
@@ -38,6 +38,14 @@ struct DomainPicker: View {
             }
             .disabled(newDomain.isEmpty || domains.count >= maxDomains)
           }
+        } header: {
+          Text("Add Domain")
+        } footer: {
+          Text(
+            "Enter a domain (e.g., reddit.com, facebook.com, instagram.com). This will also \(allowMode ? "allow" : "block") all subpaths (e.g., reddit.com/r/popular) automatically."
+          )
+          .font(.caption)
+          .foregroundStyle(.secondary)
         }
 
         Section {
@@ -108,7 +116,9 @@ struct DomainPicker: View {
     }
 
     guard isValidDomain(trimmedDomain) else {
-      showError("Please enter a valid domain (e.g., example.com)")
+      showError(
+        "Enter a valid domain without https:// or www. (e.g., google.com, reddit.com, facebook.com)"
+      )
       return
     }
 
