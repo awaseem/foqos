@@ -24,77 +24,73 @@ struct DomainPicker: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      // Add domain section
-      VStack(alignment: .leading, spacing: 8) {
-        HStack {
-          TextField("Enter domain (e.g., example.com)", text: $newDomain)
-            .autocapitalization(.none)
-            .keyboardType(.URL)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .onSubmit {
-              addDomain()
+    NavigationStack {
+      Form {
+        Section("Add Domain") {
+          HStack {
+            TextField("Enter domain (e.g., example.com)", text: $newDomain)
+              .autocapitalization(.none)
+              .keyboardType(.URL)
+              .textContentType(.none)
+              .onSubmit {
+                addDomain()
+              }
+
+            Button(action: addDomain) {
+              Image(systemName: "plus.circle.fill")
+                .foregroundStyle(.blue)
+                .font(.title2)
             }
-
-          Button(action: addDomain) {
-            Image(systemName: "plus.circle.fill")
-              .foregroundStyle(.blue)
-              .font(.title2)
+            .disabled(newDomain.isEmpty || domains.count >= maxDomains)
           }
-          .disabled(newDomain.isEmpty || domains.count >= maxDomains)
         }
-        .padding(.horizontal, 16)
 
-        if showingError {
-          Text(errorMessage)
-            .font(.caption)
-            .foregroundStyle(.red)
-            .padding(.horizontal, 16)
-        }
-      }
+        Section {
+          ForEach(domains, id: \.self) { domain in
+            Text(domain)
+              .font(.subheadline)
+          }
+          .onDelete(perform: deleteDomains)
 
-      // Domain list
-      List {
-        ForEach(domains, id: \.self) { domain in
-          Text(domain)
-            .font(.subheadline)
-        }
-        .onDelete(perform: deleteDomains)
+          if domains.isEmpty {
+            Text("No domains added")
+              .foregroundStyle(.secondary)
+              .font(.subheadline)
+          }
+        } header: {
+          Text(allowMode ? "Allowed Domains" : "Blocked Domains")
+        } footer: {
+          VStack(alignment: .leading, spacing: 4) {
+            Text(message)
+              .font(.caption)
 
-        if domains.isEmpty {
-          Text("No domains added")
-            .foregroundStyle(.secondary)
-            .font(.subheadline)
-        }
-      }
-      .listStyle(PlainListStyle())
+            Text(title)
+              .font(.caption)
+              .fontWeight(.medium)
 
-      // Status and info
-      VStack(alignment: .leading, spacing: 8) {
-        Text(title)
-          .font(.title3)
-          .padding(.horizontal, 16)
-          .bold()
-
-        Text(message)
-          .font(.caption)
-          .padding(.horizontal, 16)
-
-        if domains.count >= maxDomains {
-          Text("Maximum number of domains reached")
-            .font(.caption)
-            .foregroundStyle(.orange)
-            .padding(.horizontal, 16)
+            if domains.count >= maxDomains {
+              Text("Maximum number of domains reached")
+                .font(.caption)
+                .foregroundStyle(.orange)
+            }
+          }
         }
       }
-
-      ActionButton(title: "Done", backgroundColor: .blue) {
-        isPresented = false
+      .navigationTitle(allowMode ? "Allow Domains" : "Block Domains")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Done") {
+            isPresented = false
+          }
+        }
+      }
+      .alert("Error", isPresented: $showingError) {
+        Button("OK") {}
+      } message: {
+        Text(errorMessage)
       }
     }
-    .padding()
-    .animation(.easeInOut(duration: 0.2), value: domains.count)
-    .animation(.easeInOut(duration: 0.2), value: showingError)
   }
 
   private func addDomain() {
@@ -122,7 +118,6 @@ struct DomainPicker: View {
 
     domains.append(trimmedDomain)
     newDomain = ""
-    hideError()
   }
 
   private func deleteDomains(at offsets: IndexSet) {
@@ -132,15 +127,6 @@ struct DomainPicker: View {
   private func showError(_ message: String) {
     errorMessage = message
     showingError = true
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-      hideError()
-    }
-  }
-
-  private func hideError() {
-    showingError = false
-    errorMessage = ""
   }
 
   private func isValidDomain(_ domain: String) -> Bool {
@@ -174,5 +160,4 @@ struct DomainPicker: View {
       allowMode: true
     )
   }
-  .padding()
 }
