@@ -12,15 +12,10 @@ struct DomainPicker: View {
 
   private let maxDomains = 50
 
-  private var title: String {
-    let action = allowMode ? "allowed" : "blocked"
-    return "\(domains.count) \(action)"
-  }
-
   private var message: String {
     return allowMode
-      ? "Up to 50 domains can be allowed. Add domains that you want to remain accessible during focus sessions."
-      : "Up to 50 domains can be blocked. Add domains that you want to restrict during focus sessions."
+      ? "Up to 50 domains can be allowed. Add domains that you want to remain accessible during sessions."
+      : "Up to 50 domains can be blocked. Add domains that you want to restrict during sessions."
   }
 
   var body: some View {
@@ -58,15 +53,16 @@ struct DomainPicker: View {
               .font(.subheadline)
           }
         } header: {
-          Text(allowMode ? "Allowed Domains" : "Blocked Domains")
+          HStack {
+            Text(allowMode ? "Allowed Domains" : "Blocked Domains")
+            Spacer()
+            Text("\(domains.count)/\(maxDomains)")
+              .foregroundStyle(.secondary)
+          }
         } footer: {
           VStack(alignment: .leading, spacing: 4) {
             Text(message)
               .font(.caption)
-
-            Text(title)
-              .font(.caption)
-              .fontWeight(.medium)
 
             if domains.count >= maxDomains {
               Text("Maximum number of domains reached")
