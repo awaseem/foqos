@@ -4,6 +4,7 @@ import SwiftUI
 struct ProfileStatsRow: View {
   let selectedActivity: FamilyActivitySelection
   let sessionCount: Int
+  let domainsCount: Int
 
   var body: some View {
     HStack(spacing: 16) {
@@ -15,6 +16,21 @@ struct ProfileStatsRow: View {
 
         Text(
           "\(BlockedProfiles.countSelectedActivities(selectedActivity))"
+        )
+        .font(.subheadline)
+        .fontWeight(.semibold)
+      }
+
+      Divider()
+        .frame(height: 24)
+
+      VStack(alignment: .leading, spacing: 2) {
+        Text("Domains")
+          .font(.caption)
+          .foregroundColor(.secondary)
+
+        Text(
+          "\(domainsCount)"
         )
         .font(.subheadline)
         .fontWeight(.semibold)
@@ -43,7 +59,8 @@ struct ProfileStatsRow: View {
 #Preview {
   ProfileStatsRow(
     selectedActivity: FamilyActivitySelection(),
-    sessionCount: 12
+    sessionCount: 12,
+    domainsCount: 12
   )
   .padding()
   .background(Color(.systemGroupedBackground))

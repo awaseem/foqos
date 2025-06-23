@@ -85,7 +85,8 @@ struct BlockedProfileCard: View {
           // Using the new ProfileStatsRow component
           ProfileStatsRow(
             selectedActivity: profile.selectedActivity,
-            sessionCount: profile.sessions.count
+            sessionCount: profile.sessions.count,
+            domainsCount: profile.domains?.count ?? 0
           )
         }
 
