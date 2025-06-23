@@ -19,6 +19,8 @@ class BlockedProfiles {
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
 
+  var domains: [String]? = nil
+
   @Relationship var sessions: [BlockedProfileSession] = []
 
   init(
@@ -33,7 +35,8 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
-    order: Int = 0
+    order: Int = 0,
+    domains: [String]? = nil
   ) {
     self.id = id
     self.name = name
@@ -49,6 +52,8 @@ class BlockedProfiles {
     self.enableBreaks = enableBreaks
     self.enableStrictMode = enableStrictMode
     self.enableAllowMode = enableAllowMode
+
+    self.domains = domains
   }
 
   static func fetchProfiles(in context: ModelContext) throws
@@ -91,7 +96,8 @@ class BlockedProfiles {
     enableBreaks: Bool? = nil,
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
-    order: Int? = nil
+    order: Int? = nil,
+    domains: [String]? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -123,6 +129,10 @@ class BlockedProfiles {
 
     if let newOrder = order {
       profile.order = newOrder
+    }
+
+    if let newDomains = domains {
+      profile.domains = newDomains
     }
 
     profile.reminderTimeInSeconds = reminderTime
@@ -181,5 +191,37 @@ class BlockedProfiles {
       return 0
     }
     return lastProfile.order + 1
+  }
+
+  static func addDomain(to profile: BlockedProfiles, context: ModelContext, domain: String) throws {
+    guard let domains = profile.domains else {
+      return
+    }
+
+    if domains.contains(domain) {
+      return
+    }
+
+    let newDomains = domains + [domain]
+    try updateProfile(profile, in: context, domains: newDomains)
+  }
+
+  static func removeDomain(from profile: BlockedProfiles, context: ModelContext, domain: String)
+    throws
+  {
+    guard let domains = profile.domains else {
+      return
+    }
+
+    let newDomains = domains.filter { $0 != domain }
+    try updateProfile(profile, in: context, domains: newDomains)
+  }
+
+  static func getWebDomains(from profile: BlockedProfiles) -> [WebDomain] {
+    if let domains = profile.domains {
+      return domains.map { WebDomain(domain: $0) }
+    }
+
+    return []
   }
 }
