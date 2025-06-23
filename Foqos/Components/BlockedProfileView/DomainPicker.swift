@@ -26,7 +26,7 @@ struct DomainPicker: View {
             TextField("Enter domain (e.g., example.com)", text: $newDomain)
               .autocapitalization(.none)
               .keyboardType(.URL)
-              .textContentType(.none)
+              .textContentType(.URL)
               .onSubmit {
                 addDomain()
               }
