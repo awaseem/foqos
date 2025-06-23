@@ -217,9 +217,9 @@ class BlockedProfiles {
     try updateProfile(profile, in: context, domains: newDomains)
   }
 
-  static func getWebDomains(from profile: BlockedProfiles) -> [WebDomain] {
+  static func getWebDomains(from profile: BlockedProfiles) -> Set<WebDomain> {
     if let domains = profile.domains {
-      return domains.map { WebDomain(domain: $0) }
+      return Set(domains.map { WebDomain(domain: $0) })
     }
 
     return []

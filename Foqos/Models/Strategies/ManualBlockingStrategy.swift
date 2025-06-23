@@ -25,11 +25,7 @@ class ManualBlockingStrategy: BlockingStrategy {
     forceStart: Bool?
   ) -> (any View)? {
     self.appBlocker
-      .activateRestrictions(
-        selection: profile.selectedActivity,
-        strict: profile.enableStrictMode,
-        allowOnly: profile.enableAllowMode
-      )
+      .activateRestrictions(for: profile)
 
     let activeSession =
       BlockedProfileSession

@@ -237,12 +237,8 @@ class StrategyManager: ObservableObject {
     }
 
     let profile = session.blockedProfile
-    appBlocker
-      .activateRestrictions(
-        selection: profile.selectedActivity,
-        strict: profile.enableStrictMode,
-        allowOnly: profile.enableAllowMode
-      )
+    appBlocker.activateRestrictions(for: profile)
+
     session.endBreak()
   }
 

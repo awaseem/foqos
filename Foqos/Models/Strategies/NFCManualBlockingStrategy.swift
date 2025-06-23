@@ -24,12 +24,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    self.appBlocker
-      .activateRestrictions(
-        selection: profile.selectedActivity,
-        strict: profile.enableStrictMode,
-        allowOnly: profile.enableAllowMode
-      )
+    self.appBlocker.activateRestrictions(for: profile)
 
     let activeSession =
       BlockedProfileSession
