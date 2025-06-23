@@ -181,6 +181,9 @@ class StrategyManager: ObservableObject {
     strategy.onSessionCreation = { session in
       self.dismissView()
 
+      // Remove any timers and notifications that were scheduled
+      self.timersUtil.cancelAll()
+
       switch session {
       case .started(let session):
         self.activeSession = session
@@ -191,7 +194,6 @@ class StrategyManager: ObservableObject {
       case .ended(let endedProfile):
         self.activeSession = nil
         self.liveActivityManager.endSessionActivity()
-        self.timersUtil.cancelAll()
         self.scheduleReminder(profile: endedProfile)
 
         self.stopTimer()
