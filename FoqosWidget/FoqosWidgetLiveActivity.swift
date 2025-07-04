@@ -1,10 +1,3 @@
-//
-//  FoqosWidgetLiveActivity.swift
-//  FoqosWidget
-//
-//  Created by Ali Waseem on 2025-03-11.
-//
-
 import ActivityKit
 import SwiftUI
 import WidgetKit
