@@ -363,7 +363,7 @@ class StrategyManager: ObservableObject {
     timersUtil.scheduleNotification(
       title: "How was that break?",
       message: "Get back to  " + profileName + " and start focusing",
-      seconds: TimeInterval(60)
+      seconds: TimeInterval(15 * 60)
     )
   }
 }
