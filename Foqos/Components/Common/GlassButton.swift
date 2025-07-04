@@ -7,6 +7,7 @@ struct GlassButton: View {
   var equalWidth: Bool = false
   var longPressEnabled: Bool = false
   var longPressDuration: Double = 0.8
+  var color: Color? = nil
   let action: () -> Void
 
   var body: some View {
@@ -103,10 +104,10 @@ struct GlassButton: View {
         .fill(.thinMaterial)
         .overlay(
           RoundedRectangle(cornerRadius: 16)
-            .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+            .stroke((color ?? Color.primary).opacity(0.2), lineWidth: 1)
         )
     )
-    .foregroundColor(.primary)
+    .foregroundColor(color ?? .primary)
   }
 }
 
@@ -120,9 +121,18 @@ struct GlassButton: View {
     }
 
     GlassButton(
+      title: "Blue Button",
+      icon: "star.fill",
+      color: .blue
+    ) {
+      print("Blue button tapped")
+    }
+
+    GlassButton(
       title: "Hold to Start",
       icon: "play.fill",
-      longPressEnabled: true
+      longPressEnabled: true,
+      color: .green
     ) {
       print("Long press completed")
     }

@@ -17,6 +17,10 @@ struct ProfileTimerButton: View {
     return "Hold to" + (isBreakActive ? " Stop Break" : " Start Break")
   }
 
+  var breakColor: Color? {
+    return isBreakActive ? .orange : nil
+  }
+
   var body: some View {
     VStack(spacing: 8) {
       HStack(spacing: 8) {
@@ -76,7 +80,8 @@ struct ProfileTimerButton: View {
           title: breakMessage,
           icon: "cup.and.heat.waves.fill",
           fullWidth: true,
-          longPressEnabled: true
+          longPressEnabled: true,
+          color: breakColor
         ) {
           onBreakTapped()
         }
