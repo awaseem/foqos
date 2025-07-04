@@ -50,15 +50,14 @@ struct FoqosWidgetLiveActivity: Widget {
         }
 
         if context.state.isBreakActive {
-          VStack(spacing: 4) {
-            Image(systemName: "pause.circle.fill")
-              .font(.title2)
-              .foregroundColor(.orange)
-            Text("Break Active")
-              .font(.subheadline)
-              .fontWeight(.semibold)
-              .foregroundColor(.orange)
-          }
+          Image(systemName: "cup.and.heat.waves.fill")
+            .font(.title2)
+            .foregroundColor(.orange)
+          Text("On a Break")
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundColor(.orange)
+            .multilineTextAlignment(.trailing)
         } else {
           Text(
             Date(
@@ -92,15 +91,13 @@ struct FoqosWidgetLiveActivity: Widget {
               .foregroundColor(.secondary)
 
             if context.state.isBreakActive {
-              VStack(spacing: 4) {
-                Image(systemName: "pause.circle.fill")
-                  .font(.title2)
-                  .foregroundColor(.orange)
-                Text("Break Active")
-                  .font(.subheadline)
-                  .fontWeight(.semibold)
-                  .foregroundColor(.orange)
-              }
+              Image(systemName: "cup.and.heat.waves.fill")
+                .font(.title2)
+                .foregroundColor(.orange)
+              Text("On a Break")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.orange)
             } else {
               Text(
                 Date(
