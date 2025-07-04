@@ -242,6 +242,9 @@ class StrategyManager: ObservableObject {
     appBlocker.deactivateRestrictions()
     session.startBreak()
 
+    // Update live activity to show break state
+    liveActivityManager.updateBreakState(session: session)
+
     // Pause the timer during break
     stopTimer()
   }
@@ -261,6 +264,9 @@ class StrategyManager: ObservableObject {
     appBlocker.activateRestrictions(for: profile)
 
     session.endBreak()
+
+    // Update live activity to show break has ended
+    liveActivityManager.updateBreakState(session: session)
 
     // Resume the timer after break ends
     startTimer()

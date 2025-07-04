@@ -82,7 +82,9 @@ class LiveActivityManager: ObservableObject {
     let message = FocusMessages.getRandomMessage()
     let attributes = FoqosWidgetAttributes(name: profileName, message: message)
     let contentState = FoqosWidgetAttributes.ContentState(
-      startTime: session.startTime)
+      startTime: session.startTime,
+      isBreakActive: session.isBreakActive
+    )
 
     do {
       let activity = try Activity.request(
@@ -107,12 +109,30 @@ class LiveActivityManager: ObservableObject {
     }
 
     let updatedState = FoqosWidgetAttributes.ContentState(
-      startTime: session.startTime
+      startTime: session.startTime,
+      isBreakActive: session.isBreakActive
     )
 
     Task {
       await activity.update(using: updatedState)
       print("Updated Live Activity with ID: \(activity.id)")
+    }
+  }
+
+  func updateBreakState(session: BlockedProfileSession) {
+    guard let activity = currentActivity else {
+      print("No Live Activity to update for break state")
+      return
+    }
+
+    let updatedState = FoqosWidgetAttributes.ContentState(
+      startTime: session.startTime,
+      isBreakActive: session.isBreakActive
+    )
+
+    Task {
+      await activity.update(using: updatedState)
+      print("Updated Live Activity break state: \(session.isBreakActive)")
     }
   }
 

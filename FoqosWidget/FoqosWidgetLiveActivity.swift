@@ -12,6 +12,7 @@ import WidgetKit
 struct FoqosWidgetAttributes: ActivityAttributes {
   public struct ContentState: Codable, Hashable {
     var startTime: Date
+    var isBreakActive: Bool = false
 
     func getTimeIntervalSinceNow() -> Double {
       return startTime.timeIntervalSince1970
@@ -48,17 +49,29 @@ struct FoqosWidgetLiveActivity: Widget {
             .foregroundColor(.secondary)
         }
 
-        Text(
-          Date(
-            timeIntervalSinceNow: context.state
-              .getTimeIntervalSinceNow()
-          ),
-          style: .timer
-        )
-        .font(.title)
-        .fontWeight(.semibold)
-        .foregroundColor(.secondary)
-        .multilineTextAlignment(.trailing)
+        if context.state.isBreakActive {
+          VStack(spacing: 4) {
+            Image(systemName: "pause.circle.fill")
+              .font(.title2)
+              .foregroundColor(.orange)
+            Text("Break Active")
+              .font(.subheadline)
+              .fontWeight(.semibold)
+              .foregroundColor(.orange)
+          }
+        } else {
+          Text(
+            Date(
+              timeIntervalSinceNow: context.state
+                .getTimeIntervalSinceNow()
+            ),
+            style: .timer
+          )
+          .font(.title)
+          .fontWeight(.semibold)
+          .foregroundColor(.secondary)
+          .multilineTextAlignment(.trailing)
+        }
 
       }
       .padding()
@@ -78,16 +91,28 @@ struct FoqosWidgetLiveActivity: Widget {
               .font(.headline)
               .foregroundColor(.secondary)
 
-            Text(
-              Date(
-                timeIntervalSinceNow: context.state
-                  .getTimeIntervalSinceNow()
-              ),
-              style: .timer
-            )
-            .font(.title2)
-            .fontWeight(.semibold)
-            .multilineTextAlignment(.center)
+            if context.state.isBreakActive {
+              VStack(spacing: 4) {
+                Image(systemName: "pause.circle.fill")
+                  .font(.title2)
+                  .foregroundColor(.orange)
+                Text("Break Active")
+                  .font(.subheadline)
+                  .fontWeight(.semibold)
+                  .foregroundColor(.orange)
+              }
+            } else {
+              Text(
+                Date(
+                  timeIntervalSinceNow: context.state
+                    .getTimeIntervalSinceNow()
+                ),
+                style: .timer
+              )
+              .font(.title2)
+              .fontWeight(.semibold)
+              .multilineTextAlignment(.center)
+            }
           }
         }
       } compactLeading: {
@@ -129,6 +154,13 @@ extension FoqosWidgetAttributes.ContentState {
   fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(startTime: Date(timeInterval: 60, since: Date.now))
   }
+
+  fileprivate static var breakActive: FoqosWidgetAttributes.ContentState {
+    FoqosWidgetAttributes.ContentState(
+      startTime: Date(timeInterval: 60, since: Date.now),
+      isBreakActive: true
+    )
+  }
 }
 
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
@@ -136,4 +168,5 @@ extension FoqosWidgetAttributes.ContentState {
 } contentStates: {
   FoqosWidgetAttributes.ContentState.shortTime
   FoqosWidgetAttributes.ContentState.longTime
+  FoqosWidgetAttributes.ContentState.breakActive
 }
