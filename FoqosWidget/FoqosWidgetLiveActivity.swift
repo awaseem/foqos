@@ -28,9 +28,9 @@ struct FoqosWidgetLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
       // Lock screen/banner UI goes here
-      HStack(alignment: .center) {
+      HStack(alignment: .center, spacing: 16) {
         // Left side - App info
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
           HStack(spacing: 4) {
             Text("Foqos")
               .font(.headline)
@@ -49,48 +49,12 @@ struct FoqosWidgetLiveActivity: Widget {
             .foregroundColor(.secondary)
         }
 
-        if context.state.isBreakActive {
-          Image(systemName: "cup.and.heat.waves.fill")
-            .font(.title2)
-            .foregroundColor(.orange)
-          Text("On a Break")
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundColor(.orange)
-            .multilineTextAlignment(.trailing)
-        } else {
-          Text(
-            Date(
-              timeIntervalSinceNow: context.state
-                .getTimeIntervalSinceNow()
-            ),
-            style: .timer
-          )
-          .font(.title)
-          .fontWeight(.semibold)
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.trailing)
-        }
+        Spacer()
 
-      }
-      .padding()
-
-    } dynamicIsland: { context in
-      DynamicIsland {
-        DynamicIslandExpandedRegion(.center) {
-          VStack(spacing: 8) {
-            Image(systemName: "hourglass")
-              .foregroundColor(.purple)
-
-            Text(context.attributes.name)
-              .font(.headline)
-              .fontWeight(.medium)
-
-            Text(context.attributes.message)
-              .font(.headline)
-              .foregroundColor(.secondary)
-
-            if context.state.isBreakActive {
+        // Right side - Timer or break indicator
+        VStack(alignment: .trailing, spacing: 4) {
+          if context.state.isBreakActive {
+            HStack(spacing: 6) {
               Image(systemName: "cup.and.heat.waves.fill")
                 .font(.title2)
                 .foregroundColor(.orange)
@@ -98,6 +62,52 @@ struct FoqosWidgetLiveActivity: Widget {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(.orange)
+            }
+          } else {
+            Text(
+              Date(
+                timeIntervalSinceNow: context.state
+                  .getTimeIntervalSinceNow()
+              ),
+              style: .timer
+            )
+            .font(.title)
+            .fontWeight(.semibold)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.trailing)
+          }
+        }
+      }
+      .padding(.horizontal, 16)
+      .padding(.vertical, 12)
+
+    } dynamicIsland: { context in
+      DynamicIsland {
+        DynamicIslandExpandedRegion(.center) {
+          VStack(spacing: 8) {
+            HStack(spacing: 6) {
+              Image(systemName: "hourglass")
+                .foregroundColor(.purple)
+              Text(context.attributes.name)
+                .font(.headline)
+                .fontWeight(.medium)
+            }
+
+            Text(context.attributes.message)
+              .font(.subheadline)
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.center)
+
+            if context.state.isBreakActive {
+              VStack(spacing: 2) {
+                Image(systemName: "cup.and.heat.waves.fill")
+                  .font(.title2)
+                  .foregroundColor(.orange)
+                Text("On a Break")
+                  .font(.subheadline)
+                  .fontWeight(.semibold)
+                  .foregroundColor(.orange)
+              }
             } else {
               Text(
                 Date(
@@ -111,6 +121,8 @@ struct FoqosWidgetLiveActivity: Widget {
               .multilineTextAlignment(.center)
             }
           }
+          .padding(.horizontal, 16)
+          .padding(.vertical, 4)
         }
       } compactLeading: {
         // Compact leading state
