@@ -42,7 +42,10 @@ class StrategyManager: ObservableObject {
     activeSession = getActiveSession(context: context)
 
     if activeSession?.isActive == true {
-      startTimer()
+      // If the session is active and the break is not active, start the timer
+      if !isBreakActive {
+        startTimer()
+      }
 
       // Start live activity for existing session if one exists
       // live activities can only be started when the app is in the foreground
