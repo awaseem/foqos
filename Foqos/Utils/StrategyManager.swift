@@ -132,13 +132,14 @@ class StrategyManager: ObservableObject {
       let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
 
       if let localActiveSession = getActiveSession(context: context) {
-        manualStrategy
+        _ =
+          manualStrategy
           .stopBlocking(
             context: context,
             session: localActiveSession
           )
       } else {
-        manualStrategy.startBlocking(
+        _ = manualStrategy.startBlocking(
           context: context,
           profile: profile,
           forceStart: true
@@ -174,7 +175,7 @@ class StrategyManager: ObservableObject {
         return
       }
 
-      manualStrategy.startBlocking(
+      _ = manualStrategy.startBlocking(
         context: context,
         profile: profile,
         forceStart: true
