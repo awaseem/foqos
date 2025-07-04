@@ -76,7 +76,9 @@ class StrategyManager: ObservableObject {
   func startTimer() {
     timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
       if let startTime = self.activeSession?.startTime {
-        self.elapsedTime = Date().timeIntervalSince(startTime)
+        let rawElapsedTime = Date().timeIntervalSince(startTime)
+        let breakDuration = self.calculateBreakDuration()
+        self.elapsedTime = rawElapsedTime - breakDuration
       }
     }
   }
@@ -84,6 +86,22 @@ class StrategyManager: ObservableObject {
   func stopTimer() {
     timer?.invalidate()
     timer = nil
+  }
+
+  private func calculateBreakDuration() -> TimeInterval {
+    guard let session = activeSession else {
+      return 0
+    }
+
+    guard let breakStartTime = session.breakStartTime else {
+      return 0
+    }
+
+    if let breakEndTime = session.breakEndTime {
+      return breakEndTime.timeIntervalSince(breakStartTime)
+    }
+
+    return 0
   }
 
   func toggleSessionFromDeeplink(
@@ -223,6 +241,9 @@ class StrategyManager: ObservableObject {
 
     appBlocker.deactivateRestrictions()
     session.startBreak()
+
+    // Pause the timer during break
+    stopTimer()
   }
 
   private func stopBreak() {
@@ -240,6 +261,9 @@ class StrategyManager: ObservableObject {
     appBlocker.activateRestrictions(for: profile)
 
     session.endBreak()
+
+    // Resume the timer after break ends
+    startTimer()
   }
 
   private func dismissView() {
