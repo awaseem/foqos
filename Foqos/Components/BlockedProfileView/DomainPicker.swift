@@ -152,7 +152,7 @@ struct DomainPicker: View {
 }
 
 #Preview {
-  @State var domains: [String] = ["example.com", "test.org"]
+    @Previewable @State var domains: [String] = ["example.com", "test.org"]
 
   VStack(spacing: 20) {
     DomainPicker(
