@@ -249,6 +249,9 @@ class StrategyManager: ObservableObject {
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
 
+    // Schedule a reminder to get back to the profile after the break
+    scheduleBreakReminder(profile: session.blockedProfile)
+
     // Pause the timer during break
     stopTimer()
   }
@@ -271,6 +274,9 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
+
+    // Cancel all notifications that were scheduled during break
+    timersUtil.cancelAllNotifications()
 
     // Resume the timer after break ends
     startTimer()
@@ -350,5 +356,14 @@ class StrategyManager: ObservableObject {
         message: "Get back to productivity by enabling " + profileName,
         seconds: TimeInterval(reminderTimeInSeconds)
       )
+  }
+
+  private func scheduleBreakReminder(profile: BlockedProfiles) {
+    let profileName = profile.name
+    timersUtil.scheduleNotification(
+      title: "How was that break?",
+      message: "Get back to  " + profileName + " and start focusing",
+      seconds: TimeInterval(60)
+    )
   }
 }
