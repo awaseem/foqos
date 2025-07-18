@@ -20,6 +20,7 @@ struct BlockedProfileView: View {
   @State private var enableStrictMode: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
   @State private var enableAllowMode: Bool = false
+  @State private var enableAllowModeDomain: Bool = false
   @State private var domains: [String] = []
 
   // QR code generator
@@ -64,6 +65,9 @@ struct BlockedProfileView: View {
     _enableAllowMode = State(
       initialValue: profile?.enableAllowMode ?? false
     )
+    _enableAllowModeDomain = State(
+        initialValue: profile?.enableAllowModeDomain ?? false
+    )
     _enableReminder = State(
       initialValue: profile?.reminderTimeInSeconds != nil
     )
@@ -101,20 +105,28 @@ struct BlockedProfileView: View {
             disabled: isBlocking,
             disabledText: "Disable the current session to edit"
           )
+          
+          CustomToggle(
+            title: "Apps Allow Mode",
+            description:
+               "Pick apps to allow and block everything else. This will erase any other selection you've made.",
+            isOn: $enableAllowMode,
+            isDisabled: isBlocking
+          )
 
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
-            allowMode: enableAllowMode,
+            allowMode: enableAllowModeDomain,
             disabled: isBlocking,
             disabledText: "Disable the current session to edit"
           )
-
+            
           CustomToggle(
-            title: "Allow Mode",
+            title: "Domain Allow Mode",
             description:
-              "Pick apps or websites to allow and block everything else. This will erase any other selection you've made.",
-            isOn: $enableAllowMode,
+               "Pick domains to allow and block everything else. This will erase any other selection you've made.",
+            isOn: $enableAllowModeDomain,
             isDisabled: isBlocking
           )
         }
@@ -240,6 +252,13 @@ struct BlockedProfileView: View {
           includeEntireCategory: newValue
         )
       }
+      .onChange(of: enableAllowModeDomain) { //this might be optimized but no experience with swift
+          _,
+          newValue in
+          selectedActivity = FamilyActivitySelection(
+            includeEntireCategory: newValue
+          )
+        }
       .navigationTitle(isEditing ? "Profile Details" : "New Profile")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -267,7 +286,7 @@ struct BlockedProfileView: View {
         DomainPicker(
           domains: $domains,
           isPresented: $showingDomainPicker,
-          allowMode: enableAllowMode
+          allowModeDomain: enableAllowModeDomain
         )
       }
       .sheet(isPresented: $showingGeneratedQRCode) {
@@ -314,6 +333,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
+          enableAllowModeDomain: enableAllowModeDomain,
           domains: domains
         )
       } else {
@@ -329,6 +349,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
+          enableAllowModeDomain: enableAllowModeDomain,
           order: nextOrder,
           domains: domains
         )

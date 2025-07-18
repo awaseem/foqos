@@ -18,6 +18,7 @@ class BlockedProfiles {
   var enableBreaks: Bool = false
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
+  var enableAllowModeDomain: Bool = false
 
   var domains: [String]? = nil
 
@@ -35,6 +36,7 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
+    enableAllowModeDomain: Bool = false,
     order: Int = 0,
     domains: [String]? = nil
   ) {
@@ -52,6 +54,7 @@ class BlockedProfiles {
     self.enableBreaks = enableBreaks
     self.enableStrictMode = enableStrictMode
     self.enableAllowMode = enableAllowMode
+    self.enableAllowModeDomain = enableAllowModeDomain
 
     self.domains = domains
   }
@@ -96,6 +99,7 @@ class BlockedProfiles {
     enableBreaks: Bool? = nil,
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
+    enableAllowModeDomain: Bool? = nil,
     order: Int? = nil,
     domains: [String]? = nil
   ) throws {
@@ -125,6 +129,10 @@ class BlockedProfiles {
 
     if let newEnableAllowMode = enableAllowMode {
       profile.enableAllowMode = newEnableAllowMode
+    }
+      
+    if let newEnableAllowModeDomain = enableAllowModeDomain {
+      profile.enableAllowModeDomain = newEnableAllowModeDomain
     }
 
     if let newOrder = order {

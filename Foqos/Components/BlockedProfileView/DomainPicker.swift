@@ -4,7 +4,7 @@ struct DomainPicker: View {
   @Binding var domains: [String]
   @Binding var isPresented: Bool
 
-  var allowMode: Bool = false
+  var allowModeDomain: Bool = false
 
   @State private var newDomain: String = ""
   @State private var showingError: Bool = false
@@ -13,7 +13,7 @@ struct DomainPicker: View {
   private let maxDomains = 50
 
   private var message: String {
-    return allowMode
+    return allowModeDomain
       ? "Up to 50 domains can be allowed. Add domains that you want to remain accessible during sessions."
       : "Up to 50 domains can be blocked. Add domains that you want to restrict during sessions."
   }
@@ -42,7 +42,7 @@ struct DomainPicker: View {
           Text("Add Domain")
         } footer: {
           Text(
-            "Enter a domain (e.g., reddit.com, facebook.com, instagram.com). This will also \(allowMode ? "allow" : "block") all subpaths (e.g., reddit.com/r/popular) automatically."
+            "Enter a domain (e.g., reddit.com, facebook.com, instagram.com). This will also \(allowModeDomain ? "allow" : "block") all subpaths (e.g., reddit.com/r/popular) automatically."
           )
           .font(.caption)
           .foregroundStyle(.secondary)
@@ -62,7 +62,7 @@ struct DomainPicker: View {
           }
         } header: {
           HStack {
-            Text(allowMode ? "Allowed Domains" : "Blocked Domains")
+            Text(allowModeDomain ? "Allowed Domains" : "Blocked Domains")
             Spacer()
             Text("\(domains.count)/\(maxDomains)")
               .foregroundStyle(.secondary)
@@ -80,7 +80,7 @@ struct DomainPicker: View {
           }
         }
       }
-      .navigationTitle(allowMode ? "Allow Domains" : "Block Domains")
+      .navigationTitle(allowModeDomain ? "Allow Domains" : "Block Domains")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
@@ -163,7 +163,7 @@ struct DomainPicker: View {
     DomainPicker(
       domains: $domains,
       isPresented: .constant(true),
-      allowMode: true
+      allowModeDomain: true
     )
   }
 }
