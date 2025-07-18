@@ -3,12 +3,12 @@ import SwiftUI
 struct BlockedProfileDomainSelector: View {
   var domains: [String]
   var buttonAction: () -> Void
-  var allowMode: Bool = false
+  var allowModeDomain: Bool = false
   var disabled: Bool = false
   var disabledText: String?
 
   private var title: String {
-    return allowMode ? "Allowed" : "Blocked"
+    return allowModeDomain ? "Allowed" : "Blocked"
   }
 
   private var domainCount: Int {
@@ -16,7 +16,7 @@ struct BlockedProfileDomainSelector: View {
   }
 
   private var buttonText: String {
-    return allowMode
+    return allowModeDomain
       ? "Select domains to allow"
       : "Select domains to restrict"
   }
@@ -59,7 +59,7 @@ struct BlockedProfileDomainSelector: View {
     BlockedProfileDomainSelector(
       domains: [],
       buttonAction: {},
-      allowMode: true
+      allowModeDomain: true
     )
 
     BlockedProfileDomainSelector(
