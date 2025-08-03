@@ -19,7 +19,8 @@ class BlockedProfiles {
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
 
-  var physicalUnblockDeviceId: String?
+  var physicalUnblockNFCTagId: String?
+  var physicalUnblockQRCodeId: String?
 
   var domains: [String]? = nil
 
@@ -100,7 +101,8 @@ class BlockedProfiles {
     enableAllowMode: Bool? = nil,
     order: Int? = nil,
     domains: [String]? = nil,
-    physicalUnblockDeviceId: String? = nil
+    physicalUnblockNFCTagId: String? = nil,
+    physicalUnblockQRCodeId: String? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -138,8 +140,12 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
-    if let newPhysicalUnblockDeviceId = physicalUnblockDeviceId {
-      profile.physicalUnblockDeviceId = newPhysicalUnblockDeviceId
+    if let newPhysicalUnblockNFCTagId = physicalUnblockNFCTagId {
+      profile.physicalUnblockNFCTagId = newPhysicalUnblockNFCTagId
+    }
+
+    if let newPhysicalUnblockQRCodeId = physicalUnblockQRCodeId {
+      profile.physicalUnblockQRCodeId = newPhysicalUnblockQRCodeId
     }
 
     profile.reminderTimeInSeconds = reminderTime
