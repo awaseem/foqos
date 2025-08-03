@@ -39,7 +39,9 @@ class BlockedProfiles {
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
     order: Int = 0,
-    domains: [String]? = nil
+    domains: [String]? = nil,
+    physicalUnblockNFCTagId: String? = nil,
+    physicalUnblockQRCodeId: String? = nil
   ) {
     self.id = id
     self.name = name
@@ -57,6 +59,9 @@ class BlockedProfiles {
     self.enableAllowMode = enableAllowMode
 
     self.domains = domains
+
+    self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
+    self.physicalUnblockQRCodeId = physicalUnblockQRCodeId
   }
 
   static func fetchProfiles(in context: ModelContext) throws

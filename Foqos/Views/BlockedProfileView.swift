@@ -367,7 +367,9 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
-          domains: domains
+          domains: domains,
+          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
       } else {
         // Create new profile with next available order
@@ -383,7 +385,9 @@ struct BlockedProfileView: View {
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           order: nextOrder,
-          domains: domains
+          domains: domains,
+          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
 
         modelContext.insert(newProfile)
