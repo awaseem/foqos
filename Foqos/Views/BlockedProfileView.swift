@@ -23,6 +23,9 @@ struct BlockedProfileView: View {
   @State private var enableAllowModeDomain: Bool = false
   @State private var domains: [String] = []
 
+  @State private var physicalUnblockNFCTagId: String?
+  @State private var physicalUnblockQRCodeId: String?
+
   // QR code generator
   @State private var showingGeneratedQRCode = false
 
@@ -36,8 +39,13 @@ struct BlockedProfileView: View {
   @State private var errorMessage: String?
   @State private var showError = false
 
+  // Sheet for physical unblock
+  @State private var showingPhysicalUnblockView = false
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
+
+  private let physicalReader: PhysicalReader = PhysicalReader()
 
   private var isEditing: Bool {
     profile != nil
@@ -77,6 +85,12 @@ struct BlockedProfileView: View {
     _domains = State(
       initialValue: profile?.domains ?? []
     )
+    _physicalUnblockNFCTagId = State(
+      initialValue: profile?.physicalUnblockNFCTagId ?? nil
+    )
+    _physicalUnblockQRCodeId = State(
+      initialValue: profile?.physicalUnblockQRCodeId ?? nil
+    )
 
     if let profileStrategyId = profile?.blockingStrategyId {
       _selectedStrategy = State(
@@ -92,6 +106,22 @@ struct BlockedProfileView: View {
   var body: some View {
     NavigationStack {
       Form {
+        // Show lock status when profile is active
+        if isBlocking {
+          Section {
+            HStack {
+              Image(systemName: "lock.fill")
+                .font(.title2)
+                .foregroundColor(.orange)
+              Text("A session is currently active, profile editing is disabled.")
+                .font(.subheadline)
+                .foregroundColor(.red)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 4)
+          }
+        }
+
         Section("Name") {
           TextField("Profile Name", text: $name)
             .textContentType(.none)
@@ -102,8 +132,7 @@ struct BlockedProfileView: View {
             selection: selectedActivity,
             buttonAction: { showingActivityPicker = true },
             allowMode: enableAllowMode,
-            disabled: isBlocking,
-            disabledText: "Disable the current session to edit"
+            disabled: isBlocking
           )
           
           CustomToggle(
@@ -117,9 +146,8 @@ struct BlockedProfileView: View {
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
-            allowMode: enableAllowModeDomain,
-            disabled: isBlocking,
-            disabledText: "Disable the current session to edit"
+            allowMode: enableAllowMode,
+            disabled: isBlocking
           )
             
           CustomToggle(
@@ -134,8 +162,7 @@ struct BlockedProfileView: View {
         BlockingStrategyList(
           strategies: StrategyManager.availableStrategies,
           selectedStrategy: $selectedStrategy,
-          disabled: isBlocking,
-          disabledText: "Disable the current session to edit"
+          disabled: isBlocking
         )
 
         Section("Safeguards") {
@@ -153,6 +180,24 @@ struct BlockedProfileView: View {
               "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
             isOn: $enableStrictMode,
             isDisabled: isBlocking
+          )
+        }
+
+        Section("Physical Unblock") {
+          BlockedProfilePhysicalUnblockSelector(
+            nfcTagId: physicalUnblockNFCTagId,
+            qrCodeId: physicalUnblockQRCodeId,
+            disabled: isBlocking,
+            onSetNFC: {
+              physicalReader.readNFCTag(
+                onSuccess: { physicalUnblockNFCTagId = $0 },
+              )
+            },
+            onSetQRCode: {
+              showingPhysicalUnblockView = true
+            },
+            onUnsetNFC: { physicalUnblockNFCTagId = nil },
+            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
           )
         }
 
@@ -231,13 +276,6 @@ struct BlockedProfileView: View {
               }
             }
             .disabled(isBlocking)
-
-            if isBlocking {
-              Text("Disable current session to change")
-                .font(.caption)
-                .foregroundColor(.red)
-                .padding(.top, 4)
-            }
           }
         }
 
@@ -299,12 +337,33 @@ struct BlockedProfileView: View {
           )
         }
       }
+      .sheet(isPresented: $showingPhysicalUnblockView) {
+        BlockingStrategyActionView(
+          customView: physicalReader.readQRCode(
+            onSuccess: {
+              showingPhysicalUnblockView = false
+              physicalUnblockQRCodeId = $0
+            },
+            onFailure: { _ in
+              showingPhysicalUnblockView = false
+              showError(
+                message: "Failed to read QR code, please try again or use a different QR code."
+              )
+            }
+          )
+        )
+      }
       .alert("Error", isPresented: $showError) {
         Button("OK") {}
       } message: {
         Text(errorMessage ?? "An unknown error occurred")
       }
     }
+  }
+
+  private func showError(message: String) {
+    errorMessage = message
+    showError = true
   }
 
   private func writeProfile() {
@@ -334,7 +393,9 @@ struct BlockedProfileView: View {
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomain: enableAllowModeDomain,
-          domains: domains
+          domains: domains,
+          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
       } else {
         // Create new profile with next available order
@@ -351,7 +412,9 @@ struct BlockedProfileView: View {
           enableAllowMode: enableAllowMode,
           enableAllowModeDomain: enableAllowModeDomain,
           order: nextOrder,
-          domains: domains
+          domains: domains,
+          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
 
         modelContext.insert(newProfile)

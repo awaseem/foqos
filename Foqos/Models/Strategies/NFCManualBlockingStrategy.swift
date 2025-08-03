@@ -30,6 +30,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
       BlockedProfileSession
       .createSession(
         in: context,
+        // Manually starting sessions, since nothing was scanned to start there is no tag to store for each session
         withTag: ManualBlockingStrategy.id,
         withProfile: profile,
         forceStart: forceStart ?? false
@@ -45,6 +46,17 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     session: BlockedProfileSession
   ) -> (any View)? {
     nfcScanner.onTagScanned = { tag in
+      let tag = tag.url ?? tag.id
+
+      if let physicalUnblockNFCTagId = session.blockedProfile.physicalUnblockNFCTagId,
+        physicalUnblockNFCTagId != tag
+      {
+        self.onErrorMessage?(
+          "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"
+        )
+        return
+      }
+
       session.endSession()
       self.appBlocker.deactivateRestrictions()
 

@@ -20,6 +20,9 @@ class BlockedProfiles {
   var enableAllowMode: Bool = false
   var enableAllowModeDomain: Bool = false
 
+  var physicalUnblockNFCTagId: String?
+  var physicalUnblockQRCodeId: String?
+
   var domains: [String]? = nil
 
   @Relationship var sessions: [BlockedProfileSession] = []
@@ -38,7 +41,9 @@ class BlockedProfiles {
     enableAllowMode: Bool = false,
     enableAllowModeDomain: Bool = false,
     order: Int = 0,
-    domains: [String]? = nil
+    domains: [String]? = nil,
+    physicalUnblockNFCTagId: String? = nil,
+    physicalUnblockQRCodeId: String? = nil
   ) {
     self.id = id
     self.name = name
@@ -57,6 +62,9 @@ class BlockedProfiles {
     self.enableAllowModeDomain = enableAllowModeDomain
 
     self.domains = domains
+
+    self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
+    self.physicalUnblockQRCodeId = physicalUnblockQRCodeId
   }
 
   static func fetchProfiles(in context: ModelContext) throws
@@ -101,7 +109,9 @@ class BlockedProfiles {
     enableAllowMode: Bool? = nil,
     enableAllowModeDomain: Bool? = nil,
     order: Int? = nil,
-    domains: [String]? = nil
+    domains: [String]? = nil,
+    physicalUnblockNFCTagId: String? = nil,
+    physicalUnblockQRCodeId: String? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -143,9 +153,14 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
+    // Values can be nil when removed
+    profile.physicalUnblockNFCTagId = physicalUnblockNFCTagId
+    profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
+
     profile.reminderTimeInSeconds = reminderTime
 
     profile.updatedAt = Date()
+
     try context.save()
   }
 

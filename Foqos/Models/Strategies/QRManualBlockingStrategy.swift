@@ -49,7 +49,18 @@ class QRManualBlockingStrategy: BlockingStrategy {
       subtitle: "Point your camera at a QR code to deactiviate a profile."
     ) { result in
       switch result {
-      case .success(_):
+      case .success(let result):
+        let tag = result.string
+
+        if let physicalUnblockQRCodeId = session.blockedProfile.physicalUnblockQRCodeId,
+          physicalUnblockQRCodeId != tag
+        {
+          self.onErrorMessage?(
+            "This QR code is not allowed to unblock this profile. Physical unblock setting is on for this profile"
+          )
+          return
+        }
+
         session.endSession()
         self.appBlocker.deactivateRestrictions()
 

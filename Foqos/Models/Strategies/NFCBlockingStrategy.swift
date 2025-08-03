@@ -52,8 +52,16 @@ class NFCBlockingStrategy: BlockingStrategy {
     nfcScanner.onTagScanned = { tag in
       let tag = tag.url ?? tag.id
 
-      // If it was force started, we don't care about the tag
-      if !session.forceStarted && session.tag != tag {
+      if let physicalUnblockNFCTagId = session.blockedProfile.physicalUnblockNFCTagId {
+        // Physical unblock tag is set - only this specific tag can unblock
+        if physicalUnblockNFCTagId != tag {
+          self.onErrorMessage?(
+            "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"
+          )
+          return
+        }
+      } else if !session.forceStarted && session.tag != tag {
+        // No physical unblock tag - must use original session tag (unless force started)
         self.onErrorMessage?(
           "You must scan the original tag to stop focus"
         )

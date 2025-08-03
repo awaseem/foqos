@@ -61,8 +61,17 @@ class QRCodeBlockingStrategy: BlockingStrategy {
       case .success(let result):
         let tag = result.string
 
-        // if the session was force started, we don't need to check the tag
-        if !session.forceStarted && session.tag != tag {
+        // Validate the scanned QR code for unblocking
+        if let physicalUnblockQRCodeId = session.blockedProfile.physicalUnblockQRCodeId {
+          // Physical unblock QR code is set - only this specific code can unblock
+          if physicalUnblockQRCodeId != tag {
+            self.onErrorMessage?(
+              "This QR code is not allowed to unblock this profile. Physical unblock setting is on for this profile"
+            )
+            return
+          }
+        } else if !session.forceStarted && session.tag != tag {
+          // No physical unblock code - must use original session code (unless force started)
           self.onErrorMessage?(
             "You must scan the original QR code to stop focus"
           )

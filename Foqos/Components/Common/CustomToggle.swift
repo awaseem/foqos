@@ -5,7 +5,7 @@ struct CustomToggle: View {
   let description: String
   @Binding var isOn: Bool
   var isDisabled: Bool = false
-  var errorMessage: String = "Disable current session to change"
+  var errorMessage: String? = nil
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -20,8 +20,8 @@ struct CustomToggle: View {
         .lineLimit(nil)
         .padding(.trailing, 50)
 
-      if isDisabled {
-        Text(errorMessage)
+      if isDisabled && errorMessage != nil {
+        Text(errorMessage!)
           .font(.caption)
           .foregroundColor(.red)
       }
