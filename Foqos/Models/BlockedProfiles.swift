@@ -19,6 +19,8 @@ class BlockedProfiles {
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
 
+  var physicalUnblockDeviceId: String?
+
   var domains: [String]? = nil
 
   @Relationship var sessions: [BlockedProfileSession] = []
@@ -97,7 +99,8 @@ class BlockedProfiles {
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
     order: Int? = nil,
-    domains: [String]? = nil
+    domains: [String]? = nil,
+    physicalUnblockDeviceId: String? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -135,9 +138,14 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
+    if let newPhysicalUnblockDeviceId = physicalUnblockDeviceId {
+      profile.physicalUnblockDeviceId = newPhysicalUnblockDeviceId
+    }
+
     profile.reminderTimeInSeconds = reminderTime
 
     profile.updatedAt = Date()
+
     try context.save()
   }
 
