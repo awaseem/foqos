@@ -18,7 +18,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
         PhysicalUnblockColumn(
           title: "NFC Tag",
           description: "Set a specific NFC tag that can only unblock this profile when active",
-          systemImage: "wave.3.right",
+          systemImage: "wave.3.right.circle.fill",
           id: nfcTagId,
           disabled: disabled,
           onSet: onSetNFC,
@@ -29,7 +29,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
         PhysicalUnblockColumn(
           title: "QR Code",
           description: "Set a specific QR code that can only unblock this profile when active",
-          systemImage: "qrcode",
+          systemImage: "qrcode.viewfinder",
           id: qrCodeId,
           disabled: disabled,
           onSet: onSetQRCode,
