@@ -102,6 +102,22 @@ struct BlockedProfileView: View {
   var body: some View {
     NavigationStack {
       Form {
+        // Show lock status when profile is active
+        if isBlocking {
+          Section {
+            HStack {
+              Image(systemName: "lock.fill")
+                .font(.title2)
+                .foregroundColor(.orange)
+              Text("A session is currently active, profile editing is disabled.")
+                .font(.subheadline)
+                .foregroundColor(.red)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 4)
+          }
+        }
+
         Section("Name") {
           TextField("Profile Name", text: $name)
             .textContentType(.none)
@@ -112,16 +128,14 @@ struct BlockedProfileView: View {
             selection: selectedActivity,
             buttonAction: { showingActivityPicker = true },
             allowMode: enableAllowMode,
-            disabled: isBlocking,
-            disabledText: "Disable the current session to edit"
+            disabled: isBlocking
           )
 
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
             allowMode: enableAllowMode,
-            disabled: isBlocking,
-            disabledText: "Disable the current session to edit"
+            disabled: isBlocking
           )
 
           CustomToggle(
@@ -136,8 +150,7 @@ struct BlockedProfileView: View {
         BlockingStrategyList(
           strategies: StrategyManager.availableStrategies,
           selectedStrategy: $selectedStrategy,
-          disabled: isBlocking,
-          disabledText: "Disable the current session to edit"
+          disabled: isBlocking
         )
 
         Section("Safeguards") {
@@ -251,13 +264,6 @@ struct BlockedProfileView: View {
               }
             }
             .disabled(isBlocking)
-
-            if isBlocking {
-              Text("Disable current session to change")
-                .font(.caption)
-                .foregroundColor(.red)
-                .padding(.top, 4)
-            }
           }
         }
 
