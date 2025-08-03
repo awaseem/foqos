@@ -98,7 +98,8 @@ struct PhysicalUnblockColumn: View {
       }
     }
     .frame(maxWidth: .infinity)
-    .padding(.vertical, 8)
+    .padding(.top, 12)
+    .padding(.bottom, 8)
     .opacity(disabled ? 0.5 : 1)
   }
 }
