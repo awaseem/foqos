@@ -62,7 +62,10 @@ class NFCBlockingStrategy: BlockingStrategy {
       }
 
       // If it was force started, we don't care about the tag
-      if !session.forceStarted && session.tag != tag {
+      // If physicalUnblockNFCTagId is set, we already validated it above, so allow continuing
+      if !session.forceStarted && session.tag != tag
+        && session.blockedProfile.physicalUnblockNFCTagId == nil
+      {
         self.onErrorMessage?(
           "You must scan the original tag to stop focus"
         )

@@ -71,7 +71,10 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         }
 
         // if the session was force started, we don't need to check the tag
-        if !session.forceStarted && session.tag != tag {
+        // If physicalUnblockQRCodeId is set, we already validated it above, so allow continuing
+        if !session.forceStarted && session.tag != tag
+          && session.blockedProfile.physicalUnblockQRCodeId == nil
+        {
           self.onErrorMessage?(
             "You must scan the original QR code to stop focus"
           )
