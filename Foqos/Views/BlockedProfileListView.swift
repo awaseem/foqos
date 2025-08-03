@@ -12,6 +12,7 @@ struct BlockedProfileListView: View {
   @State private var showingCreateProfile = false
   @State private var profileToEdit: BlockedProfiles?
   @State private var showErrorAlert = false
+  @State private var editMode: EditMode = .inactive
 
   var body: some View {
     NavigationStack {
@@ -28,16 +29,30 @@ struct BlockedProfileListView: View {
               ProfileRow(profile: profile)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                  profileToEdit = profile
+                  if editMode == .inactive {
+                    profileToEdit = profile
+                  }
                 }
             }
-            .onDelete(perform: deleteProfiles)
-            .onMove(perform: moveProfiles)
+            .onDelete(perform: editMode == .active ? deleteProfiles : nil)
+            .onMove(perform: editMode == .active ? moveProfiles : nil)
           }
+          .environment(\.editMode, $editMode)
         }
       }
       .navigationTitle("Profiles")
+      .navigationBarTitleDisplayMode(.inline)
       .toolbar {
+        ToolbarItem(placement: .navigationBarLeading) {
+          if !profiles.isEmpty {
+            Button(editMode == .active ? "Done" : "Edit") {
+              withAnimation {
+                editMode = editMode == .active ? .inactive : .active
+              }
+            }
+          }
+        }
+
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(action: {
             showingCreateProfile = true
