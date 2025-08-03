@@ -38,8 +38,14 @@ struct BlockedProfileView: View {
   @State private var errorMessage: String?
   @State private var showError = false
 
+  // Sheet for physical unblock
+  @State private var showingPhysicalUnblockView = false
+  @State private var physicalUnblockView: (any View)? = nil
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
+
+  private let physicalReader: PhysicalReader = PhysicalReader()
 
   private var isEditing: Bool {
     profile != nil
@@ -158,8 +164,28 @@ struct BlockedProfileView: View {
             nfcTagId: physicalUnblockNFCTagId,
             qrCodeId: physicalUnblockQRCodeId,
             disabled: isBlocking,
-            onSetNFC: {},
-            onSetQRCode: {},
+            onSetNFC: {
+              physicalReader.readNFCTag(
+                onSuccess: { physicalUnblockNFCTagId = $0 },
+              )
+            },
+            onSetQRCode: {
+              showingPhysicalUnblockView = true
+
+              physicalUnblockView = physicalReader.readQRCode(
+                onSuccess: {
+                  showingPhysicalUnblockView = false
+                  physicalUnblockQRCodeId = $0
+                },
+                onFailure: { _ in
+                  showingPhysicalUnblockView = false
+                  showError(
+                    message:
+                      "Failed to read QR code, please try again or use a different QR code."
+                  )
+                }
+              )
+            },
             onUnsetNFC: { physicalUnblockNFCTagId = nil },
             onUnsetQRCode: { physicalUnblockQRCodeId = nil }
           )
@@ -301,12 +327,22 @@ struct BlockedProfileView: View {
           )
         }
       }
+      .sheet(isPresented: $showingPhysicalUnblockView) {
+        BlockingStrategyActionView(
+          customView: physicalUnblockView
+        )
+      }
       .alert("Error", isPresented: $showError) {
         Button("OK") {}
       } message: {
         Text(errorMessage ?? "An unknown error occurred")
       }
     }
+  }
+
+  private func showError(message: String) {
+    errorMessage = message
+    showError = true
   }
 
   private func writeProfile() {
