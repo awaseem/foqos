@@ -40,7 +40,6 @@ struct BlockedProfileView: View {
 
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
-  @State private var physicalUnblockView: (any View)? = nil
 
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
@@ -171,20 +170,6 @@ struct BlockedProfileView: View {
             },
             onSetQRCode: {
               showingPhysicalUnblockView = true
-
-              physicalUnblockView = physicalReader.readQRCode(
-                onSuccess: {
-                  showingPhysicalUnblockView = false
-                  physicalUnblockQRCodeId = $0
-                },
-                onFailure: { _ in
-                  showingPhysicalUnblockView = false
-                  showError(
-                    message:
-                      "Failed to read QR code, please try again or use a different QR code."
-                  )
-                }
-              )
             },
             onUnsetNFC: { physicalUnblockNFCTagId = nil },
             onUnsetQRCode: { physicalUnblockQRCodeId = nil }
@@ -329,7 +314,18 @@ struct BlockedProfileView: View {
       }
       .sheet(isPresented: $showingPhysicalUnblockView) {
         BlockingStrategyActionView(
-          customView: physicalUnblockView
+          customView: physicalReader.readQRCode(
+            onSuccess: {
+              showingPhysicalUnblockView = false
+              physicalUnblockQRCodeId = $0
+            },
+            onFailure: { _ in
+              showingPhysicalUnblockView = false
+              showError(
+                message: "Failed to read QR code, please try again or use a different QR code."
+              )
+            }
+          )
         )
       }
       .alert("Error", isPresented: $showError) {
