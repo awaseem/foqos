@@ -140,13 +140,9 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
-    if let newPhysicalUnblockNFCTagId = physicalUnblockNFCTagId {
-      profile.physicalUnblockNFCTagId = newPhysicalUnblockNFCTagId
-    }
-
-    if let newPhysicalUnblockQRCodeId = physicalUnblockQRCodeId {
-      profile.physicalUnblockQRCodeId = newPhysicalUnblockQRCodeId
-    }
+    // Values can be nil when removed
+    profile.physicalUnblockNFCTagId = physicalUnblockNFCTagId
+    profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
 
     profile.reminderTimeInSeconds = reminderTime
 
