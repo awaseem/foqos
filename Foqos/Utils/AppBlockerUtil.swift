@@ -16,7 +16,8 @@ class AppBlockerUtil {
     print("Starting restrictions...")
 
     let selection = profile.selectedActivity
-    let allowOnly = profile.enableAllowMode
+    let allowOnlyApps = profile.enableAllowMode
+    let allowOnlyDomains = profile.enableAllowModeDomains
     let strict = profile.enableStrictMode
 
     let applicationTokens = selection.applicationTokens
@@ -24,18 +25,21 @@ class AppBlockerUtil {
     let webTokens = selection.webDomainTokens
     let domains = BlockedProfiles.getWebDomains(from: profile)
 
-    if allowOnly {
+    if allowOnlyApps {
       store.shield.applicationCategories =
         .all(except: applicationTokens)
       store.shield.webDomainCategories = .all(except: webTokens)
 
-      store.webContent.blockedByFilter = .all(except: domains)
     } else {
       store.shield.applications = applicationTokens
       store.shield.applicationCategories = .specific(categoriesTokens)
       store.shield.webDomainCategories = .specific(categoriesTokens)
       store.shield.webDomains = webTokens
+    }
 
+    if allowOnlyDomains {
+      store.webContent.blockedByFilter = .all(except: domains)
+    } else {
       store.webContent.blockedByFilter = .specific(domains)
     }
 

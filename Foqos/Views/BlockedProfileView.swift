@@ -20,6 +20,7 @@ struct BlockedProfileView: View {
   @State private var enableStrictMode: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
   @State private var enableAllowMode: Bool = false
+  @State private var enableAllowModeDomain: Bool = false
   @State private var domains: [String] = []
 
   @State private var physicalUnblockNFCTagId: String?
@@ -71,6 +72,9 @@ struct BlockedProfileView: View {
     )
     _enableAllowMode = State(
       initialValue: profile?.enableAllowMode ?? false
+    )
+    _enableAllowModeDomain = State(
+      initialValue: profile?.enableAllowModeDomains ?? false
     )
     _enableReminder = State(
       initialValue: profile?.reminderTimeInSeconds != nil
@@ -131,6 +135,14 @@ struct BlockedProfileView: View {
             disabled: isBlocking
           )
 
+          CustomToggle(
+            title: "Apps Allow Mode",
+            description:
+              "Pick apps or websites to allow and block everything else. This will erase any other selection you've made.",
+            isOn: $enableAllowMode,
+            isDisabled: isBlocking
+          )
+
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
@@ -139,10 +151,10 @@ struct BlockedProfileView: View {
           )
 
           CustomToggle(
-            title: "Allow Mode",
+            title: "Domain Allow Mode",
             description:
-              "Pick apps or websites to allow and block everything else. This will erase any other selection you've made.",
-            isOn: $enableAllowMode,
+              "Pick domains to allow and block everything else. This will erase any other selection you've made.",
+            isOn: $enableAllowModeDomain,
             isDisabled: isBlocking
           )
         }
@@ -305,7 +317,7 @@ struct BlockedProfileView: View {
         DomainPicker(
           domains: $domains,
           isPresented: $showingDomainPicker,
-          allowMode: enableAllowMode
+          allowMode: enableAllowModeDomain
         )
       }
       .sheet(isPresented: $showingGeneratedQRCode) {
@@ -373,6 +385,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
+          enableAllowModeDomains: enableAllowModeDomain,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId
@@ -390,6 +403,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
+          enableAllowModeDomains: enableAllowModeDomain,
           order: nextOrder,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
