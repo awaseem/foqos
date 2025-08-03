@@ -22,6 +22,9 @@ struct BlockedProfileView: View {
   @State private var enableAllowMode: Bool = false
   @State private var domains: [String] = []
 
+  @State private var physicalUnblockNFCTagId: String?
+  @State private var physicalUnblockQRCodeId: String?
+
   // QR code generator
   @State private var showingGeneratedQRCode = false
 
@@ -72,6 +75,12 @@ struct BlockedProfileView: View {
     )
     _domains = State(
       initialValue: profile?.domains ?? []
+    )
+    _physicalUnblockNFCTagId = State(
+      initialValue: profile?.physicalUnblockNFCTagId ?? nil
+    )
+    _physicalUnblockQRCodeId = State(
+      initialValue: profile?.physicalUnblockQRCodeId ?? nil
     )
 
     if let profileStrategyId = profile?.blockingStrategyId {
@@ -141,6 +150,18 @@ struct BlockedProfileView: View {
               "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
             isOn: $enableStrictMode,
             isDisabled: isBlocking
+          )
+        }
+
+        Section("Physical Unblock") {
+          BlockedProfilePhysicalUnblockSelector(
+            nfcTagId: physicalUnblockNFCTagId,
+            qrCodeId: physicalUnblockQRCodeId,
+            disabled: isBlocking,
+            onSetNFC: {},
+            onSetQRCode: {},
+            onUnsetNFC: { physicalUnblockNFCTagId = nil },
+            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
           )
         }
 

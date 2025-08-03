@@ -12,40 +12,38 @@ struct BlockedProfilePhysicalUnblockSelector: View {
   let onUnsetQRCode: () -> Void
 
   var body: some View {
-    Section("Physical Unblock Options") {
-      VStack(alignment: .leading, spacing: 12) {
-        HStack(spacing: 12) {
-          // NFC Tag Column
-          PhysicalUnblockColumn(
-            title: "NFC Tag",
-            description: "Set a specific NFC tag that can only unblock this profile when active",
-            systemImage: "wave.3.right",
-            id: nfcTagId,
-            disabled: disabled,
-            onSet: onSetNFC,
-            onUnset: onUnsetNFC
-          )
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(spacing: 12) {
+        // NFC Tag Column
+        PhysicalUnblockColumn(
+          title: "NFC Tag",
+          description: "Set a specific NFC tag that can only unblock this profile when active",
+          systemImage: "wave.3.right",
+          id: nfcTagId,
+          disabled: disabled,
+          onSet: onSetNFC,
+          onUnset: onUnsetNFC
+        )
 
-          // QR Code Column
-          PhysicalUnblockColumn(
-            title: "QR Code",
-            description: "Set a specific QR code that can only unblock this profile when active",
-            systemImage: "qrcode",
-            id: qrCodeId,
-            disabled: disabled,
-            onSet: onSetQRCode,
-            onUnset: onUnsetQRCode
-          )
-        }
+        // QR Code Column
+        PhysicalUnblockColumn(
+          title: "QR Code",
+          description: "Set a specific QR code that can only unblock this profile when active",
+          systemImage: "qrcode",
+          id: qrCodeId,
+          disabled: disabled,
+          onSet: onSetQRCode,
+          onUnset: onUnsetQRCode
+        )
+      }
 
-        if let disabledText = disabledText, disabled {
-          Text(disabledText)
-            .foregroundStyle(.red)
-            .padding(.top, 4)
-            .font(.caption)
-        }
-      }.padding(0)
-    }
+      if let disabledText = disabledText, disabled {
+        Text(disabledText)
+          .foregroundStyle(.red)
+          .padding(.top, 4)
+          .font(.caption)
+      }
+    }.padding(0)
   }
 }
 
