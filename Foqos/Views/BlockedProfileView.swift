@@ -183,7 +183,7 @@ struct BlockedProfileView: View {
           )
         }
 
-        Section("Physical Unblock") {
+        Section("Strict Unlocks") {
           BlockedProfilePhysicalUnblockSelector(
             nfcTagId: physicalUnblockNFCTagId,
             qrCodeId: physicalUnblockQRCodeId,

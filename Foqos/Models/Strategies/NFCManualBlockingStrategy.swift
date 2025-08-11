@@ -5,7 +5,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCManualBlockingStrategy"
 
   var name: String = "NFC + Manual"
-  var description: String = "Block manually, but unblock by using a NFC tag"
+  var description: String = "Block manually, but unblock by using any NFC tag"
   var iconType: String = "badge.plus.radiowaves.forward"
   var color: Color = .yellow
 
