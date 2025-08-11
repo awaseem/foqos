@@ -42,6 +42,9 @@ struct BlockedProfileView: View {
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
 
+  // Sheet for schedules view
+  @State private var showingSchedulesView = false
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
 
@@ -276,6 +279,17 @@ struct BlockedProfileView: View {
               }
             }
             .disabled(isBlocking)
+
+            Button(action: {
+              showingSchedulesView = true
+            }) {
+              HStack {
+                Image(systemName: "calendar.badge.clock")
+                Text("Schedules")
+                Spacer()
+              }
+            }
+            .disabled(isBlocking)
           }
         }
 
@@ -345,6 +359,11 @@ struct BlockedProfileView: View {
             }
           )
         )
+      }
+      .sheet(isPresented: $showingSchedulesView) {
+        NavigationView {
+          SchedulesView()
+        }
       }
       .alert("Error", isPresented: $showError) {
         Button("OK") {}
