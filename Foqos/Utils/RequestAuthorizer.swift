@@ -24,4 +24,8 @@ class RequestAuthorizer: ObservableObject {
       }
     }
   }
+
+  func getAuthorizationStatus() -> AuthorizationStatus {
+    return AuthorizationCenter.shared.authorizationStatus
+  }
 }

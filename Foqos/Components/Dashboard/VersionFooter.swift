@@ -1,16 +1,46 @@
+import FamilyControls
 import SwiftUI
 
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
 
 struct VersionFooter: View {
+  let authorizationStatus: AuthorizationStatus
+  let onAuthorizationHandler: () -> Void
+
   // Get the current app version from the bundle
   private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
       ?? "1.0"
   }
 
+  private var isAuthorized: Bool {
+    authorizationStatus == .approved
+  }
+
   var body: some View {
     VStack(spacing: 10) {
+      if isAuthorized {
+        HStack {
+          Circle()
+            .fill(.green)
+            .frame(width: 8, height: 8)
+          Text("All systems functional")
+            .font(.footnote)
+            .foregroundColor(.secondary)
+        }
+      } else {
+        Button(action: onAuthorizationHandler) {
+          HStack {
+            Circle()
+              .fill(.red)
+              .frame(width: 8, height: 8)
+            Text("Authorization required. Tap to authorize.")
+              .font(.footnote)
+          }
+        }
+        .foregroundColor(.red)
+      }
+
       Text("Version \(appVersion)")
         .font(.footnote)
         .foregroundColor(.secondary)
@@ -33,6 +63,18 @@ struct VersionFooter: View {
 // Preview provider for SwiftUI canvas
 struct VersionFooter_Previews: PreviewProvider {
   static var previews: some View {
-    VersionFooter()
+    VStack(spacing: 20) {
+      VersionFooter(
+        authorizationStatus: .approved,
+        onAuthorizationHandler: {}
+      )
+      .previewDisplayName("Authorized")
+
+      VersionFooter(
+        authorizationStatus: .denied,
+        onAuthorizationHandler: {}
+      )
+      .previewDisplayName("Not Authorized")
+    }
   }
 }

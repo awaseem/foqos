@@ -117,8 +117,13 @@ struct HomeView: View {
           )
         }
 
-        VersionFooter()
-          .frame(maxWidth: .infinity)
+        VersionFooter(
+          authorizationStatus: requestAuthorizer.getAuthorizationStatus(),
+          onAuthorizationHandler: {
+            requestAuthorizer.requestAuthorization()
+          }
+        )
+        .frame(maxWidth: .infinity)
       }
     }
     .refreshable {
