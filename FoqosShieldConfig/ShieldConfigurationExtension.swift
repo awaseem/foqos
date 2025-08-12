@@ -48,9 +48,19 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     let tintedIcon = UIImage(systemName: "hourglass")?.withTintColor(
       brandColor, renderingMode: .alwaysOriginal)
 
+    // Dynamic background: white in light mode, black in dark mode
+    let dynamicBackgroundColor = UIColor { trait in
+      switch trait.userInterfaceStyle {
+      case .dark:
+        return .black
+      default:
+        return .white
+      }
+    }
+
     return ShieldConfiguration(
-      backgroundBlurStyle: .systemUltraThinMaterial,
-      backgroundColor: UIColor.systemBackground,
+      backgroundBlurStyle: nil,
+      backgroundColor: dynamicBackgroundColor,
       icon: tintedIcon,
       title: ShieldConfiguration.Label(
         text: randomMessage.title,
