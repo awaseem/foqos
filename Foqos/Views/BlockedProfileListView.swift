@@ -43,25 +43,43 @@ struct BlockedProfileListView: View {
       .navigationTitle("Profiles")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .navigationBarLeading) {
+        if !profiles.isEmpty {
+          ToolbarItem(placement: .navigationBarTrailing) {
+            Menu {
+              Button(editMode == .active ? "Done Editing" : "Edit Profiles") {
+                withAnimation {
+                  editMode = editMode == .active ? .inactive : .active
+                }
+              }
+            } label: {
+              Image(systemName: "ellipsis.circle")
+            }
+          }
+        }
+      }
+      .safeAreaInset(edge: .bottom) {
+        ZStack {
           if !profiles.isEmpty {
-            Button(editMode == .active ? "Done" : "Edit") {
-              withAnimation {
-                editMode = editMode == .active ? .inactive : .active
+            Text("\(profiles.count) \(profiles.count == 1 ? "Profile" : "Profiles")")
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .center)
+          }
+
+          HStack {
+            Spacer()
+            Button(action: { showingCreateProfile = true }) {
+              Label {
+                Text("Create").bold()
+              } icon: {
+                Image(systemName: "plus.circle")
               }
             }
           }
         }
-
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button(action: {
-            showingCreateProfile = true
-          }) {
-            HStack {
-              Text("Create")
-            }
-          }
-        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
       }
       .sheet(isPresented: $showingCreateProfile) {
         BlockedProfileView()
