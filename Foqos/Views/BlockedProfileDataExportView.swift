@@ -54,13 +54,6 @@ struct BlockedProfileDataExportView: View {
             Text("No profiles yet")
               .foregroundStyle(.secondary)
           } else {
-            Button(action: toggleSelectAll) {
-              let allSelected = selectedProfileIDs.count == profiles.count && !profiles.isEmpty
-              Label(
-                allSelected ? "Deselect All" : "Select All",
-                systemImage: allSelected ? "checkmark.circle.fill" : "circle")
-            }
-
             ForEach(profiles) { profile in
               HStack {
                 let isSelected = selectedProfileIDs.contains(profile.id)
@@ -131,14 +124,6 @@ struct BlockedProfileDataExportView: View {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
     return "foqos-sessions_\(formatter.string(from: Date()))"
-  }
-
-  private func toggleSelectAll() {
-    if selectedProfileIDs.count == profiles.count {
-      selectedProfileIDs.removeAll()
-    } else {
-      selectedProfileIDs = Set(profiles.map { $0.id })
-    }
   }
 
   private func toggleSelection(for id: UUID) {
