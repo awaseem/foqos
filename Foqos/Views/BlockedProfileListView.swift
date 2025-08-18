@@ -41,25 +41,9 @@ struct BlockedProfileListView: View {
         }
       }
       .navigationTitle("Profiles")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        if !profiles.isEmpty {
-          ToolbarItem(placement: .navigationBarTrailing) {
-            if editMode == .active {
-              Button("Done") {
-                editMode = .inactive
-              }
-            } else {
-              Menu {
-                Button("Edit Profiles") {
-                  editMode = .active
-                }
-              } label: {
-                Image(systemName: "ellipsis.circle")
-              }
-            }
-          }
-        }
+      .safeAreaInset(edge: .top) {
+        Color.clear
+          .frame(height: 8)
       }
       .safeAreaInset(edge: .bottom) {
         ZStack {
@@ -71,7 +55,28 @@ struct BlockedProfileListView: View {
           }
 
           HStack {
+            if !profiles.isEmpty {
+              if editMode == .active {
+                Button("Done") {
+                  editMode = .inactive
+                }
+              } else {
+                Menu {
+                  Button("Edit Profiles") {
+                    editMode = .active
+                  }
+                } label: {
+                  Label {
+                    Text("Options")
+                  } icon: {
+                    Image(systemName: "ellipsis.circle")
+                  }
+                }
+              }
+            }
+
             Spacer()
+
             Button(action: { showingCreateProfile = true }) {
               Label {
                 Text("Create").bold()
