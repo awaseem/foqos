@@ -1,22 +1,22 @@
 import Foundation
 import SwiftData
 
+enum DataExportSortDirection: Hashable {
+  case ascending
+  case descending
+}
+
+enum DataExportTimeZone: Hashable {
+  case utc
+  case local
+}
+
 struct DataExporter {
-  enum ExportSortDirection {
-    case ascending
-    case descending
-  }
-
-  enum ExportTimeZone {
-    case utc
-    case local
-  }
-
   static func exportSessionsCSV(
     forProfileIDs profileIDs: [UUID],
     in context: ModelContext,
-    sortDirection: ExportSortDirection = .ascending,
-    timeZone: ExportTimeZone = .utc
+    sortDirection: DataExportSortDirection = .ascending,
+    timeZone: DataExportTimeZone = .utc
   ) throws -> String {
     var lines: [String] = [
       "Id,start_time,end_time,break_start_time,break_end_time"
@@ -62,7 +62,7 @@ struct DataExporter {
     return field
   }
 
-  private static func makeISO8601Formatter(timeZone: ExportTimeZone) -> ISO8601DateFormatter {
+  private static func makeISO8601Formatter(timeZone: DataExportTimeZone) -> ISO8601DateFormatter {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     switch timeZone {

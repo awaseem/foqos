@@ -9,7 +9,10 @@ struct BlockedProfileListView: View {
     SortDescriptor(\BlockedProfiles.order, order: .forward),
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
   ]) private var profiles: [BlockedProfiles]
+
   @State private var showingCreateProfile = false
+  @State private var showingDataExport = false
+
   @State private var profileToEdit: BlockedProfiles?
   @State private var showErrorAlert = false
   @State private var editMode: EditMode = .inactive
@@ -71,6 +74,16 @@ struct BlockedProfileListView: View {
                       Image(systemName: "pencil")
                     }
                   }
+
+                  Button {
+                    showingDataExport = true
+                  } label: {
+                    Label {
+                      Text("Export Data")
+                    } icon: {
+                      Image(systemName: "square.and.arrow.up")
+                    }
+                  }
                 } label: {
                   Label {
                     Text("Options")
@@ -101,6 +114,9 @@ struct BlockedProfileListView: View {
       }
       .sheet(item: $profileToEdit) { profile in
         BlockedProfileView(profile: profile)
+      }
+      .sheet(isPresented: $showingDataExport) {
+        BlockedProfileDataExportView()
       }
       .alert(
         "Cannot Delete Active Profile",
