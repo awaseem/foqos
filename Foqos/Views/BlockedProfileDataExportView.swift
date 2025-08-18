@@ -100,7 +100,8 @@ struct BlockedProfileDataExportView: View {
           .disabled(isGenerating)
         }
       }
-      .navigationTitle("Export Sessions")
+      .navigationTitle("Export Data")
+      .navigationBarTitleDisplayMode(.inline)
       .fileExporter(
         isPresented: $isExportPresented,
         document: exportDocument,
