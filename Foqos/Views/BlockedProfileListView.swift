@@ -62,8 +62,14 @@ struct BlockedProfileListView: View {
                 }
               } else {
                 Menu {
-                  Button("Edit Profiles") {
+                  Button {
                     editMode = .active
+                  } label: {
+                    Label {
+                      Text("Edit/Move")
+                    } icon: {
+                      Image(systemName: "pencil")
+                    }
                   }
                 } label: {
                   Label {
