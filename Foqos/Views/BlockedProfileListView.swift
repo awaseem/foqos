@@ -83,6 +83,7 @@ struct BlockedProfileListView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
       }
       .sheet(isPresented: $showingCreateProfile) {
         BlockedProfileView()
