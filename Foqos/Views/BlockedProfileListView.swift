@@ -45,14 +45,18 @@ struct BlockedProfileListView: View {
       .toolbar {
         if !profiles.isEmpty {
           ToolbarItem(placement: .navigationBarTrailing) {
-            Menu {
-              Button(editMode == .active ? "Done Editing" : "Edit Profiles") {
-                withAnimation {
-                  editMode = editMode == .active ? .inactive : .active
-                }
+            if editMode == .active {
+              Button("Done") {
+                editMode = .inactive
               }
-            } label: {
-              Image(systemName: "ellipsis.circle")
+            } else {
+              Menu {
+                Button("Edit Profiles") {
+                  editMode = .active
+                }
+              } label: {
+                Image(systemName: "ellipsis.circle")
+              }
             }
           }
         }
@@ -79,7 +83,6 @@ struct BlockedProfileListView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
-        .background(.ultraThinMaterial)
       }
       .sheet(isPresented: $showingCreateProfile) {
         BlockedProfileView()
