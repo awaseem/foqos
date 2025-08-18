@@ -43,7 +43,7 @@ struct BlockedProfileListView: View {
       .navigationTitle("Profiles")
       .safeAreaInset(edge: .top) {
         Color.clear
-          .frame(height: 8)
+          .frame(height: 4)
       }
       .safeAreaInset(edge: .bottom) {
         ZStack {
