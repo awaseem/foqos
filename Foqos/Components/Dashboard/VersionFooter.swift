@@ -19,31 +19,33 @@ struct VersionFooter: View {
 
   var body: some View {
     VStack(spacing: 10) {
-      if isAuthorized {
-        HStack {
-          Circle()
-            .fill(.green)
-            .frame(width: 8, height: 8)
-          Text("All systems functional")
-            .font(.footnote)
-            .foregroundColor(.secondary)
-        }
-      } else {
-        Button(action: onAuthorizationHandler) {
-          HStack {
+        HStack(alignment: .center, spacing: 4) {
+        if isAuthorized {
+          HStack(spacing: 8) {
             Circle()
-              .fill(.red)
+              .fill(.green)
               .frame(width: 8, height: 8)
-            Text("Authorization required. Tap to authorize.")
+            Text("All systems functional")
               .font(.footnote)
+              .foregroundColor(.secondary)
           }
+        } else {
+          Button(action: onAuthorizationHandler) {
+            HStack(spacing: 6) {
+              Circle()
+                .fill(.red)
+                .frame(width: 8, height: 8)
+              Text("Authorization required. Tap to authorize.")
+                .font(.footnote)
+            }
+          }
+          .foregroundColor(.red)
         }
-        .foregroundColor(.red)
-      }
 
-      Text("Version \(appVersion)")
-        .font(.footnote)
-        .foregroundColor(.secondary)
+        Text("(Version \(appVersion))")
+          .font(.footnote)
+          .foregroundColor(.secondary)
+      }
 
       Text("Made with ❤️ in Calgary, AB 🇨🇦")
         .font(.footnote)
