@@ -19,7 +19,7 @@ struct VersionFooter: View {
 
   var body: some View {
     VStack(spacing: 10) {
-        HStack(alignment: .center, spacing: 4) {
+      HStack(alignment: .center, spacing: 4) {
         if isAuthorized {
           HStack(spacing: 8) {
             Circle()
