@@ -274,6 +274,17 @@ struct BlockedProfileView: View {
             .disabled(isBlocking)
 
             Button(action: {
+              showingGeneratedQRCode = true
+            }) {
+              HStack {
+                Image(systemName: "qrcode")
+                Text("Generate QR code")
+                Spacer()
+              }
+            }
+            .disabled(isBlocking)
+
+            Button(action: {
               if let existing = profile {
                 cloneName = existing.name + " Copy"
                 showingClonePrompt = true
@@ -282,17 +293,6 @@ struct BlockedProfileView: View {
               HStack {
                 Image(systemName: "square.on.square")
                 Text("Duplicate Profile")
-                Spacer()
-              }
-            }
-            .disabled(isBlocking)
-
-            Button(action: {
-              showingGeneratedQRCode = true
-            }) {
-              HStack {
-                Image(systemName: "qrcode")
-                Text("Generate QR code")
                 Spacer()
               }
             }
