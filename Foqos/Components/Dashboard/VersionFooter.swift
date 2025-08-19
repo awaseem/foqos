@@ -42,7 +42,7 @@ struct VersionFooter: View {
           .foregroundColor(.red)
         }
 
-        Text("(Version \(appVersion))")
+        Text("(v\(appVersion))")
           .font(.footnote)
           .foregroundColor(.secondary)
       }
