@@ -6,6 +6,7 @@ struct ActionButton: View {
   let iconName: String?
   let iconColor: Color?
   let isLoading: Bool
+  let isDisabled: Bool
 
   let action: () -> Void
 
@@ -15,6 +16,7 @@ struct ActionButton: View {
     iconName: String? = nil,
     iconColor: Color? = nil,
     isLoading: Bool = false,
+    isDisabled: Bool = false,
     action: @escaping () -> Void
   ) {
     self.title = title
@@ -22,11 +24,12 @@ struct ActionButton: View {
     self.iconName = iconName
     self.iconColor = iconColor
     self.isLoading = isLoading
+    self.isDisabled = isDisabled
     self.action = action
   }
 
   var body: some View {
-    Button(action: isLoading ? {} : action) {
+    Button(action: (isLoading || isDisabled) ? {} : action) {
       HStack(spacing: 8) {
         if isLoading {
           ProgressView()
@@ -47,12 +50,12 @@ struct ActionButton: View {
       .frame(maxWidth: .infinity)
       .frame(height: 50)
       .background(backgroundColor ?? Color.indigo)
-      .opacity(isLoading ? 0.7 : 1.0)
+      .opacity((isLoading || isDisabled) ? 0.6 : 1.0)
       .clipShape(Capsule())
       .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
       .padding(.horizontal, 20)
     }
-    .disabled(isLoading)
+    .disabled(isLoading || isDisabled)
   }
 }
 
@@ -132,6 +135,16 @@ struct ActionButton: View {
       iconName: "square.and.arrow.up"
     ) {
       print("Share tapped")
+    }
+
+    // Disabled state
+    ActionButton(
+      title: "Disabled",
+      backgroundColor: .gray,
+      iconName: "lock.fill",
+      isDisabled: true
+    ) {
+      print("Should not tap")
     }
   }
   .padding()

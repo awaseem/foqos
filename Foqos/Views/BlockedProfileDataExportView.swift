@@ -46,6 +46,16 @@ struct BlockedProfileDataExportView: View {
   @State private var isGenerating: Bool = false
   @State private var errorMessage: String? = nil
 
+  private var isExportDisabled: Bool {
+    isGenerating || selectedProfileIDs.isEmpty
+  }
+
+  private var defaultFilename: String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+    return "foqos-sessions_\(formatter.string(from: Date()))"
+  }
+
   var body: some View {
     NavigationStack {
       Form {
@@ -69,7 +79,7 @@ struct BlockedProfileDataExportView: View {
         }
 
         Section(
-          header: Text("Sort order"),
+          header: Text("Sorting"),
           footer: Text("Controls the order of sessions in the CSV based on their start time.")
         ) {
           Picker("Sort order", selection: $sortDirection) {
@@ -80,7 +90,7 @@ struct BlockedProfileDataExportView: View {
         }
 
         Section(
-          header: Text("Time zone"),
+          header: Text("Timestamps"),
           footer: Text(
             "Choose how timestamps are exported. UTC is portable across tools; Local uses your device's time zone. All timestamps use ISO 8601."
           )
@@ -92,16 +102,15 @@ struct BlockedProfileDataExportView: View {
           .pickerStyle(.menu)
         }
 
-        Section {
-          Button(action: generateAndExport) {
-            if isGenerating {
-              ProgressView()
-            } else {
-              Label("Export CSV", systemImage: "square.and.arrow.up")
-            }
-          }
-          .disabled(isGenerating)
+        ActionButton(
+          title: "Export CSV",
+          iconName: "square.and.arrow.up",
+          isLoading: isGenerating,
+          isDisabled: isExportDisabled
+        ) {
+          generateAndExport()
         }
+        .listRowBackground(Color.clear)
       }
       .navigationTitle("Export Data")
       .navigationBarTitleDisplayMode(.inline)
@@ -128,12 +137,6 @@ struct BlockedProfileDataExportView: View {
         Text(errorMessage ?? "Unknown error")
       }
     }
-  }
-
-  private var defaultFilename: String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-    return "foqos-sessions_\(formatter.string(from: Date()))"
   }
 
   private func toggleSelection(for id: UUID) {
