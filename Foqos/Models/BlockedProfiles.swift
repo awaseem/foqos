@@ -215,6 +215,33 @@ class BlockedProfiles {
     return lastProfile.order + 1
   }
 
+  static func cloneProfile(
+    _ source: BlockedProfiles,
+    in context: ModelContext,
+    newName: String
+  ) throws -> BlockedProfiles {
+    let nextOrder = getNextOrder(in: context)
+    let cloned = BlockedProfiles(
+      name: newName,
+      selectedActivity: source.selectedActivity,
+      blockingStrategyId: source.blockingStrategyId ?? NFCBlockingStrategy.id,
+      enableLiveActivity: source.enableLiveActivity,
+      reminderTimeInSeconds: source.reminderTimeInSeconds,
+      enableBreaks: source.enableBreaks,
+      enableStrictMode: source.enableStrictMode,
+      enableAllowMode: source.enableAllowMode,
+      enableAllowModeDomains: source.enableAllowModeDomains,
+      order: nextOrder,
+      domains: source.domains,
+      physicalUnblockNFCTagId: source.physicalUnblockNFCTagId,
+      physicalUnblockQRCodeId: source.physicalUnblockQRCodeId
+    )
+
+    context.insert(cloned)
+    try context.save()
+    return cloned
+  }
+
   static func addDomain(to profile: BlockedProfiles, context: ModelContext, domain: String) throws {
     guard let domains = profile.domains else {
       return

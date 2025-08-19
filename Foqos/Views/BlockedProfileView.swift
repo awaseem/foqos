@@ -45,6 +45,10 @@ struct BlockedProfileView: View {
   // Sheet for schedules view
   @State private var showingSchedulesView = false
 
+  // Alert for cloning
+  @State private var showingClonePrompt = false
+  @State private var cloneName: String = ""
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
 
@@ -270,6 +274,20 @@ struct BlockedProfileView: View {
             .disabled(isBlocking)
 
             Button(action: {
+              if let existing = profile {
+                cloneName = existing.name + " Copy"
+                showingClonePrompt = true
+              }
+            }) {
+              HStack {
+                Image(systemName: "square.on.square")
+                Text("Duplicate Profile")
+                Spacer()
+              }
+            }
+            .disabled(isBlocking)
+
+            Button(action: {
               showingGeneratedQRCode = true
             }) {
               HStack {
@@ -344,6 +362,28 @@ struct BlockedProfileView: View {
           )
         }
       }
+      .background(
+        TextFieldAlert(
+          isPresented: $showingClonePrompt,
+          title: "Duplicate Profile",
+          message: nil,
+          text: $cloneName,
+          placeholder: "Profile Name",
+          confirmTitle: "Create",
+          cancelTitle: "Cancel",
+          onConfirm: { enteredName in
+            let trimmed = enteredName.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            do {
+              if let source = profile {
+                _ = try BlockedProfiles.cloneProfile(source, in: modelContext, newName: trimmed)
+              }
+            } catch {
+              showError(message: error.localizedDescription)
+            }
+          }
+        )
+      )
       .sheet(isPresented: $showingPhysicalUnblockView) {
         BlockingStrategyActionView(
           customView: physicalReader.readQRCode(
