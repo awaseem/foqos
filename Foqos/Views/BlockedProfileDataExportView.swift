@@ -24,9 +24,8 @@ struct BlockedProfileDataExportView: View {
   }
 
   private var defaultFilename: String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-    return "foqos-sessions_\(formatter.string(from: Date()))"
+    let timestamp = Int(Date().timeIntervalSince1970)
+    return "foqos_sessions_\(timestamp)"
   }
 
   var body: some View {
