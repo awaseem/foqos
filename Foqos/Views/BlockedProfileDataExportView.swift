@@ -1,32 +1,5 @@
 import SwiftData
 import SwiftUI
-import UniformTypeIdentifiers
-
-// Simple CSV FileDocument for exporting
-struct CSVDocument: FileDocument {
-  static var readableContentTypes: [UTType] { [.commaSeparatedText] }
-
-  var text: String
-
-  init(text: String) {
-    self.text = text
-  }
-
-  init(configuration: ReadConfiguration) throws {
-    if let data = configuration.file.regularFileContents,
-      let string = String(data: data, encoding: .utf8)
-    {
-      self.text = string
-    } else {
-      self.text = ""
-    }
-  }
-
-  func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-    let data = text.data(using: .utf8) ?? Data()
-    return .init(regularFileWithContents: data)
-  }
-}
 
 struct BlockedProfileDataExportView: View {
   @Environment(\.modelContext) private var context
@@ -91,7 +64,7 @@ struct BlockedProfileDataExportView: View {
         }
 
         Section(
-          header: Text("Timestamps"),
+          header: Text("Date & Time"),
           footer: Text(
             "Choose how timestamps are exported. UTC is portable across tools. Local uses your device's time zone. All timestamps use ISO 8601."
           )
