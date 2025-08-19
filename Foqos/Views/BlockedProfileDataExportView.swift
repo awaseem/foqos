@@ -93,7 +93,7 @@ struct BlockedProfileDataExportView: View {
         Section(
           header: Text("Timestamps"),
           footer: Text(
-            "Choose how timestamps are exported. UTC is portable across tools; Local uses your device's time zone. All timestamps use ISO 8601."
+            "Choose how timestamps are exported. UTC is portable across tools. Local uses your device's time zone. All timestamps use ISO 8601."
           )
         ) {
           Picker("Time zone", selection: $timeZone) {
