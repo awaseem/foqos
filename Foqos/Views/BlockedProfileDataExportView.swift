@@ -68,18 +68,28 @@ struct BlockedProfileDataExportView: View {
           }
         }
 
-        Section(header: Text("Options")) {
-          Picker("Sort Direction", selection: $sortDirection) {
-            Text("Ascending").tag(DataExportSortDirection.ascending)
-            Text("Descending").tag(DataExportSortDirection.descending)
+        Section(
+          header: Text("Sort order"),
+          footer: Text("Controls the order of sessions in the CSV based on their start time.")
+        ) {
+          Picker("Sort order", selection: $sortDirection) {
+            Text("Ascending (oldest first)").tag(DataExportSortDirection.ascending)
+            Text("Descending (newest first)").tag(DataExportSortDirection.descending)
           }
-          .pickerStyle(.segmented)
+          .pickerStyle(.menu)
+        }
 
-          Picker("Time Zone", selection: $timeZone) {
+        Section(
+          header: Text("Time zone"),
+          footer: Text(
+            "Choose how timestamps are exported. UTC is portable across tools; Local uses your device's time zone. All timestamps use ISO 8601."
+          )
+        ) {
+          Picker("Time zone", selection: $timeZone) {
             Text("UTC").tag(DataExportTimeZone.utc)
             Text("Local").tag(DataExportTimeZone.local)
           }
-          .pickerStyle(.segmented)
+          .pickerStyle(.menu)
         }
 
         Section {
