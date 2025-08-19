@@ -65,9 +65,10 @@ struct BlockedProfileDataExportView: View {
               .foregroundStyle(.secondary)
           } else {
             ForEach(profiles) { profile in
+              let isSelected = selectedProfileIDs.contains(profile.id)
               HStack {
-                let isSelected = selectedProfileIDs.contains(profile.id)
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                  .foregroundStyle(isSelected ? .green : .secondary)
                 Text(profile.name)
                 Spacer()
               }
