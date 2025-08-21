@@ -79,7 +79,7 @@ struct SchedulePicker: View {
         Section {
           Button(action: toggleStartPicker) {
             HStack {
-              Text("Start")
+              Text("When to start")
               Spacer()
               Text(
                 formattedTimeString(hour: startDisplayHour, minute: startMinute, isPM: startIsPM)
@@ -99,7 +99,7 @@ struct SchedulePicker: View {
         Section {
           Button(action: toggleEndPicker) {
             HStack {
-              Text("End")
+              Text("When to end")
               Spacer()
               Text(formattedTimeString(hour: endDisplayHour, minute: endMinute, isPM: endIsPM))
                 .foregroundStyle(.secondary)
