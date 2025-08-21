@@ -225,7 +225,8 @@ class BlockedProfiles {
       enableAllowModeDomains: profile.enableAllowModeDomains,
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId
+      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
+      schedule: profile.schedule
     )
 
     SharedData.setSnapshot(snapshot, for: profile.id.uuidString)
