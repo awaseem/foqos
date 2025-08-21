@@ -160,6 +160,9 @@ class BlockedProfiles {
 
     profile.updatedAt = Date()
 
+    // Update the snapshot
+    updateSnapshot(for: profile)
+
     try context.save()
   }
 
@@ -179,6 +182,9 @@ class BlockedProfiles {
       context.delete(session)
     }
 
+    // Delete the snapshot
+    deleteSnapshot(for: profile)
+
     // Then delete the profile
     context.delete(profile)
     try context.save()
@@ -196,25 +202,31 @@ class BlockedProfiles {
   }
 
   // Create a codable/equatable snapshot suitable for UserDefaults
-  func toSnapshot() -> SharedData.ProfileSnapshot {
-    return SharedData.ProfileSnapshot(
-      id: self.id,
-      name: self.name,
-      selectedActivity: self.selectedActivity,
-      createdAt: self.createdAt,
-      updatedAt: self.updatedAt,
-      blockingStrategyId: self.blockingStrategyId,
-      order: self.order,
-      enableLiveActivity: self.enableLiveActivity,
-      reminderTimeInSeconds: self.reminderTimeInSeconds,
-      enableBreaks: self.enableBreaks,
-      enableStrictMode: self.enableStrictMode,
-      enableAllowMode: self.enableAllowMode,
-      enableAllowModeDomains: self.enableAllowModeDomains,
-      domains: self.domains,
-      physicalUnblockNFCTagId: self.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: self.physicalUnblockQRCodeId
+  static func updateSnapshot(for profile: BlockedProfiles) {
+    let snapshot = SharedData.ProfileSnapshot(
+      id: profile.id,
+      name: profile.name,
+      selectedActivity: profile.selectedActivity,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+      blockingStrategyId: profile.blockingStrategyId,
+      order: profile.order,
+      enableLiveActivity: profile.enableLiveActivity,
+      reminderTimeInSeconds: profile.reminderTimeInSeconds,
+      enableBreaks: profile.enableBreaks,
+      enableStrictMode: profile.enableStrictMode,
+      enableAllowMode: profile.enableAllowMode,
+      enableAllowModeDomains: profile.enableAllowModeDomains,
+      domains: profile.domains,
+      physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
+      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId
     )
+
+    SharedData.setSnapshot(snapshot, for: profile.id.uuidString)
+  }
+
+  static func deleteSnapshot(for profile: BlockedProfiles) {
+    SharedData.removeSnapshot(for: profile.id.uuidString)
   }
 
   static func reorderProfiles(

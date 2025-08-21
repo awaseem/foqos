@@ -47,9 +47,6 @@ class AppBlockerUtil {
   }
 
   func scheduleRestrictions(for profile: BlockedProfiles) {
-    // Persist data for the DeviceActivityMonitor extension to read
-    SharedData.setSnapshot(profile.toSnapshot(), for: profile.id.uuidString)
-
     // Configure a daily schedule from 7:30 PM to 8:00 PM
     let intervalStart = DateComponents(hour: 19, minute: 30)
     let intervalEnd = DateComponents(hour: 20, minute: 0)
