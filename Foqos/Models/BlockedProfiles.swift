@@ -1,3 +1,4 @@
+import DeviceActivity
 import FamilyControls
 import Foundation
 import ManagedSettings
@@ -25,6 +26,8 @@ class BlockedProfiles {
 
   var domains: [String]? = nil
 
+  var schedule: Schedule? = nil
+
   @Relationship var sessions: [BlockedProfileSession] = []
 
   init(
@@ -43,7 +46,8 @@ class BlockedProfiles {
     order: Int = 0,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil
+    physicalUnblockQRCodeId: String? = nil,
+    schedule: Schedule? = nil
   ) {
     self.id = id
     self.name = name
@@ -64,6 +68,7 @@ class BlockedProfiles {
 
     self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
     self.physicalUnblockQRCodeId = physicalUnblockQRCodeId
+    self.schedule = schedule
   }
 
   static func fetchProfiles(in context: ModelContext) throws
@@ -110,7 +115,8 @@ class BlockedProfiles {
     order: Int? = nil,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil
+    physicalUnblockQRCodeId: String? = nil,
+    schedule: Schedule? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -219,7 +225,8 @@ class BlockedProfiles {
       enableAllowModeDomains: profile.enableAllowModeDomains,
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId
+      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
+      schedule: profile.schedule
     )
 
     SharedData.setSnapshot(snapshot, for: profile.id.uuidString)
@@ -262,7 +269,8 @@ class BlockedProfiles {
     enableAllowModeDomains: Bool = false,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil
+    physicalUnblockQRCodeId: String? = nil,
+    schedule: Schedule? = nil
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 
@@ -279,7 +287,8 @@ class BlockedProfiles {
       order: profileOrder,
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: physicalUnblockQRCodeId
+      physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+      schedule: schedule
     )
 
     // Create the snapshot so extensions can read it immediately
@@ -309,7 +318,8 @@ class BlockedProfiles {
       order: nextOrder,
       domains: source.domains,
       physicalUnblockNFCTagId: source.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: source.physicalUnblockQRCodeId
+      physicalUnblockQRCodeId: source.physicalUnblockQRCodeId,
+      schedule: source.schedule
     )
 
     context.insert(cloned)
@@ -347,5 +357,9 @@ class BlockedProfiles {
     }
 
     return []
+  }
+
+  static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
+    return DeviceActivityName(rawValue: profile.id.uuidString)
   }
 }
