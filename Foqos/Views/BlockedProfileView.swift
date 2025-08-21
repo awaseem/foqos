@@ -450,11 +450,10 @@ struct BlockedProfileView: View {
           physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
       } else {
-        // Create new profile with next available order
-        let nextOrder = BlockedProfiles.getNextOrder(in: modelContext)
-        let newProfile = BlockedProfiles(
+        let _ = try BlockedProfiles.createProfile(
+          in: modelContext,
           name: name,
-          selectedActivity: selectedActivity,
+          selection: selectedActivity,
           blockingStrategyId: selectedStrategy?
             .getIdentifier() ?? NFCBlockingStrategy.id,
           enableLiveActivity: enableLiveActivity,
@@ -463,15 +462,12 @@ struct BlockedProfileView: View {
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
-          order: nextOrder,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId
         )
-
-        modelContext.insert(newProfile)
-        try modelContext.save()
       }
+
       dismiss()
     } catch {
       errorMessage = error.localizedDescription

@@ -249,6 +249,47 @@ class BlockedProfiles {
     return lastProfile.order + 1
   }
 
+  static func createProfile(
+    in context: ModelContext,
+    name: String,
+    selection: FamilyActivitySelection = FamilyActivitySelection(),
+    blockingStrategyId: String = NFCBlockingStrategy.id,
+    enableLiveActivity: Bool = false,
+    reminderTimeInSeconds: UInt32? = nil,
+    enableBreaks: Bool = false,
+    enableStrictMode: Bool = false,
+    enableAllowMode: Bool = false,
+    enableAllowModeDomains: Bool = false,
+    domains: [String]? = nil,
+    physicalUnblockNFCTagId: String? = nil,
+    physicalUnblockQRCodeId: String? = nil
+  ) throws -> BlockedProfiles {
+    let profileOrder = getNextOrder(in: context)
+
+    let profile = BlockedProfiles(
+      name: name,
+      selectedActivity: selection,
+      blockingStrategyId: blockingStrategyId,
+      enableLiveActivity: enableLiveActivity,
+      reminderTimeInSeconds: reminderTimeInSeconds,
+      enableBreaks: enableBreaks,
+      enableStrictMode: enableStrictMode,
+      enableAllowMode: enableAllowMode,
+      enableAllowModeDomains: enableAllowModeDomains,
+      order: profileOrder,
+      domains: domains,
+      physicalUnblockNFCTagId: physicalUnblockNFCTagId,
+      physicalUnblockQRCodeId: physicalUnblockQRCodeId
+    )
+
+    // Create the snapshot so extensions can read it immediately
+    updateSnapshot(for: profile)
+
+    context.insert(profile)
+    try context.save()
+    return profile
+  }
+
   static func cloneProfile(
     _ source: BlockedProfiles,
     in context: ModelContext,
