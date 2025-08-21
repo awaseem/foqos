@@ -19,11 +19,11 @@ class AppBlockerUtil {
     let allowOnlyApps = profile.enableAllowMode
     let allowOnlyDomains = profile.enableAllowModeDomains
     let strict = profile.enableStrictMode
+    let domains = BlockedProfiles.getWebDomains(from: profile)
 
     let applicationTokens = selection.applicationTokens
     let categoriesTokens = selection.categoryTokens
     let webTokens = selection.webDomainTokens
-    let domains = BlockedProfiles.getWebDomains(from: profile)
 
     if allowOnlyApps {
       store.shield.applicationCategories =
@@ -47,17 +47,8 @@ class AppBlockerUtil {
   }
 
   func scheduleRestrictions(for profile: BlockedProfiles) {
-    let selection = profile.selectedActivity
-    let allowOnlyApps = profile.enableAllowMode
-    let strict = profile.enableStrictMode
-
     // Persist data for the DeviceActivityMonitor extension to read
-    let options = SharedData.ProfileOptions(
-      selection: selection,
-      strict: strict,
-      allowOnly: allowOnlyApps
-    )
-    SharedData.setOptions(options, for: profile.id.uuidString)
+    SharedData.setSnapshot(profile.toSnapshot(), for: profile.id.uuidString)
 
     // Configure a daily schedule from 7:30 PM to 8:00 PM
     let intervalStart = DateComponents(hour: 19, minute: 30)

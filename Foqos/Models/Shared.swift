@@ -8,43 +8,59 @@ enum SharedData {
 
   // MARK: – Keys
   private enum Key: String {
-    case profiles
+    case profileSnapshots
   }
 
-  // MARK: – Profiles map (profileID → options)
-  struct ProfileOptions: Codable, Equatable {
-    var selection: FamilyActivitySelection?
-    var strict: Bool?
-    var allowOnly: Bool?
+  // MARK: – Serializable snapshot of a profile (no sessions)
+  struct ProfileSnapshot: Codable, Equatable {
+    var id: UUID
+    var name: String
+    var selectedActivity: FamilyActivitySelection
+    var createdAt: Date
+    var updatedAt: Date
+    var blockingStrategyId: String?
+    var order: Int
+
+    var enableLiveActivity: Bool
+    var reminderTimeInSeconds: UInt32?
+    var enableBreaks: Bool
+    var enableStrictMode: Bool
+    var enableAllowMode: Bool
+    var enableAllowModeDomains: Bool
+
+    var domains: [String]?
+    var physicalUnblockNFCTagId: String?
+    var physicalUnblockQRCodeId: String?
   }
 
-  static var profiles: [String: ProfileOptions] {
+  // MARK: – Persisted snapshots keyed by profile ID (UUID string)
+  static var profileSnapshots: [String: ProfileSnapshot] {
     get {
-      guard let data = suite.data(forKey: Key.profiles.rawValue) else { return [:] }
-      return (try? JSONDecoder().decode([String: ProfileOptions].self, from: data)) ?? [:]
+      guard let data = suite.data(forKey: Key.profileSnapshots.rawValue) else { return [:] }
+      return (try? JSONDecoder().decode([String: ProfileSnapshot].self, from: data)) ?? [:]
     }
     set {
       if let data = try? JSONEncoder().encode(newValue) {
-        suite.set(data, forKey: Key.profiles.rawValue)
+        suite.set(data, forKey: Key.profileSnapshots.rawValue)
       } else {
-        suite.removeObject(forKey: Key.profiles.rawValue)
+        suite.removeObject(forKey: Key.profileSnapshots.rawValue)
       }
     }
   }
 
-  static func options(for profileID: String) -> ProfileOptions? {
-    profiles[profileID]
+  static func snapshot(for profileID: String) -> ProfileSnapshot? {
+    profileSnapshots[profileID]
   }
 
-  static func setOptions(_ options: ProfileOptions, for profileID: String) {
-    var all = profiles
-    all[profileID] = options
-    profiles = all
+  static func setSnapshot(_ snapshot: ProfileSnapshot, for profileID: String) {
+    var all = profileSnapshots
+    all[profileID] = snapshot
+    profileSnapshots = all
   }
 
-  static func removeOptions(for profileID: String) {
-    var all = profiles
+  static func removeSnapshot(for profileID: String) {
+    var all = profileSnapshots
     all.removeValue(forKey: profileID)
-    profiles = all
+    profileSnapshots = all
   }
 }

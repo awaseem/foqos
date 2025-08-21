@@ -195,6 +195,28 @@ class BlockedProfiles {
     return "https://foqos.app/profile/" + profile.id.uuidString
   }
 
+  // Create a codable/equatable snapshot suitable for UserDefaults
+  func toSnapshot() -> SharedData.ProfileSnapshot {
+    return SharedData.ProfileSnapshot(
+      id: self.id,
+      name: self.name,
+      selectedActivity: self.selectedActivity,
+      createdAt: self.createdAt,
+      updatedAt: self.updatedAt,
+      blockingStrategyId: self.blockingStrategyId,
+      order: self.order,
+      enableLiveActivity: self.enableLiveActivity,
+      reminderTimeInSeconds: self.reminderTimeInSeconds,
+      enableBreaks: self.enableBreaks,
+      enableStrictMode: self.enableStrictMode,
+      enableAllowMode: self.enableAllowMode,
+      enableAllowModeDomains: self.enableAllowModeDomains,
+      domains: self.domains,
+      physicalUnblockNFCTagId: self.physicalUnblockNFCTagId,
+      physicalUnblockQRCodeId: self.physicalUnblockQRCodeId
+    )
+  }
+
   static func reorderProfiles(
     _ profiles: [BlockedProfiles],
     in context: ModelContext
