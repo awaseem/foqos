@@ -1,4 +1,4 @@
-enum Weekday: Int, CaseIterable, Codable {
+enum Weekday: Int, CaseIterable, Codable, Equatable {
   case sunday = 1
   case monday
   case tuesday
@@ -18,10 +18,9 @@ enum Weekday: Int, CaseIterable, Codable {
     case .saturday: return "Saturday"
     }
   }
-
 }
 
-struct Schedule: Codable, Equatable {
+struct BlockedProfileSchedule: Codable, Equatable {
   var days: [Weekday]
 
   var startHour: Int

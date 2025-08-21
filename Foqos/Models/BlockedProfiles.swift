@@ -26,7 +26,7 @@ class BlockedProfiles {
 
   var domains: [String]? = nil
 
-  var schedule: Schedule? = nil
+  var schedule: BlockedProfileSchedule? = nil
 
   @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -47,7 +47,7 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: Schedule? = nil
+    schedule: BlockedProfileSchedule? = nil
   ) {
     self.id = id
     self.name = name
@@ -116,7 +116,7 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: Schedule? = nil
+    schedule: BlockedProfileSchedule? = nil
   ) throws {
     if let newName = name {
       profile.name = newName
@@ -225,8 +225,7 @@ class BlockedProfiles {
       enableAllowModeDomains: profile.enableAllowModeDomains,
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
-      schedule: profile.schedule
+      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId
     )
 
     SharedData.setSnapshot(snapshot, for: profile.id.uuidString)
@@ -270,7 +269,7 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: Schedule? = nil
+    schedule: BlockedProfileSchedule? = nil
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 

@@ -31,7 +31,8 @@ enum SharedData {
     var domains: [String]?
     var physicalUnblockNFCTagId: String?
     var physicalUnblockQRCodeId: String?
-    var schedule: Schedule?
+
+    var schedule: BlockedProfileSchedule?
   }
 
   // MARK: – Persisted snapshots keyed by profile ID (UUID string)
