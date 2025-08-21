@@ -46,6 +46,41 @@ class AppBlockerUtil {
     store.application.denyAppRemoval = strict
   }
 
+  func scheduleRestrictions(for profile: BlockedProfiles) {
+    let selection = profile.selectedActivity
+    let allowOnlyApps = profile.enableAllowMode
+    let strict = profile.enableStrictMode
+
+    // Persist data for the DeviceActivityMonitor extension to read
+    let options = SharedData.ProfileOptions(
+      selection: selection,
+      strict: strict,
+      allowOnly: allowOnlyApps
+    )
+    SharedData.setOptions(options, for: profile.id.uuidString)
+
+    // Configure a daily schedule from 7:30 PM to 8:00 PM
+    let intervalStart = DateComponents(hour: 19, minute: 30)
+    let intervalEnd = DateComponents(hour: 20, minute: 0)
+    let schedule = DeviceActivitySchedule(
+      intervalStart: intervalStart,
+      intervalEnd: intervalEnd,
+      repeats: true,
+    )
+
+    let center = DeviceActivityCenter()
+
+    // Stop any existing monitoring for the same name before starting again
+    center.stopMonitoring([.daily])
+
+    do {
+      try center.startMonitoring(.daily, during: schedule)
+      print("Scheduled restrictions from 7:30 PM to 8:00 PM daily")
+    } catch {
+      print("Failed to start monitoring: \(error.localizedDescription)")
+    }
+  }
+
   func deactivateRestrictions() {
     print("Stoping restrictions...")
 

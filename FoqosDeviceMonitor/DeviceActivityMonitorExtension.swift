@@ -29,12 +29,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
   override func intervalDidStart(for activity: DeviceActivityName) {
     super.intervalDidStart(for: activity)
 
-    guard let selection = SharedData.selection else {
-      log.info("intervalDidStart selection is empy, doing nothing")
+    // Use the first stored profile options if available
+    guard let options = SharedData.profiles.values.first,
+      let selection = options.selection
+    else {
+      log.info("intervalDidStart no stored profile options, doing nothing")
       return
     }
 
-    let allowOnly = SharedData.allowOnly ?? false
+    let allowOnly = options.allowOnly ?? false
     let applicationTokens = selection.applicationTokens
     let categoriesTokens = selection.categoryTokens
     let webTokens = selection.webDomainTokens
@@ -53,7 +56,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
       store.shield.webDomains = webTokens
     }
 
-    store.application.denyAppRemoval = SharedData.strict ?? false
+    store.application.denyAppRemoval = options.strict ?? false
 
     log.info(
       "intervalDidStart for \(activity.rawValue), reapplying restrictions"
