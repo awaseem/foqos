@@ -160,6 +160,7 @@ class BlockedProfiles {
 
     if let newSchedule = schedule, newSchedule.isActive {
       profile.schedule = newSchedule
+      DeviceActivityCenterUtil.scheduleRestrictions(for: profile)
     }
 
     // Values can be nil when removed
@@ -292,8 +293,12 @@ class BlockedProfiles {
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: physicalUnblockQRCodeId,
-      schedule: schedule?.isActive == true ? schedule : nil
     )
+
+    if let schedule = schedule {
+      profile.schedule = schedule
+      DeviceActivityCenterUtil.scheduleRestrictions(for: profile)
+    }
 
     // Create the snapshot so extensions can read it immediately
     updateSnapshot(for: profile)
@@ -361,9 +366,5 @@ class BlockedProfiles {
     }
 
     return []
-  }
-
-  static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
-    return DeviceActivityName(rawValue: profile.id.uuidString)
   }
 }
