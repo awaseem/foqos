@@ -22,44 +22,25 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     log.info("foqosDeviceActivityMonitorExtension initialized")
   }
 
-  let store = ManagedSettingsStore(
-    named: ManagedSettingsStore.Name("foqosAppRestrictions")
-  )
+  let appBlocker = AppBlockerUtil()
 
   override func intervalDidStart(for activity: DeviceActivityName) {
-    // super.intervalDidStart(for: activity)
+    super.intervalDidStart(for: activity)
 
-    // // Use the first stored profile options if available
-    // guard let options = SharedData.profiles.values.first,
-    //   let selection = options.selection
-    // else {
-    //   log.info("intervalDidStart no stored profile options, doing nothing")
-    //   return
-    // }
+    let deviceRawName = activity.rawValue
+    let sharedDataProfile = SharedData.snapshot(for: deviceRawName)
 
-    // let allowOnly = options.allowOnly ?? false
-    // let applicationTokens = selection.applicationTokens
-    // let categoriesTokens = selection.categoryTokens
-    // let webTokens = selection.webDomainTokens
+    guard let profile = sharedDataProfile else {
+      log.info("intervalDidStart for \(deviceRawName), no profile found")
+      return
+    }
 
-    // log.info(
-    //   "intervalDidStart for \(activity.rawValue), count for applications: \(applicationTokens.count), categories: \(categoriesTokens.count), web domains: \(webTokens.count)"
-    // )
+    log.info("intervalDidStart for \(deviceRawName), profile: \(profile.name)")
 
-    // if allowOnly {
-    //   store.shield.applicationCategories =
-    //     .all(except: applicationTokens)
-    //   store.shield.webDomainCategories = .all(except: webTokens)
-    // } else {
-    //   store.shield.applications = applicationTokens
-    //   store.shield.applicationCategories = .specific(categoriesTokens)
-    //   store.shield.webDomains = webTokens
-    // }
+    appBlocker.activateRestrictions(for: profile)
+  }
 
-    // store.application.denyAppRemoval = options.strict ?? false
-
-    // log.info(
-    //   "intervalDidStart for \(activity.rawValue), reapplying restrictions"
-    // )
+  override func intervalDidEnd(for activity: DeviceActivityName) {
+    appBlocker.deactivateRestrictions()
   }
 }
