@@ -27,4 +27,8 @@ struct BlockedProfileSchedule: Codable, Equatable {
   var startMinute: Int
   var endHour: Int
   var endMinute: Int
+
+  var isActive: Bool {
+    return !days.isEmpty
+  }
 }

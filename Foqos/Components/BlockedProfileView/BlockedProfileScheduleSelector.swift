@@ -46,7 +46,7 @@ struct BlockedProfileScheduleSelector: View {
     let start = formattedTimeString(hour24: schedule.startHour, minute: schedule.startMinute)
     let end = formattedTimeString(hour24: schedule.endHour, minute: schedule.endMinute)
 
-    if days.isEmpty {
+    if !schedule.isActive {
       return "No schedule set"
     }
     return "\(days) · \(start) - \(end)"
