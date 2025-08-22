@@ -336,6 +336,12 @@ class BlockedProfiles {
     return cloned
   }
 
+  static func deleteSchedule(for profile: BlockedProfiles, context: ModelContext) throws {
+    profile.schedule = nil
+    DeviceActivityCenterUtil.removeSchedule(for: profile)
+    try context.save()
+  }
+
   static func addDomain(to profile: BlockedProfiles, context: ModelContext, domain: String) throws {
     guard let domains = profile.domains else {
       return
