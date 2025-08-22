@@ -26,6 +26,8 @@ struct BlockedProfileView: View {
   @State private var physicalUnblockNFCTagId: String?
   @State private var physicalUnblockQRCodeId: String?
 
+  @State private var schedule: BlockedProfileSchedule
+
   // QR code generator
   @State private var showingGeneratedQRCode = false
 
@@ -35,15 +37,15 @@ struct BlockedProfileView: View {
   // Sheet for domain picker
   @State private var showingDomainPicker = false
 
+  // Sheet for schedule picker
+  @State private var showingSchedulePicker = false
+
   // Error states
   @State private var errorMessage: String?
   @State private var showError = false
 
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
-
-  // Sheet for schedules view
-  @State private var showingSchedulesView = false
 
   // Alert for cloning
   @State private var showingClonePrompt = false
@@ -97,6 +99,16 @@ struct BlockedProfileView: View {
     )
     _physicalUnblockQRCodeId = State(
       initialValue: profile?.physicalUnblockQRCodeId ?? nil
+    )
+    _schedule = State(
+      initialValue: profile?.schedule
+        ?? BlockedProfileSchedule(
+          days: [],
+          startHour: 9,
+          startMinute: 0,
+          endHour: 17,
+          endMinute: 0
+        )
     )
 
     if let profileStrategyId = profile?.blockingStrategyId {
@@ -260,6 +272,14 @@ struct BlockedProfileView: View {
           }
         }
 
+        Section("Schedule") {
+          BlockedProfileScheduleSelector(
+            schedule: schedule,
+            buttonAction: { showingSchedulePicker = true },
+            disabled: isBlocking
+          )
+        }
+
         if isEditing {
           Section("Utilities") {
             Button(action: {
@@ -293,17 +313,6 @@ struct BlockedProfileView: View {
               HStack {
                 Image(systemName: "square.on.square")
                 Text("Duplicate Profile")
-                Spacer()
-              }
-            }
-            .disabled(isBlocking)
-
-            Button(action: {
-              showingSchedulesView = true
-            }) {
-              HStack {
-                Image(systemName: "calendar.badge.clock")
-                Text("Schedules")
                 Spacer()
               }
             }
@@ -350,6 +359,12 @@ struct BlockedProfileView: View {
           domains: $domains,
           isPresented: $showingDomainPicker,
           allowMode: enableAllowModeDomain
+        )
+      }
+      .sheet(isPresented: $showingSchedulePicker) {
+        SchedulePicker(
+          schedule: $schedule,
+          isPresented: $showingSchedulePicker
         )
       }
       .sheet(isPresented: $showingGeneratedQRCode) {
@@ -400,11 +415,6 @@ struct BlockedProfileView: View {
           )
         )
       }
-      .sheet(isPresented: $showingSchedulesView) {
-        NavigationView {
-          SchedulesView()
-        }
-      }
       .alert("Error", isPresented: $showError) {
         Button("OK") {}
       } message: {
@@ -447,7 +457,8 @@ struct BlockedProfileView: View {
           enableAllowModeDomains: enableAllowModeDomain,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-          physicalUnblockQRCodeId: physicalUnblockQRCodeId
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+          schedule: schedule
         )
       } else {
         let _ = try BlockedProfiles.createProfile(
@@ -464,7 +475,8 @@ struct BlockedProfileView: View {
           enableAllowModeDomains: enableAllowModeDomain,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-          physicalUnblockQRCodeId: physicalUnblockQRCodeId
+          physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+          schedule: schedule
         )
       }
 
