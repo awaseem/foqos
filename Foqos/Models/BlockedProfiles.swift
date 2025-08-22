@@ -158,6 +158,10 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
+    if let newSchedule = schedule, newSchedule.isActive {
+      profile.schedule = newSchedule
+    }
+
     // Values can be nil when removed
     profile.physicalUnblockNFCTagId = physicalUnblockNFCTagId
     profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
@@ -288,7 +292,7 @@ class BlockedProfiles {
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: physicalUnblockQRCodeId,
-      schedule: schedule
+      schedule: schedule?.isActive == true ? schedule : nil
     )
 
     // Create the snapshot so extensions can read it immediately
