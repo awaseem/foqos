@@ -268,7 +268,7 @@ class StrategyManager: ObservableObject {
     }
 
     let profile = session.blockedProfile
-    appBlocker.activateRestrictions(for: profile)
+    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
     session.endBreak()
 

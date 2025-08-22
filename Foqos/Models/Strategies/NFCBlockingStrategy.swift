@@ -26,7 +26,7 @@ class NFCBlockingStrategy: BlockingStrategy {
     forceStart: Bool?
   ) -> (any View)? {
     nfcScanner.onTagScanned = { tag in
-      self.appBlocker.activateRestrictions(for: profile)
+      self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
       let tag = tag.url ?? tag.id
       let activeSession =

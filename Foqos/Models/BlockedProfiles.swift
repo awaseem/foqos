@@ -212,9 +212,8 @@ class BlockedProfiles {
     return "https://foqos.app/profile/" + profile.id.uuidString
   }
 
-  // Create a codable/equatable snapshot suitable for UserDefaults
-  static func updateSnapshot(for profile: BlockedProfiles) {
-    let snapshot = SharedData.ProfileSnapshot(
+  static func getSnapshot(for profile: BlockedProfiles) -> SharedData.ProfileSnapshot {
+    return SharedData.ProfileSnapshot(
       id: profile.id,
       name: profile.name,
       selectedActivity: profile.selectedActivity,
@@ -233,7 +232,11 @@ class BlockedProfiles {
       physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
       schedule: profile.schedule
     )
+  }
 
+  // Create a codable/equatable snapshot suitable for UserDefaults
+  static func updateSnapshot(for profile: BlockedProfiles) {
+    let snapshot = getSnapshot(for: profile)
     SharedData.setSnapshot(snapshot, for: profile.id.uuidString)
   }
 
