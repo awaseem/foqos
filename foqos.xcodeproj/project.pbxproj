@@ -115,6 +115,7 @@
 			membershipExceptions = (
 				Models/Schedule.swift,
 				Models/Shared.swift,
+				Utils/AppBlockerUtil.swift,
 			);
 			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
 		};
