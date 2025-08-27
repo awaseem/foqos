@@ -368,12 +368,4 @@ class BlockedProfiles {
     let newDomains = domains.filter { $0 != domain }
     try updateProfile(profile, in: context, domains: newDomains)
   }
-
-  static func getWebDomains(from profile: BlockedProfiles) -> Set<WebDomain> {
-    if let domains = profile.domains {
-      return Set(domains.map { WebDomain(domain: $0) })
-    }
-
-    return []
-  }
 }

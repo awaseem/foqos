@@ -1,3 +1,5 @@
+import Foundation
+
 enum Weekday: Int, CaseIterable, Codable, Equatable {
   case sunday = 1
   case monday
@@ -30,5 +32,12 @@ struct BlockedProfileSchedule: Codable, Equatable {
 
   var isActive: Bool {
     return !days.isEmpty
+  }
+
+  func isTodayScheduled(now: Date = Date(), calendar: Calendar = .current) -> Bool {
+    guard isActive else { return false }
+    let currentWeekdayRaw = calendar.component(.weekday, from: now)
+    guard let today = Weekday(rawValue: currentWeekdayRaw) else { return false }
+    return days.contains(today)
   }
 }
