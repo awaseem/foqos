@@ -34,6 +34,10 @@ struct BlockedProfileSchedule: Codable, Equatable {
     return !days.isEmpty
   }
 
+  var totalDurationInSeconds: Int {
+    return (endHour - startHour) * 3600 + (endMinute - startMinute) * 60
+  }
+
   func isTodayScheduled(now: Date = Date(), calendar: Calendar = .current) -> Bool {
     guard isActive else { return false }
     let currentWeekdayRaw = calendar.component(.weekday, from: now)
