@@ -17,12 +17,12 @@ private let log = Logger(
 // Optionally override any of the functions below.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
+  private let appBlocker = AppBlockerUtil()
+
   override init() {
     super.init()
     log.info("foqosDeviceActivityMonitorExtension initialized")
   }
-
-  let appBlocker = AppBlockerUtil()
 
   override func intervalDidStart(for activity: DeviceActivityName) {
     super.intervalDidStart(for: activity)
@@ -30,13 +30,18 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     let deviceRawName = activity.rawValue
     let sharedDataProfile = SharedData.snapshot(for: deviceRawName)
 
-    guard let profile = sharedDataProfile else {
+    guard let profile = sharedDataProfile, let schedule = profile.schedule
+    else {
       log.info("intervalDidStart for \(deviceRawName), no profile found")
       return
     }
 
-    log.info("intervalDidStart for \(deviceRawName), profile: \(profile.name)")
+    guard schedule.isTodayScheduled() else {
+      log.info("intervalDidStart for \(deviceRawName), schedule not scheduled for today")
+      return
+    }
 
+    log.info("intervalDidStart for \(deviceRawName), profile: \(profile.name)")
     appBlocker.activateRestrictions(for: profile)
   }
 
