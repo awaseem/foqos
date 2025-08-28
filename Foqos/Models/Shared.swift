@@ -135,6 +135,10 @@ enum SharedData {
     activeScheduleSession = nil
   }
 
+  static func flushActiveScheduledSession() {
+    activeScheduleSession = nil
+  }
+
   static func getCompletedScheduleSessions() -> [SessionSnapshot] {
     completedScheduleSessions
   }

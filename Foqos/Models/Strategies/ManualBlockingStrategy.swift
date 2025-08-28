@@ -50,6 +50,8 @@ class ManualBlockingStrategy: BlockingStrategy {
 
     self.onSessionCreation?(.ended(session.blockedProfile))
 
+    SharedData.flushActiveScheduledSession()
+
     return nil
   }
 }
