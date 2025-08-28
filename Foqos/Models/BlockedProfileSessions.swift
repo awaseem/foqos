@@ -61,6 +61,7 @@ class BlockedProfileSession {
 
   func endSession() {
     self.endTime = Date()
+    SharedData.flushActiveScheduledSession()
   }
 
   func toSnapshot() -> SharedData.SessionSnapshot {
