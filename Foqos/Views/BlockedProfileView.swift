@@ -443,7 +443,7 @@ struct BlockedProfileView: View {
 
       if let existingProfile = profile {
         // Update existing profile
-        try BlockedProfiles.updateProfile(
+        let updatedProfile = try BlockedProfiles.updateProfile(
           existingProfile,
           in: modelContext,
           name: name,
@@ -460,8 +460,11 @@ struct BlockedProfileView: View {
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,
           schedule: schedule
         )
+
+        // Schedule restrictions
+        DeviceActivityCenterUtil.scheduleRestrictions(for: updatedProfile)
       } else {
-        let _ = try BlockedProfiles.createProfile(
+        let newProfile = try BlockedProfiles.createProfile(
           in: modelContext,
           name: name,
           selection: selectedActivity,
@@ -478,6 +481,9 @@ struct BlockedProfileView: View {
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,
           schedule: schedule
         )
+
+        // Schedule restrictions
+        DeviceActivityCenterUtil.scheduleRestrictions(for: newProfile)
       }
 
       dismiss()

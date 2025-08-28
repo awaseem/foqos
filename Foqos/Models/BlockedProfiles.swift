@@ -117,7 +117,7 @@ class BlockedProfiles {
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
     schedule: BlockedProfileSchedule? = nil
-  ) throws {
+  ) throws -> BlockedProfiles {
     if let newName = name {
       profile.name = newName
     }
@@ -174,6 +174,8 @@ class BlockedProfiles {
     updateSnapshot(for: profile)
 
     try context.save()
+
+    return profile
   }
 
   static func deleteProfile(
