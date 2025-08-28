@@ -122,6 +122,10 @@ enum SharedData {
       forceStarted: true)
   }
 
+  static func createActiveScheduledSession(for session: SessionSnapshot) {
+    activeScheduleSession = session
+  }
+
   static func getActiveScheduledSession() -> SessionSnapshot? {
     activeScheduleSession
   }

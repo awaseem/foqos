@@ -101,6 +101,8 @@ class BlockedProfileSession {
       forceStarted: forceStart
     )
 
+    SharedData.createActiveScheduledSession(for: newSession.toSnapshot())
+
     context.insert(newSession)
     return newSession
   }
