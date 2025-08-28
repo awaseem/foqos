@@ -212,6 +212,7 @@ class BlockedProfiles {
     return "https://foqos.app/profile/" + profile.id.uuidString
   }
 
+  // TODO: This should not be a static method, it should be a method on the profile object
   static func getSnapshot(for profile: BlockedProfiles) -> SharedData.ProfileSnapshot {
     return SharedData.ProfileSnapshot(
       id: profile.id,

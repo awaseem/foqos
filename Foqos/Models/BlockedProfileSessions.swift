@@ -63,6 +63,19 @@ class BlockedProfileSession {
     self.endTime = Date()
   }
 
+  func toSnapshot() -> SharedData.SessionSnapshot {
+    return SharedData.SessionSnapshot(
+      id: id,
+      tag: tag,
+      blockedProfileId: blockedProfile.id,
+      startTime: startTime,
+      endTime: endTime,
+      breakStartTime: breakStartTime,
+      breakEndTime: breakEndTime,
+      forceStarted: forceStarted
+    )
+  }
+
   static func mostRecentActiveSession(in context: ModelContext)
     -> BlockedProfileSession?
   {

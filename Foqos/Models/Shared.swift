@@ -9,6 +9,8 @@ enum SharedData {
   // MARK: – Keys
   private enum Key: String {
     case profileSnapshots
+    case activeScheduleSession
+    case completedScheduleSessions
   }
 
   // MARK: – Serializable snapshot of a profile (no sessions)
@@ -33,6 +35,21 @@ enum SharedData {
     var physicalUnblockQRCodeId: String?
 
     var schedule: BlockedProfileSchedule?
+  }
+
+  // MARK: – Serializable snapshot of a session (no profile object)
+  struct SessionSnapshot: Codable, Equatable {
+    var id: String
+    var tag: String
+    var blockedProfileId: UUID
+
+    var startTime: Date
+    var endTime: Date?
+
+    var breakStartTime: Date?
+    var breakEndTime: Date?
+
+    var forceStarted: Bool
   }
 
   // MARK: – Persisted snapshots keyed by profile ID (UUID string)
@@ -64,5 +81,61 @@ enum SharedData {
     var all = profileSnapshots
     all.removeValue(forKey: profileID)
     profileSnapshots = all
+  }
+
+  // MARK: – Persisted array of scheduled sessions
+  static var completedScheduleSessions: [SessionSnapshot] {
+    get {
+      guard let data = suite.data(forKey: Key.completedScheduleSessions.rawValue) else { return [] }
+      return (try? JSONDecoder().decode([SessionSnapshot].self, from: data)) ?? []
+    }
+    set {
+      if let data = try? JSONEncoder().encode(newValue) {
+        suite.set(data, forKey: Key.completedScheduleSessions.rawValue)
+      } else {
+        suite.removeObject(forKey: Key.completedScheduleSessions.rawValue)
+      }
+    }
+  }
+
+  // MARK: – Persisted array of scheduled sessions
+  static var activeScheduleSession: SessionSnapshot? {
+    get {
+      guard let data = suite.data(forKey: Key.activeScheduleSession.rawValue) else { return nil }
+      return (try? JSONDecoder().decode(SessionSnapshot.self, from: data)) ?? nil
+    }
+    set {
+      if let data = try? JSONEncoder().encode(newValue) {
+        suite.set(data, forKey: Key.activeScheduleSession.rawValue)
+      } else {
+        suite.removeObject(forKey: Key.activeScheduleSession.rawValue)
+      }
+    }
+  }
+
+  static func createActiveScheduledSession(for profileID: UUID) {
+    activeScheduleSession = SessionSnapshot(
+      id: UUID().uuidString,
+      tag: profileID.uuidString,
+      blockedProfileId: profileID,
+      startTime: Date(),
+      forceStarted: true)
+  }
+
+  static func endActiveScheduledSession() {
+    guard var existingScheduledSession = activeScheduleSession else { return }
+
+    existingScheduledSession.endTime = Date()
+    completedScheduleSessions.append(existingScheduledSession)
+
+    activeScheduleSession = nil
+  }
+
+  static func getCompletedScheduleSessions() -> [SessionSnapshot] {
+    completedScheduleSessions
+  }
+
+  static func flushCompletedScheduleSessions() {
+    completedScheduleSessions = []
   }
 }
