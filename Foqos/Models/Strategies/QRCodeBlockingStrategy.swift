@@ -79,7 +79,6 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         }
 
         session.endSession()
-        SharedData.flushActiveScheduledSession()
 
         self.onSessionCreation?(.ended(session.blockedProfile))
       case .failure(let error):

@@ -44,7 +44,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     log.info("intervalDidStart for \(deviceRawName), profile: \(profile.name)")
 
     // Create a new active scheduled session for the profile
-    SharedData.createActiveScheduledSession(for: profile.id)
+    SharedData.createSessionForSchedular(for: profile.id)
 
     // Start restrictions
     appBlocker.activateRestrictions(for: profile)
@@ -52,7 +52,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
   override func intervalDidEnd(for activity: DeviceActivityName) {
     // End the active scheduled session
-    SharedData.endActiveScheduledSession()
+    SharedData.endActiveSharedSession()
 
     // End restrictions
     appBlocker.deactivateRestrictions()

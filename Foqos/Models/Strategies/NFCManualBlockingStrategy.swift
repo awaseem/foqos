@@ -58,7 +58,6 @@ class NFCManualBlockingStrategy: BlockingStrategy {
       }
 
       session.endSession()
-      SharedData.flushActiveScheduledSession()
 
       self.onSessionCreation?(.ended(session.blockedProfile))
     }

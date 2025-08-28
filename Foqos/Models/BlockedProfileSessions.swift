@@ -61,7 +61,7 @@ class BlockedProfileSession {
 
   func endSession() {
     self.endTime = Date()
-    SharedData.flushActiveScheduledSession()
+    SharedData.flushActiveSession()
   }
 
   func toSnapshot() -> SharedData.SessionSnapshot {
@@ -101,7 +101,7 @@ class BlockedProfileSession {
       forceStarted: forceStart
     )
 
-    SharedData.createActiveScheduledSession(for: newSession.toSnapshot())
+    SharedData.createActiveSharedSession(for: newSession.toSnapshot())
 
     context.insert(newSession)
     return newSession

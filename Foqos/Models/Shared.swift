@@ -84,7 +84,7 @@ enum SharedData {
   }
 
   // MARK: – Persisted array of scheduled sessions
-  static var completedScheduleSessions: [SessionSnapshot] {
+  static var completedSessionsInSchedular: [SessionSnapshot] {
     get {
       guard let data = suite.data(forKey: Key.completedScheduleSessions.rawValue) else { return [] }
       return (try? JSONDecoder().decode([SessionSnapshot].self, from: data)) ?? []
@@ -99,7 +99,7 @@ enum SharedData {
   }
 
   // MARK: – Persisted array of scheduled sessions
-  static var activeScheduleSession: SessionSnapshot? {
+  static var activeSharedSession: SessionSnapshot? {
     get {
       guard let data = suite.data(forKey: Key.activeScheduleSession.rawValue) else { return nil }
       return (try? JSONDecoder().decode(SessionSnapshot.self, from: data)) ?? nil
@@ -113,8 +113,8 @@ enum SharedData {
     }
   }
 
-  static func createActiveScheduledSession(for profileID: UUID) {
-    activeScheduleSession = SessionSnapshot(
+  static func createSessionForSchedular(for profileID: UUID) {
+    activeSharedSession = SessionSnapshot(
       id: UUID().uuidString,
       tag: profileID.uuidString,
       blockedProfileId: profileID,
@@ -122,32 +122,32 @@ enum SharedData {
       forceStarted: true)
   }
 
-  static func createActiveScheduledSession(for session: SessionSnapshot) {
-    activeScheduleSession = session
+  static func createActiveSharedSession(for session: SessionSnapshot) {
+    activeSharedSession = session
   }
 
-  static func getActiveScheduledSession() -> SessionSnapshot? {
-    activeScheduleSession
+  static func getActiveSharedSession() -> SessionSnapshot? {
+    activeSharedSession
   }
 
-  static func endActiveScheduledSession() {
-    guard var existingScheduledSession = activeScheduleSession else { return }
+  static func endActiveSharedSession() {
+    guard var existingScheduledSession = activeSharedSession else { return }
 
     existingScheduledSession.endTime = Date()
-    completedScheduleSessions.append(existingScheduledSession)
+    completedSessionsInSchedular.append(existingScheduledSession)
 
-    activeScheduleSession = nil
+    activeSharedSession = nil
   }
 
-  static func flushActiveScheduledSession() {
-    activeScheduleSession = nil
+  static func flushActiveSession() {
+    activeSharedSession = nil
   }
 
-  static func getCompletedScheduleSessions() -> [SessionSnapshot] {
-    completedScheduleSessions
+  static func getCompletedSessionsForSchedular() -> [SessionSnapshot] {
+    completedSessionsInSchedular
   }
 
-  static func flushCompletedScheduleSessions() {
-    completedScheduleSessions = []
+  static func flushCompletedSessionsForSchedular() {
+    completedSessionsInSchedular = []
   }
 }
