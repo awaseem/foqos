@@ -5,7 +5,8 @@ import SwiftUI
 
 class DeviceActivityCenterUtil {
   static func scheduleRestrictions(for profile: BlockedProfiles) {
-    guard let schedule = profile.schedule else { return }
+    // Only schedule if the schedule is active
+    guard let schedule = profile.schedule, schedule.isActive else { return }
 
     let deviceActivityName = getDeviceActivityName(from: profile)
 

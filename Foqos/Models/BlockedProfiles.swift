@@ -160,7 +160,6 @@ class BlockedProfiles {
 
     if let newSchedule = schedule, newSchedule.isActive {
       profile.schedule = newSchedule
-      DeviceActivityCenterUtil.scheduleRestrictions(for: profile)
     }
 
     // Values can be nil when removed
@@ -301,7 +300,6 @@ class BlockedProfiles {
 
     if let schedule = schedule {
       profile.schedule = schedule
-      DeviceActivityCenterUtil.scheduleRestrictions(for: profile)
     }
 
     // Create the snapshot so extensions can read it immediately
