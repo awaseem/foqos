@@ -34,8 +34,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
       return
     }
 
-    guard schedule.isTodayScheduled() else {
-      log.info("intervalDidStart for \(activity.rawValue), schedule not scheduled for today")
+    if !schedule.isTodayScheduled() {
+      log.info("intervalDidStart for \(activity.rawValue), schedule is not scheduled for today")
+      return
+    }
+
+    if !schedule.olderThan15Minutes() {
+      log.info("intervalDidStart for \(activity.rawValue), schedule is too new")
       return
     }
 

@@ -46,4 +46,8 @@ struct BlockedProfileSchedule: Codable, Equatable {
     guard let today = Weekday(rawValue: currentWeekdayRaw) else { return false }
     return days.contains(today)
   }
+
+  func olderThan15Minutes(now: Date = Date()) -> Bool {
+    return now.timeIntervalSince(updatedAt) > 15 * 60
+  }
 }
