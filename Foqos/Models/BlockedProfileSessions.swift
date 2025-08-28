@@ -104,6 +104,58 @@ class BlockedProfileSession {
     return newSession
   }
 
+  static func upsertSessionFromSnapshot(
+    in context: ModelContext,
+    withSnapshot snapshot: SharedData.SessionSnapshot
+  ) -> BlockedProfileSession? {
+    let profileID = snapshot.blockedProfileId
+
+    guard let existingProfile = try? BlockedProfiles.findProfile(byID: profileID, in: context)
+    else {
+      print("Profile not found when creating session from snapshot")
+      return nil
+    }
+
+    // Try to find an existing session by id
+    if let existingSession = try? findSession(byID: snapshot.id, in: context) {
+      existingSession.tag = snapshot.tag
+      existingSession.startTime = snapshot.startTime
+      existingSession.endTime = snapshot.endTime
+      existingSession.breakStartTime = snapshot.breakStartTime
+      existingSession.breakEndTime = snapshot.breakEndTime
+      existingSession.forceStarted = snapshot.forceStarted
+
+      try? context.save()
+      return existingSession
+    }
+
+    // Create new session from snapshot
+    let newSession = BlockedProfileSession(
+      tag: snapshot.tag,
+      blockedProfile: existingProfile,
+      forceStarted: snapshot.forceStarted
+    )
+    // Override auto-generated values with snapshot-provided ones
+    newSession.id = snapshot.id
+    newSession.startTime = snapshot.startTime
+    newSession.endTime = snapshot.endTime
+    newSession.breakStartTime = snapshot.breakStartTime
+    newSession.breakEndTime = snapshot.breakEndTime
+
+    context.insert(newSession)
+    return newSession
+  }
+
+  static func findSession(
+    byID id: String,
+    in context: ModelContext
+  ) throws -> BlockedProfileSession? {
+    let descriptor = FetchDescriptor<BlockedProfileSession>(
+      predicate: #Predicate { $0.id == id }
+    )
+    return try context.fetch(descriptor).first
+  }
+
   static func recentInactiveSessions(
     in context: ModelContext,
     limit: Int = 50
