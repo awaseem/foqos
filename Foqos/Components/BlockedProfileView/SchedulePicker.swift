@@ -302,7 +302,8 @@ struct SchedulePicker: View {
     startHour: 9,
     startMinute: 0,
     endHour: 11,
-    endMinute: 0
+    endMinute: 0,
+    updatedAt: Date()
   )
 
   return SchedulePicker(schedule: $schedule, isPresented: $isPresented)

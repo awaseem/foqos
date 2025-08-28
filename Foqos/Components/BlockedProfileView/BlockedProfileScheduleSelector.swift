@@ -77,12 +77,13 @@ struct BlockedProfileScheduleSelector: View {
     BlockedProfileScheduleSelector(
       schedule: .init(
         days: [.monday, .wednesday, .friday], startHour: 9, startMinute: 0, endHour: 17,
-        endMinute: 0),
+        endMinute: 0, updatedAt: Date()),
       buttonAction: {}
     )
 
     BlockedProfileScheduleSelector(
-      schedule: .init(days: [], startHour: 9, startMinute: 0, endHour: 17, endMinute: 0),
+      schedule: .init(
+        days: [], startHour: 9, startMinute: 0, endHour: 17, endMinute: 0, updatedAt: Date()),
       buttonAction: {},
       disabled: true,
       disabledText: "Disable the current session to edit schedule"

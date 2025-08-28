@@ -107,7 +107,8 @@ struct BlockedProfileView: View {
           startHour: 9,
           startMinute: 0,
           endHour: 17,
-          endMinute: 0
+          endMinute: 0,
+          updatedAt: Date()
         )
     )
 
@@ -437,6 +438,9 @@ struct BlockedProfileView: View {
 
   private func saveProfile() {
     do {
+      // Update schedule date
+      schedule.updatedAt = Date()
+
       // Calculate reminder time in seconds or nil if disabled
       let reminderTimeSeconds: UInt32? =
         enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
