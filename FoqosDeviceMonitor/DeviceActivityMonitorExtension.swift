@@ -27,21 +27,24 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
   override func intervalDidStart(for activity: DeviceActivityName) {
     super.intervalDidStart(for: activity)
 
-    let deviceRawName = activity.rawValue
-    let sharedDataProfile = SharedData.snapshot(for: deviceRawName)
-
-    guard let profile = sharedDataProfile, let schedule = profile.schedule
+    guard let profile = getProfileForDeviceActivity(for: activity),
+      let schedule = profile.schedule
     else {
-      log.info("intervalDidStart for \(deviceRawName), no profile found")
+      log.info("intervalDidStart for \(activity.rawValue), no profile found")
       return
     }
 
     guard schedule.isTodayScheduled() else {
-      log.info("intervalDidStart for \(deviceRawName), schedule not scheduled for today")
+      log.info("intervalDidStart for \(activity.rawValue), schedule not scheduled for today")
       return
     }
 
-    log.info("intervalDidStart for \(deviceRawName), profile: \(profile.name)")
+    log.info("intervalDidStart for \(activity.rawValue), profile: \(profile.name)")
+
+    // If there is an existing active session, end it
+    if SharedData.getActiveSharedSession() != nil {
+      SharedData.endActiveSharedSession()
+    }
 
     // Create a new active scheduled session for the profile
     SharedData.createSessionForSchedular(for: profile.id)
@@ -51,10 +54,41 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
   }
 
   override func intervalDidEnd(for activity: DeviceActivityName) {
-    // End the active scheduled session
-    SharedData.endActiveSharedSession()
+    guard let profile = getProfileForDeviceActivity(for: activity) else {
+      log.info("intervalDidEnd for \(activity.rawValue), no profile found")
+      return
+    }
+
+    guard let activeSession = SharedData.getActiveSharedSession() else {
+      log.info("intervalDidEnd for \(activity.rawValue), no active session found")
+      return
+    }
+
+    // Check to make sure the active session is the same as the profile before disabling restrictions
+    if activeSession.blockedProfileId != profile.id {
+      log.info(
+        "intervalDidEnd for \(activity.rawValue), active session profile does not match device activity profile"
+      )
+      return
+    }
 
     // End restrictions
     appBlocker.deactivateRestrictions()
+
+    // End the active scheduled session
+    SharedData.endActiveSharedSession()
+  }
+
+  private func getProfileForDeviceActivity(for activity: DeviceActivityName) -> SharedData
+    .ProfileSnapshot?
+  {
+    let deviceRawName = activity.rawValue
+    let sharedDataProfile = SharedData.snapshot(for: deviceRawName)
+
+    if let profile = sharedDataProfile {
+      return profile
+    }
+
+    return nil
   }
 }
