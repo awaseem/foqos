@@ -290,9 +290,34 @@ class StrategyManager: ObservableObject {
   private func getActiveSession(context: ModelContext)
     -> BlockedProfileSession?
   {
+    // Before fetching the active session, sync any schedule sessions
+    syncScheduleSessions(context: context)
+
     return
       BlockedProfileSession
       .mostRecentActiveSession(in: context)
+  }
+
+  private func syncScheduleSessions(context: ModelContext) {
+    // Process any active scheduled sessions
+    if let activeScheduledSession = SharedData.getActiveScheduledSession() {
+      BlockedProfileSession.upsertSessionFromSnapshot(
+        in: context,
+        withSnapshot: activeScheduledSession
+      )
+    }
+
+    // Process any completed scheduled sessions
+    let completedScheduleSessions = SharedData.getCompletedScheduleSessions()
+    for completedScheduleSession in completedScheduleSessions {
+      BlockedProfileSession.upsertSessionFromSnapshot(
+        in: context,
+        withSnapshot: completedScheduleSession
+      )
+    }
+
+    // Flush completed scheduled sessions
+    SharedData.flushCompletedScheduleSessions()
   }
 
   private func resultFromURL(_ url: String) -> NFCResult {

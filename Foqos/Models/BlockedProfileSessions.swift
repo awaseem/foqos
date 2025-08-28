@@ -107,13 +107,13 @@ class BlockedProfileSession {
   static func upsertSessionFromSnapshot(
     in context: ModelContext,
     withSnapshot snapshot: SharedData.SessionSnapshot
-  ) -> BlockedProfileSession? {
+  ) {
     let profileID = snapshot.blockedProfileId
 
     guard let existingProfile = try? BlockedProfiles.findProfile(byID: profileID, in: context)
     else {
       print("Profile not found when creating session from snapshot")
-      return nil
+      return
     }
 
     // Try to find an existing session by id
@@ -125,8 +125,9 @@ class BlockedProfileSession {
       existingSession.breakEndTime = snapshot.breakEndTime
       existingSession.forceStarted = snapshot.forceStarted
 
+      // manually save to ensure changes are persisted
       try? context.save()
-      return existingSession
+      return
     }
 
     // Create new session from snapshot
@@ -142,8 +143,8 @@ class BlockedProfileSession {
     newSession.breakStartTime = snapshot.breakStartTime
     newSession.breakEndTime = snapshot.breakEndTime
 
+    // Let auto-save handle inserts
     context.insert(newSession)
-    return newSession
   }
 
   static func findSession(
