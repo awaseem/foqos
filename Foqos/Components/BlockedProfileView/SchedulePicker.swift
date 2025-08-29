@@ -74,6 +74,12 @@ struct SchedulePicker: View {
           .frame(maxWidth: .infinity, alignment: .center)
         } header: {
           Text("Days")
+        } footer: {
+          if !selectedDays.isEmpty {
+            Text("Schedules take 15 minutes to update")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
         }
 
         Section {
