@@ -125,17 +125,18 @@ struct SchedulePicker: View {
               .foregroundStyle(.orange)
           }
         }
+
+        Section {
+          Button("Remove Schedule") {
+            resetToDefault()
+          }
+          .foregroundStyle(.red)
+          .frame(maxWidth: .infinity, alignment: .center)
+        }
       }
       .navigationTitle("Schedule")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .topBarLeading) {
-          Button("Remove") {
-            resetToDefault()
-          }
-          .foregroundStyle(.red)
-        }
-
         ToolbarItem(placement: .topBarTrailing) {
           Button("Done") {
             applySelection()
