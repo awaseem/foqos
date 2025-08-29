@@ -6,6 +6,8 @@ struct HomeView: View {
   @Environment(\.modelContext) private var context
   @Environment(\.openURL) var openURL
 
+  @Environment(\.scenePhase) private var scenePhase
+
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
   @EnvironmentObject var strategyManager: StrategyManager
   @EnvironmentObject var navigationManager: NavigationManager
@@ -160,6 +162,13 @@ struct HomeView: View {
         loadApp()
       }
     }
+    .onChange(of: scenePhase) { oldPhase, newPhase in
+      if newPhase == .active {
+        loadApp()
+      } else if newPhase == .background {
+        unloadApp()
+      }
+    }
     .onReceive(strategyManager.$errorMessage) { errorMessage in
       if let message = errorMessage {
         showErrorAlert(message: message)
@@ -168,9 +177,7 @@ struct HomeView: View {
     .onAppear {
       loadApp()
     }
-    .onDisappear {
-      unloadApp()
-    }.sheet(isPresented: $showIntroScreen) {
+    .sheet(isPresented: $showIntroScreen) {
       IntroView {
         requestAuthorizer.requestAuthorization()
       }.interactiveDismissDisabled()
