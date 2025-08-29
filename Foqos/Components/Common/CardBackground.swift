@@ -56,6 +56,10 @@ struct CardBackground: View {
           }
         }
       )
+      .overlay(
+        RoundedRectangle(cornerRadius: 24)
+          .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+      )
       .background(
         RoundedRectangle(cornerRadius: 24)
           .fill(.ultraThinMaterial.opacity(0.7))
