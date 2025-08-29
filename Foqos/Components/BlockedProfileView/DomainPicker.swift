@@ -45,7 +45,6 @@ struct DomainPicker: View {
             "Enter a domain (e.g., reddit.com, facebook.com, instagram.com). This will also \(allowMode ? "allow" : "block") all subpaths (e.g., reddit.com/r/popular) automatically."
           )
           .font(.caption)
-          .foregroundStyle(.secondary)
         }
 
         Section {
@@ -152,7 +151,7 @@ struct DomainPicker: View {
 }
 
 #Preview {
-    @Previewable @State var domains: [String] = ["example.com", "test.org"]
+  @Previewable @State var domains: [String] = ["example.com", "test.org"]
 
   VStack(spacing: 20) {
     DomainPicker(
