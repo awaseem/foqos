@@ -34,7 +34,7 @@ struct SchedulePicker: View {
     guard !isValid else { return nil }
 
     if selectedDays.isEmpty {
-      return "Please select at least one day."
+      return ""
     }
 
     if startTotalMinutes > latestMinuteOfDay - minimumDurationMinutes {
@@ -47,6 +47,22 @@ struct SchedulePicker: View {
   var body: some View {
     NavigationStack {
       Form {
+        Section {
+          VStack(alignment: .leading, spacing: 12) {
+            Text(
+              "You can set up a schedule of when this profile starts and ends, if you want to end early you can use the strategy you setup earlier."
+            )
+            .font(.subheadline)
+            .foregroundStyle(.primary)
+
+            Text(
+              "⚠️ Beta feature. You might experience issues. Please reach out if you see any strange behavior."
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+          }
+        }
+
         Section {
           HStack(spacing: 12) {
             ForEach(Weekday.allCases, id: \.rawValue) { day in
