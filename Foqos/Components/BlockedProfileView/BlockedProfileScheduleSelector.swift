@@ -30,45 +30,11 @@ struct BlockedProfileScheduleSelector: View {
       Text("No schedule set")
         .foregroundStyle(.gray)
     } else {
-      Text(summaryText)
+      Text(schedule.summaryText)
         .font(.footnote)
         .foregroundStyle(.gray)
         .padding(.top, 4)
     }
-  }
-
-  private var summaryText: String {
-    let days = schedule.days
-      .sorted { $0.rawValue < $1.rawValue }
-      .map(shortLabel(for:))
-      .joined(separator: " ")
-
-    let start = formattedTimeString(hour24: schedule.startHour, minute: schedule.startMinute)
-    let end = formattedTimeString(hour24: schedule.endHour, minute: schedule.endMinute)
-
-    if !schedule.isActive {
-      return "No schedule set"
-    }
-    return "\(days) · \(start) - \(end)"
-  }
-
-  private func shortLabel(for day: Weekday) -> String {
-    switch day {
-    case .sunday: return "Su"
-    case .monday: return "Mo"
-    case .tuesday: return "Tu"
-    case .wednesday: return "We"
-    case .thursday: return "Th"
-    case .friday: return "Fr"
-    case .saturday: return "Sa"
-    }
-  }
-
-  private func formattedTimeString(hour24: Int, minute: Int) -> String {
-    var hour = hour24 % 12
-    if hour == 0 { hour = 12 }
-    let isPM = hour24 >= 12
-    return "\(hour):\(String(format: "%02d", minute)) \(isPM ? "PM" : "AM")"
   }
 }
 

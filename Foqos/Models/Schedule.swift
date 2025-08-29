@@ -20,6 +20,18 @@ enum Weekday: Int, CaseIterable, Codable, Equatable {
     case .saturday: return "Saturday"
     }
   }
+
+  var shortLabel: String {
+    switch self {
+    case .sunday: return "Su"
+    case .monday: return "Mo"
+    case .tuesday: return "Tu"
+    case .wednesday: return "We"
+    case .thursday: return "Th"
+    case .friday: return "Fr"
+    case .saturday: return "Sa"
+    }
+  }
 }
 
 struct BlockedProfileSchedule: Codable, Equatable {
@@ -40,6 +52,21 @@ struct BlockedProfileSchedule: Codable, Equatable {
     return (endHour - startHour) * 3600 + (endMinute - startMinute) * 60
   }
 
+  var summaryText: String {
+    guard isActive else { return "No schedule set" }
+
+    let daysSummary =
+      days
+      .sorted { $0.rawValue < $1.rawValue }
+      .map { $0.shortLabel }
+      .joined(separator: " ")
+
+    let start = formattedTimeString(hour24: startHour, minute: startMinute)
+    let end = formattedTimeString(hour24: endHour, minute: endMinute)
+
+    return "\(daysSummary) · \(start) - \(end)"
+  }
+
   func isTodayScheduled(now: Date = Date(), calendar: Calendar = .current) -> Bool {
     guard isActive else { return false }
     let currentWeekdayRaw = calendar.component(.weekday, from: now)
@@ -49,5 +76,12 @@ struct BlockedProfileSchedule: Codable, Equatable {
 
   func olderThan15Minutes(now: Date = Date()) -> Bool {
     return now.timeIntervalSince(updatedAt) > 15 * 60
+  }
+
+  private func formattedTimeString(hour24: Int, minute: Int) -> String {
+    var hour = hour24 % 12
+    if hour == 0 { hour = 12 }
+    let isPM = hour24 >= 12
+    return "\(hour):\(String(format: "%02d", minute)) \(isPM ? "PM" : "AM")"
   }
 }
