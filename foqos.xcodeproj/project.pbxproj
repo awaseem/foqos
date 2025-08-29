@@ -777,7 +777,7 @@
 				CODE_SIGN_ENTITLEMENTS = foqos/foqos.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"foqos/Preview Content\"";
 				DEVELOPMENT_TEAM = YR54789JNV;
@@ -825,7 +825,7 @@
 				CODE_SIGN_ENTITLEMENTS = foqos/foqos.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"foqos/Preview Content\"";
 				DEVELOPMENT_TEAM = YR54789JNV;
