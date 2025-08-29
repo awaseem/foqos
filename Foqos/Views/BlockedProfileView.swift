@@ -166,7 +166,7 @@ struct BlockedProfileView: View {
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
-            allowMode: enableAllowMode,
+            allowMode: enableAllowModeDomain,
             disabled: isBlocking
           )
 
