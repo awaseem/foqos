@@ -79,8 +79,15 @@ struct BlockedProfileCard: View {
 
         // Middle section - Strategy and apps info
         VStack(alignment: .leading, spacing: 16) {
-          // Using the new StrategyInfoView component
-          StrategyInfoView(strategyId: profile.blockingStrategyId)
+          // Strategy and schedule side-by-side with divider
+          HStack(spacing: 16) {
+            StrategyInfoView(strategyId: profile.blockingStrategyId)
+
+            Divider()
+              .frame(height: 24)
+
+            ProfileScheduleRow(schedule: profile.schedule)
+          }
 
           // Using the new ProfileStatsRow component
           ProfileStatsRow(
