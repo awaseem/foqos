@@ -4,29 +4,26 @@ struct CardBackground: View {
   var isActive: Bool = false
   var customColor: Color? = nil
 
-  // Animation properties for lava lamp effect
-  @State private var blob1Offset: CGSize = .zero
-  @State private var blob2Offset: CGSize = .zero
-  @State private var blob3Offset: CGSize = .zero
-  @State private var blob1Scale: CGFloat = 1.0
-  @State private var blob2Scale: CGFloat = 0.9
-  @State private var blob3Scale: CGFloat = 0.8
+  // Metaball blob specs (randomized once for organic motion)
+  @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 6)
 
-  // Active state color - slightly darker green
-  private let activeColor: Color = Color(red: 0, green: 0.75, blue: 0)
+  // Exposed colors for easy tweaking
+  public static var activeBlobColor: Color = .green.opacity(0.6)
+  public static var inactiveBlobColor: Color = .blue
 
-  // Default color if no custom color is provided
-  private let defaultColor: Color = .blue
+  // Default color if no custom color is provided (kept for API compatibility)
+  @available(*, deprecated, message: "Use CardBackground.inactiveBlobColor instead")
+  private let defaultColor: Color = CardBackground.inactiveBlobColor
 
   // No position calculations needed for the simplified design
 
   // Select a color based on custom color or active state
   private var cardColor: Color {
     if isActive {
-      return activeColor
+      return CardBackground.activeBlobColor
     }
 
-    return customColor ?? defaultColor
+    return customColor ?? CardBackground.inactiveBlobColor
   }
 
   var body: some View {
@@ -36,37 +33,14 @@ struct CardBackground: View {
         GeometryReader { geometry in
           ZStack {
             if isActive {
-              // Lava lamp effect with blob-like shapes
-              Group {
-                // Blob 1 - starts top left, moves to bottom right
-                Circle()
-                  .fill(activeColor.opacity(0.5))
-                  .frame(width: geometry.size.width * 0.45 * blob1Scale)
-                  .position(
-                    x: geometry.size.width * 0.2 + blob1Offset.width,
-                    y: geometry.size.height * 0.2 + blob1Offset.height
-                  )
-                  .blur(radius: 12)
+              // Gooey metaball lava-lamp effect
+              TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
 
-                // Blob 2 - starts top right, moves to bottom left
-                Circle()
-                  .fill(activeColor.opacity(0.45))
-                  .frame(width: geometry.size.width * 0.5 * blob2Scale)
-                  .position(
-                    x: geometry.size.width * 0.8 + blob2Offset.width,
-                    y: geometry.size.height * 0.25 + blob2Offset.height
-                  )
-                  .blur(radius: 15)
-
-                // Blob 3 - starts bottom, moves to top
-                Circle()
-                  .fill(activeColor.opacity(0.4))
-                  .frame(width: geometry.size.width * 0.4 * blob3Scale)
-                  .position(
-                    x: geometry.size.width * 0.5 + blob3Offset.width,
-                    y: geometry.size.height * 0.8 + blob3Offset.height
-                  )
-                  .blur(radius: 14)
+                Rectangle()
+                  .fill(cardColor)
+                  .mask(MetaballMaskView(blobs: blobs, t: t))
+                  .opacity(0.9)
               }
             } else {
               // Default single circle for inactive state
@@ -82,23 +56,12 @@ struct CardBackground: View {
           }
         }
       )
-      .overlay(
+      .background(
         RoundedRectangle(cornerRadius: 24)
           .fill(.ultraThinMaterial.opacity(0.7))
       )
       .clipShape(RoundedRectangle(cornerRadius: 24))
-      .onAppear {
-        if isActive {
-          // Animate blobs with different timing to create organic motion
-          animateLavaLamp()
-        }
-      }
-      .onChange(of: isActive) { _, newValue in
-        if newValue {
-          // Start animation when card becomes active
-          animateLavaLamp()
-        }
-      }
+    // TimelineView drives animation; no imperative animation triggers needed
   }
 
   // Utility method to get the card color for other components
@@ -106,27 +69,78 @@ struct CardBackground: View {
     return cardColor
   }
 
-  // Create lava lamp animation
-  private func animateLavaLamp() {
-    // Animate blob 1 - moving from top left to bottom right
-    withAnimation(Animation.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) {
-      blob1Offset = CGSize(width: 60, height: 70)
-      blob1Scale = 1.3
+  // MARK: - Metaball Specs
+  private struct BlobSpec: Identifiable {
+    let id = UUID()
+    let speed: Double
+    let baseSizeFactor: CGFloat
+    let sizeJitter: CGFloat
+    let xAmplitudeFactor: CGFloat
+    let yAmplitudeFactor: CGFloat
+    let phaseX: Double
+    let phaseY: Double
+
+    func position(at t: TimeInterval, in size: CGSize) -> CGPoint {
+      let cx = size.width * 0.5
+      let cy = size.height * 0.5
+      let xAmp = size.width * 0.35 * xAmplitudeFactor
+      let yAmp = size.height * 0.35 * yAmplitudeFactor
+
+      let x = cx + CGFloat(cos(t * speed + phaseX)) * xAmp
+      let y = cy + CGFloat(sin(t * speed * 0.9 + phaseY)) * yAmp
+      return CGPoint(x: x, y: y)
     }
 
-    // Animate blob 2 - moving from top right to bottom left
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-      withAnimation(Animation.easeInOut(duration: 4.2).repeatForever(autoreverses: true)) {
-        blob2Offset = CGSize(width: -75, height: 60)
-        blob2Scale = 1.2
-      }
+    func size(at t: TimeInterval, in size: CGSize) -> CGSize {
+      let base = min(size.width, size.height) * baseSizeFactor
+      let pulse = 1.0 + sizeJitter * CGFloat(sin(t * speed * 0.6 + (phaseX + phaseY) * 0.5))
+      let w = base * pulse
+      return CGSize(width: w, height: w)
     }
+  }
 
-    // Animate blob 3 - moving from bottom to top
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      withAnimation(Animation.easeInOut(duration: 3.7).repeatForever(autoreverses: true)) {
-        blob3Offset = CGSize(width: 30, height: -80)
-        blob3Scale = 1.1
+  private static func makeBlobs(count: Int) -> [BlobSpec] {
+    var generator = SystemRandomNumberGenerator()
+    return (0..<max(3, count)).map { _ in
+      let speed = Double.random(in: 0.18...0.32, using: &generator)
+      let baseSize = CGFloat.random(in: 0.30...0.55, using: &generator)
+      let jitter = CGFloat.random(in: 0.04...0.10, using: &generator)
+      let xAmp = CGFloat.random(in: 0.75...1.15, using: &generator)
+      let yAmp = CGFloat.random(in: 0.75...1.15, using: &generator)
+      let phaseX = Double.random(in: 0...(2 * .pi), using: &generator)
+      let phaseY = Double.random(in: 0...(2 * .pi), using: &generator)
+      return BlobSpec(
+        speed: speed,
+        baseSizeFactor: baseSize,
+        sizeJitter: jitter,
+        xAmplitudeFactor: xAmp,
+        yAmplitudeFactor: yAmp,
+        phaseX: phaseX,
+        phaseY: phaseY
+      )
+    }
+  }
+
+  // MARK: - Mask helper view (re-usable metaball mask)
+  private struct MetaballMaskView: View {
+    let blobs: [BlobSpec]
+    let t: TimeInterval
+
+    var body: some View {
+      Canvas { context, size in
+        context.addFilter(.alphaThreshold(min: 0.45))
+        context.addFilter(.blur(radius: 28))
+
+        context.drawLayer { layer in
+          for blob in blobs {
+            let p = blob.position(at: t, in: size)
+            let s = blob.size(at: t, in: size)
+            let rect = CGRect(
+              x: p.x - s.width / 2, y: p.y - s.height / 2, width: s.width,
+              height: s.height)
+            layer.fill(Path(ellipseIn: rect), with: .color(.white))
+          }
+        }
       }
     }
   }
