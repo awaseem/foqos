@@ -129,6 +129,13 @@ struct SchedulePicker: View {
       .navigationTitle("Schedule")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Remove") {
+            resetToDefault()
+          }
+          .foregroundStyle(.red)
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
           Button("Done") {
             applySelection()
@@ -298,6 +305,17 @@ struct SchedulePicker: View {
       showEndPicker.toggle()
       if showEndPicker { showStartPicker = false }
     }
+  }
+
+  private func resetToDefault() {
+    // Reset to default values: empty days, 9AM-5PM
+    selectedDays = []
+    startDisplayHour = 9
+    startMinute = 0
+    startIsPM = false
+    endDisplayHour = 5
+    endMinute = 0
+    endIsPM = true
   }
 }
 
