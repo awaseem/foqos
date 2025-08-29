@@ -166,6 +166,9 @@ struct SchedulePicker: View {
         Section {
           Button("Remove Schedule") {
             resetToDefault()
+
+            applySelection()
+            isPresented = false
           }
           .foregroundStyle(.red)
           .frame(maxWidth: .infinity, alignment: .center)

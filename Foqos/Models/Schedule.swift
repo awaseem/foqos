@@ -30,7 +30,7 @@ struct BlockedProfileSchedule: Codable, Equatable {
   var endHour: Int
   var endMinute: Int
 
-  var updatedAt: Date
+  var updatedAt: Date = Date()
 
   var isActive: Bool {
     return !days.isEmpty
