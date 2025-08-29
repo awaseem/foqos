@@ -49,6 +49,15 @@ struct SchedulePicker: View {
       Form {
         Section {
           VStack(alignment: .leading, spacing: 12) {
+            HStack {
+              Spacer()
+              Image(systemName: "calendar.badge.clock")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+              Spacer()
+            }
+            .padding(.vertical, 12)
+
             Text(
               "You can set up a schedule of when this profile starts and ends, if you want to end early you can use the strategy you setup earlier."
             )
@@ -56,7 +65,7 @@ struct SchedulePicker: View {
             .foregroundStyle(.primary)
 
             Text(
-              "⚠️ Beta feature. You might experience issues. Please reach out if you see any strange behavior."
+              "You might experience issues as we continue to develop this feature. Please reach out if you see any strange behavior."
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -165,6 +174,12 @@ struct SchedulePicker: View {
       .navigationTitle("Schedule")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Cancel") {
+            isPresented = false
+          }
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
           Button("Save") {
             applySelection()
