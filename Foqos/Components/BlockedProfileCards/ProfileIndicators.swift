@@ -8,21 +8,25 @@ struct ProfileIndicators: View {
 
   var body: some View {
     HStack(spacing: 16) {
-      indicatorView(isEnabled: enableBreaks, label: "Breaks")
-      indicatorView(isEnabled: enableStrictMode, label: "Strict")
-      indicatorView(isEnabled: enableLiveActivity, label: "Live Activity")
-      indicatorView(isEnabled: hasReminders, label: "Reminders")
+      if enableBreaks {
+        indicatorView(label: "Breaks")
+      }
+      if enableStrictMode {
+        indicatorView(label: "Strict")
+      }
+      if enableLiveActivity {
+        indicatorView(label: "Live Activity")
+      }
+      if hasReminders {
+        indicatorView(label: "Reminders")
+      }
     }
   }
 
-  private func indicatorView(isEnabled: Bool, label: String) -> some View {
+  private func indicatorView(label: String) -> some View {
     HStack(spacing: 6) {
       Circle()
-        .fill(
-          isEnabled
-            ? Color.green.opacity(0.85)
-            : Color.gray.opacity(0.35)
-        )
+        .fill(Color.green.opacity(0.85))
         .frame(width: 6, height: 6)
 
       Text(label)
@@ -38,13 +42,13 @@ struct ProfileIndicators: View {
       enableLiveActivity: true,
       hasReminders: true,
       enableBreaks: false,
-      enableStrictMode: false
+      enableStrictMode: false,
     )
     ProfileIndicators(
       enableLiveActivity: false,
       hasReminders: false,
       enableBreaks: true,
-      enableStrictMode: true
+      enableStrictMode: true,
     )
   }
   .padding()
