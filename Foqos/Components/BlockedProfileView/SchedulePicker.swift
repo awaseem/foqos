@@ -27,11 +27,15 @@ struct SchedulePicker: View {
   private var latestMinuteOfDay: Int { 23 * 60 + 55 }
 
   private var isValid: Bool {
-    endTotalMinutes - startTotalMinutes >= minimumDurationMinutes
+    !selectedDays.isEmpty && endTotalMinutes - startTotalMinutes >= minimumDurationMinutes
   }
 
   private var validationMessage: String? {
     guard !isValid else { return nil }
+
+    if selectedDays.isEmpty {
+      return "Please select at least one day."
+    }
 
     if startTotalMinutes > latestMinuteOfDay - minimumDurationMinutes {
       return "Start time must be at least 1 hour before the end of the day."
@@ -52,6 +56,12 @@ struct SchedulePicker: View {
                   selectedDays.removeAll { $0 == day }
                 } else {
                   selectedDays.append(day)
+                }
+
+                // Hide time pickers when no days are selected
+                if selectedDays.isEmpty {
+                  showStartPicker = false
+                  showEndPicker = false
                 }
               }) {
                 Text(shortLabel(for: day))
@@ -94,6 +104,7 @@ struct SchedulePicker: View {
             }
           }
           .buttonStyle(.plain)
+          .disabled(selectedDays.isEmpty)
 
           if showStartPicker {
             timePickers(hour: $startDisplayHour, minute: $startMinute, isPM: $startIsPM)
@@ -112,6 +123,7 @@ struct SchedulePicker: View {
             }
           }
           .buttonStyle(.plain)
+          .disabled(selectedDays.isEmpty)
 
           if showEndPicker {
             timePickers(hour: $endDisplayHour, minute: $endMinute, isPM: $endIsPM)
@@ -138,7 +150,7 @@ struct SchedulePicker: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
+          Button("Save") {
             applySelection()
             isPresented = false
           }
