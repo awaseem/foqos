@@ -172,6 +172,14 @@ struct SchedulePicker: View {
           }
           .foregroundStyle(.red)
           .frame(maxWidth: .infinity, alignment: .center)
+        } footer: {
+          VStack(alignment: .center, spacing: 4) {
+            Text(
+              "If you're looking for more granularity, you can use Shortcuts. \(Text("[Here is a quick video](https://youtube.com/shorts/1xZeO9lg5f8)").foregroundStyle(.blue))"
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+          }
         }
       }
       .navigationTitle("Schedule")
