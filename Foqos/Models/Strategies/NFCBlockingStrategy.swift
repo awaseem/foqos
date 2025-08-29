@@ -69,6 +69,7 @@ class NFCBlockingStrategy: BlockingStrategy {
       }
 
       session.endSession()
+      self.appBlocker.deactivateRestrictions()
 
       self.onSessionCreation?(.ended(session.blockedProfile))
     }
