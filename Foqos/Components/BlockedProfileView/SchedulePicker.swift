@@ -59,17 +59,20 @@ struct SchedulePicker: View {
             .padding(.vertical, 12)
 
             Text(
-              "You can set up a schedule of when this profile starts and ends, if you want to end early you can use the strategy you setup earlier. Must be at least 1 hour long."
+              "Choose when this profile starts and ends. To end early, use the strategy you set up earlier. The schedule must be at least 1 hour long."
             )
             .font(.subheadline)
             .foregroundStyle(.primary)
+            .multilineTextAlignment(.center)
 
             Text(
-              "You might experience issues as we continue to develop this feature. Please reach out if you see any strange behavior."
+              "This feature is still in development. If you notice any issues, please let us know."
             )
             .font(.caption)
             .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
           }
+          .padding(.horizontal, 8)
         }
 
         Section {
