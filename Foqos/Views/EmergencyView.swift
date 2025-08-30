@@ -115,6 +115,19 @@ struct EmergencyView: View {
   }
 }
 
+struct EmergencyPreviewSheetHost: View {
+  @State private var show: Bool = true
+
+  var body: some View {
+    Color.clear
+      .sheet(isPresented: $show) {
+        NavigationView { EmergencyView() }
+              .presentationDetents([.medium])
+          .presentationDragIndicator(.visible)
+      }
+  }
+}
+
 #Preview {
-  NavigationView { EmergencyView() }
+  EmergencyPreviewSheetHost()
 }
