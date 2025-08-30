@@ -119,32 +119,50 @@ private struct GlassOverlay: View {
   var isDark: Bool
 
   private var borderColor: Color {
-    isDark ? Color.white.opacity(0.35) : Color.black.opacity(0.12)
+    isDark ? Color.white.opacity(0.35) : Color.black.opacity(0.2)
   }
 
   private var specularScale: Double {
-    isDark ? 1.0 : 0.7
+    isDark ? 1.0 : 1.25
+  }
+
+  private var materialStyle: Material {
+    isDark ? .ultraThinMaterial : .thinMaterial
+  }
+
+  private var shadowColor: Color {
+    isDark ? Color.black.opacity(0.08) : Color.black.opacity(0.14)
+  }
+
+  private var borderLineWidth: CGFloat {
+    isDark ? 1 : 1.2
   }
 
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 16)
-        .fill(.ultraThinMaterial)
+        .fill(materialStyle)
         .overlay(
           // Soft border
           RoundedRectangle(cornerRadius: 16)
-            .stroke(borderColor, lineWidth: 1)
+            .stroke(borderColor, lineWidth: borderLineWidth)
         )
-        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+        // Subtle inner highlight for light mode to increase edge definition
+        .overlay(
+          RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.white.opacity(isDark ? 0.0 : 0.18), lineWidth: 0.6)
+            .blendMode(.plusLighter)
+        )
+        .shadow(color: shadowColor, radius: isDark ? 8 : 10, x: 0, y: isDark ? 4 : 6)
 
       // Subtle specular highlight sweep tied to progress
       RoundedRectangle(cornerRadius: 16)
         .fill(
           LinearGradient(
             colors: [
-              Color.white.opacity(0.06 * (1.0 - progress) * specularScale),
-              Color.white.opacity(0.18 * (1.0 - progress) * specularScale),
-              Color.white.opacity(0.06 * (1.0 - progress) * specularScale),
+              Color.white.opacity(0.08 * (1.0 - progress) * specularScale),
+              Color.white.opacity(0.24 * (1.0 - progress) * specularScale),
+              Color.white.opacity(0.08 * (1.0 - progress) * specularScale),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
