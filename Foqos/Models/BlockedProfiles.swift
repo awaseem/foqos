@@ -158,7 +158,7 @@ class BlockedProfiles {
       profile.domains = newDomains
     }
 
-    if let newSchedule = schedule, newSchedule.isActive {
+    if let newSchedule = schedule {
       profile.schedule = newSchedule
     }
 
@@ -338,12 +338,6 @@ class BlockedProfiles {
     context.insert(cloned)
     try context.save()
     return cloned
-  }
-
-  static func deleteSchedule(for profile: BlockedProfiles, context: ModelContext) throws {
-    profile.schedule = nil
-    DeviceActivityCenterUtil.removeSchedule(for: profile)
-    try context.save()
   }
 
   static func addDomain(to profile: BlockedProfiles, context: ModelContext, domain: String) throws {
