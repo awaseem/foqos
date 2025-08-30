@@ -63,7 +63,7 @@ struct EmergencyView: View {
 
   private var actionCard: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("Break the glass to proceed")
+      Text("Break glass to proceed")
         .font(.subheadline)
         .foregroundColor(.secondary)
 
@@ -86,7 +86,7 @@ struct EmergencyView: View {
           .font(.footnote)
           .foregroundColor(.red)
       } else {
-        Text("Using an emergency unblock will reduce your remaining count by 1.")
+        Text("This will reduce your remaining count by 1.")
           .font(.footnote)
           .foregroundColor(.secondary)
       }
