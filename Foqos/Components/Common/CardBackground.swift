@@ -5,10 +5,10 @@ struct CardBackground: View {
   var customColor: Color? = nil
 
   // Metaball blob specs (randomized once for organic motion)
-  @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 6)
+  @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 5)
 
   // Exposed colors for easy tweaking
-  public static var activeBlobColor: Color = .green.opacity(0.6)
+  public static var activeBlobColor: Color = .green.opacity(0.5)
   public static var inactiveBlobColor: Color = .blue
 
   // Default color if no custom color is provided (kept for API compatibility)
