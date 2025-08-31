@@ -21,6 +21,8 @@ class StrategyManager: ObservableObject {
 
   @Published var errorMessage: String?
 
+  @AppStorage("emergencyUnblocksRemaining") private var emergencyUnblocksRemaining: Int = 3
+
   private let liveActivityManager = LiveActivityManager.shared
 
   private let timersUtil = TimersUtil()
@@ -186,6 +188,37 @@ class StrategyManager: ObservableObject {
     } catch {
       self.errorMessage = "Something went wrong fetching profile"
     }
+  }
+
+  func getRemainingEmergencyUnblocks() -> Int {
+    return emergencyUnblocksRemaining
+  }
+
+  func emergencyUnblock(context: ModelContext) {
+    // Do not allow emergency unblocks if there are no remaining
+    if emergencyUnblocksRemaining == 0 {
+      return
+    }
+
+    // Do not allow emergency unblocks if there is no active session
+    guard let activeSession = getActiveSession(context: context) else {
+      return
+    }
+
+    // Stop the active session using the manual strategy, by passes any other strategy in view
+    let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+    _ = manualStrategy.stopBlocking(
+      context: context,
+      session: activeSession
+    )
+
+    // Do end sections for the profile
+    self.liveActivityManager.endSessionActivity()
+    self.scheduleReminder(profile: activeSession.blockedProfile)
+    self.stopTimer()
+
+    // Decrement the remaining emergency unblocks
+    emergencyUnblocksRemaining -= 1
   }
 
   static func getStrategyFromId(id: String) -> BlockingStrategy {

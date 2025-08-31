@@ -1,11 +1,15 @@
 import SwiftUI
 
 struct EmergencyView: View {
-  // TODO: Replace with real source of truth from your model/store
-  @State private var emergencyUnblocksRemaining: Int = 3
-  @State private var isPerformingEmergencyUnblock: Bool = false
+  @Environment(\.modelContext) private var context
+  @Environment(\.dismiss) private var dismiss
 
-  private var hasRemaining: Bool { emergencyUnblocksRemaining > 0 }
+  @EnvironmentObject var strategyManager: StrategyManager
+
+  private var emergencyUnblocksRemaining: Int { strategyManager.getRemainingEmergencyUnblocks() }
+  private var hasRemaining: Bool { strategyManager.getRemainingEmergencyUnblocks() > 0 }
+
+  @State private var isPerformingEmergencyUnblock: Bool = false
 
   var body: some View {
     ScrollView {
@@ -85,18 +89,12 @@ struct EmergencyView: View {
   }
 
   private func performEmergencyUnblock() {
-    // TODO: Implement real emergency unblock behavior
-    // - Decrement remaining count from the shared model
-    // - Trigger unblock workflow (DeviceActivity/Shield config)
-    // - Start countdown/cooldown timers as needed
-    // - Provide haptics/feedback and error handling
     isPerformingEmergencyUnblock = true
+
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+      strategyManager.emergencyUnblock(context: context)
       isPerformingEmergencyUnblock = false
-      // TODO: Remove local decrement; wire to real state updates
-      if emergencyUnblocksRemaining > 0 {
-        emergencyUnblocksRemaining -= 1
-      }
+      dismiss()
     }
   }
 }
@@ -116,4 +114,6 @@ struct EmergencyPreviewSheetHost: View {
 
 #Preview {
   EmergencyPreviewSheetHost()
+    .environmentObject(StrategyManager())
+    .defaultAppStorage(UserDefaults(suiteName: "preview")!)
 }
