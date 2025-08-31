@@ -13,8 +13,6 @@ struct EmergencyView: View {
         header
 
         statusCard
-
-        actionCard
       }
       .padding()
     }
@@ -30,6 +28,7 @@ struct EmergencyView: View {
       .font(.callout)
       .foregroundColor(.secondary)
     }
+    .padding(.top, 16)
     .frame(maxWidth: .infinity, alignment: .leading)
   }
 
@@ -50,21 +49,8 @@ struct EmergencyView: View {
         Spacer()
       }
 
-      Text("You have a limited number of emergency unblocks.")
+      Text("You have a limited number of emergency unblocks. Break glass to proceed")
         .font(.footnote)
-        .foregroundColor(.secondary)
-    }
-    .padding(16)
-    .background(
-      RoundedRectangle(cornerRadius: 16, style: .continuous)
-        .fill(.thinMaterial)
-    )
-  }
-
-  private var actionCard: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Break glass to proceed")
-        .font(.subheadline)
         .foregroundColor(.secondary)
 
       BreakGlassButton(tapsToShatter: 3) {
@@ -94,7 +80,7 @@ struct EmergencyView: View {
     .padding(16)
     .background(
       RoundedRectangle(cornerRadius: 16, style: .continuous)
-        .fill(.ultraThinMaterial)
+        .fill(.thinMaterial)
     )
   }
 
