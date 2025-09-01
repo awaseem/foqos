@@ -30,6 +30,9 @@ struct HomeView: View {
   // Donation View
   @State private var showDonationView = false
 
+  // Emergency View
+  @State private var showEmergencyView = false
+
   // Activity sessions
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
     var sessions: [BlockedProfileSession]
@@ -115,7 +118,10 @@ struct HomeView: View {
             },
             onManageTapped: {
               isProfileListPresent = true
-            }
+            },
+            onEmergencyTapped: {
+              showEmergencyView = true
+            },
           )
         }
 
@@ -197,6 +203,10 @@ struct HomeView: View {
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()
+    }
+    .sheet(isPresented: $showEmergencyView) {
+      EmergencyView()
+        .presentationDetents([.height(350)])
     }
     .alert(alertTitle, isPresented: $showingAlert) {
       Button("OK", role: .cancel) { dismissAlert() }

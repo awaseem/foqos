@@ -53,7 +53,7 @@ struct EmergencyView: View {
         Spacer()
       }
 
-      Text("You have a limited number of emergency unblocks. Break glass to proceed")
+      Text("You have a limited number of emergency unblocks.")
         .font(.footnote)
         .foregroundColor(.secondary)
 
