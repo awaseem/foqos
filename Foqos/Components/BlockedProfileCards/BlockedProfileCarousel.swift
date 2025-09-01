@@ -14,6 +14,7 @@ struct BlockedProfileCarousel: View {
   var onEditTapped: (BlockedProfiles) -> Void
   var onBreakTapped: (BlockedProfiles) -> Void
   var onManageTapped: () -> Void
+  var onEmergencyTapped: () -> Void
 
   // State for tracking current profile index and drag gesture
   @State private var currentIndex: Int = 0
@@ -30,6 +31,18 @@ struct BlockedProfileCarousel: View {
     return isBlocking ? "Active Profile" : "Profile"
   }
 
+  private var actionButtonText: String {
+    return isBlocking ? "Emergency" : "Manage"
+  }
+
+  private var actionButtonIcon: String {
+    return isBlocking ? "exclamationmark.triangle.fill" : "person.crop.circle"
+  }
+
+  private var actionButtonAction: () -> Void {
+    return isBlocking ? onEmergencyTapped : onManageTapped
+  }
+
   init(
     profiles: [BlockedProfiles],
     isBlocking: Bool,
@@ -41,7 +54,8 @@ struct BlockedProfileCarousel: View {
     onStopTapped: @escaping (BlockedProfiles) -> Void,
     onEditTapped: @escaping (BlockedProfiles) -> Void,
     onBreakTapped: @escaping (BlockedProfiles) -> Void,
-    onManageTapped: @escaping () -> Void
+    onManageTapped: @escaping () -> Void,
+    onEmergencyTapped: @escaping () -> Void
   ) {
     self.profiles = profiles
     self.isBlocking = isBlocking
@@ -54,6 +68,7 @@ struct BlockedProfileCarousel: View {
     self.onEditTapped = onEditTapped
     self.onBreakTapped = onBreakTapped
     self.onManageTapped = onManageTapped
+    self.onEmergencyTapped = onEmergencyTapped
   }
 
   // Initialize current index based on active profile
@@ -76,11 +91,11 @@ struct BlockedProfileCarousel: View {
 
       SectionTitle(
         titleMessage,
-        buttonText: "Manage",
+        buttonText: actionButtonText,
         buttonAction: {
-          onManageTapped()
+          actionButtonAction()
         },
-        buttonIcon: "person.crop.circle"
+        buttonIcon: actionButtonIcon
       )
       .padding(.horizontal, 16)
 
@@ -250,7 +265,8 @@ struct BlockedProfileCarousel: View {
       onStopTapped: { _ in },
       onEditTapped: { _ in },
       onBreakTapped: { _ in },
-      onManageTapped: {}
+      onManageTapped: {},
+      onEmergencyTapped: {}
     )
   }
 }
@@ -295,7 +311,8 @@ struct BlockedProfileCarousel: View {
       onStopTapped: { _ in },
       onEditTapped: { _ in },
       onBreakTapped: { _ in },
-      onManageTapped: {}
+      onManageTapped: {},
+      onEmergencyTapped: {}
     )
   }
 }
