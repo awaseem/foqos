@@ -221,6 +221,10 @@ class StrategyManager: ObservableObject {
     emergencyUnblocksRemaining -= 1
   }
 
+  func resetEmergencyUnblocks() {
+    emergencyUnblocksRemaining = 3
+  }
+
   static func getStrategyFromId(id: String) -> BlockingStrategy {
     if let strategy = availableStrategies.first(
       where: {
