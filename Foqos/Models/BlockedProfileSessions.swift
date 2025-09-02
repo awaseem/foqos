@@ -52,15 +52,26 @@ class BlockedProfileSession {
   }
 
   func startBreak() {
-    self.breakStartTime = Date()
+    let breakStartTime = Date()
+
+    SharedData.setBreakStartTime(date: breakStartTime)
+    self.breakStartTime = breakStartTime
   }
 
   func endBreak() {
-    self.breakEndTime = Date()
+    let breakEndTime = Date()
+
+    SharedData.setBreakEndTime(date: breakEndTime)
+    self.breakEndTime = breakEndTime
   }
 
   func endSession() {
-    self.endTime = Date()
+    let endTime = Date()
+
+    // Set the end time in shared data in case its being saved
+    SharedData.setEndTime(date: endTime)
+    self.endTime = endTime
+
     SharedData.flushActiveSession()
   }
 

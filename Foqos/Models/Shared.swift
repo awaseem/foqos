@@ -150,4 +150,16 @@ enum SharedData {
   static func flushCompletedSessionsForSchedular() {
     completedSessionsInSchedular = []
   }
+
+  static func setBreakStartTime(date: Date) {
+    activeSharedSession?.breakStartTime = date
+  }
+
+  static func setBreakEndTime(date: Date) {
+    activeSharedSession?.breakEndTime = date
+  }
+
+  static func setEndTime(date: Date) {
+    activeSharedSession?.endTime = date
+  }
 }
