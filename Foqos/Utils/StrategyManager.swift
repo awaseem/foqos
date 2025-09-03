@@ -442,13 +442,13 @@ class StrategyManager: ObservableObject {
       }
 
       if let profile = try? BlockedProfiles.findProfile(byID: profileId, in: context) {
-        print("found profile for activity: \(activity.rawValue)")
-
         if profile.schedule == nil {
           print(
             "schedule is nil for profile: \(profile.name), schedule is incorrect ❌. Deleting schedule..."
           )
           DeviceActivityCenterUtil.removeScheduleRestrictions(for: profile)
+        } else {
+          print("schedule is not nil for profile: \(profile.name), schedule is correct ✅")
         }
       } else {
         print(

@@ -392,7 +392,9 @@ struct BlockedProfileView: View {
             guard !trimmed.isEmpty else { return }
             do {
               if let source = profile {
-                _ = try BlockedProfiles.cloneProfile(source, in: modelContext, newName: trimmed)
+                let clonedProfile = try BlockedProfiles.cloneProfile(
+                  source, in: modelContext, newName: trimmed)
+                DeviceActivityCenterUtil.scheduleRestrictions(for: clonedProfile)
               }
             } catch {
               showError(message: error.localizedDescription)
