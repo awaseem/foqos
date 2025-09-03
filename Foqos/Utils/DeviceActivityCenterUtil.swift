@@ -53,7 +53,7 @@ class DeviceActivityCenterUtil {
     return center.activities
   }
 
-  static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
+  private static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
     return DeviceActivityName(rawValue: profile.id.uuidString)
   }
 }
