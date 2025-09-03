@@ -201,6 +201,9 @@ class BlockedProfiles {
     // Delete the snapshot
     deleteSnapshot(for: profile)
 
+    // Remove the schedule restrictions
+    DeviceActivityCenterUtil.removeScheduleRestrictions(for: profile)
+
     // Then delete the profile
     context.delete(profile)
     try context.save()
