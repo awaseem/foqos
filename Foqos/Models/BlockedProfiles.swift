@@ -30,6 +30,10 @@ class BlockedProfiles {
 
   @Relationship var sessions: [BlockedProfileSession] = []
 
+  var activeDeviceActivity: DeviceActivityName? {
+    return DeviceActivityCenterUtil.getActiveDeviceActivity(for: self)
+  }
+
   init(
     id: UUID = UUID(),
     name: String,

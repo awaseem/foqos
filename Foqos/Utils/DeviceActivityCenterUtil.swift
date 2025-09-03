@@ -35,12 +35,19 @@ class DeviceActivityCenterUtil {
     }
   }
 
-  static func listScheduledActivities() -> [DeviceActivityName] {
+  static func getActiveDeviceActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
+    let center = DeviceActivityCenter()
+    let activities = center.activities
+
+    return activities.first(where: { $0 == getDeviceActivityName(from: profile) })
+  }
+
+  static func getDeviceActivities() -> [DeviceActivityName] {
     let center = DeviceActivityCenter()
     return center.activities
   }
 
-  private static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
+  static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
     return DeviceActivityName(rawValue: profile.id.uuidString)
   }
 }

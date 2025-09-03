@@ -58,6 +58,18 @@ struct BlockedProfileStats: View {
         Text("\(profile.selectedActivity.applications.count)")
           .foregroundStyle(.gray)
       }
+
+      // Active Device Activity
+
+      if let activeDeviceActivity = profile.activeDeviceActivity {
+        HStack {
+          Text("Active Device Activity")
+            .foregroundStyle(.gray)
+          Spacer()
+          Text(activeDeviceActivity.rawValue)
+            .foregroundStyle(.gray)
+        }
+      }
     }
   }
 }
