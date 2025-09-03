@@ -182,7 +182,7 @@ struct HomeView: View {
       }
     }
     .onAppear {
-      loadApp()
+      onAppearApp()
     }
     .sheet(isPresented: $showIntroScreen) {
       IntroView {
@@ -229,6 +229,11 @@ struct HomeView: View {
 
   private func loadApp() {
     strategyManager.loadActiveSession(context: context)
+  }
+
+  private func onAppearApp() {
+    strategyManager.loadActiveSession(context: context)
+    strategyManager.cleanUpGhostSchedules(context: context)
   }
 
   private func unloadApp() {

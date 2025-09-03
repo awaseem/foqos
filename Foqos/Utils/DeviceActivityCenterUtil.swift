@@ -41,6 +41,11 @@ class DeviceActivityCenterUtil {
     center.stopMonitoring([deviceActivityName])
   }
 
+  static func removeScheduleRestrictions(for activity: DeviceActivityName) {
+    let center = DeviceActivityCenter()
+    center.stopMonitoring([activity])
+  }
+
   static func getActiveDeviceActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
     let center = DeviceActivityCenter()
     let activities = center.activities

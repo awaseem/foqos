@@ -431,4 +431,31 @@ class StrategyManager: ObservableObject {
       seconds: TimeInterval(15 * 60)
     )
   }
+
+  func cleanUpGhostSchedules(context: ModelContext) {
+    let activities = DeviceActivityCenterUtil.getDeviceActivities()
+    for activity in activities {
+      let profileId = activity.rawValue
+      guard let profileId = UUID(uuidString: profileId) else {
+        print("failed to parse profile id from activity: \(activity.rawValue)")
+        continue
+      }
+
+      if let profile = try? BlockedProfiles.findProfile(byID: profileId, in: context) {
+        print("found profile for activity: \(activity.rawValue)")
+
+        if profile.schedule == nil {
+          print(
+            "schedule is nil for profile: \(profile.name), schedule is incorrect ❌. Deleting schedule..."
+          )
+          DeviceActivityCenterUtil.removeScheduleRestrictions(for: profile)
+        }
+      } else {
+        print(
+          "no profile found for activity: \(activity.rawValue), schedule is incorrect ❌. Deleting schedule..."
+        )
+        DeviceActivityCenterUtil.removeScheduleRestrictions(for: activity)
+      }
+    }
+  }
 }
