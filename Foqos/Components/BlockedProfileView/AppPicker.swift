@@ -11,6 +11,7 @@ struct AppPicker: View {
   var allowMode: Bool = false
 
   @State private var updateFlag: Bool = false
+  @State private var refreshID: UUID = UUID()
 
   private var title: String {
     let action = allowMode ? "allowed" : "blocked"
@@ -26,38 +27,51 @@ struct AppPicker: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      ZStack {
-        Text(verbatim: "Updating view state because of bug in iOS...")
-          .foregroundStyle(.clear)
-          .accessibilityHidden(true)
-          .opacity(updateFlag ? 1 : 0)
+    NavigationStack {
+      VStack(alignment: .leading, spacing: 16) {
+        ZStack {
+          Text(verbatim: "Updating view state because of bug in iOS...")
+            .foregroundStyle(.clear)
+            .accessibilityHidden(true)
+            .opacity(updateFlag ? 1 : 0)
 
-        FamilyActivityPicker(selection: $selection)
+          FamilyActivityPicker(selection: $selection)
+            .id(refreshID)
+        }
+
+        Text(title)
+          .font(.title3)
+          .padding(.horizontal, 16)
+          .bold()
+
+        Text(message)
+          .font(.caption)
+          .padding(.horizontal, 16)
+
+        Text(
+          "Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for a offical fix."
+        )
+        .font(.footnote)
+        .foregroundColor(.secondary)
+        .padding(.horizontal)
       }
-
-      Text(title)
-        .font(.title3)
-        .padding(.horizontal, 16)
-        .bold()
-
-      Text(message)
-        .font(.caption)
-        .padding(.horizontal, 16)
-
-      Text(
-        "Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for a offical fix."
-      )
-      .font(.footnote)
-      .foregroundColor(.secondary)
-      .padding(.horizontal)
-
-      ActionButton(title: "Done", backgroundColor: .blue) {
-        isPresented = false
+      .onReceive(stateUpdateTimer) { _ in
+        updateFlag.toggle()
       }
-    }
-    .onReceive(stateUpdateTimer) { _ in
-      updateFlag.toggle()
+      .navigationTitle("Apps & Websites")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button(action: { refreshID = UUID() }) {
+            Text("Refresh")
+          }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Done") { isPresented = false }
+            .bold()
+        }
+      }
     }
   }
 }
