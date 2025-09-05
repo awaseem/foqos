@@ -187,6 +187,14 @@ struct BlockedProfileView: View {
           disabled: isBlocking
         )
 
+        Section("Schedule") {
+          BlockedProfileScheduleSelector(
+            schedule: schedule,
+            buttonAction: { showingSchedulePicker = true },
+            disabled: isBlocking
+          )
+        }
+
         Section("Safeguards") {
           CustomToggle(
             title: "Breaks",
@@ -273,14 +281,6 @@ struct BlockedProfileView: View {
                 .font(.caption)
             }
           }
-        }
-
-        Section("Schedule") {
-          BlockedProfileScheduleSelector(
-            schedule: schedule,
-            buttonAction: { showingSchedulePicker = true },
-            disabled: isBlocking
-          )
         }
 
         if isEditing {
