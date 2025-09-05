@@ -225,7 +225,7 @@ struct BlockedProfileView: View {
           CustomToggle(
             title: "Live Activity",
             description:
-              "Shows a live activity on your lock screen with some inspirational qoute",
+              "Shows a live activity on your lock screen with some inspirational quote",
             isOn: $enableLiveActivity,
             isDisabled: isBlocking
           )
