@@ -22,46 +22,50 @@ struct GlassButton: View {
     Button(action: action) {
       buttonContent
     }
-    .contentShape(Rectangle())  // Improve tap area
+    .buttonStyle(PressableButtonStyle())
     .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
   }
 
   @State private var isPressed = false
   @State private var progress: CGFloat = 0.0
-  @State private var touchLocation: CGPoint = .zero
+  @State private var touchStartLocation: CGPoint = .zero
 
   private var longPressButton: some View {
     buttonContent
       .contentShape(Rectangle())
       .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
-      .scaleEffect(isPressed ? 0.9 : 1.0)
-      .animation(.spring(response: 0.4), value: isPressed)
-      .simultaneousGesture(
-        LongPressGesture(minimumDuration: longPressDuration)
-          .onEnded { _ in
-            UIImpactFeedbackGenerator(style: .medium)
-              .impactOccurred()
-            action()
-            isPressed = false
-            progress = 0
-          }
-      )
+      .scaleEffect(isPressed ? 0.96 : 1.0)
+      .animation(.spring(response: 0.3), value: isPressed)
       .simultaneousGesture(
         DragGesture(minimumDistance: 0)
           .onChanged { value in
-            if !isPressed {
-              isPressed = true
-              touchLocation = value.startLocation
-              progress = 0
-              withAnimation(.linear(duration: longPressDuration)) {
-                progress = 1.0
-              }
+            if progress == 0.0 {  // capture where the touch started
+              touchStartLocation = value.startLocation
             }
           }
-          .onEnded { _ in
+      )
+      .onLongPressGesture(
+        minimumDuration: longPressDuration,
+        maximumDistance: 50,
+        pressing: { pressing in
+          if pressing {
+            isPressed = true
+            withAnimation(.linear(duration: longPressDuration)) {
+              progress = 1.0
+            }
+          } else {
             isPressed = false
-            progress = 0
+            withAnimation(.easeOut(duration: 0.2)) {
+              progress = 0.0
+            }
           }
+        },
+        perform: {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          action()
+          isPressed = false
+          progress = 0.0
+        }
       )
       .overlay(
         ZStack {
@@ -74,14 +78,14 @@ struct GlassButton: View {
                   height: geometry.size.width * progress * 2
                 )
                 .position(
-                  x: touchLocation.x,
-                  y: touchLocation.y
+                  x: touchStartLocation.x,
+                  y: touchStartLocation.y
                 )
             }
           }
         }
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .scaleEffect(0.9)
+        .scaleEffect(0.95)
       )
   }
 
@@ -108,6 +112,15 @@ struct GlassButton: View {
         )
     )
     .foregroundColor(color ?? .primary)
+  }
+}
+
+private struct PressableButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .contentShape(Rectangle())
+      .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+      .animation(.spring(response: 0.3), value: configuration.isPressed)
   }
 }
 
