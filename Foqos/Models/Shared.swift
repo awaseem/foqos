@@ -35,6 +35,8 @@ enum SharedData {
     var physicalUnblockQRCodeId: String?
 
     var schedule: BlockedProfileSchedule?
+
+    var disableBackgroundStops: Bool?
   }
 
   // MARK: – Serializable snapshot of a session (no profile object)

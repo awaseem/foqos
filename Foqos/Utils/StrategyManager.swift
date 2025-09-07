@@ -137,6 +137,15 @@ class StrategyManager: ObservableObject {
       let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
 
       if let localActiveSession = getActiveSession(context: context) {
+        if profile.disableBackgroundStops {
+          print(
+            "profile: \(profile.name) has disable background stops enabled, not stopping it"
+          )
+          self.errorMessage =
+            "profile: \(profile.name) has disable background stops enabled, not stopping it"
+          return
+        }
+
         _ =
           manualStrategy
           .stopBlocking(
@@ -219,6 +228,17 @@ class StrategyManager: ObservableObject {
         print(
           "session is not active for profile: \(profile.name), not stopping it"
         )
+        self.errorMessage =
+          "session is not active for profile: \(profile.name), not stopping it"
+        return
+      }
+
+      if profile.disableBackgroundStops {
+        print(
+          "profile: \(profile.name) has disable background stops enabled, not stopping it"
+        )
+        self.errorMessage =
+          "profile: \(profile.name) has disable background stops enabled, not stopping it"
         return
       }
 

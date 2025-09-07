@@ -28,6 +28,8 @@ class BlockedProfiles {
 
   var schedule: BlockedProfileSchedule? = nil
 
+  var disableBackgroundStops: Bool = false
+
   @Relationship var sessions: [BlockedProfileSession] = []
 
   var activeDeviceActivity: DeviceActivityName? {
@@ -51,7 +53,8 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: BlockedProfileSchedule? = nil
+    schedule: BlockedProfileSchedule? = nil,
+    disableBackgroundStops: Bool = false
   ) {
     self.id = id
     self.name = name
@@ -73,6 +76,8 @@ class BlockedProfiles {
     self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
     self.physicalUnblockQRCodeId = physicalUnblockQRCodeId
     self.schedule = schedule
+
+    self.disableBackgroundStops = disableBackgroundStops
   }
 
   static func fetchProfiles(in context: ModelContext) throws
@@ -120,7 +125,8 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: BlockedProfileSchedule? = nil
+    schedule: BlockedProfileSchedule? = nil,
+    disableBackgroundStops: Bool? = nil
   ) throws -> BlockedProfiles {
     if let newName = name {
       profile.name = newName
@@ -164,6 +170,10 @@ class BlockedProfiles {
 
     if let newSchedule = schedule {
       profile.schedule = newSchedule
+    }
+
+    if let newDisableBackgroundStops = disableBackgroundStops {
+      profile.disableBackgroundStops = newDisableBackgroundStops
     }
 
     // Values can be nil when removed
@@ -239,7 +249,8 @@ class BlockedProfiles {
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
-      schedule: profile.schedule
+      schedule: profile.schedule,
+      disableBackgroundStops: profile.disableBackgroundStops
     )
   }
 
@@ -287,7 +298,8 @@ class BlockedProfiles {
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
-    schedule: BlockedProfileSchedule? = nil
+    schedule: BlockedProfileSchedule? = nil,
+    disableBackgroundStops: Bool = false
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 
@@ -305,6 +317,7 @@ class BlockedProfiles {
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+      disableBackgroundStops: disableBackgroundStops
     )
 
     if let schedule = schedule {
