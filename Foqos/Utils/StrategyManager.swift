@@ -190,6 +190,40 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  func stopSessionFromBackground(
+    _ profileId: UUID,
+    context: ModelContext
+  ) {
+    do {
+      guard
+        let profile = try BlockedProfiles.findProfile(
+          byID: profileId,
+          in: context
+        )
+      else {
+        self.errorMessage =
+          "Failed to find a profile stored locally that matches the tag"
+        return
+      }
+
+      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+
+      guard let localActiveSession = getActiveSession(context: context) else {
+        print(
+          "session is not active for profile: \(profile.name), not stopping it"
+        )
+        return
+      }
+
+      let _ = manualStrategy.stopBlocking(
+        context: context,
+        session: localActiveSession
+      )
+    } catch {
+      self.errorMessage = "Something went wrong fetching profile"
+    }
+  }
+
   func getRemainingEmergencyUnblocks() -> Int {
     return emergencyUnblocksRemaining
   }
