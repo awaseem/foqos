@@ -215,6 +215,13 @@ class StrategyManager: ObservableObject {
         return
       }
 
+      if localActiveSession.blockedProfile.id != profile.id {
+        print(
+          "session is not active for profile: \(profile.name), not stopping it"
+        )
+        return
+      }
+
       let _ = manualStrategy.stopBlocking(
         context: context,
         session: localActiveSession
