@@ -50,13 +50,13 @@ class StrategyManager: ObservableObject {
       }
 
       // Start live activity for existing session if one exists
-      // Close live activity if no session is active and a scheduled session might have ended
       // live activities can only be started when the app is in the foreground
       if let session = activeSession {
         liveActivityManager.startSessionActivity(session: session)
-      } else {
-        liveActivityManager.endSessionActivity()
       }
+    } else {
+      // Close live activity if no session is active and a scheduled session might have ended
+      liveActivityManager.endSessionActivity()
     }
   }
 
