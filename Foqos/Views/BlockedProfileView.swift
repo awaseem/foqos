@@ -355,12 +355,14 @@ struct BlockedProfileView: View {
           .accessibilityLabel("Cancel")
         }
 
-        ToolbarItem(placement: .topBarTrailing) {
-          Button(action: { saveProfile() }) {
-            Image(systemName: "checkmark")
+        if !isBlocking {
+          ToolbarItem(placement: .topBarTrailing) {
+            Button(action: { saveProfile() }) {
+              Image(systemName: "checkmark")
+            }
+            .disabled(name.isEmpty)
+            .accessibilityLabel(isEditing ? "Update" : "Create")
           }
-          .disabled(name.isEmpty)
-          .accessibilityLabel(isEditing ? "Update" : "Create")
         }
       }
       .sheet(isPresented: $showingActivityPicker) {
