@@ -4,6 +4,7 @@ import SwiftUI
 
 struct BlockedProfileListView: View {
   @Environment(\.modelContext) private var context
+  @Environment(\.dismiss) private var dismiss
 
   @Query(sort: [
     SortDescriptor(\BlockedProfiles.order, order: .forward),
@@ -44,70 +45,40 @@ struct BlockedProfileListView: View {
         }
       }
       .navigationTitle("Profiles")
-      .safeAreaInset(edge: .top) {
-        Color.clear
-          .frame(height: 4)
-      }
-      .safeAreaInset(edge: .bottom) {
-        ZStack {
-          if !profiles.isEmpty {
-            Text("\(profiles.count) \(profiles.count == 1 ? "Profile" : "Profiles")")
-              .font(.footnote)
-              .foregroundStyle(.secondary)
-              .frame(maxWidth: .infinity, alignment: .center)
-          }
-
-          HStack {
-            if !profiles.isEmpty {
-              if editMode == .active {
-                Button("Done") {
-                  editMode = .inactive
-                }
-              } else {
-                Menu {
-                  Button {
-                    editMode = .active
-                  } label: {
-                    Label {
-                      Text("Edit/Move")
-                    } icon: {
-                      Image(systemName: "pencil")
-                    }
-                  }
-
-                  Button {
-                    showingDataExport = true
-                  } label: {
-                    Label {
-                      Text("Export Data")
-                    } icon: {
-                      Image(systemName: "square.and.arrow.up")
-                    }
-                  }
-                } label: {
-                  Label {
-                    Text("Options")
-                  } icon: {
-                    Image(systemName: "ellipsis.circle")
-                  }
-                }
-              }
-            }
-
-            Spacer()
-
-            Button(action: { showingCreateProfile = true }) {
-              Label {
-                Text("Create").bold()
-              } icon: {
-                Image(systemName: "plus.circle")
-              }
-            }
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
           }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 12)
-        .background(.ultraThinMaterial)
+
+        ToolbarItemGroup(placement: .topBarTrailing) {
+          if editMode == .active {
+            Button(action: { editMode = .inactive }) {
+              Image(systemName: "checkmark.circle")
+            }
+          }
+          if !profiles.isEmpty {
+            Menu {
+              Button {
+                editMode = .active
+              } label: {
+                Label("Edit/Move", systemImage: "pencil")
+              }
+
+              Button {
+                showingDataExport = true
+              } label: {
+                Label("Export Data", systemImage: "square.and.arrow.up")
+              }
+            } label: {
+              Image(systemName: "ellipsis.circle")
+            }
+          }
+          Button(action: { showingCreateProfile = true }) {
+            Image(systemName: "plus.circle")
+          }
+        }
       }
       .sheet(isPresented: $showingCreateProfile) {
         BlockedProfileView()
