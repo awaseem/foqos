@@ -83,9 +83,10 @@ struct DomainPicker: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
-            isPresented = false
+          Button(action: { isPresented = false }) {
+            Image(systemName: "checkmark")
           }
+          .accessibilityLabel("Done")
         }
       }
       .alert("Error", isPresented: $showingError) {

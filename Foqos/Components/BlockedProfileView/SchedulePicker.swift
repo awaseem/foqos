@@ -189,17 +189,21 @@ struct SchedulePicker: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
-          Button("Cancel") {
-            isPresented = false
+          Button(action: { isPresented = false }) {
+            Image(systemName: "xmark")
           }
+          .accessibilityLabel("Cancel")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Save") {
+          Button(action: {
             applySelection()
             isPresented = false
+          }) {
+            Image(systemName: "checkmark")
           }
           .disabled(!isValid)
+          .accessibilityLabel("Save")
         }
       }
       .onAppear(perform: loadFromBinding)

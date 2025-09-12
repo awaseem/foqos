@@ -58,18 +58,19 @@ struct AppPicker: View {
       .onReceive(stateUpdateTimer) { _ in
         updateFlag.toggle()
       }
-      .navigationTitle("Apps & Websites")
-      .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button(action: { refreshID = UUID() }) {
-            Text("Refresh")
+            Image(systemName: "arrow.clockwise")
           }
+          .accessibilityLabel("Refresh")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") { isPresented = false }
-            .bold()
+          Button(action: { isPresented = false }) {
+            Image(systemName: "checkmark")
+          }
+          .accessibilityLabel("Done")
         }
       }
     }
