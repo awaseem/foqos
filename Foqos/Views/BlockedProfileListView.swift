@@ -76,7 +76,7 @@ struct BlockedProfileListView: View {
             }
           }
           Button(action: { showingCreateProfile = true }) {
-            Image(systemName: "plus.circle")
+            Image(systemName: "plus")
           }
         }
       }
