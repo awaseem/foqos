@@ -347,19 +347,20 @@ struct BlockedProfileView: View {
         )
       }
       .navigationTitle(isEditing ? "Profile Details" : "New Profile")
-      .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
-          Button("Cancel") {
-            dismiss()
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
           }
+          .accessibilityLabel("Cancel")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-          Button(isEditing ? "Update" : "Create") {
-            saveProfile()
+          Button(action: { saveProfile() }) {
+            Image(systemName: "checkmark")
           }
           .disabled(name.isEmpty)
+          .accessibilityLabel(isEditing ? "Update" : "Create")
         }
       }
       .sheet(isPresented: $showingActivityPicker) {

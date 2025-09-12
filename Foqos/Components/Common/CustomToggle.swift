@@ -18,7 +18,7 @@ struct CustomToggle: View {
         .padding(.vertical, 4)
         .fixedSize(horizontal: false, vertical: true)
         .lineLimit(nil)
-        .padding(.trailing, 50)
+        .padding(.trailing, 80)
 
       if isDisabled && errorMessage != nil {
         Text(errorMessage!)
