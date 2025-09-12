@@ -46,16 +46,41 @@ struct ActionButton: View {
             .font(.headline)
             .foregroundColor(.white)
         }
-      }
-      .frame(maxWidth: .infinity)
-      .frame(height: 50)
-      .background(backgroundColor ?? Color.indigo)
-      .opacity((isLoading || isDisabled) ? 0.6 : 1.0)
-      .clipShape(Capsule())
-      .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-      .padding(.horizontal, 20)
+      }.frame(maxWidth: .infinity)
+        .frame(height: 40)
     }
+    .modifier(
+      GlassProminentIfAvailable(
+        backgroundColor: backgroundColor ?? Color.indigo,
+        isLoading: isLoading,
+        isDisabled: isDisabled
+      )
+    )
     .disabled(isLoading || isDisabled)
+  }
+}
+
+private struct GlassProminentIfAvailable: ViewModifier {
+  let backgroundColor: Color
+  let isLoading: Bool
+  let isDisabled: Bool
+
+  func body(content: Content) -> some View {
+    Group {
+      if #available(iOS 26.0, *) {
+        content
+          .frame(height: 50)
+          .buttonStyle(.glassProminent)
+          .tint(backgroundColor)
+      } else {
+        content
+          .background(backgroundColor)
+          .opacity((isLoading || isDisabled) ? 0.6 : 1.0)
+          .clipShape(Capsule())
+          .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+          .padding(.horizontal, 20)
+      }
+    }
   }
 }
 
