@@ -49,10 +49,39 @@ struct RoundedButton: View {
       .foregroundColor(textColor)
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
-      .background(backgroundColor)
-      .cornerRadius(16)
+      .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+      .glassButtonBackground(cornerRadius: 16)
+      .overlay(
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+          .strokeBorder(.white.opacity(0.15))
+      )
     }
     .buttonStyle(PlainButtonStyle())
+  }
+}
+
+extension View {
+  @ViewBuilder
+  fileprivate func glassButtonBackground(cornerRadius: CGFloat) -> some View {
+    if #available(iOS 26.0, *) {
+      self.modifier(GlassBackgroundModifier(cornerRadius: cornerRadius))
+    } else {
+      self
+        .background(
+          .ultraThinMaterial,
+          in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        )
+    }
+  }
+}
+
+@available(iOS 26.0, *)
+private struct GlassBackgroundModifier: ViewModifier {
+  let cornerRadius: CGFloat
+
+  func body(content: Content) -> some View {
+    content
+      .glassEffect(in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
   }
 }
 
