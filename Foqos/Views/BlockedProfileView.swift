@@ -52,6 +52,9 @@ struct BlockedProfileView: View {
   @State private var showingClonePrompt = false
   @State private var cloneName: String = ""
 
+  // Sheet for insights modal
+  @State private var showingInsights = false
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
 
@@ -295,54 +298,8 @@ struct BlockedProfileView: View {
           }
         }
 
-        if isEditing {
-          Section("Utilities") {
-            Button(action: {
-              writeProfile()
-            }) {
-              HStack {
-                Image(systemName: "tag")
-                Text("Write to NFC Tag")
-                Spacer()
-              }
-            }
-            .disabled(isBlocking)
-
-            Button(action: {
-              showingGeneratedQRCode = true
-            }) {
-              HStack {
-                Image(systemName: "qrcode")
-                Text("Generate QR code")
-                Spacer()
-              }
-            }
-            .disabled(isBlocking)
-
-            Button(action: {
-              if let existing = profile {
-                cloneName = existing.name + " Copy"
-                showingClonePrompt = true
-              }
-            }) {
-              HStack {
-                Image(systemName: "square.on.square")
-                Text("Duplicate Profile")
-                Spacer()
-              }
-            }
-            .disabled(isBlocking)
-          }
-        }
-
         if isEditing, let validProfile = profile {
           BlockedProfileStats(profile: validProfile)
-
-          Section("Insights") {
-            NavigationLink("Profile Insights") {
-              ProfileInsightsView(profile: validProfile)
-            }
-          }
         }
       }
       .onChange(of: enableAllowMode) {
@@ -359,6 +316,45 @@ struct BlockedProfileView: View {
             Image(systemName: "xmark")
           }
           .accessibilityLabel("Cancel")
+        }
+
+        if isEditing, let validProfile = profile {
+          ToolbarItemGroup(placement: .topBarTrailing) {
+            if !isBlocking {
+              Menu {
+                Button {
+                  writeProfile()
+                } label: {
+                  Label("Write to NFC Tag", systemImage: "tag")
+                }
+
+                Button {
+                  showingGeneratedQRCode = true
+                } label: {
+                  Label("Generate QR code", systemImage: "qrcode")
+                }
+
+                Button {
+                  cloneName = validProfile.name + " Copy"
+                  showingClonePrompt = true
+                } label: {
+                  Label("Duplicate Profile", systemImage: "square.on.square")
+                }
+              } label: {
+                Image(systemName: "ellipsis.circle")
+              }
+              .accessibilityLabel("Profile Actions")
+            }
+
+            Button(action: { showingInsights = true }) {
+              Image(systemName: "eyeglasses")
+            }
+            .accessibilityLabel("View Insights")
+          }
+        }
+
+        if #available(iOS 26.0, *) {
+          ToolbarSpacer(.flexible, placement: .topBarTrailing)
         }
 
         if !isBlocking {
@@ -399,6 +395,11 @@ struct BlockedProfileView: View {
             profileName: profileToWrite
               .name
           )
+        }
+      }
+      .sheet(isPresented: $showingInsights) {
+        if let validProfile = profile {
+          ProfileInsightsView(profile: validProfile)
         }
       }
       .background(
