@@ -6,6 +6,11 @@ struct ProfileInsightsMetrics {
   let averageSessionDuration: TimeInterval?
   let longestSessionDuration: TimeInterval?
   let shortestSessionDuration: TimeInterval?
+  // Break metrics
+  let totalBreaksTaken: Int
+  let averageBreakDuration: TimeInterval?
+  let sessionsWithBreaks: Int
+  let sessionsWithoutBreaks: Int
 }
 
 class ProfileInsightsUtil: ObservableObject {
@@ -51,18 +56,35 @@ class ProfileInsightsUtil: ObservableObject {
       return end.timeIntervalSince(session.startTime)
     }
 
+    // Breaks: assuming one optional break per session in current model
+    let sessionsWithBreaksArray = completed.filter { $0.breakStartTime != nil }
+    let sessionsWithBreaks = sessionsWithBreaksArray.count
+    let sessionsWithoutBreaks = completed.count - sessionsWithBreaks
+
+    let breakDurations: [TimeInterval] = sessionsWithBreaksArray.compactMap { session in
+      guard let start = session.breakStartTime, let end = session.breakEndTime else { return nil }
+      return end.timeIntervalSince(start)
+    }
+
     let total = durations.reduce(0, +)
     let count = durations.count
     let average = count > 0 ? total / Double(count) : nil
     let longest = durations.max()
     let shortest = durations.min()
+    let totalBreaksTaken = sessionsWithBreaks
+    let avgBreak =
+      breakDurations.isEmpty ? nil : (breakDurations.reduce(0, +) / Double(breakDurations.count))
 
     return ProfileInsightsMetrics(
       totalCompletedSessions: count,
       totalFocusTime: total,
       averageSessionDuration: average,
       longestSessionDuration: longest,
-      shortestSessionDuration: shortest
+      shortestSessionDuration: shortest,
+      totalBreaksTaken: totalBreaksTaken,
+      averageBreakDuration: avgBreak,
+      sessionsWithBreaks: sessionsWithBreaks,
+      sessionsWithoutBreaks: sessionsWithoutBreaks
     )
   }
 
@@ -80,5 +102,11 @@ class ProfileInsightsUtil: ObservableObject {
       return "\(minutes)m"
     }
     return "\(seconds)s"
+  }
+
+  func formattedPercent(_ value: Double?) -> String {
+    guard let value = value else { return "—" }
+    let percent = max(0, min(1, value)) * 100
+    return String(format: "%.0f%%", percent)
   }
 }
