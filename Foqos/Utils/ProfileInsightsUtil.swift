@@ -24,6 +24,14 @@ class ProfileInsightsUtil: ObservableObject {
     let focusDuration: TimeInterval
   }
 
+  struct HourAggregate: Identifiable, Hashable {
+    let id = UUID()
+    let hour: Int  // 0-23
+    let sessionsStarted: Int
+    let averageSessionDuration: TimeInterval?
+    let totalFocus: TimeInterval
+  }
+
   let profile: BlockedProfiles
   private var startDate: Date? = nil
   private var endDate: Date? = nil
@@ -159,6 +167,68 @@ class ProfileInsightsUtil: ObservableObject {
     }
 
     return results
+  }
+
+  // MARK: - Time of Day Aggregations
+  func hourlyAggregates(days: Int = 14, endingOn end: Date = Date()) -> [HourAggregate] {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else { return [] }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindowExclusive = calendar.date(
+      byAdding: .day, value: 1, to: calendar.startOfDay(for: effectiveEnd))!
+
+    let completed = profile.sessions.filter { session in
+      guard let sessionEnd = session.endTime else { return false }
+      return sessionEnd >= startOfWindow && sessionEnd < endOfWindowExclusive
+    }
+
+    var countsByHour: [Int: Int] = [:]
+    var totalsByHour: [Int: TimeInterval] = [:]
+    var numByHour: [Int: Int] = [:]
+
+    for session in completed {
+      let hour = calendar.component(.hour, from: session.startTime)
+      let duration = (session.endTime ?? Date()).timeIntervalSince(session.startTime)
+      countsByHour[hour, default: 0] += 1
+      totalsByHour[hour, default: 0] += max(0, duration)
+      numByHour[hour, default: 0] += 1
+    }
+
+    var results: [HourAggregate] = []
+    for hour in 0...23 {
+      let sessions = countsByHour[hour] ?? 0
+      let total = totalsByHour[hour] ?? 0
+      let n = numByHour[hour] ?? 0
+      let avg = n > 0 ? total / Double(n) : nil
+      results.append(
+        HourAggregate(
+          hour: hour,
+          sessionsStarted: sessions,
+          averageSessionDuration: avg,
+          totalFocus: total
+        )
+      )
+    }
+
+    return results
+  }
+
+  func mostProductiveHours(count: Int = 3, days: Int = 30) -> [Int] {
+    let hourly = hourlyAggregates(days: days)
+    let ranked = hourly.sorted { $0.sessionsStarted > $1.sessionsStarted }
+    return Array(ranked.prefix(max(0, count))).map { $0.hour }
+  }
+
+  func peakFocusHours(count: Int = 3, days: Int = 30) -> [Int] {
+    let hourly = hourlyAggregates(days: days)
+    let ranked = hourly.sorted { $0.averageSessionDuration ?? 0 > $1.averageSessionDuration ?? 0 }
+    return Array(ranked.prefix(max(0, count))).map { $0.hour }
   }
 
   func bestFocusWeekday(in days: Int = 60) -> (weekday: Int, totalFocus: TimeInterval)? {

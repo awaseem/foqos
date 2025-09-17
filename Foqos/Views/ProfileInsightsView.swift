@@ -107,6 +107,8 @@ struct ProfileInsightsView: View {
 
           let best = viewModel.bestFocusWeekday(in: 60)
           let avgDaily = viewModel.averageDailyFocusTime(days: 14)
+          let mostProductive = viewModel.mostProductiveHours(count: 3, days: 30)
+          let peakFocus = viewModel.peakFocusHours(count: 3, days: 30)
           MultiStatCard(
             stats: [
               .init(
@@ -128,9 +130,76 @@ struct ProfileInsightsView: View {
                 systemImageName: "clock.badge.checkmark",
                 iconColor: .teal
               ),
+              .init(
+                title: "Most Productive Hours",
+                valueText: mostProductive.isEmpty ? "—" : listHoursShort(mostProductive),
+                systemImageName: "clock",
+                iconColor: .indigo
+              ),
+              .init(
+                title: "Peak Focus Hours",
+                valueText: peakFocus.isEmpty ? "—" : listHoursShort(peakFocus),
+                systemImageName: "chart.line.uptrend.xyaxis",
+                iconColor: .pink
+              ),
             ],
             columns: 1
           )
+        }
+
+        VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Time of Day")
+
+          ChartCard(title: "Sessions Started by Hour", subtitle: "Last 14 days") {
+            let data = viewModel.hourlyAggregates(days: 14)
+            Chart(data) { item in
+              BarMark(
+                x: .value("Hour", item.hour),
+                y: .value("Sessions", item.sessionsStarted)
+              )
+              .foregroundStyle(.blue)
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                AxisGridLine()
+                AxisTick()
+                if let hour = value.as(Int.self) {
+                  AxisValueLabel(formatHourShort(hour))
+                }
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(title: "Average Session by Hour", subtitle: "Last 14 days") {
+            let data = viewModel.hourlyAggregates(days: 14)
+            Chart(data) { item in
+              LineMark(
+                x: .value("Hour", item.hour),
+                y: .value("Minutes", (item.averageSessionDuration ?? 0) / 60.0)
+              )
+              .foregroundStyle(.green)
+              AreaMark(
+                x: .value("Hour", item.hour),
+                y: .value("Minutes", (item.averageSessionDuration ?? 0) / 60.0)
+              )
+              .foregroundStyle(.green.opacity(0.2))
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                AxisGridLine()
+                AxisTick()
+                if let hour = value.as(Int.self) {
+                  AxisValueLabel(formatHourShort(hour))
+                }
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
         }
 
         VStack(alignment: .leading, spacing: 8) {
@@ -185,5 +254,20 @@ extension ProfileInsightsView {
     let symbols = short ? Calendar.current.shortWeekdaySymbols : Calendar.current.weekdaySymbols
     let safeIndex = max(1, min(7, weekdayIndex)) - 1
     return symbols[safeIndex]
+  }
+
+  private func formatHourShort(_ hour: Int) -> String {
+    var comps = DateComponents()
+    comps.hour = max(0, min(23, hour))
+    let calendar = Calendar.current
+    let date = calendar.date(from: comps) ?? Date()
+    let formatter = DateFormatter()
+    formatter.dateFormat = "ha"
+    return formatter.string(from: date).lowercased()
+  }
+
+  private func listHoursShort(_ hours: [Int]) -> String {
+    let labels = hours.map { formatHourShort($0) }
+    return labels.joined(separator: ", ")
   }
 }
