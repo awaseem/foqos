@@ -10,7 +10,7 @@ struct ProfileInsightsView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
+      VStack(alignment: .leading, spacing: 24) {
         VStack(alignment: .leading, spacing: 8) {
           SectionTitle("Focus Habits")
 
@@ -28,17 +28,8 @@ struct ProfileInsightsView: View {
                 systemImageName: "crown",
                 iconColor: .yellow
               ),
-              .init(
-                title: "Days Since Last Session",
-                valueText: {
-                  if let days = viewModel.daysSinceLastSession() { return String(days) }
-                  return "—"
-                }(),
-                systemImageName: "calendar.badge.exclamationmark",
-                iconColor: .orange
-              ),
             ],
-            columns: 3
+            columns: 2
           )
         }
 
@@ -83,6 +74,40 @@ struct ProfileInsightsView: View {
         }
 
         VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Break Behavior")
+
+          MultiStatCard(
+            stats: [
+              .init(
+                title: "Total Breaks Taken",
+                valueText: String(viewModel.metrics.totalBreaksTaken),
+                systemImageName: "pause.circle",
+                iconColor: .blue
+              ),
+              .init(
+                title: "Average Break Duration",
+                valueText: viewModel.formattedDuration(viewModel.metrics.averageBreakDuration),
+                systemImageName: "hourglass",
+                iconColor: .blue
+              ),
+              .init(
+                title: "Sessions With Breaks",
+                valueText: String(viewModel.metrics.sessionsWithBreaks),
+                systemImageName: "rectangle.badge.checkmark",
+                iconColor: .blue
+              ),
+              .init(
+                title: "Sessions Without Breaks",
+                valueText: String(viewModel.metrics.sessionsWithoutBreaks),
+                systemImageName: "rectangle.badge.xmark",
+                iconColor: .blue
+              ),
+            ],
+            columns: 2
+          )
+        }
+
+        VStack(alignment: .leading, spacing: 16) {
           SectionTitle("Daily Patterns")
 
           ChartCard(title: "Sessions per Day", subtitle: "Last 14 days") {
@@ -145,7 +170,7 @@ struct ProfileInsightsView: View {
           }
         }
 
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
           SectionTitle("Time of Day")
 
           ChartCard(title: "Sessions Started by Hour", subtitle: "Last 14 days") {
@@ -210,40 +235,6 @@ struct ProfileInsightsView: View {
               AxisMarks(position: .leading)
             }
           }
-        }
-
-        VStack(alignment: .leading, spacing: 8) {
-          SectionTitle("Break Behavior")
-
-          MultiStatCard(
-            stats: [
-              .init(
-                title: "Total Breaks Taken",
-                valueText: String(viewModel.metrics.totalBreaksTaken),
-                systemImageName: "pause.circle",
-                iconColor: .blue
-              ),
-              .init(
-                title: "Average Break Duration",
-                valueText: viewModel.formattedDuration(viewModel.metrics.averageBreakDuration),
-                systemImageName: "hourglass",
-                iconColor: .blue
-              ),
-              .init(
-                title: "Sessions With Breaks",
-                valueText: String(viewModel.metrics.sessionsWithBreaks),
-                systemImageName: "rectangle.badge.checkmark",
-                iconColor: .blue
-              ),
-              .init(
-                title: "Sessions Without Breaks",
-                valueText: String(viewModel.metrics.sessionsWithoutBreaks),
-                systemImageName: "rectangle.badge.xmark",
-                iconColor: .blue
-              ),
-            ],
-            columns: 2
-          )
         }
       }
       .padding(.horizontal, 20)

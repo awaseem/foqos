@@ -266,19 +266,4 @@ class ProfileInsightsUtil: ObservableObject {
 
     return longest
   }
-
-  /// Days since the last completed session
-  func daysSinceLastSession(reference: Date = Date()) -> Int? {
-    let calendar = Calendar.current
-    let completed = profile.sessions.compactMap { session -> Date? in
-      guard let end = session.endTime else { return nil }
-      return end
-    }.sorted(by: { $0 > $1 })
-
-    guard let last = completed.first else { return nil }
-    let startOfRef = calendar.startOfDay(for: reference)
-    let startOfLast = calendar.startOfDay(for: last)
-    let comps = calendar.dateComponents([.day], from: startOfLast, to: startOfRef)
-    return comps.day
-  }
 }
