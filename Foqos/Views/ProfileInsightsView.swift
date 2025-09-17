@@ -87,12 +87,18 @@ struct ProfileInsightsView: View {
 
           ChartCard(title: "Sessions per Day", subtitle: "Last 14 days") {
             let data = viewModel.dailyAggregates(days: 14)
-            Chart(data) { item in
+            SelectableChartFactory.dailyChart(
+              data: data,
+              xValue: \.date,
+              yValue: { Double($0.sessionsCount) }
+            ) { item in
               BarMark(
                 x: .value("Date", item.date),
                 y: .value("Sessions", item.sessionsCount)
               )
               .foregroundStyle(.blue)
+            } annotationValue: { selectedData in
+              "\(selectedData?.sessionsCount ?? 0) sessions"
             }
             .chartXAxis {
               AxisMarks(values: .automatic(desiredCount: 4)) { value in
@@ -108,7 +114,11 @@ struct ProfileInsightsView: View {
 
           ChartCard(title: "Focus Time Trend", subtitle: "Last 14 days") {
             let data = viewModel.dailyAggregates(days: 14)
-            Chart(data) { item in
+            SelectableChartFactory.dailyChart(
+              data: data,
+              xValue: \.date,
+              yValue: { $0.focusDuration / 60.0 }
+            ) { item in
               LineMark(
                 x: .value("Date", item.date),
                 y: .value("Minutes", item.focusDuration / 60.0)
@@ -119,6 +129,8 @@ struct ProfileInsightsView: View {
                 y: .value("Minutes", item.focusDuration / 60.0)
               )
               .foregroundStyle(.green.opacity(0.2))
+            } annotationValue: { selectedData in
+              "\(Int(round((selectedData?.focusDuration ?? 0) / 60.0))) min"
             }
             .chartXAxis {
               AxisMarks(values: .automatic(desiredCount: 4)) { value in
@@ -138,12 +150,18 @@ struct ProfileInsightsView: View {
 
           ChartCard(title: "Sessions Started by Hour", subtitle: "Last 14 days") {
             let data = viewModel.hourlyAggregates(days: 14)
-            Chart(data) { item in
+            SelectableChartFactory.hourlyChart(
+              data: data,
+              xValue: \.hour,
+              yValue: { Double($0.sessionsStarted) }
+            ) { item in
               BarMark(
                 x: .value("Hour", item.hour),
                 y: .value("Sessions", item.sessionsStarted)
               )
               .foregroundStyle(.blue)
+            } annotationValue: { selectedData in
+              "\(selectedData?.sessionsStarted ?? 0) sessions"
             }
             .chartXAxis {
               AxisMarks(values: .automatic(desiredCount: 6)) { value in
@@ -161,7 +179,11 @@ struct ProfileInsightsView: View {
 
           ChartCard(title: "Average Session by Hour", subtitle: "Last 14 days") {
             let data = viewModel.hourlyAggregates(days: 14)
-            Chart(data) { item in
+            SelectableChartFactory.hourlyChart(
+              data: data,
+              xValue: \.hour,
+              yValue: { ($0.averageSessionDuration ?? 0) / 60.0 }
+            ) { item in
               LineMark(
                 x: .value("Hour", item.hour),
                 y: .value("Minutes", (item.averageSessionDuration ?? 0) / 60.0)
@@ -172,6 +194,8 @@ struct ProfileInsightsView: View {
                 y: .value("Minutes", (item.averageSessionDuration ?? 0) / 60.0)
               )
               .foregroundStyle(.green.opacity(0.2))
+            } annotationValue: { selectedData in
+              "\(Int(round(((selectedData?.averageSessionDuration ?? 0) / 60.0)))) min"
             }
             .chartXAxis {
               AxisMarks(values: .automatic(desiredCount: 6)) { value in
