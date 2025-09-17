@@ -268,4 +268,49 @@ class ProfileInsightsUtil: ObservableObject {
     }
     return streak
   }
+
+  // MARK: - Habit & Behavior Metrics
+  /// Longest streak of consecutive days with at least one completed session (within last N days)
+  func longestStreakDays(lookbackDays: Int = 365) -> Int {
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    let aggs = dailyAggregates(days: lookbackDays, endingOn: today).sorted { $0.date < $1.date }
+
+    var longest = 0
+    var current = 0
+    var previousDate: Date? = nil
+
+    for agg in aggs {
+      if agg.sessionsCount > 0 {
+        if let prev = previousDate,
+          calendar.isDate(agg.date, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: prev)!)
+        {
+          current += 1
+        } else {
+          current = 1
+        }
+        longest = max(longest, current)
+      } else {
+        current = 0
+      }
+      previousDate = agg.date
+    }
+
+    return longest
+  }
+
+  /// Days since the last completed session
+  func daysSinceLastSession(reference: Date = Date()) -> Int? {
+    let calendar = Calendar.current
+    let completed = profile.sessions.compactMap { session -> Date? in
+      guard let end = session.endTime else { return nil }
+      return end
+    }.sorted(by: { $0 > $1 })
+
+    guard let last = completed.first else { return nil }
+    let startOfRef = calendar.startOfDay(for: reference)
+    let startOfLast = calendar.startOfDay(for: last)
+    let comps = calendar.dateComponents([.day], from: startOfLast, to: startOfRef)
+    return comps.day
+  }
 }

@@ -12,6 +12,37 @@ struct ProfileInsightsView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
         VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Focus Habits")
+
+          MultiStatCard(
+            stats: [
+              .init(
+                title: "Current Streak",
+                valueText: String(viewModel.currentStreakDays()) + " days",
+                systemImageName: "flame",
+                iconColor: .red
+              ),
+              .init(
+                title: "Longest Streak",
+                valueText: String(viewModel.longestStreakDays()) + " days",
+                systemImageName: "crown",
+                iconColor: .yellow
+              ),
+              .init(
+                title: "Days Since Last Session",
+                valueText: {
+                  if let days = viewModel.daysSinceLastSession() { return String(days) }
+                  return "—"
+                }(),
+                systemImageName: "calendar.badge.exclamationmark",
+                iconColor: .orange
+              ),
+            ],
+            columns: 3
+          )
+        }
+
+        VStack(alignment: .leading, spacing: 8) {
           SectionTitle("Session")
 
           MultiStatCard(
