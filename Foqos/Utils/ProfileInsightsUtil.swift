@@ -32,6 +32,38 @@ class ProfileInsightsUtil: ObservableObject {
     let totalFocus: TimeInterval
   }
 
+  struct BreakDayAggregate: Identifiable {
+    let id = UUID()
+    let date: Date
+    let breaksCount: Int
+    let totalBreakDuration: TimeInterval
+  }
+
+  struct BreakHourAggregate: Identifiable, Hashable {
+    let id = UUID()
+    let hour: Int  // 0-23
+    let breaksStarted: Int
+    let averageBreakDuration: TimeInterval?
+  }
+
+  struct SessionEndHourAggregate: Identifiable, Hashable {
+    let id = UUID()
+    let hour: Int  // 0-23
+    let sessionsEnded: Int
+  }
+
+  struct BreakStartHourAggregate: Identifiable, Hashable {
+    let id = UUID()
+    let hour: Int  // 0-23
+    let breaksStarted: Int
+  }
+
+  struct BreakEndHourAggregate: Identifiable, Hashable {
+    let id = UUID()
+    let hour: Int  // 0-23
+    let breaksEnded: Int
+  }
+
   let profile: BlockedProfiles
   private var startDate: Date? = nil
   private var endDate: Date? = nil
@@ -265,5 +297,235 @@ class ProfileInsightsUtil: ObservableObject {
     }
 
     return longest
+  }
+
+  // MARK: - Break Aggregations
+  func breakDailyAggregates(days: Int = 14, endingOn end: Date = Date()) -> [BreakDayAggregate] {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else {
+      return []
+    }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindow = calendar.startOfDay(for: effectiveEnd)
+
+    let sessionsWithBreaks = profile.sessions.filter { session in
+      guard let breakStart = session.breakStartTime else { return false }
+      return breakStart >= startOfWindow
+        && breakStart <= calendar.date(byAdding: .day, value: 1, to: endOfWindow)!
+    }
+
+    var buckets: [Date: (count: Int, totalDuration: TimeInterval)] = [:]
+    for session in sessionsWithBreaks {
+      guard let breakStart = session.breakStartTime else { continue }
+      let day = calendar.startOfDay(for: breakStart)
+
+      var breakDuration: TimeInterval = 0
+      if let breakEnd = session.breakEndTime {
+        breakDuration = breakEnd.timeIntervalSince(breakStart)
+      }
+
+      let prior = buckets[day] ?? (0, 0)
+      buckets[day] = (prior.count + 1, prior.totalDuration + breakDuration)
+    }
+
+    var results: [BreakDayAggregate] = []
+    var current = startOfWindow
+    while current <= endOfWindow {
+      let values = buckets[current] ?? (0, 0)
+      results.append(
+        BreakDayAggregate(
+          date: current,
+          breaksCount: values.count,
+          totalBreakDuration: values.totalDuration
+        )
+      )
+      guard let next = calendar.date(byAdding: .day, value: 1, to: current) else { break }
+      current = next
+    }
+
+    return results
+  }
+
+  func breakHourlyAggregates(days: Int = 14, endingOn end: Date = Date()) -> [BreakHourAggregate] {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else { return [] }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindowExclusive = calendar.date(
+      byAdding: .day, value: 1, to: calendar.startOfDay(for: effectiveEnd))!
+
+    let sessionsWithBreaks = profile.sessions.filter { session in
+      guard let breakStart = session.breakStartTime else { return false }
+      return breakStart >= startOfWindow && breakStart < endOfWindowExclusive
+    }
+
+    var countsByHour: [Int: Int] = [:]
+    var totalsByHour: [Int: TimeInterval] = [:]
+
+    for session in sessionsWithBreaks {
+      guard let breakStart = session.breakStartTime else { continue }
+      let hour = calendar.component(.hour, from: breakStart)
+
+      var breakDuration: TimeInterval = 0
+      if let breakEnd = session.breakEndTime {
+        breakDuration = breakEnd.timeIntervalSince(breakStart)
+      }
+
+      countsByHour[hour, default: 0] += 1
+      totalsByHour[hour, default: 0] += breakDuration
+    }
+
+    var results: [BreakHourAggregate] = []
+    for hour in 0...23 {
+      let breaks = countsByHour[hour] ?? 0
+      let total = totalsByHour[hour] ?? 0
+      let avg = breaks > 0 ? total / Double(breaks) : nil
+      results.append(
+        BreakHourAggregate(
+          hour: hour,
+          breaksStarted: breaks,
+          averageBreakDuration: avg
+        )
+      )
+    }
+
+    return results
+  }
+
+  func sessionEndHourlyAggregates(days: Int = 14, endingOn end: Date = Date())
+    -> [SessionEndHourAggregate]
+  {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else { return [] }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindowExclusive = calendar.date(
+      byAdding: .day, value: 1, to: calendar.startOfDay(for: effectiveEnd))!
+
+    let completedSessions = profile.sessions.filter { session in
+      guard let sessionEnd = session.endTime else { return false }
+      return sessionEnd >= startOfWindow && sessionEnd < endOfWindowExclusive
+    }
+
+    var countsByHour: [Int: Int] = [:]
+
+    for session in completedSessions {
+      guard let sessionEnd = session.endTime else { continue }
+      let hour = calendar.component(.hour, from: sessionEnd)
+      countsByHour[hour, default: 0] += 1
+    }
+
+    var results: [SessionEndHourAggregate] = []
+    for hour in 0...23 {
+      let sessions = countsByHour[hour] ?? 0
+      results.append(
+        SessionEndHourAggregate(
+          hour: hour,
+          sessionsEnded: sessions
+        )
+      )
+    }
+
+    return results
+  }
+
+  func breakStartHourlyAggregates(days: Int = 14, endingOn end: Date = Date())
+    -> [BreakStartHourAggregate]
+  {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else { return [] }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindowExclusive = calendar.date(
+      byAdding: .day, value: 1, to: calendar.startOfDay(for: effectiveEnd))!
+
+    let sessionsWithBreaks = profile.sessions.filter { session in
+      guard let breakStart = session.breakStartTime else { return false }
+      return breakStart >= startOfWindow && breakStart < endOfWindowExclusive
+    }
+
+    var countsByHour: [Int: Int] = [:]
+
+    for session in sessionsWithBreaks {
+      guard let breakStart = session.breakStartTime else { continue }
+      let hour = calendar.component(.hour, from: breakStart)
+      countsByHour[hour, default: 0] += 1
+    }
+
+    var results: [BreakStartHourAggregate] = []
+    for hour in 0...23 {
+      let breaks = countsByHour[hour] ?? 0
+      results.append(
+        BreakStartHourAggregate(
+          hour: hour,
+          breaksStarted: breaks
+        )
+      )
+    }
+
+    return results
+  }
+
+  func breakEndHourlyAggregates(days: Int = 14, endingOn end: Date = Date())
+    -> [BreakEndHourAggregate]
+  {
+    let calendar = Calendar.current
+    let effectiveEnd = min(endDate ?? end, end)
+    guard
+      let windowStart = calendar.date(
+        byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: effectiveEnd))
+    else { return [] }
+
+    let effectiveStart = max(startDate ?? windowStart, windowStart)
+    let startOfWindow = calendar.startOfDay(for: effectiveStart)
+    let endOfWindowExclusive = calendar.date(
+      byAdding: .day, value: 1, to: calendar.startOfDay(for: effectiveEnd))!
+
+    let sessionsWithCompletedBreaks = profile.sessions.filter { session in
+      guard let breakEnd = session.breakEndTime else { return false }
+      return breakEnd >= startOfWindow && breakEnd < endOfWindowExclusive
+    }
+
+    var countsByHour: [Int: Int] = [:]
+
+    for session in sessionsWithCompletedBreaks {
+      guard let breakEnd = session.breakEndTime else { continue }
+      let hour = calendar.component(.hour, from: breakEnd)
+      countsByHour[hour, default: 0] += 1
+    }
+
+    var results: [BreakEndHourAggregate] = []
+    for hour in 0...23 {
+      let breaks = countsByHour[hour] ?? 0
+      results.append(
+        BreakEndHourAggregate(
+          hour: hour,
+          breaksEnded: breaks
+        )
+      )
+    }
+
+    return results
   }
 }

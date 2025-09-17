@@ -110,7 +110,10 @@ struct ProfileInsightsView: View {
         VStack(alignment: .leading, spacing: 16) {
           SectionTitle("Daily Patterns")
 
-          ChartCard(title: "Sessions per Day", subtitle: "Last 14 days") {
+          ChartCard(
+            title: "Sessions per Day",
+            subtitle: "Daily session count over the last 14 days"
+          ) {
             let data = viewModel.dailyAggregates(days: 14)
             SelectableChartFactory.dailyChart(
               data: data,
@@ -137,7 +140,11 @@ struct ProfileInsightsView: View {
             }
           }
 
-          ChartCard(title: "Focus Time Trend", subtitle: "Last 14 days") {
+          ChartCard(
+            title: "Focus Time Trend",
+            subtitle:
+              "Total minutes focused per day over 14 days"
+          ) {
             let data = viewModel.dailyAggregates(days: 14)
             SelectableChartFactory.dailyChart(
               data: data,
@@ -171,9 +178,160 @@ struct ProfileInsightsView: View {
         }
 
         VStack(alignment: .leading, spacing: 16) {
+          SectionTitle("Break Analysis")
+
+          ChartCard(
+            title: "Break Usage Over Time",
+            subtitle: "Number of breaks taken daily over 14 days"
+          ) {
+            let data = viewModel.breakDailyAggregates(days: 14)
+            SelectableChartFactory.dailyChart(
+              data: data,
+              xValue: \.date,
+              yValue: { Double($0.breaksCount) }
+            ) { item in
+              LineMark(
+                x: .value("Date", item.date),
+                y: .value("Breaks", item.breaksCount)
+              )
+              .foregroundStyle(.purple)
+              AreaMark(
+                x: .value("Date", item.date),
+                y: .value("Breaks", item.breaksCount)
+              )
+              .foregroundStyle(.purple.opacity(0.2))
+            } annotationValue: { selectedData in
+              "\(selectedData?.breaksCount ?? 0) breaks"
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: .dateTime.month().day())
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(
+            title: "Average Break Duration",
+            subtitle: "Mean break length in minutes per day over 14 days"
+          ) {
+            let data = viewModel.breakDailyAggregates(days: 14)
+            SelectableChartFactory.dailyChart(
+              data: data,
+              xValue: \.date,
+              yValue: { data in
+                guard data.breaksCount > 0 else { return 0 }
+                return data.totalBreakDuration / Double(data.breaksCount) / 60.0
+              }
+            ) { item in
+              let avgDuration =
+                item.breaksCount > 0 ? item.totalBreakDuration / Double(item.breaksCount) / 60.0 : 0
+              LineMark(
+                x: .value("Date", item.date),
+                y: .value("Minutes", avgDuration)
+              )
+              .foregroundStyle(.purple)
+              AreaMark(
+                x: .value("Date", item.date),
+                y: .value("Minutes", avgDuration)
+              )
+              .foregroundStyle(.purple.opacity(0.2))
+            } annotationValue: { selectedData in
+              guard let data = selectedData, data.breaksCount > 0 else { return "0 min" }
+              let avgDuration = data.totalBreakDuration / Double(data.breaksCount) / 60.0
+              return "\(Int(round(avgDuration))) min avg"
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: .dateTime.month().day())
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(
+            title: "Break Start Times",
+            subtitle:
+              "When you typically start breaks by hour of day over 14 days"
+          ) {
+            let data = viewModel.breakStartHourlyAggregates(days: 14)
+            SelectableChartFactory.hourlyChart(
+              data: data,
+              xValue: \.hour,
+              yValue: { Double($0.breaksStarted) }
+            ) { item in
+              BarMark(
+                x: .value("Hour", item.hour),
+                y: .value("Breaks", item.breaksStarted)
+              )
+              .foregroundStyle(.purple)
+            } annotationValue: { selectedData in
+              "\(selectedData?.breaksStarted ?? 0) breaks started"
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                AxisGridLine()
+                AxisTick()
+                if let hour = value.as(Int.self) {
+                  AxisValueLabel(formatHourShort(hour))
+                }
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(
+            title: "Break End Times",
+            subtitle:
+              "When you typically end breaks by hour of day over 14 days"
+          ) {
+            let data = viewModel.breakEndHourlyAggregates(days: 14)
+            SelectableChartFactory.hourlyChart(
+              data: data,
+              xValue: \.hour,
+              yValue: { Double($0.breaksEnded) }
+            ) { item in
+              BarMark(
+                x: .value("Hour", item.hour),
+                y: .value("Breaks", item.breaksEnded)
+              )
+              .foregroundStyle(.purple.opacity(0.7))
+            } annotationValue: { selectedData in
+              "\(selectedData?.breaksEnded ?? 0) breaks ended"
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                AxisGridLine()
+                AxisTick()
+                if let hour = value.as(Int.self) {
+                  AxisValueLabel(formatHourShort(hour))
+                }
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+        }
+
+        VStack(alignment: .leading, spacing: 16) {
           SectionTitle("Time of Day")
 
-          ChartCard(title: "Sessions Started by Hour", subtitle: "Last 14 days") {
+          ChartCard(
+            title: "Sessions Started by Hour",
+            subtitle:
+              "When you typically begin focus sessions by hour over 14 days"
+          ) {
             let data = viewModel.hourlyAggregates(days: 14)
             SelectableChartFactory.hourlyChart(
               data: data,
@@ -202,7 +360,11 @@ struct ProfileInsightsView: View {
             }
           }
 
-          ChartCard(title: "Average Session by Hour", subtitle: "Last 14 days") {
+          ChartCard(
+            title: "Average Session by Hour",
+            subtitle:
+              "Mean session duration in minutes by hour over 14 days"
+          ) {
             let data = viewModel.hourlyAggregates(days: 14)
             SelectableChartFactory.hourlyChart(
               data: data,
@@ -221,6 +383,39 @@ struct ProfileInsightsView: View {
               .foregroundStyle(.green.opacity(0.2))
             } annotationValue: { selectedData in
               "\(Int(round(((selectedData?.averageSessionDuration ?? 0) / 60.0)))) min"
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 6)) { value in
+                AxisGridLine()
+                AxisTick()
+                if let hour = value.as(Int.self) {
+                  AxisValueLabel(formatHourShort(hour))
+                }
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(
+            title: "Session End Times",
+            subtitle:
+              "When you typically complete focus sessions by hour over 14 days"
+          ) {
+            let data = viewModel.sessionEndHourlyAggregates(days: 14)
+            SelectableChartFactory.hourlyChart(
+              data: data,
+              xValue: \.hour,
+              yValue: { Double($0.sessionsEnded) }
+            ) { item in
+              BarMark(
+                x: .value("Hour", item.hour),
+                y: .value("Sessions", item.sessionsEnded)
+              )
+              .foregroundStyle(.red)
+            } annotationValue: { selectedData in
+              "\(selectedData?.sessionsEnded ?? 0) sessions ended"
             }
             .chartXAxis {
               AxisMarks(values: .automatic(desiredCount: 6)) { value in
