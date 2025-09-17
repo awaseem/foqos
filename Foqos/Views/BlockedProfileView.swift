@@ -337,6 +337,12 @@ struct BlockedProfileView: View {
 
         if isEditing, let validProfile = profile {
           BlockedProfileStats(profile: validProfile)
+
+          Section("Insights") {
+            NavigationLink("Profile Insights") {
+              ProfileInsightsView(profile: validProfile)
+            }
+          }
         }
       }
       .onChange(of: enableAllowMode) {
