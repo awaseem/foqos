@@ -219,38 +219,6 @@ class ProfileInsightsUtil: ObservableObject {
     return results
   }
 
-  func mostProductiveHours(count: Int = 3, days: Int = 30) -> [Int] {
-    let hourly = hourlyAggregates(days: days)
-    let ranked = hourly.sorted { $0.sessionsStarted > $1.sessionsStarted }
-    return Array(ranked.prefix(max(0, count))).map { $0.hour }
-  }
-
-  func peakFocusHours(count: Int = 3, days: Int = 30) -> [Int] {
-    let hourly = hourlyAggregates(days: days)
-    let ranked = hourly.sorted { $0.averageSessionDuration ?? 0 > $1.averageSessionDuration ?? 0 }
-    return Array(ranked.prefix(max(0, count))).map { $0.hour }
-  }
-
-  func bestFocusWeekday(in days: Int = 60) -> (weekday: Int, totalFocus: TimeInterval)? {
-    let calendar = Calendar.current
-    let end = calendar.startOfDay(for: Date())
-    guard calendar.date(byAdding: .day, value: -days, to: end) != nil else { return nil }
-    var totals: [Int: TimeInterval] = [:]
-    for agg in dailyAggregates(days: days, endingOn: end) {
-      let weekday = calendar.component(.weekday, from: agg.date)
-      totals[weekday, default: 0] += agg.focusDuration
-    }
-    guard let best = totals.max(by: { $0.value < $1.value }) else { return nil }
-    return (weekday: best.key, totalFocus: best.value)
-  }
-
-  func averageDailyFocusTime(days: Int = 14, endingOn end: Date = Date()) -> TimeInterval? {
-    let aggs = dailyAggregates(days: days, endingOn: end)
-    guard !aggs.isEmpty else { return nil }
-    let total = aggs.reduce(0) { $0 + $1.focusDuration }
-    return total / Double(aggs.count)
-  }
-
   func currentStreakDays() -> Int {
     let calendar = Calendar.current
     let today = calendar.startOfDay(for: Date())

@@ -134,51 +134,6 @@ struct ProfileInsightsView: View {
         }
 
         VStack(alignment: .leading, spacing: 8) {
-          SectionTitle("Highlights")
-
-          let best = viewModel.bestFocusWeekday(in: 60)
-          let avgDaily = viewModel.averageDailyFocusTime(days: 14)
-          let mostProductive = viewModel.mostProductiveHours(count: 3, days: 30)
-          let peakFocus = viewModel.peakFocusHours(count: 3, days: 30)
-          MultiStatCard(
-            stats: [
-              .init(
-                title: "Best Focus Day",
-                valueText: {
-                  if let best = best {
-                    let day = weekdayName(for: best.weekday, short: true)
-                    return day + " · " + viewModel.formattedDuration(best.totalFocus)
-                  } else {
-                    return "—"
-                  }
-                }(),
-                systemImageName: "calendar",
-                iconColor: .purple
-              ),
-              .init(
-                title: "Avg Daily Focus (14d)",
-                valueText: viewModel.formattedDuration(avgDaily),
-                systemImageName: "clock.badge.checkmark",
-                iconColor: .teal
-              ),
-              .init(
-                title: "Most Productive Hours",
-                valueText: mostProductive.isEmpty ? "—" : listHoursShort(mostProductive),
-                systemImageName: "clock",
-                iconColor: .indigo
-              ),
-              .init(
-                title: "Peak Focus Hours",
-                valueText: peakFocus.isEmpty ? "—" : listHoursShort(peakFocus),
-                systemImageName: "chart.line.uptrend.xyaxis",
-                iconColor: .pink
-              ),
-            ],
-            columns: 1
-          )
-        }
-
-        VStack(alignment: .leading, spacing: 8) {
           SectionTitle("Time of Day")
 
           ChartCard(title: "Sessions Started by Hour", subtitle: "Last 14 days") {
@@ -281,12 +236,6 @@ struct ProfileInsightsView: View {
 }
 
 extension ProfileInsightsView {
-  private func weekdayName(for weekdayIndex: Int, short: Bool = true) -> String {
-    let symbols = short ? Calendar.current.shortWeekdaySymbols : Calendar.current.weekdaySymbols
-    let safeIndex = max(1, min(7, weekdayIndex)) - 1
-    return symbols[safeIndex]
-  }
-
   private func formatHourShort(_ hour: Int) -> String {
     var comps = DateComponents()
     comps.hour = max(0, min(23, hour))
@@ -295,10 +244,5 @@ extension ProfileInsightsView {
     let formatter = DateFormatter()
     formatter.dateFormat = "ha"
     return formatter.string(from: date).lowercased()
-  }
-
-  private func listHoursShort(_ hours: [Int]) -> String {
-    let labels = hours.map { formatHourShort($0) }
-    return labels.joined(separator: ", ")
   }
 }
