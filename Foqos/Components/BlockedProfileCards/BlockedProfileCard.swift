@@ -13,6 +13,7 @@ struct BlockedProfileCard: View {
   var onStartTapped: () -> Void
   var onStopTapped: () -> Void
   var onEditTapped: () -> Void
+  var onStatsTapped: () -> Void = {}
   var onBreakTapped: () -> Void
 
   // Keep a reference to the CardBackground to access color
@@ -54,15 +55,25 @@ struct BlockedProfileCard: View {
 
           Spacer()
 
-          // Edit button moved to top right
-          Button(action: {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            onEditTapped()
-          }) {
-            Image(systemName: "pencil")
+          // Menu button moved to top right
+          Menu {
+            Button(action: {
+              UIImpactFeedbackGenerator(style: .light).impactOccurred()
+              onEditTapped()
+            }) {
+              Label("Edit", systemImage: "pencil")
+            }
+            Button(action: {
+              UIImpactFeedbackGenerator(style: .light).impactOccurred()
+              onStatsTapped()
+            }) {
+              Label("Stats for Nerds", systemImage: "eyeglasses")
+            }
+          } label: {
+            Image(systemName: "ellipsis")
               .font(.system(size: 14, weight: .medium))
               .foregroundColor(.primary)
-              .padding(8)
+              .padding(10)
               .background(
                 Circle()
                   .fill(.thinMaterial)

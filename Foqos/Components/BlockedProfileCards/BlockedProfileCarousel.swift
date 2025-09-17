@@ -12,6 +12,7 @@ struct BlockedProfileCarousel: View {
   var onStartTapped: (BlockedProfiles) -> Void
   var onStopTapped: (BlockedProfiles) -> Void
   var onEditTapped: (BlockedProfiles) -> Void
+  var onStatsTapped: (BlockedProfiles) -> Void
   var onBreakTapped: (BlockedProfiles) -> Void
   var onManageTapped: () -> Void
   var onEmergencyTapped: () -> Void
@@ -53,6 +54,7 @@ struct BlockedProfileCarousel: View {
     onStartTapped: @escaping (BlockedProfiles) -> Void,
     onStopTapped: @escaping (BlockedProfiles) -> Void,
     onEditTapped: @escaping (BlockedProfiles) -> Void,
+    onStatsTapped: @escaping (BlockedProfiles) -> Void,
     onBreakTapped: @escaping (BlockedProfiles) -> Void,
     onManageTapped: @escaping () -> Void,
     onEmergencyTapped: @escaping () -> Void
@@ -66,6 +68,7 @@ struct BlockedProfileCarousel: View {
     self.onStartTapped = onStartTapped
     self.onStopTapped = onStopTapped
     self.onEditTapped = onEditTapped
+    self.onStatsTapped = onStatsTapped
     self.onBreakTapped = onBreakTapped
     self.onManageTapped = onManageTapped
     self.onEmergencyTapped = onEmergencyTapped
@@ -123,6 +126,9 @@ struct BlockedProfileCarousel: View {
                   },
                   onEditTapped: {
                     onEditTapped(profiles[index])
+                  },
+                  onStatsTapped: {
+                    onStatsTapped(profiles[index])
                   },
                   onBreakTapped: {
                     onBreakTapped(profiles[index])
@@ -264,6 +270,7 @@ struct BlockedProfileCarousel: View {
       onStartTapped: { _ in },
       onStopTapped: { _ in },
       onEditTapped: { _ in },
+      onStatsTapped: { _ in },
       onBreakTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
@@ -310,6 +317,7 @@ struct BlockedProfileCarousel: View {
       onStartTapped: { _ in },
       onStopTapped: { _ in },
       onEditTapped: { _ in },
+      onStatsTapped: { _ in },
       onBreakTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}

@@ -27,6 +27,9 @@ struct HomeView: View {
   // Edit profile
   @State private var profileToEdit: BlockedProfiles? = nil
 
+  // Stats sheet
+  @State private var profileToShowStats: BlockedProfiles? = nil
+
   // Donation View
   @State private var showDonationView = false
 
@@ -113,6 +116,9 @@ struct HomeView: View {
             onEditTapped: { profile in
               profileToEdit = profile
             },
+            onStatsTapped: { profile in
+              profileToShowStats = profile
+            },
             onBreakTapped: { _ in
               strategyManager.toggleBreak()
             },
@@ -190,6 +196,9 @@ struct HomeView: View {
       }.interactiveDismissDisabled()
     }.sheet(item: $profileToEdit) { profile in
       BlockedProfileView(profile: profile)
+    }
+    .sheet(item: $profileToShowStats) { profile in
+      ProfileInsightsView(profile: profile)
     }
     .sheet(
       isPresented: $showNewProfileView,
