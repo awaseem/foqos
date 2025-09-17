@@ -9,57 +9,47 @@ struct ProfileInsightsView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
-        SectionTitle("Insights")
+      VStack(alignment: .leading, spacing: 8) {
+        SectionTitle("Session")
 
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack(spacing: 16) {
-            StatCard(
+        MultiStatCard(
+          stats: [
+            .init(
               title: "Total Focus Time",
               valueText: viewModel.formattedDuration(viewModel.metrics.totalFocusTime),
-              subtitleText: "All time",
               systemImageName: "clock",
-              iconColor: .blue
-            )
-            .frame(width: 260)
-
-            StatCard(
+              iconColor: .orange
+            ),
+            .init(
               title: "Average Session",
               valueText: viewModel.formattedDuration(viewModel.metrics.averageSessionDuration),
               systemImageName: "chart.bar",
-              iconColor: .purple
-            )
-            .frame(width: 260)
-
-            StatCard(
+              iconColor: .orange
+            ),
+            .init(
               title: "Longest Session",
               valueText: viewModel.formattedDuration(viewModel.metrics.longestSessionDuration),
               systemImageName: "timer",
-              iconColor: .green
-            )
-            .frame(width: 260)
-
-            StatCard(
+              iconColor: .orange
+            ),
+            .init(
               title: "Shortest Session",
               valueText: viewModel.formattedDuration(viewModel.metrics.shortestSessionDuration),
               systemImageName: "hourglass",
               iconColor: .orange
-            )
-            .frame(width: 260)
-
-            StatCard(
+            ),
+            .init(
               title: "Total Sessions",
               valueText: String(viewModel.metrics.totalCompletedSessions),
               systemImageName: "list.number",
-              iconColor: .blue
-            )
-            .frame(width: 260)
-          }
-          .padding(.vertical, 4)
-        }
+              iconColor: .orange
+            ),
+          ],
+          columns: 2
+        )
       }
-      .padding(.horizontal)
-      .padding(.top, 16)
+      .padding(.horizontal, 20)
+      .padding(.vertical, 16)
     }
     .background(Color(.systemGroupedBackground).ignoresSafeArea())
     .navigationTitle("\(viewModel.profile.name) Insights")

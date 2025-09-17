@@ -52,7 +52,9 @@ struct StatCard: View {
       }
       .padding(16)
     }
+    .frame(maxWidth: .infinity)
     .frame(height: 120)
+    .padding(.horizontal)
   }
 }
 
