@@ -174,6 +174,13 @@ class ProfileInsightsUtil: ObservableObject {
     return (weekday: best.key, totalFocus: best.value)
   }
 
+  func averageDailyFocusTime(days: Int = 14, endingOn end: Date = Date()) -> TimeInterval? {
+    let aggs = dailyAggregates(days: days, endingOn: end)
+    guard !aggs.isEmpty else { return nil }
+    let total = aggs.reduce(0) { $0 + $1.focusDuration }
+    return total / Double(aggs.count)
+  }
+
   func currentStreakDays() -> Int {
     let calendar = Calendar.current
     let today = calendar.startOfDay(for: Date())

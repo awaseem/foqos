@@ -103,6 +103,37 @@ struct ProfileInsightsView: View {
         }
 
         VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Highlights")
+
+          let best = viewModel.bestFocusWeekday(in: 60)
+          let avgDaily = viewModel.averageDailyFocusTime(days: 14)
+          MultiStatCard(
+            stats: [
+              .init(
+                title: "Best Focus Day",
+                valueText: {
+                  if let best = best {
+                    let day = weekdayName(for: best.weekday, short: true)
+                    return day + " · " + viewModel.formattedDuration(best.totalFocus)
+                  } else {
+                    return "—"
+                  }
+                }(),
+                systemImageName: "calendar",
+                iconColor: .purple
+              ),
+              .init(
+                title: "Avg Daily Focus (14d)",
+                valueText: viewModel.formattedDuration(avgDaily),
+                systemImageName: "clock.badge.checkmark",
+                iconColor: .teal
+              ),
+            ],
+            columns: 1
+          )
+        }
+
+        VStack(alignment: .leading, spacing: 8) {
           SectionTitle("Break Behavior")
 
           MultiStatCard(
@@ -147,4 +178,12 @@ struct ProfileInsightsView: View {
 #Preview {
   let profile = BlockedProfiles(name: "Focus")
   ProfileInsightsView(profile: profile)
+}
+
+extension ProfileInsightsView {
+  private func weekdayName(for weekdayIndex: Int, short: Bool = true) -> String {
+    let symbols = short ? Calendar.current.shortWeekdaySymbols : Calendar.current.weekdaySymbols
+    let safeIndex = max(1, min(7, weekdayIndex)) - 1
+    return symbols[safeIndex]
+  }
 }
