@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct ProfileInsightsView: View {
@@ -48,6 +49,57 @@ struct ProfileInsightsView: View {
             ],
             columns: 2
           )
+        }
+
+        VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Daily Patterns")
+
+          ChartCard(title: "Sessions per Day", subtitle: "Last 14 days") {
+            let data = viewModel.dailyAggregates(days: 14)
+            Chart(data) { item in
+              BarMark(
+                x: .value("Date", item.date),
+                y: .value("Sessions", item.sessionsCount)
+              )
+              .foregroundStyle(.blue)
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: .dateTime.month().day())
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
+
+          ChartCard(title: "Focus Time Trend", subtitle: "Last 14 days") {
+            let data = viewModel.dailyAggregates(days: 14)
+            Chart(data) { item in
+              LineMark(
+                x: .value("Date", item.date),
+                y: .value("Minutes", item.focusDuration / 60.0)
+              )
+              .foregroundStyle(.green)
+              AreaMark(
+                x: .value("Date", item.date),
+                y: .value("Minutes", item.focusDuration / 60.0)
+              )
+              .foregroundStyle(.green.opacity(0.2))
+            }
+            .chartXAxis {
+              AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: .dateTime.month().day())
+              }
+            }
+            .chartYAxis {
+              AxisMarks(position: .leading)
+            }
+          }
         }
 
         VStack(alignment: .leading, spacing: 8) {
