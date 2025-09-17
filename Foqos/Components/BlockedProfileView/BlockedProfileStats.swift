@@ -3,73 +3,42 @@ import SwiftUI
 struct BlockedProfileStats: View {
   var profile: BlockedProfiles
 
+  private var profileIdShort: String {
+    String(profile.id.uuidString.prefix(8))
+  }
+
+  private var statsItems: [MultiStatCard.StatItem] {
+    var items: [MultiStatCard.StatItem] = [
+      .init(
+        title: "Profile ID", valueText: profileIdShort, systemImageName: "tag", iconColor: .gray),
+      .init(
+        title: "Created", valueText: profile.createdAt.formatted(), systemImageName: "calendar",
+        iconColor: .blue),
+      .init(
+        title: "Last Modified", valueText: profile.updatedAt.formatted(), systemImageName: "clock",
+        iconColor: .purple),
+      .init(
+        title: "Total Sessions", valueText: "\(profile.sessions.count)",
+        systemImageName: "list.number", iconColor: .green),
+      .init(
+        title: "Categories Blocked", valueText: "\(profile.selectedActivity.categories.count)",
+        systemImageName: "square.grid.2x2", iconColor: .orange),
+      .init(
+        title: "Apps Blocked", valueText: "\(profile.selectedActivity.applications.count)",
+        systemImageName: "app", iconColor: .pink),
+    ]
+    if let active = profile.activeDeviceActivity {
+      items.append(
+        .init(
+          title: "Active Device Activity", valueText: active.rawValue, systemImageName: "bolt.fill",
+          iconColor: .yellow))
+    }
+    return items
+  }
+
   var body: some View {
     Section("Stats for Nerds") {
-      // Profile ID
-      HStack {
-        Text("Profile ID")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text(profile.id.uuidString)
-          .truncationMode(.tail)
-          .foregroundStyle(.gray)
-      }
-
-      // Created Date
-      HStack {
-        Text("Created")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text(profile.createdAt.formatted())
-          .foregroundStyle(.gray)
-      }
-
-      // Last Modified
-      HStack {
-        Text("Last Modified")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text(profile.updatedAt.formatted())
-          .foregroundStyle(.gray)
-      }
-
-      // Total Sessions
-      HStack {
-        Text("Total Sessions")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text("\(profile.sessions.count)")
-          .foregroundStyle(.gray)
-      }
-
-      // Selected Restrictions Details
-      HStack {
-        Text("Categories Blocked")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text("\(profile.selectedActivity.categories.count)")
-          .foregroundStyle(.gray)
-      }
-
-      HStack {
-        Text("Apps Blocked")
-          .foregroundStyle(.gray)
-        Spacer()
-        Text("\(profile.selectedActivity.applications.count)")
-          .foregroundStyle(.gray)
-      }
-
-      // Active Device Activity
-
-      if let activeDeviceActivity = profile.activeDeviceActivity {
-        HStack {
-          Text("Active Device Activity")
-            .foregroundStyle(.gray)
-          Spacer()
-          Text(activeDeviceActivity.rawValue)
-            .foregroundStyle(.gray)
-        }
-      }
+      MultiStatCard(stats: statsItems, columns: 2)
     }
   }
 }

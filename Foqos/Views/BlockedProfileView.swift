@@ -298,9 +298,6 @@ struct BlockedProfileView: View {
           }
         }
 
-        if isEditing, let validProfile = profile {
-          BlockedProfileStats(profile: validProfile)
-        }
       }
       .onChange(of: enableAllowMode) {
         _,

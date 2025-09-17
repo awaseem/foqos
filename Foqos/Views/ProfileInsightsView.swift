@@ -431,6 +431,14 @@ struct ProfileInsightsView: View {
             }
           }
         }
+        VStack(alignment: .leading, spacing: 8) {
+          SectionTitle("Details")
+
+          MultiStatCard(
+            stats: nerdStatsItems,
+            columns: 2
+          )
+        }
       }
       .padding(.horizontal, 20)
       .padding(.vertical, 16)
@@ -454,5 +462,40 @@ extension ProfileInsightsView {
     let formatter = DateFormatter()
     formatter.dateFormat = "ha"
     return formatter.string(from: date).lowercased()
+  }
+
+  private var nerdStatsItems: [MultiStatCard.StatItem] {
+    let profile = viewModel.profile
+    let profileIdShort = String(profile.id.uuidString.prefix(8))
+
+    var items: [MultiStatCard.StatItem] = [
+      .init(
+        title: "Profile ID", valueText: profileIdShort, systemImageName: "tag", iconColor: .gray),
+      .init(
+        title: "Created", valueText: profile.createdAt.formatted(), systemImageName: "calendar",
+        iconColor: .gray),
+      .init(
+        title: "Last Modified", valueText: profile.updatedAt.formatted(), systemImageName: "clock",
+        iconColor: .gray),
+      .init(
+        title: "Total Sessions", valueText: "\(profile.sessions.count)",
+        systemImageName: "list.number", iconColor: .gray),
+      .init(
+        title: "Categories Blocked", valueText: "\(profile.selectedActivity.categories.count)",
+        systemImageName: "square.grid.2x2", iconColor: .gray),
+      .init(
+        title: "Apps Blocked", valueText: "\(profile.selectedActivity.applications.count)",
+        systemImageName: "app", iconColor: .gray),
+    ]
+
+    if let active = profile.activeDeviceActivity {
+      items.append(
+        .init(
+          title: "Active Device Activity", valueText: String(active.rawValue.prefix(8)),
+          systemImageName: "bolt.fill",
+          iconColor: .gray))
+    }
+
+    return items
   }
 }
