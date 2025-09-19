@@ -42,6 +42,8 @@ struct CardBackground: View {
                   .mask(MetaballMaskView(blobs: blobs, t: t))
                   .opacity(0.9)
               }
+              .allowsHitTesting(false)
+              .drawingGroup()
             } else {
               // Default single circle for inactive state
               Circle()
@@ -52,6 +54,7 @@ struct CardBackground: View {
                   y: geometry.size.height / 2
                 )
                 .blur(radius: 15)
+                .allowsHitTesting(false)
             }
           }
         }
