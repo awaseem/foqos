@@ -23,6 +23,7 @@ struct MultiStatCard: View {
             Image(systemName: stat.systemImageName)
               .font(.system(size: 20, weight: .semibold))
               .foregroundStyle(stat.iconColor)
+              .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 4) {
               Text(stat.title)
