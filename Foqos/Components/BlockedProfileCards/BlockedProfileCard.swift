@@ -69,6 +69,24 @@ struct BlockedProfileCard: View {
             }) {
               Label("Stats for Nerds", systemImage: "eyeglasses")
             }
+
+            Divider()
+
+            if isActive {
+              Button(action: {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onStopTapped()
+              }) {
+                Label("Stop", systemImage: "stop.fill")
+              }
+            } else {
+              Button(action: {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onStartTapped()
+              }) {
+                Label("Start", systemImage: "play.fill")
+              }
+            }
           } label: {
             Image(systemName: "ellipsis")
               .font(.system(size: 14, weight: .medium))
