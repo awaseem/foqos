@@ -99,7 +99,12 @@ struct SelectableChartFactory {
               .font(.caption)
           }
           .padding(6)
-          .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+          .background(Color(UIColor.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+          .overlay(
+            RoundedRectangle(cornerRadius: 6)
+              .stroke(Color(UIColor.separator), lineWidth: 0.5)
+          )
+          .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
       }
     )
@@ -125,7 +130,12 @@ struct SelectableChartFactory {
               .font(.caption)
           }
           .padding(6)
-          .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+          .background(Color(UIColor.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+          .overlay(
+            RoundedRectangle(cornerRadius: 6)
+              .stroke(Color(UIColor.separator), lineWidth: 0.5)
+          )
+          .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
       }
     )
