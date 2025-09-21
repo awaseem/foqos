@@ -34,7 +34,21 @@ struct LabeledCodeScannerView: View {
 
       if isShowingScanner {
         CodeScannerView(
-          codeTypes: [.qr],
+          codeTypes: [
+            .aztec,
+            .code128,
+            .code39,
+            .code39Mod43,
+            .code93,
+            .ean8,
+            .ean13,
+            .interleaved2of5,
+            .itf14,
+            .pdf417,
+            .upce,
+            .qr,
+            .dataMatrix,
+          ],
           showViewfinder: true, shouldVibrateOnSuccess: true, completion: handleScanResult
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
