@@ -20,7 +20,7 @@ struct StrategyRow: View {
           Text(strategy.description)
             .font(.subheadline)
             .foregroundColor(.secondary)
-            .lineLimit(2)
+            .lineLimit(3)
         }
         .padding(.vertical, 8)
 

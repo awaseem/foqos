@@ -27,8 +27,9 @@ struct BlockedProfilePhysicalUnblockSelector: View {
 
         // QR Code Column
         PhysicalUnblockColumn(
-          title: "QR Code",
-          description: "Set a specific QR code that can only unblock this profile when active",
+          title: "QR/Barcode Code",
+          description:
+            "Set a specific QR/Barcode code that can only unblock this profile when active",
           systemImage: "qrcode.viewfinder",
           id: qrCodeId,
           disabled: disabled,
