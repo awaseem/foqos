@@ -121,7 +121,8 @@ struct PhysicalUnblockColumn: View {
 
           PhysicalUnblockColumn(
             title: "QR Code",
-            description: "Set a specific QR code that can only unblock this profile when active",
+            description:
+              "Set a specific QR/Barcode code that can only unblock this profile when active",
             systemImage: "qrcode",
             id: nil,
             disabled: false,
@@ -145,7 +146,8 @@ struct PhysicalUnblockColumn: View {
 
           PhysicalUnblockColumn(
             title: "QR Code",
-            description: "Set a specific QR code that can only unblock this profile when active",
+            description:
+              "Set a specific QR/Barcode code that can only unblock this profile when active",
             systemImage: "qrcode",
             id: "qr_abcdefghijklmnopqrstuvwxyz",
             disabled: false,

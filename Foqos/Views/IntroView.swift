@@ -36,7 +36,8 @@ struct IntroView: View {
           explanationSection(
             icon: "list.star",
             title: "Options for Focus",
-            description: "Use QR codes and even manually trigger profiles to help you stay focused"
+            description:
+              "Use QR/Barcode codes and even manually trigger profiles to help you stay focused"
           )
 
           explanationSection(

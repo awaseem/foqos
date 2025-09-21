@@ -22,7 +22,7 @@ class PhysicalReader {
   ) -> some View {
     return LabeledCodeScannerView(
       heading: "Scan to set",
-      subtitle: "Point your camera at a QR code to set a physical unblock."
+      subtitle: "Point your camera at a QR/Barcode code to set a physical unblock."
     ) { result in
       switch result {
       case .success(let scanResult):
