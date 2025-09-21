@@ -65,9 +65,12 @@ struct QRCodeView: View {
       .padding()
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Done") {
+        ToolbarItem(placement: .navigationBarLeading) {
+          Button {
             dismiss()
+          } label: {
+            Image(systemName: "xmark")
+              .foregroundColor(.primary)
           }
         }
       }
