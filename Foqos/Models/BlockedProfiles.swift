@@ -16,6 +16,7 @@ class BlockedProfiles {
 
   var enableLiveActivity: Bool = false
   var reminderTimeInSeconds: UInt32?
+  var customReminderMessage: String
   var enableBreaks: Bool = false
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
@@ -45,6 +46,7 @@ class BlockedProfiles {
     blockingStrategyId: String = NFCBlockingStrategy.id,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
+    customReminderMessage: String = "",
     enableBreaks: Bool = false,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
@@ -66,6 +68,7 @@ class BlockedProfiles {
 
     self.enableLiveActivity = enableLiveActivity
     self.reminderTimeInSeconds = reminderTimeInSeconds
+    self.customReminderMessage = customReminderMessage
     self.enableLiveActivity = enableLiveActivity
     self.enableBreaks = enableBreaks
     self.enableStrictMode = enableStrictMode
@@ -117,6 +120,7 @@ class BlockedProfiles {
     blockingStrategyId: String? = nil,
     enableLiveActivity: Bool? = nil,
     reminderTime: UInt32? = nil,
+    customReminderMessage: String = "",
     enableBreaks: Bool? = nil,
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
@@ -181,7 +185,7 @@ class BlockedProfiles {
     profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
 
     profile.reminderTimeInSeconds = reminderTime
-
+    profile.customReminderMessage = customReminderMessage
     profile.updatedAt = Date()
 
     // Update the snapshot
@@ -242,6 +246,7 @@ class BlockedProfiles {
       order: profile.order,
       enableLiveActivity: profile.enableLiveActivity,
       reminderTimeInSeconds: profile.reminderTimeInSeconds,
+      customReminderMessage: profile.customReminderMessage,
       enableBreaks: profile.enableBreaks,
       enableStrictMode: profile.enableStrictMode,
       enableAllowMode: profile.enableAllowMode,
@@ -291,6 +296,7 @@ class BlockedProfiles {
     blockingStrategyId: String = NFCBlockingStrategy.id,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
+    customReminderMessage: String = "",
     enableBreaks: Bool = false,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
@@ -309,6 +315,7 @@ class BlockedProfiles {
       blockingStrategyId: blockingStrategyId,
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeInSeconds,
+      customReminderMessage: customReminderMessage,
       enableBreaks: enableBreaks,
       enableStrictMode: enableStrictMode,
       enableAllowMode: enableAllowMode,
@@ -344,6 +351,7 @@ class BlockedProfiles {
       blockingStrategyId: source.blockingStrategyId ?? NFCBlockingStrategy.id,
       enableLiveActivity: source.enableLiveActivity,
       reminderTimeInSeconds: source.reminderTimeInSeconds,
+      customReminderMessage: source.customReminderMessage,
       enableBreaks: source.enableBreaks,
       enableStrictMode: source.enableStrictMode,
       enableAllowMode: source.enableAllowMode,

@@ -19,6 +19,7 @@ struct BlockedProfileView: View {
   @State private var enableBreaks: Bool = false
   @State private var enableStrictMode: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
+  @State private var customReminderMessage: String
   @State private var enableAllowMode: Bool = false
   @State private var enableAllowModeDomain: Bool = false
   @State private var disableBackgroundStops: Bool = false
@@ -57,6 +58,8 @@ struct BlockedProfileView: View {
 
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
+
+  @FocusState private var isReminderMessageTextFieldFocused: Bool // flag to decide whether to show or hide text field clear button
 
   private let physicalReader: PhysicalReader = PhysicalReader()
 
@@ -97,6 +100,9 @@ struct BlockedProfileView: View {
     )
     _reminderTimeInMinutes = State(
       initialValue: Int(profile?.reminderTimeInSeconds ?? 900) / 60
+    )
+    _customReminderMessage = State(
+      initialValue: profile?.customReminderMessage ?? ""
     )
     _domains = State(
       initialValue: profile?.domains ?? []
@@ -281,7 +287,35 @@ struct BlockedProfileView: View {
               Text("minutes")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            }.padding(.top)
+            }
+            HStack {
+              Text("Reminder message")
+              TextField(
+                "Reminder message", // TextField title used for accessibility/VoiceOver
+                text: $customReminderMessage,
+                prompt: Text(strategyManager.defaultReminderMessage(forProfile: profile))
+              )
+              .disabled(isBlocking)
+              .font(.subheadline)
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.trailing)
+              .focused($isReminderMessageTextFieldFocused) // field focus flag set to show/hide the clear button
+
+              // Add a text field clear button unless the message is empty, nil or notifications are blocked
+              if isReminderMessageTextFieldFocused &&
+                  !customReminderMessage.isEmpty &&
+                  !isBlocking {
+                Button {
+                  customReminderMessage = ""
+                } label: {
+                  Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 4)
+                .accessibilityLabel("Clear reminder message")
+              }
+            }
           }
 
           if !isBlocking {
@@ -478,6 +512,7 @@ struct BlockedProfileView: View {
           blockingStrategyId: selectedStrategy?.getIdentifier(),
           enableLiveActivity: enableLiveActivity,
           reminderTime: reminderTimeSeconds,
+          customReminderMessage: customReminderMessage,
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
@@ -500,6 +535,7 @@ struct BlockedProfileView: View {
             .getIdentifier() ?? NFCBlockingStrategy.id,
           enableLiveActivity: enableLiveActivity,
           reminderTimeInSeconds: reminderTimeSeconds,
+          customReminderMessage: customReminderMessage,
           enableBreaks: enableBreaks,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,

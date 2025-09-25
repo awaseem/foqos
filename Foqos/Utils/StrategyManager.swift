@@ -40,6 +40,14 @@ class StrategyManager: ObservableObject {
     return activeSession?.isBreakAvailable ?? false
   }
 
+  func defaultReminderMessage(forProfile profile: BlockedProfiles?) -> String {
+    let baseMessage = "Get back to productivity"
+    guard let profile, !profile.isDeleted else {
+      return baseMessage
+    }
+    return baseMessage + " by enabling \(profile.name)"
+  }
+
   func loadActiveSession(context: ModelContext) {
     activeSession = getActiveSession(context: context)
 
@@ -479,7 +487,7 @@ class StrategyManager: ObservableObject {
     timersUtil
       .scheduleNotification(
         title: profileName + " time!",
-        message: "Get back to productivity by enabling " + profileName,
+        message: profile.customReminderMessage.isEmpty ? defaultReminderMessage(forProfile: profile) : profile.customReminderMessage,
         seconds: TimeInterval(reminderTimeInSeconds)
       )
   }

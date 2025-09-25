@@ -25,6 +25,7 @@ enum SharedData {
 
     var enableLiveActivity: Bool
     var reminderTimeInSeconds: UInt32?
+    var customReminderMessage: String?
     var enableBreaks: Bool
     var enableStrictMode: Bool
     var enableAllowMode: Bool
