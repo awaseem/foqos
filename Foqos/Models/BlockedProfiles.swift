@@ -16,7 +16,6 @@ class BlockedProfiles {
 
   var enableLiveActivity: Bool = false
   var reminderTimeInSeconds: UInt32?
-  var customReminderMessage: String
   var enableBreaks: Bool = false
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
@@ -30,6 +29,8 @@ class BlockedProfiles {
   var schedule: BlockedProfileSchedule? = nil
 
   var disableBackgroundStops: Bool = false
+
+  var customReminderMessage: String?
 
   @Relationship var sessions: [BlockedProfileSession] = []
 
@@ -46,7 +47,7 @@ class BlockedProfiles {
     blockingStrategyId: String = NFCBlockingStrategy.id,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
-    customReminderMessage: String = "",
+    customReminderMessage: String? = nil,
     enableBreaks: Bool = false,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
@@ -120,7 +121,7 @@ class BlockedProfiles {
     blockingStrategyId: String? = nil,
     enableLiveActivity: Bool? = nil,
     reminderTime: UInt32? = nil,
-    customReminderMessage: String = "",
+    customReminderMessage: String? = nil,
     enableBreaks: Bool? = nil,
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,

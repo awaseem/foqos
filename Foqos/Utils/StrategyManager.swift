@@ -484,11 +484,11 @@ class StrategyManager: ObservableObject {
     }
 
     let profileName = profile.name
+    let message = profile.customReminderMessage ?? defaultReminderMessage(forProfile: profile)
     timersUtil
       .scheduleNotification(
         title: profileName + " time!",
-        message: profile.customReminderMessage.isEmpty
-          ? defaultReminderMessage(forProfile: profile) : profile.customReminderMessage,
+        message: message,
         seconds: TimeInterval(reminderTimeInSeconds)
       )
   }
