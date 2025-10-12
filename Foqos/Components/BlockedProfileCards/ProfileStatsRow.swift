@@ -15,7 +15,7 @@ struct ProfileStatsRow: View {
           .foregroundColor(.secondary)
 
         Text(
-          "\(BlockedProfiles.countSelectedActivities(selectedActivity))"
+          "\(FamilyActivityUtil.countSelectedActivities(selectedActivity))"
         )
         .font(.subheadline)
         .fontWeight(.semibold)

@@ -15,15 +15,19 @@ struct AppPicker: View {
 
   private var title: String {
     let action = allowMode ? "allowed" : "blocked"
-    let count = BlockedProfiles.countSelectedActivities(selection)
+    let displayText = FamilyActivityUtil.getCountDisplayText(selection, allowMode: allowMode)
 
-    return "\(count) \(action)"
+    return "\(displayText) \(action)"
   }
 
   private var message: String {
     return allowMode
-      ? "Up to 50 apps can be allowed. In Allow mode, each app in a category counts as its own individual value."
-      : "Up to 50 apps can be blocked. In Block mode, a single category counts as one value rather than all of its individual apps."
+      ? "Up to 50 apps can be allowed. Categories will expand to include all individual apps within them, which may cause you to reach the 50 app limit faster than expected."
+      : "Up to 50 apps can be blocked. Each category counts as one item toward the 50 limit, regardless of how many apps it contains."
+  }
+
+  private var shouldShowWarning: Bool {
+    return FamilyActivityUtil.shouldShowAllowModeWarning(selection, allowMode: allowMode)
   }
 
   var body: some View {
@@ -47,6 +51,19 @@ struct AppPicker: View {
         Text(message)
           .font(.caption)
           .padding(.horizontal, 16)
+
+        if shouldShowWarning {
+          Text(
+            "⚠️ Warning: You have selected categories in Allow mode. Each app within these categories counts toward the 50 app limit, which may cause you to exceed the limit."
+          )
+          .font(.caption)
+          .foregroundColor(.orange)
+          .padding(.horizontal, 16)
+          .padding(.vertical, 8)
+          .background(Color.orange.opacity(0.1))
+          .cornerRadius(8)
+          .padding(.horizontal, 16)
+        }
 
         Text(
           "Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for a offical fix."

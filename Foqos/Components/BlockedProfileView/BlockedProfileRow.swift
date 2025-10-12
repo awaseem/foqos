@@ -11,7 +11,7 @@ struct ProfileRow: View {
   }
 
   var selectedItemsCount: Int {
-    BlockedProfiles.countSelectedActivities(profile.selectedActivity)
+    FamilyActivityUtil.countSelectedActivities(profile.selectedActivity)
   }
 
   var body: some View {

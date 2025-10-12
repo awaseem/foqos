@@ -13,9 +13,15 @@ struct BlockedProfileAppSelector: View {
   }
 
   private var catAndAppCount: Int {
-    return
-      BlockedProfiles
-      .countSelectedActivities(selection)
+    return FamilyActivityUtil.countSelectedActivities(selection, allowMode: allowMode)
+  }
+
+  private var countDisplayText: String {
+    return FamilyActivityUtil.getCountDisplayText(selection, allowMode: allowMode)
+  }
+
+  private var shouldShowWarning: Bool {
+    return FamilyActivityUtil.shouldShowAllowModeWarning(selection, allowMode: allowMode)
   }
 
   private var buttonText: String {
@@ -45,10 +51,18 @@ struct BlockedProfileAppSelector: View {
       Text("No apps or websites selected")
         .foregroundStyle(.gray)
     } else {
-      Text("\(catAndAppCount) items selected")
-        .font(.footnote)
-        .foregroundStyle(.gray)
-        .padding(.top, 4)
+      VStack(alignment: .leading, spacing: 4) {
+        Text("\(countDisplayText) selected")
+          .font(.footnote)
+          .foregroundStyle(.gray)
+
+        if shouldShowWarning {
+          Text("⚠️ Categories expand to individual apps in Allow mode")
+            .font(.caption)
+            .foregroundColor(.orange)
+        }
+      }
+      .padding(.top, 4)
     }
 
   }

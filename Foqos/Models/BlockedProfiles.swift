@@ -224,13 +224,6 @@ class BlockedProfiles {
     try context.save()
   }
 
-  static func countSelectedActivities(_ selection: FamilyActivitySelection)
-    -> Int
-  {
-    return selection.categories.count + selection.applications.count
-      + selection.webDomains.count
-  }
-
   static func getProfileDeepLink(_ profile: BlockedProfiles) -> String {
     return "https://foqos.app/profile/" + profile.id.uuidString
   }

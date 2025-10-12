@@ -34,9 +34,11 @@ struct BlockedProfileSelector: View {
       VStack(alignment: .leading, spacing: 4) {
         Text(profile.name)
           .font(.headline)
-        Text("\(BlockedProfiles.countSelectedActivities(profile.selectedActivity)) items blocked")
-          .font(.subheadline)
-          .foregroundColor(.secondary)
+        Text(
+          "\(FamilyActivityUtil.countSelectedActivities(profile.selectedActivity)) items blocked"
+        )
+        .font(.subheadline)
+        .foregroundColor(.secondary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
 
