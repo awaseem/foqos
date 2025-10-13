@@ -26,8 +26,6 @@ struct ProfileControlWidget: Widget {
             } else {
               Color.green
             }
-          } else {
-            Color.clear
           }
         }
     }

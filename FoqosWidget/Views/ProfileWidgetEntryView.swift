@@ -5,6 +5,7 @@
 //  Created by Ali Waseem on 2025-03-11.
 //
 
+import AppIntents
 import FamilyControls
 import SwiftUI
 import WidgetKit
@@ -23,7 +24,7 @@ struct ProfileWidgetEntryView: View {
       // Top section: Profile name (left) and hourglass (right)
       HStack {
         Text(entry.profileName ?? "No Profile")
-          .font(.system(size: 12))
+          .font(.system(size: 14))
           .fontWeight(.bold)
           .foregroundColor(shouldUseWhiteText ? .white : .primary)
           .lineLimit(1)
@@ -57,32 +58,17 @@ struct ProfileWidgetEntryView: View {
             .foregroundColor(shouldUseWhiteText ? .white : .secondary)
           }
         } else {
-          if entry.enableQuickLaunch {
-            Button(action: {
-              // TODO: Implement quick launch functionality
-              print("Quick launch button pressed")
-            }) {
-              Text("Launch")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .cornerRadius(8)
-            }
-          } else {
-            Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-              Text("Tap to open")
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-            }
+          Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
+            Text("Tap to open")
+              .font(.caption)
+              .fontWeight(.medium)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
           }
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-      // Bottom section: Blocked count + enabled options count
+      // Bottom section: Blocked count + enabled options count + launch button
       HStack {
         VStack(alignment: .leading, spacing: 2) {
           if let profile = entry.profileSnapshot {
@@ -106,6 +92,27 @@ struct ProfileWidgetEntryView: View {
         }
 
         Spacer()
+
+        // Launch button in bottom right when quick launch is enabled and no active session
+        if entry.enableQuickLaunch && !entry.isSessionActive && !entry.isBreakActive {
+          Button(
+            intent: StartProfileWidgetIntent(profileName: entry.profileName)
+          ) {
+            HStack(spacing: 4) {
+              Image(systemName: "play.fill")
+                .font(.system(size: 10))
+              Text("Start")
+                .font(.system(size: 10))
+                .fontWeight(.medium)
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+          }
+          .background(Color.purple)
+          .cornerRadius(8)
+          .buttonStyle(.plain)
+        }
       }
       .padding(.bottom, 8)
     }
