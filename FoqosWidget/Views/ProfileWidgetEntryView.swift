@@ -37,38 +37,7 @@ struct ProfileWidgetEntryView: View {
       }
       .padding(.top, 8)
 
-      // Middle section: Status message or timer
-      VStack {
-        if entry.isBreakActive {
-          Text("On a Break")
-            .font(.caption)
-            .fontWeight(.medium)
-            .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-        } else if entry.isSessionActive {
-          if let startTime = entry.sessionStartTime {
-            Text(
-              Date(
-                timeIntervalSinceNow: startTime.timeIntervalSince1970
-                  - Date().timeIntervalSince1970
-              ),
-              style: .timer
-            )
-            .font(.caption)
-            .fontWeight(.medium)
-            .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-          }
-        } else {
-          Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-            Text("Tap to open")
-              .font(.caption)
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-          }
-        }
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-      // Bottom section: Blocked count + enabled options count + launch button
+      // Middle section: Blocked count + enabled options count
       HStack {
         VStack(alignment: .leading, spacing: 2) {
           if let profile = entry.profileSnapshot {
@@ -78,7 +47,7 @@ struct ProfileWidgetEntryView: View {
             Text("\(blockedCount) Blocked")
               .font(.system(size: 10))
               .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .orange)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
 
             Text("with \(enabledOptionsCount) Options")
               .font(.system(size: 8))
@@ -93,6 +62,47 @@ struct ProfileWidgetEntryView: View {
 
         Spacer()
       }
+
+      // Bottom section: Status message or timer (takes up most space)
+      VStack {
+        if entry.isBreakActive {
+          HStack(spacing: 4) {
+            Image(systemName: "cup.and.saucer.fill")
+              .font(.body)
+              .foregroundColor(.white)
+            Text("On a Break")
+              .font(.body)
+              .fontWeight(.bold)
+              .foregroundColor(.white)
+          }
+        } else if entry.isSessionActive {
+          if let startTime = entry.sessionStartTime {
+            HStack(spacing: 4) {
+              Image(systemName: "clock.fill")
+                .font(.body)
+                .foregroundColor(.white)
+              Text(
+                Date(
+                  timeIntervalSinceNow: startTime.timeIntervalSince1970
+                    - Date().timeIntervalSince1970
+                ),
+                style: .timer
+              )
+              .font(.system(size: 22))
+              .fontWeight(.bold)
+              .foregroundColor(.white)
+            }
+          }
+        } else {
+          Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
+            Text("Tap to open")
+              .font(.body)
+              .fontWeight(.medium)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+          }
+        }
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.bottom, 8)
     }
   }
@@ -167,9 +177,9 @@ struct ProfileWidgetEntryView: View {
       id: "test-session",
       tag: "test-tag",
       blockedProfileId: UUID(),
-      startTime: Date(timeIntervalSinceNow: -300),
+      startTime: Date(timeIntervalSinceNow: -300),  // Started 5 minutes ago
       endTime: nil,
-      breakStartTime: Date(timeIntervalSinceNow: -60),
+      breakStartTime: nil,  // No break active
       breakEndTime: nil,
       forceStarted: true
     ),
@@ -195,7 +205,45 @@ struct ProfileWidgetEntryView: View {
       disableBackgroundStops: nil
     ),
     deepLinkURL: URL(string: "foqos://profile/test-id-2"),
-    focusMessage: "Deep focus time",
+    focusMessage: "Deep focus time"
+  )
+  ProfileWidgetEntry(
+    date: .now,
+    selectedProfileId: "test-id-break",
+    profileName: "Study Session",
+    activeSession: SharedData.SessionSnapshot(
+      id: "test-session-break",
+      tag: "test-tag-break",
+      blockedProfileId: UUID(),
+      startTime: Date(timeIntervalSinceNow: -600),  // Started 10 minutes ago
+      endTime: nil,
+      breakStartTime: Date(timeIntervalSinceNow: -60),  // Break started 1 minute ago
+      breakEndTime: nil,
+      forceStarted: true
+    ),
+    profileSnapshot: SharedData.ProfileSnapshot(
+      id: UUID(),
+      name: "Study Session",
+      selectedActivity: FamilyActivitySelection(),
+      createdAt: Date(),
+      updatedAt: Date(),
+      blockingStrategyId: nil,
+      order: 0,
+      enableLiveActivity: true,
+      reminderTimeInSeconds: nil,
+      customReminderMessage: nil,
+      enableBreaks: true,
+      enableStrictMode: true,
+      enableAllowMode: false,
+      enableAllowModeDomains: false,
+      domains: ["tiktok.com", "instagram.com", "snapchat.com"],
+      physicalUnblockNFCTagId: nil,
+      physicalUnblockQRCodeId: nil,
+      schedule: nil,
+      disableBackgroundStops: nil
+    ),
+    deepLinkURL: URL(string: "foqos://profile/test-id-break"),
+    focusMessage: "Take a well-deserved break"
   )
   ProfileWidgetEntry(
     date: .now,
