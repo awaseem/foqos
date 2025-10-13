@@ -36,6 +36,9 @@ struct HomeView: View {
   // Emergency View
   @State private var showEmergencyView = false
 
+  // Navigate to profile
+  @State private var navigateToProfileId: UUID? = nil
+
   // Activity sessions
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
     var sessions: [BlockedProfileSession]
@@ -107,6 +110,7 @@ struct HomeView: View {
             isBreakActive: isBreakActive,
             activeSessionProfileId: activeSessionProfileId,
             elapsedTime: strategyManager.elapsedTime,
+            startingProfileId: navigateToProfileId,
             onStartTapped: { profile in
               strategyButtonPress(profile)
             },
@@ -160,6 +164,12 @@ struct HomeView: View {
     .onChange(of: navigationManager.profileId) { _, newValue in
       if let profileId = newValue, let url = navigationManager.link {
         toggleSessionFromDeeplink(profileId, link: url)
+        navigationManager.clearNavigation()
+      }
+    }
+    .onChange(of: navigationManager.navigateToProfileId) { _, newValue in
+      if let profileId = newValue {
+        navigateToProfileId = UUID(uuidString: profileId)
         navigationManager.clearNavigation()
       }
     }

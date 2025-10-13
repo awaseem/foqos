@@ -96,7 +96,7 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
     // Create deep link URL
     var deepLinkURL: URL?
     if let profileId = targetProfileId {
-      deepLinkURL = URL(string: "foqos://profile/\(profileId)")
+      deepLinkURL = URL(string: "https://foqos.app/navigate/\(profileId)")
     } else {
       deepLinkURL = URL(string: "foqos://")
     }
