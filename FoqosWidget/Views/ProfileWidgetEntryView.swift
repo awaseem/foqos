@@ -16,27 +16,18 @@ struct ProfileWidgetEntryView: View {
   var body: some View {
     Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
       VStack(spacing: 0) {
-        // Top section - Profile name and hourglass
-        HStack {
+        // Main content area with large profile name
+        VStack(spacing: 8) {
+
+          // Large profile name in center
           Text(entry.profileName ?? "No Profile")
-            .font(.caption)
-            .fontWeight(.semibold)
+            .font(.title2)
+            .fontWeight(.bold)
             .foregroundColor(.primary)
-            .lineLimit(1)
+            .lineLimit(2)
 
-          Spacer()
-
-          Image(systemName: "hourglass")
-            .font(.caption)
-            .foregroundColor(.purple)
-        }
-        .padding(.horizontal, 4)
-        .padding(.top, 8)
-
-        // Content section
-        VStack(spacing: 4) {
+          // Session timer if active
           if entry.isSessionActive {
-            // Active session view
             if let startTime = entry.sessionStartTime {
               Text(
                 Date(
@@ -46,103 +37,67 @@ struct ProfileWidgetEntryView: View {
                 style: .timer
               )
               .font(.caption)
-              .fontWeight(.semibold)
-              .foregroundColor(.primary)
-              .multilineTextAlignment(.center)
+              .fontWeight(.medium)
+              .foregroundColor(.secondary)
             }
-          } else {
-            // Inactive session - show profile indicators
-            ProfileIndicatorsView(profileSnapshot: entry.profileSnapshot)
           }
+
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        // Bottom section with app/domain count and foqos logo
+        HStack {
+          // Apps and domains count (bottom left)
+          VStack(alignment: .leading, spacing: 2) {
+            if let profile = entry.profileSnapshot {
+              let appCount = getAppCount(from: profile)
+              let domainCount = getDomainCount(from: profile)
+
+              if appCount > 0 || domainCount > 0 {
+                Text("\(appCount + domainCount)")
+                  .font(.caption)
+                  .fontWeight(.semibold)
+                  .foregroundColor(.primary)
+
+                Text("blocked")
+                  .font(.system(size: 8))
+                  .foregroundColor(.secondary)
+              } else {
+                Text("Tap to Start")
+                  .font(.system(size: 8))
+                  .foregroundColor(.secondary)
+              }
+            } else {
+              Text("Tap to Start")
+                .font(.system(size: 8))
+                .foregroundColor(.secondary)
+            }
+          }
+
+          Spacer()
+
+          // Foqos logo (bottom right)
+          Image(systemName: "hourglass")
+            .font(.caption)
+            .foregroundColor(.purple)
         }
         .padding(.horizontal, 4)
         .padding(.bottom, 8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
-    }
-  }
-}
-
-// MARK: - Profile Indicators View
-struct ProfileIndicatorsView: View {
-  let profileSnapshot: SharedData.ProfileSnapshot?
-
-  var body: some View {
-    if let profile = profileSnapshot {
-      let indicators = getIndicators(for: profile)
-
-      if indicators.isEmpty {
-        Text("Tap to Start")
-          .font(.caption2)
-          .foregroundColor(.secondary)
-      } else {
-        LazyVGrid(
-          columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible()),
-          ], spacing: 4
-        ) {
-          ForEach(indicators, id: \.text) { indicator in
-            IndicatorChip(
-              icon: indicator.icon,
-              text: indicator.text,
-              color: indicator.color
-            )
-          }
-        }
-      }
-    } else {
-      Text("Tap to Start")
-        .font(.caption2)
-        .foregroundColor(.secondary)
+      .padding(.top, 8)
     }
   }
 
-  private func getIndicators(for profile: SharedData.ProfileSnapshot) -> [(
-    icon: String, text: String, color: Color
-  )] {
-    var indicators: [(icon: String, text: String, color: Color)] = []
-
-    if profile.enableBreaks {
-      indicators.append((icon: "cup.and.heat.waves.fill", text: "Breaks", color: .orange))
-    }
-
-    if profile.enableStrictMode {
-      indicators.append((icon: "lock.shield.fill", text: "Strict", color: .red))
-    }
-
-    if profile.enableAllowMode {
-      indicators.append((icon: "checkmark.shield.fill", text: "Allow", color: .green))
-    }
-
-    if profile.enableAllowModeDomains {
-      indicators.append((icon: "globe", text: "Domains", color: .blue))
-    }
-
-    return indicators
+  // Helper function to count apps from profile
+  private func getAppCount(from profile: SharedData.ProfileSnapshot) -> Int {
+    return profile.selectedActivity.categories.count + profile.selectedActivity.applications.count
   }
-}
 
-// MARK: - Indicator Chip
-struct IndicatorChip: View {
-  let icon: String
-  let text: String
-  let color: Color
-
-  var body: some View {
-    HStack(spacing: 2) {
-      Image(systemName: icon)
-        .font(.system(size: 9, weight: .medium))
-        .foregroundColor(color)
-
-      Text(text)
-        .font(.system(size: 9, weight: .medium))
-        .foregroundColor(color)
-    }
-    .padding(.horizontal, 6)
-    .padding(.vertical, 3)
-    .background(color.opacity(0.15))
-    .cornerRadius(6)
+  // Helper function to count domains from profile
+  private func getDomainCount(from profile: SharedData.ProfileSnapshot) -> Int {
+    let webDomainCount = profile.selectedActivity.webDomains.count
+    let customDomainCount = profile.domains?.count ?? 0
+    return webDomainCount + customDomainCount
   }
 }
 
@@ -157,7 +112,11 @@ struct IndicatorChip: View {
     profileSnapshot: SharedData.ProfileSnapshot(
       id: UUID(),
       name: "Focus Session",
-      selectedActivity: FamilyActivitySelection(),
+      selectedActivity: {
+        var selection = FamilyActivitySelection()
+        // Simulate some selected apps and domains for preview
+        return selection
+      }(),
       createdAt: Date(),
       updatedAt: Date(),
       blockingStrategyId: nil,
@@ -167,9 +126,9 @@ struct IndicatorChip: View {
       customReminderMessage: nil,
       enableBreaks: true,
       enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      domains: nil,
+      enableAllowMode: true,
+      enableAllowModeDomains: true,
+      domains: ["facebook.com", "twitter.com", "instagram.com"],
       physicalUnblockNFCTagId: nil,
       physicalUnblockQRCodeId: nil,
       schedule: nil,
@@ -180,8 +139,8 @@ struct IndicatorChip: View {
   )
   ProfileWidgetEntry(
     date: .now,
-    selectedProfileId: "test-id",
-    profileName: "Deep Work",
+    selectedProfileId: "test-id-2",
+    profileName: "Deep Work Session",
     activeSession: SharedData.SessionSnapshot(
       id: "test-session",
       tag: "test-tag",
@@ -194,7 +153,7 @@ struct IndicatorChip: View {
     ),
     profileSnapshot: SharedData.ProfileSnapshot(
       id: UUID(),
-      name: "Deep Work",
+      name: "Deep Work Session",
       selectedActivity: FamilyActivitySelection(),
       createdAt: Date(),
       updatedAt: Date(),
@@ -207,31 +166,22 @@ struct IndicatorChip: View {
       enableStrictMode: false,
       enableAllowMode: true,
       enableAllowModeDomains: true,
-      domains: nil,
+      domains: ["youtube.com", "reddit.com"],
       physicalUnblockNFCTagId: nil,
       physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/test-id"),
+    deepLinkURL: URL(string: "foqos://profile/test-id-2"),
     focusMessage: "Deep focus time"
   )
   ProfileWidgetEntry(
     date: .now,
-    selectedProfileId: "test-id",
-    profileName: "Break Time",
-    activeSession: SharedData.SessionSnapshot(
-      id: "test-session",
-      tag: "test-tag",
-      blockedProfileId: UUID(),
-      startTime: Date(timeIntervalSinceNow: -600),
-      endTime: nil,
-      breakStartTime: Date(timeIntervalSinceNow: -60),
-      breakEndTime: nil,
-      forceStarted: true
-    ),
+    selectedProfileId: "test-id-3",
+    profileName: "No Profile Selected",
+    activeSession: nil,
     profileSnapshot: nil,
-    deepLinkURL: URL(string: "foqos://profile/test-id"),
-    focusMessage: "Taking a break"
+    deepLinkURL: URL(string: "foqos://"),
+    focusMessage: "Select a profile to get started"
   )
 }
