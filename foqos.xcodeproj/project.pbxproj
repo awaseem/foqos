@@ -110,6 +110,14 @@
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 		};
+		801C99CE2E9C9B9D000E07CD /* Exceptions for "Foqos" folder in "FoqosWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/Schedule.swift,
+				Models/Shared.swift,
+			);
+			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
+		};
 		804415942DE7E94B0000CAE4 /* Exceptions for "Foqos" folder in "FoqosDeviceMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -156,6 +164,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				807B2B8A2CC0ACCD00944D2B /* Exceptions for "Foqos" folder in "foqos" target */,
+				801C99CE2E9C9B9D000E07CD /* Exceptions for "Foqos" folder in "FoqosWidgetExtension" target */,
 				804415942DE7E94B0000CAE4 /* Exceptions for "Foqos" folder in "FoqosDeviceMonitor" target */,
 			);
 			path = Foqos;

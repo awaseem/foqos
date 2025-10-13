@@ -11,6 +11,7 @@ import WidgetKit
 @main
 struct FoqosWidgetBundle: WidgetBundle {
   var body: some Widget {
+    ProfileControlWidget()
     FoqosWidgetLiveActivity()
   }
 }
