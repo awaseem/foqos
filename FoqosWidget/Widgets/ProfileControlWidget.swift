@@ -18,7 +18,18 @@ struct ProfileControlWidget: Widget {
       kind: kind, intent: ProfileSelectionIntent.self, provider: ProfileControlProvider()
     ) { entry in
       ProfileWidgetEntryView(entry: entry)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(for: .widget) {
+          // Use the entry's background color or clear if inactive
+          if entry.isSessionActive {
+            if entry.isBreakActive {
+              Color.orange.opacity(0.15)
+            } else {
+              Color.green.opacity(0.15)
+            }
+          } else {
+            Color.clear
+          }
+        }
     }
     .configurationDisplayName("Foqos Profile")
     .description("Monitor and control your selected focus profile")

@@ -19,7 +19,11 @@ struct ProfileWidgetEntry: TimelineEntry {
   let focusMessage: String
 
   var isSessionActive: Bool {
-    return activeSession?.endTime == nil
+    if let active = activeSession {
+      return active.endTime == nil
+    } else {
+      return false
+    }
   }
 
   var isBreakActive: Bool {
