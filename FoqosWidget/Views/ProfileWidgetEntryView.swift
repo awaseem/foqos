@@ -19,91 +19,129 @@ struct ProfileWidgetEntryView: View {
     return entry.isBreakActive || entry.isSessionActive
   }
 
+  // Computed property to determine if the widget should show as unavailable
+  private var isUnavailable: Bool {
+    guard let selectedProfileId = entry.selectedProfileId,
+      let activeSession = entry.activeSession
+    else {
+      return false
+    }
+
+    // Check if the active session's profile ID matches the widget's selected profile ID
+    return activeSession.blockedProfileId.uuidString != selectedProfileId
+  }
+
   var body: some View {
-    VStack(spacing: 8) {
-      // Top section: Profile name (left) and hourglass (right)
-      HStack {
-        Text(entry.profileName ?? "No Profile")
-          .font(.system(size: 14))
-          .fontWeight(.bold)
-          .foregroundColor(shouldUseWhiteText ? .white : .primary)
-          .lineLimit(1)
+    ZStack {
+      // Main content
+      VStack(spacing: 8) {
+        // Top section: Profile name (left) and hourglass (right)
+        HStack {
+          Text(entry.profileName ?? "No Profile")
+            .font(.system(size: 14))
+            .fontWeight(.bold)
+            .foregroundColor(shouldUseWhiteText ? .white : .primary)
+            .lineLimit(1)
 
-        Spacer()
+          Spacer()
 
-        Image(systemName: "hourglass")
-          .font(.body)
-          .foregroundColor(shouldUseWhiteText ? .white : .purple)
-      }
-      .padding(.top, 8)
-
-      // Middle section: Blocked count + enabled options count
-      HStack {
-        VStack(alignment: .leading, spacing: 2) {
-          if let profile = entry.profileSnapshot {
-            let blockedCount = getBlockedCount(from: profile)
-            let enabledOptionsCount = getEnabledOptionsCount(from: profile)
-
-            Text("\(blockedCount) Blocked")
-              .font(.system(size: 10))
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-
-            Text("with \(enabledOptionsCount) Options")
-              .font(.system(size: 8))
-              .fontWeight(.regular)
-              .foregroundColor(shouldUseWhiteText ? .white : .green)
-          } else {
-            Text("No profile selected")
-              .font(.system(size: 8))
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-          }
+          Image(systemName: "hourglass")
+            .font(.body)
+            .foregroundColor(shouldUseWhiteText ? .white : .purple)
         }
+        .padding(.top, 8)
 
-        Spacer()
-      }
+        // Middle section: Blocked count + enabled options count
+        HStack {
+          VStack(alignment: .leading, spacing: 2) {
+            if let profile = entry.profileSnapshot {
+              let blockedCount = getBlockedCount(from: profile)
+              let enabledOptionsCount = getEnabledOptionsCount(from: profile)
 
-      // Bottom section: Status message or timer (takes up most space)
-      VStack {
-        if entry.isBreakActive {
-          HStack(spacing: 4) {
-            Image(systemName: "cup.and.saucer.fill")
-              .font(.body)
-              .foregroundColor(.white)
-            Text("On a Break")
-              .font(.body)
-              .fontWeight(.bold)
-              .foregroundColor(.white)
-          }
-        } else if entry.isSessionActive {
-          if let startTime = entry.sessionStartTime {
-            HStack(spacing: 4) {
-              Image(systemName: "clock.fill")
-                .font(.body)
-                .foregroundColor(.white)
-              Text(
-                Date(
-                  timeIntervalSinceNow: startTime.timeIntervalSince1970
-                    - Date().timeIntervalSince1970
-                ),
-                style: .timer
-              )
-              .font(.system(size: 22))
-              .fontWeight(.bold)
-              .foregroundColor(.white)
+              Text("\(blockedCount) Blocked")
+                .font(.system(size: 10))
+                .fontWeight(.medium)
+                .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+
+              Text("with \(enabledOptionsCount) Options")
+                .font(.system(size: 8))
+                .fontWeight(.regular)
+                .foregroundColor(shouldUseWhiteText ? .white : .green)
+            } else {
+              Text("No profile selected")
+                .font(.system(size: 8))
+                .foregroundColor(shouldUseWhiteText ? .white : .secondary)
             }
           }
-        } else {
-          Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-            Text("Tap to open")
-              .font(.body)
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+
+          Spacer()
+        }
+
+        // Bottom section: Status message or timer (takes up most space)
+        VStack {
+          if entry.isBreakActive {
+            HStack(spacing: 4) {
+              Image(systemName: "cup.and.saucer.fill")
+                .font(.body)
+                .foregroundColor(.white)
+              Text("On a Break")
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            }
+          } else if entry.isSessionActive {
+            if let startTime = entry.sessionStartTime {
+              HStack(spacing: 4) {
+                Image(systemName: "clock.fill")
+                  .font(.body)
+                  .foregroundColor(.white)
+                Text(
+                  Date(
+                    timeIntervalSinceNow: startTime.timeIntervalSince1970
+                      - Date().timeIntervalSince1970
+                  ),
+                  style: .timer
+                )
+                .font(.system(size: 22))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+              }
+            }
+          } else {
+            Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
+              Text("Tap to open")
+                .font(.body)
+                .fontWeight(.medium)
+                .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+            }
           }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.bottom, 8)
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .padding(.bottom, 8)
+      .blur(radius: isUnavailable ? 3 : 0)
+
+      // Unavailable overlay
+      if isUnavailable {
+        VStack(spacing: 4) {
+          Image(systemName: "exclamationmark.triangle.fill")
+            .font(.title2)
+            .foregroundColor(.orange)
+
+          Text("Unavailable")
+            .font(.system(size: 16))
+            .fontWeight(.bold)
+            .foregroundColor(.primary)
+
+          Text("Different profile active")
+            .font(.system(size: 10))
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(UIColor.systemBackground).opacity(0.9))
+        .cornerRadius(8)
+      }
     }
   }
 
@@ -136,6 +174,7 @@ struct ProfileWidgetEntryView: View {
 #Preview(as: .systemSmall) {
   ProfileControlWidget()
 } timeline: {
+  // Preview 1: No active session
   ProfileWidgetEntry(
     date: .now,
     selectedProfileId: "test-id",
@@ -169,14 +208,17 @@ struct ProfileWidgetEntryView: View {
     deepLinkURL: URL(string: "foqos://profile/test-id"),
     focusMessage: "Stay focused and avoid distractions"
   )
+
+  // Preview 2: Active session matching widget profile
+  let activeProfileId = UUID()
   ProfileWidgetEntry(
     date: .now,
-    selectedProfileId: "test-id-2",
+    selectedProfileId: activeProfileId.uuidString,
     profileName: "Deep Work Session",
     activeSession: SharedData.SessionSnapshot(
       id: "test-session",
       tag: "test-tag",
-      blockedProfileId: UUID(),
+      blockedProfileId: activeProfileId,  // Matches selectedProfileId
       startTime: Date(timeIntervalSinceNow: -300),  // Started 5 minutes ago
       endTime: nil,
       breakStartTime: nil,  // No break active
@@ -184,7 +226,7 @@ struct ProfileWidgetEntryView: View {
       forceStarted: true
     ),
     profileSnapshot: SharedData.ProfileSnapshot(
-      id: UUID(),
+      id: activeProfileId,
       name: "Deep Work Session",
       selectedActivity: FamilyActivitySelection(),
       createdAt: Date(),
@@ -204,17 +246,20 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/test-id-2"),
+    deepLinkURL: URL(string: "foqos://profile/\(activeProfileId.uuidString)"),
     focusMessage: "Deep focus time"
   )
+
+  // Preview 3: Active session with break matching widget profile
+  let breakProfileId = UUID()
   ProfileWidgetEntry(
     date: .now,
-    selectedProfileId: "test-id-break",
+    selectedProfileId: breakProfileId.uuidString,
     profileName: "Study Session",
     activeSession: SharedData.SessionSnapshot(
       id: "test-session-break",
       tag: "test-tag-break",
-      blockedProfileId: UUID(),
+      blockedProfileId: breakProfileId,  // Matches selectedProfileId
       startTime: Date(timeIntervalSinceNow: -600),  // Started 10 minutes ago
       endTime: nil,
       breakStartTime: Date(timeIntervalSinceNow: -60),  // Break started 1 minute ago
@@ -222,7 +267,7 @@ struct ProfileWidgetEntryView: View {
       forceStarted: true
     ),
     profileSnapshot: SharedData.ProfileSnapshot(
-      id: UUID(),
+      id: breakProfileId,
       name: "Study Session",
       selectedActivity: FamilyActivitySelection(),
       createdAt: Date(),
@@ -242,16 +287,59 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/test-id-break"),
+    deepLinkURL: URL(string: "foqos://profile/\(breakProfileId.uuidString)"),
     focusMessage: "Take a well-deserved break"
   )
+  // Preview 4: No profile selected
   ProfileWidgetEntry(
     date: .now,
-    selectedProfileId: "test-id-3",
+    selectedProfileId: nil,
     profileName: "No Profile Selected",
     activeSession: nil,
     profileSnapshot: nil,
     deepLinkURL: URL(string: "foqos://"),
-    focusMessage: "Select a profile to get started",
+    focusMessage: "Select a profile to get started"
+  )
+
+  // Preview 5: Unavailable state - different profile active
+  let unavailableProfileId = UUID()
+  let differentActiveProfileId = UUID()  // Different from unavailableProfileId
+  ProfileWidgetEntry(
+    date: .now,
+    selectedProfileId: unavailableProfileId.uuidString,
+    profileName: "Work Focus",
+    activeSession: SharedData.SessionSnapshot(
+      id: "different-session",
+      tag: "different-tag",
+      blockedProfileId: differentActiveProfileId,  // Different UUID than selectedProfileId
+      startTime: Date(timeIntervalSinceNow: -180),  // Started 3 minutes ago
+      endTime: nil,
+      breakStartTime: nil,
+      breakEndTime: nil,
+      forceStarted: true
+    ),
+    profileSnapshot: SharedData.ProfileSnapshot(
+      id: unavailableProfileId,
+      name: "Work Focus",
+      selectedActivity: FamilyActivitySelection(),
+      createdAt: Date(),
+      updatedAt: Date(),
+      blockingStrategyId: nil,
+      order: 0,
+      enableLiveActivity: true,
+      reminderTimeInSeconds: nil,
+      customReminderMessage: nil,
+      enableBreaks: true,
+      enableStrictMode: true,
+      enableAllowMode: false,
+      enableAllowModeDomains: false,
+      domains: ["linkedin.com", "slack.com"],
+      physicalUnblockNFCTagId: nil,
+      physicalUnblockQRCodeId: nil,
+      schedule: nil,
+      disableBackgroundStops: nil
+    ),
+    deepLinkURL: URL(string: "foqos://profile/\(unavailableProfileId.uuidString)"),
+    focusMessage: "Different profile is currently active"
   )
 }
