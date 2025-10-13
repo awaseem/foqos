@@ -13,6 +13,11 @@ import WidgetKit
 struct ProfileWidgetEntryView: View {
   var entry: ProfileControlProvider.Entry
 
+  // Computed property to determine if we should use white text
+  private var shouldUseWhiteText: Bool {
+    return entry.isBreakActive || entry.isSessionActive
+  }
+
   var body: some View {
     Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
       VStack(spacing: 8) {
@@ -21,24 +26,24 @@ struct ProfileWidgetEntryView: View {
           Text(entry.profileName ?? "No Profile")
             .font(.system(size: 12))
             .fontWeight(.bold)
-            .foregroundColor(.primary)
+            .foregroundColor(shouldUseWhiteText ? .white : .primary)
             .lineLimit(1)
 
           Spacer()
 
           Image(systemName: "hourglass")
             .font(.body)
-            .foregroundColor(.purple)
+            .foregroundColor(shouldUseWhiteText ? .white : .purple)
         }
         .padding(.top, 8)
 
         // Middle section: Status message or timer
         VStack {
           if entry.isBreakActive {
-            Text("on a break")
+            Text("On a Break")
               .font(.caption)
               .fontWeight(.medium)
-              .foregroundColor(.secondary)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
           } else if entry.isSessionActive {
             if let startTime = entry.sessionStartTime {
               Text(
@@ -50,13 +55,13 @@ struct ProfileWidgetEntryView: View {
               )
               .font(.caption)
               .fontWeight(.medium)
-              .foregroundColor(.secondary)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
             }
           } else {
             Text("Tap to open")
               .font(.caption)
               .fontWeight(.medium)
-              .foregroundColor(.secondary)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
           }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -71,16 +76,16 @@ struct ProfileWidgetEntryView: View {
               Text("\(blockedCount) Blocked")
                 .font(.system(size: 10))
                 .fontWeight(.medium)
-                .foregroundColor(.orange)
+                .foregroundColor(shouldUseWhiteText ? .white : .orange)
 
               Text("with \(enabledOptionsCount) Options")
                 .font(.system(size: 8))
                 .fontWeight(.regular)
-                .foregroundColor(.green)
+                .foregroundColor(shouldUseWhiteText ? .white : .green)
             } else {
               Text("No profile selected")
                 .font(.system(size: 8))
-                .foregroundColor(.secondary)
+                .foregroundColor(shouldUseWhiteText ? .white : .secondary)
             }
           }
 
