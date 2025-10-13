@@ -15,19 +15,31 @@ struct ProfileWidgetEntryView: View {
 
   var body: some View {
     Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-      VStack(spacing: 0) {
-        // Main content area with large profile name
-        VStack(spacing: 8) {
-
-          // Large profile name in center
+      VStack(spacing: 8) {
+        // Top section: Profile name (left) and hourglass (right)
+        HStack {
           Text(entry.profileName ?? "No Profile")
-            .font(.title2)
+            .font(.system(size: 12))
             .fontWeight(.bold)
             .foregroundColor(.primary)
-            .lineLimit(2)
+            .lineLimit(1)
 
-          // Session timer if active
-          if entry.isSessionActive {
+          Spacer()
+
+          Image(systemName: "hourglass")
+            .font(.body)
+            .foregroundColor(.purple)
+        }
+        .padding(.top, 8)
+
+        // Middle section: Status message or timer
+        VStack {
+          if entry.isBreakActive {
+            Text("on a break")
+              .font(.caption)
+              .fontWeight(.medium)
+              .foregroundColor(.secondary)
+          } else if entry.isSessionActive {
             if let startTime = entry.sessionStartTime {
               Text(
                 Date(
@@ -40,64 +52,68 @@ struct ProfileWidgetEntryView: View {
               .fontWeight(.medium)
               .foregroundColor(.secondary)
             }
+          } else {
+            Text("Tap to open")
+              .font(.caption)
+              .fontWeight(.medium)
+              .foregroundColor(.secondary)
           }
-
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-        // Bottom section with app/domain count and foqos logo
+        // Bottom section: Blocked count + enabled options count
         HStack {
-          // Apps and domains count (bottom left)
           VStack(alignment: .leading, spacing: 2) {
             if let profile = entry.profileSnapshot {
-              let appCount = getAppCount(from: profile)
-              let domainCount = getDomainCount(from: profile)
+              let blockedCount = getBlockedCount(from: profile)
+              let enabledOptionsCount = getEnabledOptionsCount(from: profile)
 
-              if appCount > 0 || domainCount > 0 {
-                Text("\(appCount + domainCount)")
-                  .font(.caption)
-                  .fontWeight(.semibold)
-                  .foregroundColor(.primary)
+              Text("\(blockedCount) Blocked")
+                .font(.system(size: 10))
+                .fontWeight(.medium)
+                .foregroundColor(.orange)
 
-                Text("blocked")
-                  .font(.system(size: 8))
-                  .foregroundColor(.secondary)
-              } else {
-                Text("Tap to Start")
-                  .font(.system(size: 8))
-                  .foregroundColor(.secondary)
-              }
+              Text("with \(enabledOptionsCount) Options")
+                .font(.system(size: 8))
+                .fontWeight(.regular)
+                .foregroundColor(.green)
             } else {
-              Text("Tap to Start")
+              Text("No profile selected")
                 .font(.system(size: 8))
                 .foregroundColor(.secondary)
             }
           }
 
           Spacer()
-
-          // Foqos logo (bottom right)
-          Image(systemName: "hourglass")
-            .font(.caption)
-            .foregroundColor(.purple)
         }
-        .padding(.horizontal, 4)
         .padding(.bottom, 8)
       }
-      .padding(.top, 8)
     }
   }
 
-  // Helper function to count apps from profile
-  private func getAppCount(from profile: SharedData.ProfileSnapshot) -> Int {
-    return profile.selectedActivity.categories.count + profile.selectedActivity.applications.count
-  }
-
-  // Helper function to count domains from profile
-  private func getDomainCount(from profile: SharedData.ProfileSnapshot) -> Int {
+  // Helper function to count total blocked items
+  private func getBlockedCount(from profile: SharedData.ProfileSnapshot) -> Int {
+    let appCount =
+      profile.selectedActivity.categories.count + profile.selectedActivity.applications.count
     let webDomainCount = profile.selectedActivity.webDomains.count
     let customDomainCount = profile.domains?.count ?? 0
-    return webDomainCount + customDomainCount
+    return appCount + webDomainCount + customDomainCount
+  }
+
+  // Helper function to count enabled options
+  private func getEnabledOptionsCount(from profile: SharedData.ProfileSnapshot) -> Int {
+    var count = 0
+    if profile.enableLiveActivity { count += 1 }
+    if profile.enableBreaks { count += 1 }
+    if profile.enableStrictMode { count += 1 }
+    if profile.enableAllowMode { count += 1 }
+    if profile.enableAllowModeDomains { count += 1 }
+    if profile.reminderTimeInSeconds != nil { count += 1 }
+    if profile.physicalUnblockNFCTagId != nil { count += 1 }
+    if profile.physicalUnblockQRCodeId != nil { count += 1 }
+    if profile.schedule != nil { count += 1 }
+    if profile.disableBackgroundStops == true { count += 1 }
+    return count
   }
 }
 
@@ -147,7 +163,7 @@ struct ProfileWidgetEntryView: View {
       blockedProfileId: UUID(),
       startTime: Date(timeIntervalSinceNow: -300),
       endTime: nil,
-      breakStartTime: nil,
+      breakStartTime: Date(timeIntervalSinceNow: -60),
       breakEndTime: nil,
       forceStarted: true
     ),
