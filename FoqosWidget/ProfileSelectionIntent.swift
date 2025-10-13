@@ -59,9 +59,19 @@ struct ProfileSelectionIntent: WidgetConfigurationIntent {
   @Parameter(title: "Profile", description: "The profile to monitor in the widget")
   var profile: WidgetProfileEntity?
 
+  @Parameter(
+    title: "Quick Launch", description: "Quickly start a profile without opening the app",
+    default: false)
+  var enableQuickLaunch: Bool
+
   init() {}
 
   init(profile: WidgetProfileEntity?) {
     self.profile = profile
+  }
+
+  init(profile: WidgetProfileEntity?, enableQuickLaunch: Bool) {
+    self.profile = profile
+    self.enableQuickLaunch = enableQuickLaunch
   }
 }

@@ -19,80 +19,95 @@ struct ProfileWidgetEntryView: View {
   }
 
   var body: some View {
-    Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-      VStack(spacing: 8) {
-        // Top section: Profile name (left) and hourglass (right)
-        HStack {
-          Text(entry.profileName ?? "No Profile")
-            .font(.system(size: 12))
-            .fontWeight(.bold)
-            .foregroundColor(shouldUseWhiteText ? .white : .primary)
-            .lineLimit(1)
+    VStack(spacing: 8) {
+      // Top section: Profile name (left) and hourglass (right)
+      HStack {
+        Text(entry.profileName ?? "No Profile")
+          .font(.system(size: 12))
+          .fontWeight(.bold)
+          .foregroundColor(shouldUseWhiteText ? .white : .primary)
+          .lineLimit(1)
 
-          Spacer()
+        Spacer()
 
-          Image(systemName: "hourglass")
-            .font(.body)
-            .foregroundColor(shouldUseWhiteText ? .white : .purple)
-        }
-        .padding(.top, 8)
+        Image(systemName: "hourglass")
+          .font(.body)
+          .foregroundColor(shouldUseWhiteText ? .white : .purple)
+      }
+      .padding(.top, 8)
 
-        // Middle section: Status message or timer
-        VStack {
-          if entry.isBreakActive {
-            Text("On a Break")
-              .font(.caption)
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-          } else if entry.isSessionActive {
-            if let startTime = entry.sessionStartTime {
-              Text(
-                Date(
-                  timeIntervalSinceNow: startTime.timeIntervalSince1970
-                    - Date().timeIntervalSince1970
-                ),
-                style: .timer
-              )
-              .font(.caption)
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+      // Middle section: Status message or timer
+      VStack {
+        if entry.isBreakActive {
+          Text("On a Break")
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+        } else if entry.isSessionActive {
+          if let startTime = entry.sessionStartTime {
+            Text(
+              Date(
+                timeIntervalSinceNow: startTime.timeIntervalSince1970
+                  - Date().timeIntervalSince1970
+              ),
+              style: .timer
+            )
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+          }
+        } else {
+          if entry.enableQuickLaunch {
+            Button(action: {
+              // TODO: Implement quick launch functionality
+              print("Quick launch button pressed")
+            }) {
+              Text("Launch")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .cornerRadius(8)
             }
           } else {
-            Text("Tap to open")
-              .font(.caption)
-              .fontWeight(.medium)
-              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-          }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-        // Bottom section: Blocked count + enabled options count
-        HStack {
-          VStack(alignment: .leading, spacing: 2) {
-            if let profile = entry.profileSnapshot {
-              let blockedCount = getBlockedCount(from: profile)
-              let enabledOptionsCount = getEnabledOptionsCount(from: profile)
-
-              Text("\(blockedCount) Blocked")
-                .font(.system(size: 10))
+            Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
+              Text("Tap to open")
+                .font(.caption)
                 .fontWeight(.medium)
-                .foregroundColor(shouldUseWhiteText ? .white : .orange)
-
-              Text("with \(enabledOptionsCount) Options")
-                .font(.system(size: 8))
-                .fontWeight(.regular)
-                .foregroundColor(shouldUseWhiteText ? .white : .green)
-            } else {
-              Text("No profile selected")
-                .font(.system(size: 8))
                 .foregroundColor(shouldUseWhiteText ? .white : .secondary)
             }
           }
-
-          Spacer()
         }
-        .padding(.bottom, 8)
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      // Bottom section: Blocked count + enabled options count
+      HStack {
+        VStack(alignment: .leading, spacing: 2) {
+          if let profile = entry.profileSnapshot {
+            let blockedCount = getBlockedCount(from: profile)
+            let enabledOptionsCount = getEnabledOptionsCount(from: profile)
+
+            Text("\(blockedCount) Blocked")
+              .font(.system(size: 10))
+              .fontWeight(.medium)
+              .foregroundColor(shouldUseWhiteText ? .white : .orange)
+
+            Text("with \(enabledOptionsCount) Options")
+              .font(.system(size: 8))
+              .fontWeight(.regular)
+              .foregroundColor(shouldUseWhiteText ? .white : .green)
+          } else {
+            Text("No profile selected")
+              .font(.system(size: 8))
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+          }
+        }
+
+        Spacer()
+      }
+      .padding(.bottom, 8)
     }
   }
 
@@ -156,7 +171,8 @@ struct ProfileWidgetEntryView: View {
       disableBackgroundStops: nil
     ),
     deepLinkURL: URL(string: "foqos://profile/test-id"),
-    focusMessage: "Stay focused and avoid distractions"
+    focusMessage: "Stay focused and avoid distractions",
+    enableQuickLaunch: false
   )
   ProfileWidgetEntry(
     date: .now,
@@ -194,7 +210,8 @@ struct ProfileWidgetEntryView: View {
       disableBackgroundStops: nil
     ),
     deepLinkURL: URL(string: "foqos://profile/test-id-2"),
-    focusMessage: "Deep focus time"
+    focusMessage: "Deep focus time",
+    enableQuickLaunch: true
   )
   ProfileWidgetEntry(
     date: .now,
@@ -203,6 +220,7 @@ struct ProfileWidgetEntryView: View {
     activeSession: nil,
     profileSnapshot: nil,
     deepLinkURL: URL(string: "foqos://"),
-    focusMessage: "Select a profile to get started"
+    focusMessage: "Select a profile to get started",
+    enableQuickLaunch: true
   )
 }
