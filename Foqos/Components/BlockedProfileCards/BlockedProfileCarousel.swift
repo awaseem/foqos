@@ -8,6 +8,7 @@ struct BlockedProfileCarousel: View {
   let isBreakActive: Bool
   let activeSessionProfileId: UUID?
   let elapsedTime: TimeInterval
+  let startingProfileId: UUID?
 
   var onStartTapped: (BlockedProfiles) -> Void
   var onStopTapped: (BlockedProfiles) -> Void
@@ -51,6 +52,7 @@ struct BlockedProfileCarousel: View {
     isBreakActive: Bool,
     activeSessionProfileId: UUID?,
     elapsedTime: TimeInterval,
+    startingProfileId: UUID? = nil,
     onStartTapped: @escaping (BlockedProfiles) -> Void,
     onStopTapped: @escaping (BlockedProfiles) -> Void,
     onEditTapped: @escaping (BlockedProfiles) -> Void,
@@ -65,6 +67,7 @@ struct BlockedProfileCarousel: View {
     self.isBreakActive = isBreakActive
     self.activeSessionProfileId = activeSessionProfileId
     self.elapsedTime = elapsedTime
+    self.startingProfileId = startingProfileId
     self.onStartTapped = onStartTapped
     self.onStopTapped = onStopTapped
     self.onEditTapped = onEditTapped
@@ -74,8 +77,9 @@ struct BlockedProfileCarousel: View {
     self.onEmergencyTapped = onEmergencyTapped
   }
 
-  // Initialize current index based on active profile
+  // Initialize current index based on active profile or starting profile
   private func initialSetup() {
+    // First priority: active session profile
     if let activeId = activeSessionProfileId,
       let index = profiles.firstIndex(where: { $0.id == activeId })
     {
@@ -83,6 +87,15 @@ struct BlockedProfileCarousel: View {
       return
     }
 
+    // Second priority: starting profile
+    if let startingId = startingProfileId,
+      let index = profiles.firstIndex(where: { $0.id == startingId })
+    {
+      currentIndex = index
+      return
+    }
+
+    // Default: first profile if available
     if profiles.first != nil {
       currentIndex = 0
       return
@@ -215,6 +228,9 @@ struct BlockedProfileCarousel: View {
     .onChange(of: profiles) { _, _ in
       initialSetup()
     }
+    .onChange(of: startingProfileId) { _, _ in
+      initialSetup()
+    }
   }
 
   // Calculate the offset based on current index and drag
@@ -314,6 +330,57 @@ struct BlockedProfileCarousel: View {
       isBreakActive: false,
       activeSessionProfileId: nil,
       elapsedTime: 1234,
+      onStartTapped: { _ in },
+      onStopTapped: { _ in },
+      onEditTapped: { _ in },
+      onStatsTapped: { _ in },
+      onBreakTapped: { _ in },
+      onManageTapped: {},
+      onEmergencyTapped: {}
+    )
+  }
+}
+
+// Preview with startingProfileId set to "Gaming" (second profile)
+#Preview("Starting Profile - Gaming") {
+  let gamingProfileId = UUID()
+
+  ZStack {
+    Color(.systemGroupedBackground).ignoresSafeArea()
+
+    BlockedProfileCarousel(
+      profiles: [
+        BlockedProfiles(
+          id: UUID(),
+          name: "Work",
+          selectedActivity: FamilyActivitySelection(),
+          blockingStrategyId: NFCBlockingStrategy.id,
+          enableLiveActivity: true,
+          reminderTimeInSeconds: 3600
+        ),
+        BlockedProfiles(
+          id: gamingProfileId,
+          name: "Gaming",
+          selectedActivity: FamilyActivitySelection(),
+          blockingStrategyId: QRCodeBlockingStrategy.id,
+          enableLiveActivity: false,
+          reminderTimeInSeconds: nil
+        ),
+        BlockedProfiles(
+          id: UUID(),
+          name: "Social Media",
+          selectedActivity: FamilyActivitySelection(),
+          blockingStrategyId: ManualBlockingStrategy.id,
+          enableLiveActivity: true,
+          reminderTimeInSeconds: 1800
+        ),
+      ],
+      isBlocking: false,
+      isBreakAvailable: false,
+      isBreakActive: false,
+      activeSessionProfileId: nil,
+      elapsedTime: 1234,
+      startingProfileId: gamingProfileId,
       onStartTapped: { _ in },
       onStopTapped: { _ in },
       onEditTapped: { _ in },

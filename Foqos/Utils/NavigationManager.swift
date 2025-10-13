@@ -4,6 +4,8 @@ class NavigationManager: ObservableObject {
   @Published var profileId: String? = nil
   @Published var link: URL? = nil
 
+  @Published var navigateToProfileId: String? = nil
+
   func handleLink(_ url: URL) {
     let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
     guard let path = components?.path else { return }
@@ -14,6 +16,9 @@ class NavigationManager: ObservableObject {
       case "profile":
         self.profileId = String(profileId)
         self.link = url
+      case "navigate":
+        self.navigateToProfileId = String(profileId)
+        self.link = url
       default:
         break
       }
@@ -23,5 +28,6 @@ class NavigationManager: ObservableObject {
   func clearNavigation() {
     profileId = nil
     link = nil
+    navigateToProfileId = nil
   }
 }
