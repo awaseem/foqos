@@ -59,9 +59,17 @@ struct ProfileSelectionIntent: WidgetConfigurationIntent {
   @Parameter(title: "Profile", description: "The profile to monitor in the widget")
   var profile: WidgetProfileEntity?
 
-  init() {}
+  @Parameter(
+    title: "Quick Launch",
+    description: "Launch the profile directly without navigating to the app")
+  var useProfileURL: Bool?
 
-  init(profile: WidgetProfileEntity?) {
+  init() {
+    self.useProfileURL = false
+  }
+
+  init(profile: WidgetProfileEntity?, useProfileURL: Bool = false) {
     self.profile = profile
+    self.useProfileURL = useProfileURL
   }
 }

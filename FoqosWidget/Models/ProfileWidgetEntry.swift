@@ -17,6 +17,7 @@ struct ProfileWidgetEntry: TimelineEntry {
   let profileSnapshot: SharedData.ProfileSnapshot?
   let deepLinkURL: URL?
   let focusMessage: String
+  let useProfileURL: Bool?
 
   var isSessionActive: Bool {
     if let active = activeSession {

@@ -21,8 +21,9 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
       profileName: "Focus Session",
       activeSession: nil,
       profileSnapshot: nil,
-      deepLinkURL: URL(string: "foqos://profile/placeholder"),
+      deepLinkURL: URL(string: "https://foqos.app/profile/placeholder"),
       focusMessage: "Stay focused and avoid distractions",
+      useProfileURL: false
     )
   }
 
@@ -53,6 +54,7 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
           profileSnapshot: currentEntry.profileSnapshot,
           deepLinkURL: currentEntry.deepLinkURL,
           focusMessage: currentEntry.focusMessage,
+          useProfileURL: currentEntry.useProfileURL
         )
         entries.append(futureEntry)
       }
@@ -93,10 +95,14 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
       }
     }
 
-    // Create deep link URL
+    // Create deep link URL based on configuration
     var deepLinkURL: URL?
     if let profileId = targetProfileId {
-      deepLinkURL = URL(string: "https://foqos.app/navigate/\(profileId)")
+      if let useProfileURL = configuration.useProfileURL, useProfileURL == true {
+        deepLinkURL = URL(string: "https://foqos.app/profile/\(profileId)")
+      } else {
+        deepLinkURL = URL(string: "https://foqos.app/navigate/\(profileId)")
+      }
     } else {
       deepLinkURL = URL(string: "foqos://")
     }
@@ -112,7 +118,8 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
       activeSession: activeSession,
       profileSnapshot: profileSnapshot,
       deepLinkURL: deepLinkURL,
-      focusMessage: focusMessage
+      focusMessage: focusMessage,
+      useProfileURL: configuration.useProfileURL
     )
   }
 }

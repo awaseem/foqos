@@ -31,6 +31,19 @@ struct ProfileWidgetEntryView: View {
     return activeSession.blockedProfileId.uuidString != selectedProfileId
   }
 
+  private var quickLaunchEnabled: Bool {
+    return entry.useProfileURL == true
+  }
+
+  private var linkToOpen: URL {
+    // Don't open the app via profile to stop the session
+    if entry.isBreakActive || entry.isSessionActive {
+      return URL(string: "https://foqos.app")!
+    }
+
+    return entry.deepLinkURL ?? URL(string: "foqos://")!
+  }
+
   var body: some View {
     ZStack {
       // Main content
@@ -108,8 +121,8 @@ struct ProfileWidgetEntryView: View {
               }
             }
           } else {
-            Link(destination: entry.deepLinkURL ?? URL(string: "foqos://")!) {
-              Text("Tap to open")
+            Link(destination: linkToOpen) {
+              Text(quickLaunchEnabled ? "Tap to launch" : "Tap to open")
                 .font(.body)
                 .fontWeight(.medium)
                 .foregroundColor(shouldUseWhiteText ? .white : .secondary)
@@ -205,8 +218,9 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/test-id"),
-    focusMessage: "Stay focused and avoid distractions"
+    deepLinkURL: URL(string: "https://foqos.app/profile/test-id"),
+    focusMessage: "Stay focused and avoid distractions",
+    useProfileURL: true
   )
 
   // Preview 2: Active session matching widget profile
@@ -246,8 +260,9 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/\(activeProfileId.uuidString)"),
-    focusMessage: "Deep focus time"
+    deepLinkURL: URL(string: "https://foqos.app/profile/\(activeProfileId.uuidString)"),
+    focusMessage: "Deep focus time",
+    useProfileURL: true
   )
 
   // Preview 3: Active session with break matching widget profile
@@ -287,8 +302,9 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/\(breakProfileId.uuidString)"),
-    focusMessage: "Take a well-deserved break"
+    deepLinkURL: URL(string: "https://foqos.app/profile/\(breakProfileId.uuidString)"),
+    focusMessage: "Take a well-deserved break",
+    useProfileURL: true
   )
   // Preview 4: No profile selected
   ProfileWidgetEntry(
@@ -298,7 +314,8 @@ struct ProfileWidgetEntryView: View {
     activeSession: nil,
     profileSnapshot: nil,
     deepLinkURL: URL(string: "foqos://"),
-    focusMessage: "Select a profile to get started"
+    focusMessage: "Select a profile to get started",
+    useProfileURL: false
   )
 
   // Preview 5: Unavailable state - different profile active
@@ -339,7 +356,8 @@ struct ProfileWidgetEntryView: View {
       schedule: nil,
       disableBackgroundStops: nil
     ),
-    deepLinkURL: URL(string: "foqos://profile/\(unavailableProfileId.uuidString)"),
-    focusMessage: "Different profile is currently active"
+    deepLinkURL: URL(string: "https://foqos.app/profile/\(unavailableProfileId.uuidString)"),
+    focusMessage: "Different profile is currently active",
+    useProfileURL: true
   )
 }
