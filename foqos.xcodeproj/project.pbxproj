@@ -115,6 +115,7 @@
 			membershipExceptions = (
 				Models/Schedule.swift,
 				Models/Shared.swift,
+				Utils/AppBlockerUtil.swift,
 			);
 			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
 		};
