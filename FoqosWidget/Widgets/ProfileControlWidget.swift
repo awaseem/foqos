@@ -17,14 +17,8 @@ struct ProfileControlWidget: Widget {
     AppIntentConfiguration(
       kind: kind, intent: ProfileSelectionIntent.self, provider: ProfileControlProvider()
     ) { entry in
-      if #available(iOS 17.0, *) {
-        ProfileWidgetEntryView(entry: entry)
-          .containerBackground(.fill.tertiary, for: .widget)
-      } else {
-        ProfileWidgetEntryView(entry: entry)
-          .padding()
-          .background()
-      }
+      ProfileWidgetEntryView(entry: entry)
+        .containerBackground(.fill.tertiary, for: .widget)
     }
     .configurationDisplayName("Foqos Profile")
     .description("Monitor and control your selected focus profile")

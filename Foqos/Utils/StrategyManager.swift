@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
@@ -288,6 +289,9 @@ class StrategyManager: ObservableObject {
 
     // Decrement the remaining emergency unblocks
     emergencyUnblocksRemaining -= 1
+
+    // Refresh widgets when emergency unblock ends session
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
   func resetEmergencyUnblocks() {
@@ -322,6 +326,9 @@ class StrategyManager: ObservableObject {
         self.errorMessage = nil
         self.liveActivityManager
           .startSessionActivity(session: session)
+
+        // Refresh widgets when session starts
+        WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
       case .ended(let endedProfile):
         self.activeSession = nil
         self.liveActivityManager.endSessionActivity()
@@ -329,6 +336,9 @@ class StrategyManager: ObservableObject {
 
         self.stopTimer()
         self.elapsedTime = 0
+
+        // Refresh widgets when session ends
+        WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
       }
     }
 
@@ -363,6 +373,9 @@ class StrategyManager: ObservableObject {
 
     // Pause the timer during break
     stopTimer()
+
+    // Refresh widgets when break starts
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
   private func stopBreak() {
@@ -389,6 +402,9 @@ class StrategyManager: ObservableObject {
 
     // Resume the timer after break ends
     startTimer()
+
+    // Refresh widgets when break ends
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
   private func dismissView() {
