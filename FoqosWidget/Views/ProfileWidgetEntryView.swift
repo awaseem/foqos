@@ -92,27 +92,6 @@ struct ProfileWidgetEntryView: View {
         }
 
         Spacer()
-
-        // Launch button in bottom right when quick launch is enabled and no active session
-        if entry.enableQuickLaunch && !entry.isSessionActive && !entry.isBreakActive {
-          Button(
-            intent: StartProfileWidgetIntent(profileName: entry.profileName)
-          ) {
-            HStack(spacing: 4) {
-              Image(systemName: "play.fill")
-                .font(.system(size: 10))
-              Text("Start")
-                .font(.system(size: 10))
-                .fontWeight(.medium)
-            }
-            .foregroundColor(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-          }
-          .background(Color.purple)
-          .cornerRadius(8)
-          .buttonStyle(.plain)
-        }
       }
       .padding(.bottom, 8)
     }
@@ -178,8 +157,7 @@ struct ProfileWidgetEntryView: View {
       disableBackgroundStops: nil
     ),
     deepLinkURL: URL(string: "foqos://profile/test-id"),
-    focusMessage: "Stay focused and avoid distractions",
-    enableQuickLaunch: false
+    focusMessage: "Stay focused and avoid distractions"
   )
   ProfileWidgetEntry(
     date: .now,
@@ -218,7 +196,6 @@ struct ProfileWidgetEntryView: View {
     ),
     deepLinkURL: URL(string: "foqos://profile/test-id-2"),
     focusMessage: "Deep focus time",
-    enableQuickLaunch: true
   )
   ProfileWidgetEntry(
     date: .now,
@@ -228,6 +205,5 @@ struct ProfileWidgetEntryView: View {
     profileSnapshot: nil,
     deepLinkURL: URL(string: "foqos://"),
     focusMessage: "Select a profile to get started",
-    enableQuickLaunch: true
   )
 }

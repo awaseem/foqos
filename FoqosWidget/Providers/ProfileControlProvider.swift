@@ -23,7 +23,6 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
       profileSnapshot: nil,
       deepLinkURL: URL(string: "foqos://profile/placeholder"),
       focusMessage: "Stay focused and avoid distractions",
-      enableQuickLaunch: false
     )
   }
 
@@ -54,7 +53,6 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
           profileSnapshot: currentEntry.profileSnapshot,
           deepLinkURL: currentEntry.deepLinkURL,
           focusMessage: currentEntry.focusMessage,
-          enableQuickLaunch: currentEntry.enableQuickLaunch
         )
         entries.append(futureEntry)
       }
@@ -114,8 +112,7 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
       activeSession: activeSession,
       profileSnapshot: profileSnapshot,
       deepLinkURL: deepLinkURL,
-      focusMessage: focusMessage,
-      enableQuickLaunch: configuration.enableQuickLaunch
+      focusMessage: focusMessage
     )
   }
 }
