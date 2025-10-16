@@ -301,6 +301,7 @@ struct BlockedProfileView: View {
                   customReminderMessage = String(newValue.prefix(178))
                 }
               }
+              .disabled(isBlocking)
             }
           }
 
