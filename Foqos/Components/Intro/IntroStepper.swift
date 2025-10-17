@@ -8,6 +8,8 @@ struct IntroStepper: View {
   let nextButtonTitle: String
   let showBackButton: Bool
 
+  @State private var buttonsVisible: Bool = false
+
   init(
     currentStep: Int,
     totalSteps: Int,
@@ -71,10 +73,17 @@ struct IntroStepper: View {
           )
         }
       }
+      .opacity(buttonsVisible ? 1 : 0)
+      .offset(y: buttonsVisible ? 0 : 20)
     }
     .padding(.horizontal, 20)
     .padding(.top, 30)
     .padding(.bottom, 20)
+    .onAppear {
+      withAnimation(.easeOut(duration: 0.5).delay(0.2)) {
+        buttonsVisible = true
+      }
+    }
 
     // Progress dots
     HStack(spacing: 8) {
