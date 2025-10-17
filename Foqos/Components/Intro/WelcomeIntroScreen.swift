@@ -1,5 +1,7 @@
 import SwiftUI
 
+let ORBIT_OFFSET: CGFloat = 145
+
 struct WelcomeIntroScreen: View {
   @State private var logoScale: CGFloat = 0.3
   @State private var logoRotation: Double = -180
@@ -20,22 +22,40 @@ struct WelcomeIntroScreen: View {
 
       // Logo container with orbiting icons
       ZStack {
-        // Orbiting NFC Logo
+        // Orbiting NFC Logo (0 degrees)
         Image("NFCLogo")
           .resizable()
           .scaledToFit()
           .frame(width: 50, height: 50)
-          .offset(x: 130)  // Orbit radius
+          .offset(x: ORBIT_OFFSET)  // Orbit radius
           .rotationEffect(.degrees(orbitRotation))
           .opacity(showContent ? 1 : 0)
 
-        // Orbiting QR Code Logo
+        // Orbiting Barcode Icon (90 degrees)
+        Image("BarcodeIcon")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 50, height: 50)
+          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .rotationEffect(.degrees(orbitRotation + 90))
+          .opacity(showContent ? 1 : 0)
+
+        // Orbiting QR Code Logo (180 degrees)
         Image("QRCodeLogo")
           .resizable()
           .scaledToFit()
           .frame(width: 50, height: 50)
-          .offset(x: 130)  // Orbit radius
-          .rotationEffect(.degrees(orbitRotation + 180))  // Opposite side
+          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .rotationEffect(.degrees(orbitRotation + 180))
+          .opacity(showContent ? 1 : 0)
+
+        // Orbiting Schedule Icon (270 degrees)
+        Image("ScheduleIcon")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 50, height: 50)
+          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .rotationEffect(.degrees(orbitRotation + 270))
           .opacity(showContent ? 1 : 0)
 
         // 3D Logo (center/sun)
@@ -53,16 +73,13 @@ struct WelcomeIntroScreen: View {
 
       // Message text
       VStack(spacing: 12) {
-        Text("You just got the same focus for free.")
-          .font(.system(size: 20, weight: .bold))
-          .foregroundColor(.primary)
-          .multilineTextAlignment(.center)
-
-        Text("Why waste hundreds on gimmicky plastic bricks and overpriced metal cards?")
-          .font(.system(size: 18, weight: .medium))
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-          .lineSpacing(4)
+        Text(
+          "Why waste hundreds on gimmicky plastic bricks and overpriced metal cards? You just got the same focus for free."
+        )
+        .font(.system(size: 18, weight: .medium))
+        .foregroundColor(.secondary)
+        .multilineTextAlignment(.center)
+        .lineSpacing(4)
       }
       .padding(.horizontal, 20)
       .opacity(showContent ? 1 : 0)
