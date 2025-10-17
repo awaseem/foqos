@@ -200,11 +200,12 @@ struct HomeView: View {
     .onAppear {
       onAppearApp()
     }
-    .sheet(isPresented: $showIntroScreen) {
+    .fullScreenCover(isPresented: $showIntroScreen) {
       IntroView {
         requestAuthorizer.requestAuthorization()
       }.interactiveDismissDisabled()
-    }.sheet(item: $profileToEdit) { profile in
+    }
+    .sheet(item: $profileToEdit) { profile in
       BlockedProfileView(profile: profile)
     }
     .sheet(item: $profileToShowStats) { profile in
