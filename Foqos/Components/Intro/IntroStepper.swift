@@ -5,7 +5,6 @@ struct IntroStepper: View {
   let totalSteps: Int
   let onNext: () -> Void
   let onBack: () -> Void
-  let onSkip: (() -> Void)?
   let nextButtonTitle: String
   let showBackButton: Bool
 
@@ -14,7 +13,6 @@ struct IntroStepper: View {
     totalSteps: Int,
     onNext: @escaping () -> Void,
     onBack: @escaping () -> Void,
-    onSkip: (() -> Void)? = nil,
     nextButtonTitle: String = "Next",
     showBackButton: Bool = true
   ) {
@@ -22,24 +20,12 @@ struct IntroStepper: View {
     self.totalSteps = totalSteps
     self.onNext = onNext
     self.onBack = onBack
-    self.onSkip = onSkip
     self.nextButtonTitle = nextButtonTitle
     self.showBackButton = showBackButton
   }
 
   var body: some View {
     VStack(spacing: 16) {
-      // Progress dots
-      HStack(spacing: 8) {
-        ForEach(0..<totalSteps, id: \.self) { index in
-          Circle()
-            .fill(index == currentStep ? Color.purple : Color.gray.opacity(0.3))
-            .frame(width: index == currentStep ? 10 : 8, height: index == currentStep ? 10 : 8)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentStep)
-        }
-      }
-      .padding(.bottom, 8)
-
       // Buttons
       HStack(spacing: 12) {
         // Back button
@@ -85,19 +71,20 @@ struct IntroStepper: View {
           )
         }
       }
-
-      // Skip button (optional)
-      if let onSkip = onSkip {
-        Button(action: onSkip) {
-          Text("Skip Intro")
-            .font(.system(size: 14))
-            .foregroundColor(.secondary)
-        }
-        .padding(.top, 4)
-      }
     }
     .padding(.horizontal, 20)
-    .padding(.vertical, 16)
+    .padding(.vertical, 20)
+
+    // Progress dots
+    HStack(spacing: 8) {
+      ForEach(0..<totalSteps, id: \.self) { index in
+        Circle()
+          .fill(index == currentStep ? Color.purple : Color.gray.opacity(0.3))
+          .frame(width: index == currentStep ? 10 : 8, height: index == currentStep ? 10 : 8)
+          .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentStep)
+      }
+    }
+    .padding(.bottom, 8)
   }
 }
 
@@ -110,7 +97,6 @@ struct IntroStepper: View {
       totalSteps: 3,
       onNext: { print("Next") },
       onBack: { print("Back") },
-      onSkip: { print("Skip") },
       nextButtonTitle: "Next",
       showBackButton: true
     )
