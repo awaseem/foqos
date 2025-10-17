@@ -3,7 +3,6 @@ import SwiftUI
 struct AnimatedIntroContainer: View {
   @State private var currentStep: Int = 0
   let onRequestAuthorization: () -> Void
-  let onComplete: () -> Void
 
   private let totalSteps = 3
 
@@ -77,9 +76,6 @@ struct AnimatedIntroContainer: View {
   AnimatedIntroContainer(
     onRequestAuthorization: {
       print("Request authorization")
-    },
-    onComplete: {
-      print("Complete")
     }
   )
 }

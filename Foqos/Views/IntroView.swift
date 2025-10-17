@@ -5,11 +5,7 @@ struct IntroView: View {
 
   var body: some View {
     AnimatedIntroContainer(
-      onRequestAuthorization: onRequestAuthorization,
-      onComplete: {
-        // This callback is currently not used but required by AnimatedIntroContainer
-        // Could be used for future enhancements like tracking completion events
-      }
+      onRequestAuthorization: onRequestAuthorization
     )
   }
 }
