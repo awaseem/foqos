@@ -11,11 +11,19 @@ struct WelcomeIntroScreen: View {
   var body: some View {
     VStack(spacing: 0) {
       // Heading
-      Text("Welcome to Foqos")
-        .font(.system(size: 40, weight: .bold))
-        .foregroundColor(.primary)
-        .opacity(showContent ? 1 : 0)
-        .offset(y: showContent ? 0 : -20)
+      VStack(spacing: 8) {
+        Text("Welcome to Foqos")
+          .font(.system(size: 34, weight: .bold))
+          .foregroundColor(.primary)
+          .opacity(showContent ? 1 : 0)
+          .offset(y: showContent ? 0 : -20)
+
+        Text("Live your best life with focus and intention.")
+          .font(.system(size: 16))
+          .foregroundColor(.secondary)
+          .opacity(showContent ? 1 : 0)
+          .offset(y: showContent ? 0 : -20)
+      }
 
       Spacer()
 
@@ -73,7 +81,7 @@ struct WelcomeIntroScreen: View {
       // Message text
       VStack(spacing: 12) {
         Text(
-          "Why waste hundreds on gimmicky plastic bricks and overpriced metal cards? You just got the same focus for free."
+          "No need to waste hundreds on gimmicky plastic bricks and overpriced metal cards."
         )
         .font(.system(size: 18, weight: .medium))
         .foregroundColor(.secondary)
@@ -98,7 +106,7 @@ struct WelcomeIntroScreen: View {
       }
 
       // Start continuous orbit animation
-      withAnimation(.linear(duration: 8).repeatForever(autoreverses: false).delay(0.5)) {
+      withAnimation(.linear(duration: 10).repeatForever(autoreverses: false).delay(0.5)) {
         orbitRotation = 360
       }
     }

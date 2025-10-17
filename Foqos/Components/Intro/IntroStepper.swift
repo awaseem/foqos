@@ -73,13 +73,16 @@ struct IntroStepper: View {
       }
     }
     .padding(.horizontal, 20)
-    .padding(.vertical, 20)
+    .padding(.top, 30)
+    .padding(.bottom, 20)
 
     // Progress dots
     HStack(spacing: 8) {
       ForEach(0..<totalSteps, id: \.self) { index in
         Circle()
-          .fill(index == currentStep ? Color.purple : Color.gray.opacity(0.3))
+          .fill(
+            index == currentStep ? Color.primary : Color.gray.opacity(0.3)
+          )
           .frame(width: index == currentStep ? 10 : 8, height: index == currentStep ? 10 : 8)
           .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentStep)
       }
