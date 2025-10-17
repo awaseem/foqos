@@ -16,7 +16,7 @@ struct PermissionsIntroScreen: View {
           .opacity(showContent ? 1 : 0)
           .offset(y: showContent ? 0 : -20)
 
-        Text("We need Screen Time access to get started")
+        Text("We need Screen Time Access to get started")
           .font(.system(size: 16))
           .foregroundColor(.secondary)
           .opacity(showContent ? 1 : 0)
