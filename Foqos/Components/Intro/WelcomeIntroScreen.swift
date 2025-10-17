@@ -3,9 +3,9 @@ import SwiftUI
 let ORBIT_OFFSET: CGFloat = 145
 
 struct WelcomeIntroScreen: View {
-  @State private var logoScale: CGFloat = 0.3
-  @State private var logoRotation: Double = -180
+  @State private var logoScale: CGFloat = 0.5
   @State private var showContent: Bool = false
+  @State private var showIcons: Bool = false
   @State private var orbitRotation: Double = 0
 
   var body: some View {
@@ -36,7 +36,7 @@ struct WelcomeIntroScreen: View {
           .frame(width: 50, height: 50)
           .offset(x: ORBIT_OFFSET)  // Orbit radius
           .rotationEffect(.degrees(orbitRotation))
-          .opacity(showContent ? 1 : 0)
+          .opacity(showIcons ? 1 : 0)
 
         // Orbiting Barcode Icon (90 degrees)
         Image("BarcodeIcon")
@@ -45,7 +45,7 @@ struct WelcomeIntroScreen: View {
           .frame(width: 50, height: 50)
           .offset(x: ORBIT_OFFSET)  // Orbit radius
           .rotationEffect(.degrees(orbitRotation + 90))
-          .opacity(showContent ? 1 : 0)
+          .opacity(showIcons ? 1 : 0)
 
         // Orbiting QR Code Logo (180 degrees)
         Image("QRCodeLogo")
@@ -54,7 +54,7 @@ struct WelcomeIntroScreen: View {
           .frame(width: 50, height: 50)
           .offset(x: ORBIT_OFFSET)  // Orbit radius
           .rotationEffect(.degrees(orbitRotation + 180))
-          .opacity(showContent ? 1 : 0)
+          .opacity(showIcons ? 1 : 0)
 
         // Orbiting Schedule Icon (270 degrees)
         Image("ScheduleIcon")
@@ -63,7 +63,7 @@ struct WelcomeIntroScreen: View {
           .frame(width: 50, height: 50)
           .offset(x: ORBIT_OFFSET)  // Orbit radius
           .rotationEffect(.degrees(orbitRotation + 270))
-          .opacity(showContent ? 1 : 0)
+          .opacity(showIcons ? 1 : 0)
 
         // 3D Logo (center/sun)
         Image("3DFoqosLogo")
@@ -71,7 +71,6 @@ struct WelcomeIntroScreen: View {
           .scaledToFit()
           .frame(width: 200, height: 200)
           .scaleEffect(logoScale)
-          .rotationEffect(.degrees(logoRotation))
           .opacity(showContent ? 1 : 0)
       }
       .frame(height: 360)
@@ -94,10 +93,9 @@ struct WelcomeIntroScreen: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .onAppear {
-      // Logo animation
+      // Logo scale animation (0.8s spring animation with 0.2s delay = 1.0s total)
       withAnimation(.spring(response: 0.8, dampingFraction: 0.6, blendDuration: 0).delay(0.2)) {
         logoScale = 1.0
-        logoRotation = 0
       }
 
       // Content fade in
@@ -105,8 +103,13 @@ struct WelcomeIntroScreen: View {
         showContent = true
       }
 
-      // Start continuous orbit animation
-      withAnimation(.linear(duration: 10).repeatForever(autoreverses: false).delay(0.5)) {
+      // Show icons after logo animation completes (1.0s delay)
+      withAnimation(.easeIn(duration: 0.2).delay(1.0)) {
+        showIcons = true
+      }
+
+      // Start continuous orbit animation after icons appear
+      withAnimation(.linear(duration: 10).repeatForever(autoreverses: false)) {
         orbitRotation = 360
       }
     }
