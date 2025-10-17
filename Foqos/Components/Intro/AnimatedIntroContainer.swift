@@ -8,52 +8,40 @@ struct AnimatedIntroContainer: View {
   private let totalSteps = 3
 
   var body: some View {
-    ZStack {
-      // Background gradient
-      LinearGradient(
-        gradient: Gradient(colors: [
-          Color(.systemBackground),
-          Color.purple.opacity(0.05),
-        ]),
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-      )
-      .ignoresSafeArea()
-
-      VStack(spacing: 0) {
-        // Content area
-        Group {
-          switch currentStep {
-          case 0:
-            WelcomeIntroScreen()
-          case 1:
-            FeaturesIntroScreen()
-          case 2:
-            PermissionsIntroScreen()
-          default:
-            WelcomeIntroScreen()
-          }
+    VStack(spacing: 0) {
+      // Content area
+      Group {
+        switch currentStep {
+        case 0:
+          WelcomeIntroScreen()
+        case 1:
+          FeaturesIntroScreen()
+        case 2:
+          PermissionsIntroScreen()
+        default:
+          WelcomeIntroScreen()
         }
-        .transition(
-          .asymmetric(
-            insertion: .move(edge: .trailing).combined(with: .opacity),
-            removal: .move(edge: .leading).combined(with: .opacity)
-          )
-        )
-        .animation(.easeInOut(duration: 0.3), value: currentStep)
-
-        // Stepper
-        IntroStepper(
-          currentStep: currentStep,
-          totalSteps: totalSteps,
-          onNext: handleNext,
-          onBack: handleBack,
-          nextButtonTitle: getNextButtonTitle(),
-          showBackButton: currentStep > 0
-        )
-        .animation(.easeInOut, value: currentStep)
       }
+      .transition(
+        .asymmetric(
+          insertion: .move(edge: .trailing).combined(with: .opacity),
+          removal: .move(edge: .leading).combined(with: .opacity)
+        )
+      )
+      .animation(.easeInOut(duration: 0.3), value: currentStep)
+
+      // Stepper
+      IntroStepper(
+        currentStep: currentStep,
+        totalSteps: totalSteps,
+        onNext: handleNext,
+        onBack: handleBack,
+        nextButtonTitle: getNextButtonTitle(),
+        showBackButton: currentStep > 0
+      )
+      .animation(.easeInOut, value: currentStep)
     }
+    .padding(.top, 10)
   }
 
   private func handleNext() {
