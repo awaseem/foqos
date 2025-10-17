@@ -2,8 +2,7 @@ import SwiftUI
 
 struct PermissionsIntroScreen: View {
   @State private var showContent: Bool = false
-  @State private var shieldScale: CGFloat = 0.3
-  @State private var shieldRotation: Double = -180
+  @State private var shieldScale: CGFloat = 0.5
   @State private var pulseAnimation: Bool = false
   let onRequestAuthorization: () -> Void
 
@@ -60,7 +59,6 @@ struct PermissionsIntroScreen: View {
           .scaledToFit()
           .frame(width: 200, height: 200)
           .scaleEffect(shieldScale)
-          .rotationEffect(.degrees(shieldRotation))
           .opacity(showContent ? 1 : 0)
       }
       .frame(height: 360)
@@ -97,10 +95,9 @@ struct PermissionsIntroScreen: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .onAppear {
-      // Shield animation
+      // Shield scale animation
       withAnimation(.spring(response: 0.8, dampingFraction: 0.6, blendDuration: 0).delay(0.2)) {
         shieldScale = 1.0
-        shieldRotation = 0
       }
 
       // Content fade in

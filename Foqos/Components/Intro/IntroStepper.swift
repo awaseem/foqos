@@ -37,12 +37,12 @@ struct IntroStepper: View {
               Text("Back")
                 .font(.system(size: 16, weight: .semibold))
             }
-            .foregroundColor(.purple)
+            .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(
               RoundedRectangle(cornerRadius: 12)
-                .fill(Color.purple.opacity(0.1))
+                .fill(Color.gray.opacity(0.1))
             )
           }
           .transition(.scale.combined(with: .opacity))
