@@ -16,7 +16,6 @@ struct WelcomeIntroScreen: View {
         .foregroundColor(.primary)
         .opacity(showContent ? 1 : 0)
         .offset(y: showContent ? 0 : -20)
-        .padding(.top, 40)
 
       Spacer()
 
@@ -81,7 +80,7 @@ struct WelcomeIntroScreen: View {
         .multilineTextAlignment(.center)
         .lineSpacing(4)
       }
-      .padding(.horizontal, 20)
+      .padding(.horizontal, 10)
       .opacity(showContent ? 1 : 0)
       .offset(y: showContent ? 0 : 20)
     }

@@ -6,25 +6,22 @@ struct FeaturesIntroScreen: View {
 
   let features = [
     Feature(
-      icon: "hand.raised.fill",
-      title: "Block Distracting Apps",
+      imageName: "NFCLogo",
+      title: "NFC Tags",
       description:
-        "Select which apps you want to block during focus time. Stay in control of your digital wellbeing.",
-      color: Color.purple
+        "Tap your phone on an NFC tag to instantly start or stop a focus session. Physical commitment for better focus."
     ),
     Feature(
-      icon: "clock.badge.checkmark.fill",
-      title: "Flexible Scheduling",
+      imageName: "QRCodeLogo",
+      title: "QR Codes",
       description:
-        "Set up schedules that work for you. Create routines that help you maintain focus when you need it most.",
-      color: Color.blue
+        "Scan a QR code to control your focus sessions. Place codes around your space to create intentional focus triggers."
     ),
     Feature(
-      icon: "chart.line.uptrend.xyaxis",
-      title: "Track Your Progress",
+      imageName: "ScheduleIcon",
+      title: "Smart Schedules",
       description:
-        "Monitor your focus sessions and see your improvement over time. Build better habits with data-driven insights.",
-      color: Color.green
+        "Set up automatic focus sessions based on your routine. Let Foqos help you build consistent focus habits."
     ),
   ]
 
@@ -44,55 +41,68 @@ struct FeaturesIntroScreen: View {
           .opacity(showContent ? 1 : 0)
           .offset(y: showContent ? 0 : -20)
       }
-      .padding(.top, 40)
-      .padding(.bottom, 32)
+      
+      Spacer()
 
-      // Feature cards with tab selector
-      VStack(spacing: 20) {
-        // Tab selector
-        HStack(spacing: 12) {
+      // Feature selector and display
+      VStack(spacing: 0) {
+        // Icon selector
+        HStack(spacing: 20) {
           ForEach(0..<features.count, id: \.self) { index in
             Button(action: {
               withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 selectedFeature = index
               }
             }) {
-              Image(systemName: features[index].icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(selectedFeature == index ? .white : features[index].color)
-                .frame(width: 50, height: 50)
-                .background(
-                  Circle()
-                    .fill(
-                      selectedFeature == index
-                        ? features[index].color : features[index].color.opacity(0.15))
-                )
+              Image(features[index].imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 60, height: 60)
+                .opacity(selectedFeature == index ? 1.0 : 0.4)
+                .scaleEffect(selectedFeature == index ? 1.2 : 1.0)
             }
-            .scaleEffect(selectedFeature == index ? 1.1 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedFeature)
           }
         }
-        .padding(.bottom, 8)
         .opacity(showContent ? 1 : 0)
+        .padding(.bottom, 20)
 
-        // Feature card
-        FeatureCard(feature: features[selectedFeature])
-          .transition(
-            .asymmetric(
-              insertion: .scale.combined(with: .opacity),
-              removal: .scale.combined(with: .opacity)
-            )
-          )
-          .id(selectedFeature)
-          .opacity(showContent ? 1 : 0)
+        // Feature content
+        VStack(spacing: 30) {
+          // Feature icon
+          Image(features[selectedFeature].imageName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 100, height: 100)
+            .transition(.scale.combined(with: .opacity))
+            .id("icon-\(selectedFeature)")
+
+          // Feature text
+          VStack(spacing: 12) {
+            Text(features[selectedFeature].title)
+              .font(.system(size: 28, weight: .bold))
+              .foregroundColor(.primary)
+              .multilineTextAlignment(.center)
+              .transition(.opacity)
+              .id("title-\(selectedFeature)")
+
+            Text(features[selectedFeature].description)
+              .font(.system(size: 17))
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.center)
+              .lineSpacing(4)
+              .padding(.horizontal, 32)
+              .transition(.opacity)
+              .id("description-\(selectedFeature)")
+          }
+        }
+        .opacity(showContent ? 1 : 0)
       }
-      .padding(.horizontal, 24)
 
       Spacer()
 
-      // Swipe indicator
+      // Tap indicator
       HStack(spacing: 6) {
-        Image(systemName: "hand.draw.fill")
+        Image(systemName: "hand.tap.fill")
           .font(.system(size: 14))
           .foregroundColor(.secondary)
         Text("Tap icons to explore features")
@@ -100,7 +110,6 @@ struct FeaturesIntroScreen: View {
           .foregroundColor(.secondary)
       }
       .opacity(showContent ? 0.7 : 0)
-      .padding(.bottom, 20)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .onAppear {
@@ -113,68 +122,9 @@ struct FeaturesIntroScreen: View {
 
 struct Feature: Identifiable {
   let id = UUID()
-  let icon: String
+  let imageName: String
   let title: String
   let description: String
-  let color: Color
-}
-
-struct FeatureCard: View {
-  let feature: Feature
-
-  var body: some View {
-    VStack(spacing: 20) {
-      // Icon with animated background
-      ZStack {
-        Circle()
-          .fill(
-            LinearGradient(
-              gradient: Gradient(colors: [
-                feature.color.opacity(0.3),
-                feature.color.opacity(0.1),
-              ]),
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            )
-          )
-          .frame(width: 100, height: 100)
-
-        Image(systemName: feature.icon)
-          .font(.system(size: 40, weight: .semibold))
-          .foregroundStyle(
-            LinearGradient(
-              gradient: Gradient(colors: [feature.color, feature.color.opacity(0.7)]),
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            )
-          )
-      }
-      .padding(.top, 20)
-
-      // Text content
-      VStack(spacing: 12) {
-        Text(feature.title)
-          .font(.system(size: 24, weight: .bold))
-          .foregroundColor(.primary)
-          .multilineTextAlignment(.center)
-
-        Text(feature.description)
-          .font(.system(size: 16))
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-          .lineSpacing(4)
-          .fixedSize(horizontal: false, vertical: true)
-      }
-      .padding(.horizontal, 20)
-      .padding(.bottom, 20)
-    }
-    .frame(maxWidth: .infinity)
-    .background(
-      RoundedRectangle(cornerRadius: 24)
-        .fill(Color(.secondarySystemBackground))
-        .shadow(color: feature.color.opacity(0.2), radius: 20, x: 0, y: 10)
-    )
-  }
 }
 
 #Preview {
