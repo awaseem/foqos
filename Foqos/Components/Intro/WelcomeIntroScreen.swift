@@ -15,7 +15,8 @@ struct WelcomeIntroScreen: View {
         .opacity(showContent ? 1 : 0)
         .offset(y: showContent ? 0 : -20)
         .padding(.top, 40)
-        .padding(.bottom, 32)
+
+      Spacer()
 
       // Logo container with orbiting icons
       ZStack {
@@ -47,17 +48,23 @@ struct WelcomeIntroScreen: View {
           .opacity(showContent ? 1 : 0)
       }
       .frame(height: 360)
-      .padding(.vertical, 40)
+
+      Spacer()
 
       // Message text
-      Text(
-        "You made the right decision not spending hundreds of dollars on plastic bricks, metal cards or subscription fees to get focused time in your life."
-      )
-      .font(.system(size: 18, weight: .medium))
-      .foregroundColor(.secondary)
-      .multilineTextAlignment(.center)
-      .lineSpacing(4)
-      .padding(.horizontal, 40)
+      VStack(spacing: 12) {
+        Text("You just got the same focus for free.")
+          .font(.system(size: 20, weight: .bold))
+          .foregroundColor(.primary)
+          .multilineTextAlignment(.center)
+
+        Text("Why waste hundreds on gimmicky plastic bricks and overpriced metal cards?")
+          .font(.system(size: 18, weight: .medium))
+          .foregroundColor(.secondary)
+          .multilineTextAlignment(.center)
+          .lineSpacing(4)
+      }
+      .padding(.horizontal, 20)
       .opacity(showContent ? 1 : 0)
       .offset(y: showContent ? 0 : 20)
     }

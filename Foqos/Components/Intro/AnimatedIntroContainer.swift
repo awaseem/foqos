@@ -48,7 +48,6 @@ struct AnimatedIntroContainer: View {
           totalSteps: totalSteps,
           onNext: handleNext,
           onBack: handleBack,
-          onSkip: currentStep < totalSteps - 1 ? handleSkip : nil,
           nextButtonTitle: getNextButtonTitle(),
           showBackButton: currentStep > 0
         )
@@ -73,12 +72,6 @@ struct AnimatedIntroContainer: View {
       withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
         currentStep -= 1
       }
-    }
-  }
-
-  private func handleSkip() {
-    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-      currentStep = totalSteps - 1
     }
   }
 
