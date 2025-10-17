@@ -4,26 +4,50 @@ struct WelcomeIntroScreen: View {
   @State private var logoScale: CGFloat = 0.3
   @State private var logoRotation: Double = -180
   @State private var showContent: Bool = false
+  @State private var orbitRotation: Double = 0
 
   var body: some View {
     VStack(spacing: 0) {
       // Heading
       Text("Welcome to Foqos")
-        .font(.system(size: 34, weight: .bold))
+        .font(.system(size: 40, weight: .bold))
         .foregroundColor(.primary)
         .opacity(showContent ? 1 : 0)
         .offset(y: showContent ? 0 : -20)
+        .padding(.top, 40)
         .padding(.bottom, 32)
 
-      // 3D Logo
-      Image("3DFoqosLogo")
-        .resizable()
-        .scaledToFit()
-        .frame(width: 200, height: 200)
-        .scaleEffect(logoScale)
-        .rotationEffect(.degrees(logoRotation))
-        .opacity(showContent ? 1 : 0)
-        .padding(.vertical, 80)
+      // Logo container with orbiting icons
+      ZStack {
+        // Orbiting NFC Logo
+        Image("NFCLogo")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 50, height: 50)
+          .offset(x: 130)  // Orbit radius
+          .rotationEffect(.degrees(orbitRotation))
+          .opacity(showContent ? 1 : 0)
+
+        // Orbiting QR Code Logo
+        Image("QRCodeLogo")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 50, height: 50)
+          .offset(x: 130)  // Orbit radius
+          .rotationEffect(.degrees(orbitRotation + 180))  // Opposite side
+          .opacity(showContent ? 1 : 0)
+
+        // 3D Logo (center/sun)
+        Image("3DFoqosLogo")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 200, height: 200)
+          .scaleEffect(logoScale)
+          .rotationEffect(.degrees(logoRotation))
+          .opacity(showContent ? 1 : 0)
+      }
+      .frame(height: 360)
+      .padding(.vertical, 40)
 
       // Message text
       Text(
@@ -48,6 +72,11 @@ struct WelcomeIntroScreen: View {
       // Content fade in
       withAnimation(.easeOut(duration: 0.6).delay(0.3)) {
         showContent = true
+      }
+
+      // Start continuous orbit animation
+      withAnimation(.linear(duration: 8).repeatForever(autoreverses: false).delay(0.5)) {
+        orbitRotation = 360
       }
     }
   }
