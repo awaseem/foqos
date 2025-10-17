@@ -29,7 +29,7 @@ struct AnimatedIntroContainer: View {
           case 1:
             FeaturesIntroScreen()
           case 2:
-            PermissionsIntroScreen(onRequestAuthorization: onRequestAuthorization)
+            PermissionsIntroScreen()
           default:
             WelcomeIntroScreen()
           }

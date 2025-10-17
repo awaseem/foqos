@@ -4,7 +4,6 @@ struct PermissionsIntroScreen: View {
   @State private var showContent: Bool = false
   @State private var shieldScale: CGFloat = 0.5
   @State private var pulseAnimation: Bool = false
-  let onRequestAuthorization: () -> Void
 
   var body: some View {
     VStack(spacing: 0) {
@@ -114,8 +113,6 @@ struct PermissionsIntroScreen: View {
 }
 
 #Preview {
-  PermissionsIntroScreen(onRequestAuthorization: {
-    print("Request authorization")
-  })
-  .background(Color(.systemBackground))
+  PermissionsIntroScreen()
+    .background(Color(.systemBackground))
 }
