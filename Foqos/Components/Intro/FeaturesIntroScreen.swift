@@ -9,19 +9,19 @@ struct FeaturesIntroScreen: View {
       imageName: "NFCLogo",
       title: "NFC Tags",
       description:
-        "Tap your phone on an NFC tag to instantly start or stop a focus session. Physical commitment for better focus."
+        "Tap your phone on an NFC tag to instantly start or stop a focus session. You can buy them on Amazon for a few dollars."
     ),
     Feature(
       imageName: "QRCodeLogo",
       title: "QR Codes",
       description:
-        "Scan a QR code to control your focus sessions. Place codes around your space to create intentional focus triggers."
+        "Scan a QR code to control your focus sessions. Place codes around your space to create intentional focus triggers. You can even use barcodes."
     ),
     Feature(
       imageName: "ScheduleIcon",
       title: "Smart Schedules",
       description:
-        "Set up automatic focus sessions based on your routine. Let Foqos help you build consistent focus habits."
+        "Set up automatic focus sessions based on your routine. Create schedules for work, study, personal time, and more."
     ),
   ]
 
@@ -41,7 +41,7 @@ struct FeaturesIntroScreen: View {
           .opacity(showContent ? 1 : 0)
           .offset(y: showContent ? 0 : -20)
       }
-      
+
       Spacer()
 
       // Feature selector and display
@@ -64,7 +64,7 @@ struct FeaturesIntroScreen: View {
           }
         }
         .opacity(showContent ? 1 : 0)
-        .padding(.bottom, 20)
+        .padding(.bottom, 50)
 
         // Feature content
         VStack(spacing: 30) {
