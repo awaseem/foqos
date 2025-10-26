@@ -26,8 +26,8 @@ struct BlockedProfileAppSelector: View {
 
   private var buttonText: String {
     return allowMode
-      ? "Select apps & websites to allow"
-      : "Select apps & websites to restrict"
+      ? "Select apps to allow"
+      : "Select apps to restrict"
   }
 
   var body: some View {
@@ -48,7 +48,7 @@ struct BlockedProfileAppSelector: View {
         .padding(.top, 4)
         .font(.caption)
     } else if catAndAppCount == 0 {
-      Text("No apps or websites selected")
+      Text("No apps selected")
         .foregroundStyle(.gray)
     } else {
       VStack(alignment: .leading, spacing: 4) {
@@ -60,6 +60,7 @@ struct BlockedProfileAppSelector: View {
           Text("⚠️ Categories expand to individual apps in Allow mode")
             .font(.caption)
             .foregroundColor(.orange)
+            .padding(.top, 4)
         }
       }
       .padding(.top, 4)
