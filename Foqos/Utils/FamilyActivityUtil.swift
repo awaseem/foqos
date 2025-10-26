@@ -28,11 +28,7 @@ struct FamilyActivityUtil {
   {
     let count = countSelectedActivities(selection, allowMode: allowMode)
 
-    if allowMode && selection.categories.count > 0 {
-      return "\(count) items (categories expand to individual apps)"
-    } else {
-      return "\(count) items"
-    }
+    return "\(count) items"
   }
 
   /// Determines if a warning should be shown for allow mode category selection

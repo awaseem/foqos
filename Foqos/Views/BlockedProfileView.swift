@@ -158,7 +158,7 @@ struct BlockedProfileView: View {
             .textContentType(.none)
         }
 
-        Section(enableAllowMode ? "Allowed" : "Blocked" + " Apps & Websites") {
+        Section(enableAllowMode ? "Allowed" : "Blocked" + " Apps") {
           BlockedProfileAppSelector(
             selection: selectedActivity,
             buttonAction: { showingActivityPicker = true },
@@ -169,7 +169,7 @@ struct BlockedProfileView: View {
           CustomToggle(
             title: "Apps Allow Mode",
             description:
-              "Pick apps or websites to allow and block everything else. This will erase any other selection you've made.",
+              "Pick apps to allow and block everything else. This will erase any other selection you've made.",
             isOn: $enableAllowMode,
             isDisabled: isBlocking
           )
