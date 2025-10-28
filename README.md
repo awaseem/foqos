@@ -162,7 +162,7 @@ When reporting issues, please include:
 - Steps to reproduce
 - Expected vs actual behavior
 - Screenshots if applicable
-- **Debug output** (highly recommended):
+- **Debug output** (needed for diagnosing issues):
   1. Start an active profile
   2. Scroll to the bottom and tap "Debug Mode"
   3. Tap the copy button on the right-hand side
