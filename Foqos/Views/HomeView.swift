@@ -39,6 +39,9 @@ struct HomeView: View {
   // Navigate to profile
   @State private var navigateToProfileId: UUID? = nil
 
+  // Debug mode
+  @State private var showingDebugMode = false
+
   // Activity sessions
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
     var sessions: [BlockedProfileSession]
@@ -136,6 +139,10 @@ struct HomeView: View {
         }
 
         VersionFooter(
+          profileIsActive: isBlocking,
+          tapProfileDebugHandler: {
+            showingDebugMode = true
+          },
           authorizationStatus: requestAuthorizer.getAuthorizationStatus(),
           onAuthorizationHandler: {
             requestAuthorizer.requestAuthorization()
@@ -227,6 +234,9 @@ struct HomeView: View {
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350)])
+    }
+    .sheet(isPresented: $showingDebugMode) {
+      DebugView()
     }
     .alert(alertTitle, isPresented: $showingAlert) {
       Button("OK", role: .cancel) { dismissAlert() }
