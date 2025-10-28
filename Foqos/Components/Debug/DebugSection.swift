@@ -18,9 +18,7 @@ struct DebugSection<Content: View>: View {
       VStack(alignment: .leading, spacing: 8) {
         content
       }
-      .padding()
-      .background(Color(.systemGray6))
-      .cornerRadius(12)
+      .padding(.vertical, 12)
     }
   }
 }
