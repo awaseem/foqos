@@ -4,6 +4,9 @@ import SwiftUI
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
 
 struct VersionFooter: View {
+  let profileIsActive: Bool
+  let tapProfileDebugHandler: () -> Void
+
   let authorizationStatus: AuthorizationStatus
   let onAuthorizationHandler: () -> Void
 
@@ -51,12 +54,20 @@ struct VersionFooter: View {
         .font(.footnote)
         .foregroundColor(.secondary)
 
-      Link(
-        "Buy NFC Tags",
-        destination: URL(string: AMZN_STORE_LINK)!
-      )
-      .font(.footnote)
-      .tint(.blue)
+      if profileIsActive {
+        Button(action: tapProfileDebugHandler) {
+          Text("Debug mode")
+            .font(.footnote)
+            .foregroundColor(.blue)
+        }
+      } else {
+        Link(
+          "Buy NFC Tags",
+          destination: URL(string: AMZN_STORE_LINK)!
+        )
+        .font(.footnote)
+        .tint(.blue)
+      }
     }
     .padding(.bottom, 8)
   }
@@ -67,16 +78,28 @@ struct VersionFooter_Previews: PreviewProvider {
   static var previews: some View {
     VStack(spacing: 20) {
       VersionFooter(
+        profileIsActive: false,
+        tapProfileDebugHandler: {},
         authorizationStatus: .approved,
         onAuthorizationHandler: {}
       )
       .previewDisplayName("Authorized")
 
       VersionFooter(
+        profileIsActive: false,
+        tapProfileDebugHandler: {},
         authorizationStatus: .denied,
         onAuthorizationHandler: {}
       )
       .previewDisplayName("Not Authorized")
+
+      VersionFooter(
+        profileIsActive: true,
+        tapProfileDebugHandler: {},
+        authorizationStatus: .approved,
+        onAuthorizationHandler: {}
+      )
+      .previewDisplayName("Profile is active")
     }
   }
 }
