@@ -149,7 +149,7 @@ We love contributions! Here’s how to jump in:
 
 ## 🐛 Issues & Support
 
-Something not working as expected? We’re here to help.
+Something not working as expected? We're here to help.
 
 - **Bug Reports**: [Open an issue](https://github.com/awaseem/foqos/issues) with detailed steps to reproduce
 - **Feature Requests**: Share your ideas via [GitHub Issues](https://github.com/awaseem/foqos/issues)
@@ -162,6 +162,11 @@ When reporting issues, please include:
 - Steps to reproduce
 - Expected vs actual behavior
 - Screenshots if applicable
+- **Debug output** (highly recommended):
+  1. Start an active profile
+  2. Scroll to the bottom and tap "Debug Mode"
+  3. Tap the copy button on the right-hand side
+  4. Paste the output in your issue report
 
 ## 📄 License
 
