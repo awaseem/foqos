@@ -12,7 +12,7 @@ struct DebugRow: View {
         .frame(width: 160, alignment: .leading)
 
       Text(value)
-        .font(.caption)
+        .font(.caption.monospaced())
         .foregroundColor(.primary)
         .textSelection(.enabled)
 
