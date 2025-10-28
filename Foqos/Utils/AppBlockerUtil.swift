@@ -17,13 +17,18 @@ class AppBlockerUtil {
 
     let applicationTokens = selection.applicationTokens
     let categoriesTokens = selection.categoryTokens
+    let webTokens = selection.webDomainTokens
 
     if allowOnlyApps {
       store.shield.applicationCategories =
         .all(except: applicationTokens)
+      store.shield.webDomainCategories = .all(except: webTokens)
+
     } else {
       store.shield.applications = applicationTokens
       store.shield.applicationCategories = .specific(categoriesTokens)
+      store.shield.webDomainCategories = .specific(categoriesTokens)
+      store.shield.webDomains = webTokens
     }
 
     if allowOnlyDomains {

@@ -158,7 +158,7 @@ struct BlockedProfileView: View {
             .textContentType(.none)
         }
 
-        Section(enableAllowMode ? "Allowed" : "Blocked" + " Apps") {
+        Section((enableAllowMode ? "Allowed" : "Blocked") + " Apps") {
           BlockedProfileAppSelector(
             selection: selectedActivity,
             buttonAction: { showingActivityPicker = true },
@@ -175,7 +175,7 @@ struct BlockedProfileView: View {
           )
         }
 
-        Section(enableAllowModeDomain ? "Allowed" : "Blocked" + " Domains") {
+        Section((enableAllowModeDomain ? "Allowed" : "Blocked") + " Domains") {
           BlockedProfileDomainSelector(
             domains: domains,
             buttonAction: { showingDomainPicker = true },
