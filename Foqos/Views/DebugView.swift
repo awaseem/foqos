@@ -4,6 +4,8 @@ import SwiftUI
 
 struct DebugView: View {
   @Environment(\.modelContext) private var modelContext
+  @Environment(\.dismiss) private var dismiss
+
   @EnvironmentObject var strategyManager: StrategyManager
 
   @State private var activeProfile: BlockedProfiles?
@@ -56,7 +58,14 @@ struct DebugView: View {
         .padding()
       }
       .navigationTitle("Debug Mode")
-      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
+          }
+          .accessibilityLabel("Cancel")
+        }
+      }
       .onAppear {
         loadActiveProfile()
       }
