@@ -65,6 +65,15 @@ struct DebugView: View {
           }
           .accessibilityLabel("Cancel")
         }
+
+        if activeProfile != nil {
+          ToolbarItem(placement: .topBarLeading) {
+            Button(action: { copyToMarkdown() }) {
+              Image(systemName: "doc.on.doc")
+            }
+            .accessibilityLabel("Copy as Markdown")
+          }
+        }
       }
       .onAppear {
         loadActiveProfile()
@@ -79,6 +88,123 @@ struct DebugView: View {
     if let session = strategyManager.activeSession {
       activeProfile = session.blockedProfile
     }
+  }
+
+  private func copyToMarkdown() {
+    guard let profile = activeProfile,
+      let session = strategyManager.activeSession
+    else { return }
+
+    var markdown = "# Debug Information\n\n"
+
+    // Active Profile Section
+    markdown += "## Active Profile\n\n"
+    markdown += "- **Name:** \(profile.name)\n"
+    markdown += "- **ID:** \(profile.id.uuidString)\n"
+    markdown += "- **Created:** \(DateFormatters.formatDate(profile.createdAt))\n"
+    markdown += "- **Updated:** \(DateFormatters.formatDate(profile.updatedAt))\n"
+    markdown += "- **Order:** \(profile.order)\n"
+
+    if let strategyId = profile.blockingStrategyId {
+      markdown += "- **Blocking Strategy ID:** \(strategyId)\n"
+    }
+
+    markdown += "- **Allow Mode:** \(profile.enableAllowMode ? "Yes" : "No")\n"
+    markdown += "- **Allow Mode Domains:** \(profile.enableAllowModeDomains ? "Yes" : "No")\n"
+    markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"
+    markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
+    markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
+    markdown += "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
+
+    if let reminderTime = profile.reminderTimeInSeconds {
+      markdown += "- **Reminder Time:** \(reminderTime / 60) minutes\n"
+    }
+
+    if let customMessage = profile.customReminderMessage, !customMessage.isEmpty {
+      markdown += "- **Custom Reminder Message:** \(customMessage)\n"
+    }
+
+    if let nfcTagId = profile.physicalUnblockNFCTagId {
+      markdown += "- **Physical Unlock NFC Tag ID:** \(nfcTagId)\n"
+    }
+
+    if let qrCodeId = profile.physicalUnblockQRCodeId {
+      markdown += "- **Physical Unlock QR Code ID:** \(qrCodeId)\n"
+    }
+
+    markdown += "- **Total Sessions:** \(profile.sessions.count)\n"
+
+    markdown += "\n"
+
+    // Active Session Section
+    markdown += "## Active Session\n\n"
+    markdown += "- **Session ID:** \(session.id)\n"
+    markdown += "- **Tag:** \(session.tag)\n"
+    markdown += "- **Is Active:** \(session.isActive ? "Yes" : "No")\n"
+    markdown += "- **Started At:** \(DateFormatters.formatDate(session.startTime))\n"
+
+    if let endTime = session.endTime {
+      markdown += "- **Ended At:** \(DateFormatters.formatDate(endTime))\n"
+    }
+
+    markdown += "- **Break Available:** \(session.isBreakAvailable ? "Yes" : "No")\n"
+    markdown += "- **Break Active:** \(session.isBreakActive ? "Yes" : "No")\n"
+
+    if let breakStartTime = session.breakStartTime {
+      markdown += "- **Break Started At:** \(DateFormatters.formatDate(breakStartTime))\n"
+    }
+
+    if let breakEndTime = session.breakEndTime {
+      markdown += "- **Break Ended At:** \(DateFormatters.formatDate(breakEndTime))\n"
+    }
+
+    markdown += "- **Force Started:** \(session.forceStarted ? "Yes" : "No")\n"
+    markdown += "- **Duration:** \(DateFormatters.formatDuration(session.duration))\n"
+
+    markdown += "\n"
+
+    // Schedule Section
+    if let schedule = profile.schedule {
+      markdown += "## Schedule\n\n"
+
+      if schedule.days.isEmpty {
+        markdown += "- **Days:** All days\n"
+      } else {
+        let dayNames = schedule.days.sorted(by: { $0.rawValue < $1.rawValue }).map { $0.name }
+          .joined(separator: ", ")
+        markdown += "- **Days:** \(dayNames)\n"
+      }
+
+      markdown +=
+        "- **Start Time:** \(String(format: "%02d:%02d", schedule.startHour, schedule.startMinute))\n"
+      markdown +=
+        "- **End Time:** \(String(format: "%02d:%02d", schedule.endHour, schedule.endMinute))\n"
+      markdown += "- **Updated At:** \(DateFormatters.formatDate(schedule.updatedAt))\n\n"
+    }
+
+    // Strategy Manager Section
+    markdown += "## Strategy Manager\n\n"
+    markdown += "- **Has Active Session:** \(strategyManager.activeSession != nil ? "Yes" : "No")\n"
+    markdown += "- **Elapsed Time:** \(Int(strategyManager.elapsedTime)) seconds\n"
+    markdown += "- **Timer Active:** \(strategyManager.timer != nil ? "Yes" : "No")\n\n"
+
+    // Selected Activity Section
+    markdown += "## Selected Activity\n\n"
+    markdown += "- **Applications:** \(profile.selectedActivity.applicationTokens.count)\n"
+    markdown += "- **Categories:** \(profile.selectedActivity.categoryTokens.count)\n"
+    markdown += "- **Web Domains:** \(profile.selectedActivity.webDomainTokens.count)\n\n"
+
+    // Domains Section
+    if let domains = profile.domains, !domains.isEmpty {
+      markdown += "## Domains (\(domains.count))\n\n"
+      for domain in domains {
+        markdown += "- \(domain)\n"
+      }
+      markdown += "\n"
+    }
+
+    // Copy to clipboard
+    UIPasteboard.general.string = markdown
   }
 }
 
