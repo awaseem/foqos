@@ -9,6 +9,7 @@ struct DebugView: View {
   @EnvironmentObject var strategyManager: StrategyManager
 
   @State private var activeProfile: BlockedProfiles?
+  @State private var showCopyConfirmation = false
 
   var body: some View {
     NavigationView {
@@ -67,7 +68,7 @@ struct DebugView: View {
         }
 
         if activeProfile != nil {
-          ToolbarItem(placement: .topBarLeading) {
+          ToolbarItem(placement: .topBarTrailing) {
             Button(action: { copyToMarkdown() }) {
               Image(systemName: "doc.on.doc")
             }
@@ -80,6 +81,11 @@ struct DebugView: View {
       }
       .refreshable {
         loadActiveProfile()
+      }
+      .alert("Copied to Clipboard", isPresented: $showCopyConfirmation) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text("Debug information has been copied as Markdown.")
       }
     }
   }
@@ -205,6 +211,7 @@ struct DebugView: View {
 
     // Copy to clipboard
     UIPasteboard.general.string = markdown
+    showCopyConfirmation = true
   }
 }
 
