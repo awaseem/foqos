@@ -46,9 +46,18 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     log.info("intervalDidStart for \(activity.rawValue), profile: \(profile.name)")
 
-    // If there is an existing active session, end it
-    if SharedData.getActiveSharedSession() != nil {
-      SharedData.endActiveSharedSession()
+    if let existingSession = SharedData.getActiveSharedSession() {
+      if existingSession.blockedProfileId == profile.id {
+        log.info(
+          "intervalDidStart for \(activity.rawValue), existing session profile matches device activity profile, continuing active session"
+        )
+        return
+      } else {
+        log.info(
+          "intervalDidStart for \(activity.rawValue), existing session profile does not match device activity profile, ending active session"
+        )
+        SharedData.endActiveSharedSession()
+      }
     }
 
     // Create a new active scheduled session for the profile
