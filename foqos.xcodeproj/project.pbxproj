@@ -100,6 +100,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Timers/ScheduleTimerActivity.swift,
 			);
 			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
 		};
@@ -151,12 +152,23 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		80C0E9BC2EB6BD9200BF05E3 /* Exceptions for "FoqosDeviceMonitor" folder in "Copy Bundle Resources" phase from "FoqosDeviceMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 801713082DE6C78C00B77FE1 /* Resources */;
+			membershipExceptions = (
+				Timers/ScheduleTimerActivity.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				801713192DE6CCF400B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "foqos" target */,
 				801713172DE6C78C00B77FE1 /* Exceptions for "FoqosDeviceMonitor" folder in "FoqosDeviceMonitor" target */,
+				80C0E9BC2EB6BD9200BF05E3 /* Exceptions for "FoqosDeviceMonitor" folder in "Copy Bundle Resources" phase from "FoqosDeviceMonitor" target */,
 			);
 			path = FoqosDeviceMonitor;
 			sourceTree = "<group>";
