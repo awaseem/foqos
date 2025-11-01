@@ -1,14 +1,14 @@
 import DeviceActivity
 import OSLog
 
-class BreakScheduleActivity: TimerActivity {
+class BreakTimerActivity: TimerActivity {
   static var id: String = "BreakScheduleActivity"
 
   private let appBlocker = AppBlockerUtil()
-  private let log = Logger(subsystem: "com.foqos.monitor", category: BreakScheduleActivity.id)
+  private let log = Logger(subsystem: "com.foqos.monitor", category: BreakTimerActivity.id)
 
   func getDeviceActivityName(from profileId: String) -> DeviceActivityName {
-    return DeviceActivityName(rawValue: "\(BreakScheduleActivity.id):\(profileId)")
+    return DeviceActivityName(rawValue: "\(BreakTimerActivity.id):\(profileId)")
   }
 
   func start(for profile: SharedData.ProfileSnapshot) {
