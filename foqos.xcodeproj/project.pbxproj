@@ -124,6 +124,10 @@
 			membershipExceptions = (
 				Models/Schedule.swift,
 				Models/Shared.swift,
+				Models/Timers/BreakTimerActivity.swift,
+				Models/Timers/ScheduleTimerActivity.swift,
+				Models/Timers/TimerActivity.swift,
+				Models/Timers/TimerActivityUtil.swift,
 				Utils/AppBlockerUtil.swift,
 			);
 			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
