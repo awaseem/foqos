@@ -35,6 +35,28 @@ class DeviceActivityCenterUtil {
     }
   }
 
+  static func startBreakTimerActivity(for profile: BlockedProfiles) {
+    let center = DeviceActivityCenter()
+    let breakTimerActivity = BreakTimerActivity()
+    let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
+
+    let (intervalStart, intervalEnd) = getTimerActivityInterval(minutes: 15)
+    let deviceActivitySchedule = DeviceActivitySchedule(
+      intervalStart: intervalStart,
+      intervalEnd: intervalEnd,
+      repeats: true,
+    )
+
+    do {
+      // Remove any existing schedule and create a new one
+      center.stopMonitoring([deviceActivityName])
+      try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
+      print("Scheduled break timer activity from \(intervalStart) to \(intervalEnd) daily")
+    } catch {
+      print("Failed to start break timer activity: \(error.localizedDescription)")
+    }
+  }
+
   static func removeScheduleRestrictions(for profile: BlockedProfiles) {
     let center = DeviceActivityCenter()
     let deviceActivityName = getDeviceActivityName(from: profile)
@@ -60,5 +82,31 @@ class DeviceActivityCenterUtil {
 
   private static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
     return DeviceActivityName(rawValue: profile.id.uuidString)
+  }
+
+  private static func getTimerActivityInterval(minutes: Int) -> (
+    intervalStart: DateComponents, intervalEnd: DateComponents
+  ) {
+    let intervalStart = DateComponents(hour: 0, minute: 0)
+
+    // Get current time
+    let now = Date()
+    let currentComponents = Calendar.current.dateComponents([.hour, .minute], from: now)
+    let currentHour = currentComponents.hour ?? 0
+    let currentMinute = currentComponents.minute ?? 0
+
+    // Calculate end time by adding minutes to current time
+    let totalMinutes = currentMinute + minutes
+    var endHour = currentHour + (totalMinutes / 60)
+    var endMinute = totalMinutes % 60
+
+    // Cap at 23:59 if it would roll over past midnight
+    if endHour >= 24 || (endHour == 23 && endMinute >= 59) {
+      endHour = 23
+      endMinute = 59
+    }
+
+    let intervalEnd = DateComponents(hour: endHour, minute: endMinute)
+    return (intervalStart: intervalStart, intervalEnd: intervalEnd)
   }
 }
