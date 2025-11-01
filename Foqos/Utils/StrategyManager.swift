@@ -362,20 +362,22 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    appBlocker.deactivateRestrictions()
-    session.startBreak()
-
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
 
+    // TODO we need to figure out what to do with notifications
+
     // Schedule a reminder to get back to the profile after the break
-    scheduleBreakReminder(profile: session.blockedProfile)
+    // scheduleBreakReminder(profile: session.blockedProfile)
 
     // Pause the timer during break
     stopTimer()
 
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Start the break timer activity
+    DeviceActivityCenterUtil.startBreakTimerActivity(for: session.blockedProfile)
   }
 
   private func stopBreak() {
