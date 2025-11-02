@@ -71,6 +71,13 @@ class DeviceActivityCenterUtil {
     center.stopMonitoring([activity])
   }
 
+  static func removeBreakTimerActivity(for profile: BlockedProfiles) {
+    let center = DeviceActivityCenter()
+    let breakTimerActivity = BreakTimerActivity()
+    let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
+    center.stopMonitoring([deviceActivityName])
+  }
+
   static func getActiveScheduleTimerActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
     let center = DeviceActivityCenter()
     let scheduleTimerActivity = ScheduleTimerActivity()
