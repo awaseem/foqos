@@ -6,10 +6,32 @@ struct FoqosWidgetAttributes: ActivityAttributes {
   public struct ContentState: Codable, Hashable {
     var startTime: Date
     var isBreakActive: Bool = false
+    var breakStartTime: Date?
+    var breakEndTime: Date?
 
     func getTimeIntervalSinceNow() -> Double {
-      return startTime.timeIntervalSince1970
+      // Calculate the break duration to subtract from elapsed time
+      let breakDuration = calculateBreakDuration()
+
+      // Calculate elapsed time minus break duration
+      let adjustedStartTime = startTime.addingTimeInterval(breakDuration)
+
+      return adjustedStartTime.timeIntervalSince1970
         - Date().timeIntervalSince1970
+    }
+
+    private func calculateBreakDuration() -> TimeInterval {
+      guard let breakStart = breakStartTime else {
+        return 0
+      }
+
+      if let breakEnd = breakEndTime {
+        // Break is complete, return the full duration
+        return breakEnd.timeIntervalSince(breakStart)
+      }
+
+      // Break is not yet ended, don't count it
+      return 0
     }
   }
 
@@ -150,17 +172,29 @@ extension FoqosWidgetAttributes {
 extension FoqosWidgetAttributes.ContentState {
   fileprivate static var shortTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes
-      .ContentState(startTime: Date(timeInterval: 60, since: Date.now))
+      .ContentState(
+        startTime: Date(timeInterval: 60, since: Date.now),
+        isBreakActive: false,
+        breakStartTime: nil,
+        breakEndTime: nil
+      )
   }
 
   fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
-    FoqosWidgetAttributes.ContentState(startTime: Date(timeInterval: 60, since: Date.now))
+    FoqosWidgetAttributes.ContentState(
+      startTime: Date(timeInterval: 60, since: Date.now),
+      isBreakActive: false,
+      breakStartTime: nil,
+      breakEndTime: nil
+    )
   }
 
   fileprivate static var breakActive: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
       startTime: Date(timeInterval: 60, since: Date.now),
-      isBreakActive: true
+      isBreakActive: true,
+      breakStartTime: Date.now,
+      breakEndTime: nil
     )
   }
 }
