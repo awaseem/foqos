@@ -21,18 +21,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
   override init() {
     super.init()
-    log.info("foqosDeviceActivityMonitorExtension initialized")
   }
 
   override func intervalDidStart(for activity: DeviceActivityName) {
     super.intervalDidStart(for: activity)
 
+    log.info("intervalDidStart for activity: \(activity.rawValue)")
     TimerActivityUtil.startTimerActivity(for: activity)
   }
 
   override func intervalDidEnd(for activity: DeviceActivityName) {
     super.intervalDidEnd(for: activity)
 
+    log.info("intervalDidEnd for activity: \(activity.rawValue)")
     TimerActivityUtil.stopTimerActivity(for: activity)
   }
 }

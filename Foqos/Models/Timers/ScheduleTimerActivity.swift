@@ -1,10 +1,10 @@
 import DeviceActivity
 import OSLog
 
+private let log: Logger = Logger(subsystem: "com.foqos.monitor", category: ScheduleTimerActivity.id)
+
 class ScheduleTimerActivity: TimerActivity {
   static var id: String = "ScheduleTimerActivity"
-
-  private let log = Logger(subsystem: "com.foqos.monitor", category: ScheduleTimerActivity.id)
 
   private let appBlocker = AppBlockerUtil()
 
@@ -79,7 +79,6 @@ class ScheduleTimerActivity: TimerActivity {
     // End the active scheduled session
     SharedData.endActiveSharedSession()
   }
-
 
   func getScheduleInterval(from schedule: BlockedProfileSchedule) -> (
     intervalStart: DateComponents, intervalEnd: DateComponents
