@@ -212,9 +212,9 @@ struct BlockedProfileView: View {
 
         Section("Breaks") {
           CustomToggle(
-            title: "Enable Breaks",
+            title: "Allow Timed Breaks",
             description:
-              "Have the option to take a single break, you choose when to start/stop the break",
+              "Take a single break during your session. The break will automatically end after the selected duration.",
             isOn: $enableBreaks,
             isDisabled: isBlocking
           )
