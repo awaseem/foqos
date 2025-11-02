@@ -49,17 +49,20 @@ class BreakTimerActivity: TimerActivity {
     // Check to make sure the active session is the same as the profile before stopping the break
     if activeSession.blockedProfileId != profile.id {
       log.info(
-        "Start break timer activity for \(profileId), active session profile does not match profile to start break"
+        "Stop break timer activity for \(profileId), active session profile does not match profile to start break"
       )
       return
     }
 
-    // Start restrictions again since break is ended
-    appBlocker.activateRestrictions(for: profile)
+    // Check is a break is active before stopping the break
+    if activeSession.breakStartTime != nil && activeSession.breakEndTime == nil {
+      // Start restrictions again since break is ended
+      appBlocker.activateRestrictions(for: profile)
 
-    // Set the break end time
-    let now = Date()
-    SharedData.setBreakEndTime(date: now)
+      // Set the break end time
+      let now = Date()
+      SharedData.setBreakEndTime(date: now)
+    }
   }
 
   func getBreakInterval(from minutes: Int) -> (
