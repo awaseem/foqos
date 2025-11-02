@@ -17,6 +17,7 @@ struct BlockedProfileView: View {
   @State private var enableLiveActivity: Bool = false
   @State private var enableReminder: Bool = false
   @State private var enableBreaks: Bool = false
+  @State private var breakTimeInMinutes: Int = 15
   @State private var enableStrictMode: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
   @State private var customReminderMessage: String
@@ -80,6 +81,9 @@ struct BlockedProfileView: View {
     )
     _enableBreaks = State(
       initialValue: profile?.enableBreaks ?? false
+    )
+    _breakTimeInMinutes = State(
+      initialValue: profile?.breakTimeInMinutes ?? 15
     )
     _enableStrictMode = State(
       initialValue: profile?.enableStrictMode ?? false
@@ -206,15 +210,27 @@ struct BlockedProfileView: View {
           )
         }
 
-        Section("Safeguards") {
+        Section("Breaks") {
           CustomToggle(
-            title: "Breaks",
+            title: "Enable Breaks",
             description:
               "Have the option to take a single break, you choose when to start/stop the break",
             isOn: $enableBreaks,
             isDisabled: isBlocking
           )
 
+          if enableBreaks {
+            Picker("Break Duration", selection: $breakTimeInMinutes) {
+              Text("5 minutes").tag(5)
+              Text("10 minutes").tag(10)
+              Text("15 minutes").tag(15)
+              Text("30 minutes").tag(30)
+            }
+            .disabled(isBlocking)
+          }
+        }
+
+        Section("Safeguards") {
           CustomToggle(
             title: "Strict",
             description:
@@ -501,6 +517,7 @@ struct BlockedProfileView: View {
           reminderTime: reminderTimeSeconds,
           customReminderMessage: customReminderMessage,
           enableBreaks: enableBreaks,
+          breakTimeInMinutes: breakTimeInMinutes,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
@@ -524,6 +541,7 @@ struct BlockedProfileView: View {
           reminderTimeInSeconds: reminderTimeSeconds,
           customReminderMessage: customReminderMessage,
           enableBreaks: enableBreaks,
+          breakTimeInMinutes: breakTimeInMinutes,
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
