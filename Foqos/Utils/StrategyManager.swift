@@ -365,10 +365,8 @@ class StrategyManager: ObservableObject {
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
 
-    // TODO we need to figure out what to do with notifications
-
     // Schedule a reminder to get back to the profile after the break
-    // scheduleBreakReminder(profile: session.blockedProfile)
+    scheduleBreakReminder(profile: session.blockedProfile)
 
     // Pause the timer during break
     stopTimer()
@@ -516,11 +514,16 @@ class StrategyManager: ObservableObject {
 
   private func scheduleBreakReminder(profile: BlockedProfiles) {
     let profileName = profile.name
-    timersUtil.scheduleNotification(
-      title: "How was that break?",
-      message: "Get back to  " + profileName + " and start focusing",
-      seconds: TimeInterval(15 * 60)
-    )
+
+    // Schedule a reminder to let the user know that the break is about to end
+    let breakNotificationTimeInSeconds = UInt32((profile.breakTimeInMinutes - 1) * 60)
+    if breakNotificationTimeInSeconds > 0 {
+      timersUtil.scheduleNotification(
+        title: "Break almost over!",
+        message: "Hope you enjoyed your break, starting " + profileName + " in a 1 minute.",
+        seconds: TimeInterval(breakNotificationTimeInSeconds)
+      )
+    }
   }
 
   func cleanUpGhostSchedules(context: ModelContext) {
