@@ -84,7 +84,7 @@ class StrategyManager: ObservableObject {
     }
 
     if session.isBreakActive {
-      stopBreak()
+      stopBreak(context: context)
     } else {
       startBreak(context: context)
     }
@@ -381,7 +381,7 @@ class StrategyManager: ObservableObject {
     loadActiveSession(context: context)
   }
 
-  private func stopBreak() {
+  private func stopBreak(context: ModelContext) {
     guard let session = activeSession else {
       print("Breaks only available in active session")
       return
@@ -392,10 +392,8 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    let profile = session.blockedProfile
-    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
-
-    session.endBreak()
+    // Remove the break timer activity
+    DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
@@ -403,14 +401,14 @@ class StrategyManager: ObservableObject {
     // Cancel all notifications that were scheduled during break
     timersUtil.cancelAllNotifications()
 
-    // Remove the break timer activity
-    DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
-
     // Resume the timer after break ends
     startTimer()
 
     // Refresh widgets when break ends
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Load the active session since the break end time was set in a different thread
+    loadActiveSession(context: context)
   }
 
   private func dismissView() {
