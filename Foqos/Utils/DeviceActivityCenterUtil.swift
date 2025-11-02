@@ -45,7 +45,7 @@ class DeviceActivityCenterUtil {
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
-      repeats: true,
+      repeats: false,
     )
 
     do {

@@ -362,6 +362,9 @@ class StrategyManager: ObservableObject {
       return
     }
 
+    // Start the break on the session
+    session.startBreak()
+
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
 
