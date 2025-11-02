@@ -1,3 +1,4 @@
+import DeviceActivity
 import FamilyControls
 import SwiftData
 import SwiftUI
@@ -10,6 +11,10 @@ struct DebugView: View {
 
   @State private var activeProfile: BlockedProfiles?
   @State private var showCopyConfirmation = false
+
+  private var deviceActivities: [DeviceActivityName] {
+    DeviceActivityCenterUtil.getDeviceActivities()
+  }
 
   var body: some View {
     NavigationView {
@@ -40,6 +45,14 @@ struct DebugView: View {
               StrategyManagerDebugCard(strategyManager: strategyManager)
             }
 
+            // Device Activities Section
+            DebugSection(title: "Device Activities (\(deviceActivities.count))") {
+              DeviceActivitiesDebugCard(
+                activities: deviceActivities,
+                profileId: profile.id
+              )
+            }
+
             // Selected Apps & Categories
             DebugSection(title: "Selected Activity") {
               SelectedActivityDebugCard(selection: profile.selectedActivity)
@@ -54,6 +67,14 @@ struct DebugView: View {
 
           } else {
             DebugEmptyState()
+
+            // Still show Device Activities even without active profile
+            DebugSection(title: "Device Activities (\(deviceActivities.count))") {
+              DeviceActivitiesDebugCard(
+                activities: deviceActivities,
+                profileId: nil
+              )
+            }
           }
         }
         .padding()
@@ -194,6 +215,21 @@ struct DebugView: View {
     markdown += "- **Elapsed Time:** \(Int(strategyManager.elapsedTime)) seconds\n"
     markdown += "- **Timer Active:** \(strategyManager.timer != nil ? "Yes" : "No")\n\n"
 
+    // Device Activities Section
+    markdown += "## Device Activities (\(deviceActivities.count))\n\n"
+    if deviceActivities.isEmpty {
+      markdown += "No device activities scheduled.\n\n"
+    } else {
+      for (index, activity) in deviceActivities.enumerated() {
+        markdown += "### Activity \(index + 1)\n"
+        markdown += "- **Name:** \(activity.rawValue)\n"
+        markdown += "- **Type:** \(activityType(for: activity))\n"
+        markdown +=
+          "- **Matches Profile:** \(isActivityForProfile(activity, profileId: profile.id) ? "Yes" : "No")\n"
+        markdown += "\n"
+      }
+    }
+
     // Selected Activity Section
     markdown += "## Selected Activity\n\n"
     markdown += "- **Applications:** \(profile.selectedActivity.applicationTokens.count)\n"
@@ -212,6 +248,40 @@ struct DebugView: View {
     // Copy to clipboard
     UIPasteboard.general.string = markdown
     showCopyConfirmation = true
+  }
+
+  private func activityType(for activity: DeviceActivityName) -> String {
+    let rawValue = activity.rawValue
+
+    if rawValue.hasPrefix(BreakTimerActivity.id) {
+      return "Break Timer"
+    } else if rawValue.hasPrefix(ScheduleTimerActivity.id) {
+      return "Schedule Timer"
+    } else {
+      // Check if it's a UUID (legacy schedule format)
+      if UUID(uuidString: rawValue) != nil {
+        return "Schedule Timer (Legacy)"
+      }
+      return "Unknown"
+    }
+  }
+
+  private func isActivityForProfile(_ activity: DeviceActivityName, profileId: UUID) -> Bool {
+    let rawValue = activity.rawValue
+    let profileIdString = profileId.uuidString
+
+    // Check if it's a break timer activity for this profile
+    if rawValue.hasPrefix(BreakTimerActivity.id) {
+      return rawValue.hasSuffix(profileIdString)
+    }
+
+    // Check if it's a schedule timer activity for this profile
+    if rawValue.hasPrefix(ScheduleTimerActivity.id) {
+      return rawValue.hasSuffix(profileIdString)
+    }
+
+    // Check if it's a legacy schedule format (just the UUID)
+    return rawValue == profileIdString
   }
 }
 
