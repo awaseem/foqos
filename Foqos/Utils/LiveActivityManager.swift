@@ -83,7 +83,9 @@ class LiveActivityManager: ObservableObject {
     let attributes = FoqosWidgetAttributes(name: profileName, message: message)
     let contentState = FoqosWidgetAttributes.ContentState(
       startTime: session.startTime,
-      isBreakActive: session.isBreakActive
+      isBreakActive: session.isBreakActive,
+      breakStartTime: session.breakStartTime,
+      breakEndTime: session.breakEndTime
     )
 
     do {
@@ -110,7 +112,9 @@ class LiveActivityManager: ObservableObject {
 
     let updatedState = FoqosWidgetAttributes.ContentState(
       startTime: session.startTime,
-      isBreakActive: session.isBreakActive
+      isBreakActive: session.isBreakActive,
+      breakStartTime: session.breakStartTime,
+      breakEndTime: session.breakEndTime
     )
 
     Task {
@@ -127,7 +131,9 @@ class LiveActivityManager: ObservableObject {
 
     let updatedState = FoqosWidgetAttributes.ContentState(
       startTime: session.startTime,
-      isBreakActive: session.isBreakActive
+      isBreakActive: session.isBreakActive,
+      breakStartTime: session.breakStartTime,
+      breakEndTime: session.breakEndTime
     )
 
     Task {
