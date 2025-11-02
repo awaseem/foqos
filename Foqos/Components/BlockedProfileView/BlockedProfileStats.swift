@@ -27,10 +27,11 @@ struct BlockedProfileStats: View {
         title: "Apps Blocked", valueText: "\(profile.selectedActivity.applications.count)",
         systemImageName: "app", iconColor: .pink),
     ]
-    if let active = profile.activeDeviceActivity {
+    if let active = profile.activeScheduleTimerActivity {
       items.append(
         .init(
-          title: "Active Device Activity", valueText: active.rawValue, systemImageName: "bolt.fill",
+          title: "Active Schedule Timer Activity", valueText: active.rawValue,
+          systemImageName: "bolt.fill",
           iconColor: .yellow))
     }
     return items

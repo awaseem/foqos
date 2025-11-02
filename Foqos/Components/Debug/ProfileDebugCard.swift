@@ -62,8 +62,8 @@ struct ProfileDebugCard: View {
       Group {
         DebugRow(label: "Total Sessions", value: "\(profile.sessions.count)")
         DebugRow(
-          label: "Active Device Activity",
-          value: profile.activeDeviceActivity?.rawValue ?? "nil"
+          label: "Active Schedule Timer Activity",
+          value: profile.activeScheduleTimerActivity?.rawValue ?? "nil"
         )
       }
     }
