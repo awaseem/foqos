@@ -25,12 +25,8 @@ struct ProfileTimerButton: View {
     VStack(spacing: 8) {
       HStack(spacing: 8) {
         if isActive, let elapsedTimeVal = elapsedTime {
-          // Timer with clock icon
+          // Timer
           HStack(spacing: 8) {
-            Image(systemName: "clock.fill")
-              .font(.system(size: 14))
-              .foregroundColor(.primary.opacity(0.7))
-
             Text(timeString(from: elapsedTimeVal))
               .foregroundColor(.primary)
               .font(.system(size: 16, weight: .semibold))
