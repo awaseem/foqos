@@ -402,6 +402,9 @@ class StrategyManager: ObservableObject {
     // Cancel all notifications that were scheduled during break
     timersUtil.cancelAllNotifications()
 
+    // Remove the break timer activity
+    DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
+
     // Resume the timer after break ends
     startTimer()
 
