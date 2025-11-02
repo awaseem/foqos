@@ -27,6 +27,7 @@ enum SharedData {
     var reminderTimeInSeconds: UInt32?
     var customReminderMessage: String?
     var enableBreaks: Bool
+    var breakTimeInMinutes: Int = 15
     var enableStrictMode: Bool
     var enableAllowMode: Bool
     var enableAllowModeDomains: Bool

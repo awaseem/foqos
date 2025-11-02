@@ -17,6 +17,7 @@ class BlockedProfiles {
   var enableLiveActivity: Bool = false
   var reminderTimeInSeconds: UInt32?
   var enableBreaks: Bool = false
+  var breakTimeInMinutes: Int = 15
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
   var enableAllowModeDomains: Bool = false
@@ -49,6 +50,7 @@ class BlockedProfiles {
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String? = nil,
     enableBreaks: Bool = false,
+    breakTimeInMinutes: Int = 15,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
@@ -72,6 +74,7 @@ class BlockedProfiles {
     self.customReminderMessage = customReminderMessage
     self.enableLiveActivity = enableLiveActivity
     self.enableBreaks = enableBreaks
+    self.breakTimeInMinutes = breakTimeInMinutes
     self.enableStrictMode = enableStrictMode
     self.enableAllowMode = enableAllowMode
     self.enableAllowModeDomains = enableAllowModeDomains
@@ -123,6 +126,7 @@ class BlockedProfiles {
     reminderTime: UInt32? = nil,
     customReminderMessage: String? = nil,
     enableBreaks: Bool? = nil,
+    breakTimeInMinutes: Int? = nil,
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
     enableAllowModeDomains: Bool? = nil,
@@ -151,6 +155,10 @@ class BlockedProfiles {
 
     if let newEnableBreaks = enableBreaks {
       profile.enableBreaks = newEnableBreaks
+    }
+
+    if let newBreakTimeInMinutes = breakTimeInMinutes {
+      profile.breakTimeInMinutes = newBreakTimeInMinutes
     }
 
     if let newEnableStrictMode = enableStrictMode {
@@ -242,6 +250,7 @@ class BlockedProfiles {
       reminderTimeInSeconds: profile.reminderTimeInSeconds,
       customReminderMessage: profile.customReminderMessage,
       enableBreaks: profile.enableBreaks,
+      breakTimeInMinutes: profile.breakTimeInMinutes,
       enableStrictMode: profile.enableStrictMode,
       enableAllowMode: profile.enableAllowMode,
       enableAllowModeDomains: profile.enableAllowModeDomains,
@@ -292,6 +301,7 @@ class BlockedProfiles {
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String = "",
     enableBreaks: Bool = false,
+    breakTimeInMinutes: Int = 15,
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
@@ -311,6 +321,7 @@ class BlockedProfiles {
       reminderTimeInSeconds: reminderTimeInSeconds,
       customReminderMessage: customReminderMessage,
       enableBreaks: enableBreaks,
+      breakTimeInMinutes: breakTimeInMinutes,
       enableStrictMode: enableStrictMode,
       enableAllowMode: enableAllowMode,
       enableAllowModeDomains: enableAllowModeDomains,
@@ -347,6 +358,7 @@ class BlockedProfiles {
       reminderTimeInSeconds: source.reminderTimeInSeconds,
       customReminderMessage: source.customReminderMessage,
       enableBreaks: source.enableBreaks,
+      breakTimeInMinutes: source.breakTimeInMinutes,
       enableStrictMode: source.enableStrictMode,
       enableAllowMode: source.enableAllowMode,
       enableAllowModeDomains: source.enableAllowModeDomains,
