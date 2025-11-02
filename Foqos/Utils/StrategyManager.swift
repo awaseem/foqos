@@ -327,9 +327,13 @@ class StrategyManager: ObservableObject {
 
       switch session {
       case .started(let session):
+        // Update the snapshot of the profile in case some settings were changed
+        BlockedProfiles.updateSnapshot(for: session.blockedProfile)
+
+        self.errorMessage = nil
+
         self.activeSession = session
         self.startTimer()
-        self.errorMessage = nil
         self.liveActivityManager
           .startSessionActivity(session: session)
 
