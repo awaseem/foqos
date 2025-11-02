@@ -534,7 +534,7 @@ class StrategyManager: ObservableObject {
           print(
             "schedule is nil for profile: \(profile.name), schedule is incorrect ❌. Deleting schedule..."
           )
-          DeviceActivityCenterUtil.removeScheduleRestrictions(for: profile)
+          DeviceActivityCenterUtil.removeScheduleTimerActivities(for: profile)
         } else {
           print("schedule is not nil for profile: \(profile.name), schedule is correct ✅")
         }
@@ -542,7 +542,7 @@ class StrategyManager: ObservableObject {
         print(
           "no profile found for activity: \(activity.rawValue), schedule is incorrect ❌. Deleting schedule..."
         )
-        DeviceActivityCenterUtil.removeScheduleRestrictions(for: activity)
+        DeviceActivityCenterUtil.removeScheduleTimerActivities(for: activity)
       }
     }
   }

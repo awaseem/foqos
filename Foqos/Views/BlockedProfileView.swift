@@ -436,7 +436,7 @@ struct BlockedProfileView: View {
               if let source = profile {
                 let clonedProfile = try BlockedProfiles.cloneProfile(
                   source, in: modelContext, newName: trimmed)
-                DeviceActivityCenterUtil.scheduleRestrictions(for: clonedProfile)
+                DeviceActivityCenterUtil.scheduleTimerActivity(for: clonedProfile)
               }
             } catch {
               showError(message: error.localizedDescription)
@@ -512,7 +512,7 @@ struct BlockedProfileView: View {
         )
 
         // Schedule restrictions
-        DeviceActivityCenterUtil.scheduleRestrictions(for: updatedProfile)
+        DeviceActivityCenterUtil.scheduleTimerActivity(for: updatedProfile)
       } else {
         let newProfile = try BlockedProfiles.createProfile(
           in: modelContext,
@@ -535,7 +535,7 @@ struct BlockedProfileView: View {
         )
 
         // Schedule restrictions
-        DeviceActivityCenterUtil.scheduleRestrictions(for: newProfile)
+        DeviceActivityCenterUtil.scheduleTimerActivity(for: newProfile)
       }
 
       dismiss()
