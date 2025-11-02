@@ -41,7 +41,8 @@ class DeviceActivityCenterUtil {
     let breakTimerActivity = BreakTimerActivity()
     let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
 
-    let (intervalStart, intervalEnd) = breakTimerActivity.getBreakInterval(from: 15)
+    let (intervalStart, intervalEnd) = breakTimerActivity.getBreakInterval(
+      from: profile.breakTimeInMinutes)
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
