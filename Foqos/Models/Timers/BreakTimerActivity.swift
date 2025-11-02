@@ -12,6 +12,10 @@ class BreakTimerActivity: TimerActivity {
     return DeviceActivityName(rawValue: "\(BreakTimerActivity.id):\(profileId)")
   }
 
+  func getAllBreakTimerActivities(from activities: [DeviceActivityName]) -> [DeviceActivityName] {
+    return activities.filter { $0.rawValue.starts(with: BreakTimerActivity.id) }
+  }
+
   func start(for profile: SharedData.ProfileSnapshot) {
     let profileId = profile.id.uuidString
 

@@ -339,6 +339,9 @@ class StrategyManager: ObservableObject {
 
         // Refresh widgets when session ends
         WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+        // Remove all break timer activities
+        DeviceActivityCenterUtil.removeAllBreakTimerActivities()
       }
     }
 
