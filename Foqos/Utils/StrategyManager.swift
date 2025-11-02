@@ -53,10 +53,7 @@ class StrategyManager: ObservableObject {
     activeSession = getActiveSession(context: context)
 
     if activeSession?.isActive == true {
-      // If the session is active and the break is not active, start the timer
-      if !isBreakActive {
-        startTimer()
-      }
+      startTimer()
 
       // Start live activity for existing session if one exists
       // live activities can only be started when the app is in the foreground
@@ -92,8 +89,17 @@ class StrategyManager: ObservableObject {
 
   func startTimer() {
     timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-      if let startTime = self.activeSession?.startTime {
-        let rawElapsedTime = Date().timeIntervalSince(startTime)
+      guard let session = self.activeSession else { return }
+
+      if session.isBreakActive {
+        // Calculate break time remaining (countdown)
+        guard let breakStartTime = session.breakStartTime else { return }
+        let timeSinceBreakStart = Date().timeIntervalSince(breakStartTime)
+        let breakDurationInSeconds = TimeInterval(session.blockedProfile.breakTimeInMinutes * 60)
+        self.elapsedTime = max(0, breakDurationInSeconds - timeSinceBreakStart)
+      } else {
+        // Calculate session elapsed time
+        let rawElapsedTime = Date().timeIntervalSince(session.startTime)
         let breakDuration = self.calculateBreakDuration()
         self.elapsedTime = rawElapsedTime - breakDuration
       }
@@ -374,9 +380,6 @@ class StrategyManager: ObservableObject {
     // Schedule a reminder to get back to the profile after the break
     scheduleBreakReminder(profile: session.blockedProfile)
 
-    // Pause the timer during break
-    stopTimer()
-
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
@@ -403,9 +406,6 @@ class StrategyManager: ObservableObject {
 
     // Cancel all notifications that were scheduled during break
     timersUtil.cancelAllNotifications()
-
-    // Resume the timer after break ends
-    startTimer()
 
     // Refresh widgets when break ends
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
