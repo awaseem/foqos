@@ -377,8 +377,8 @@ class StrategyManager: ObservableObject {
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
-    // sync the schedule sessions
-    syncScheduleSessions(context: context)
+    // Load the active session since the break start time was set in a different thread
+    loadActiveSession(context: context)
   }
 
   private func stopBreak() {
