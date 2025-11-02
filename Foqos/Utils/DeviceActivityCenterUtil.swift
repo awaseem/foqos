@@ -4,12 +4,15 @@ import ManagedSettings
 import SwiftUI
 
 class DeviceActivityCenterUtil {
-  static func scheduleRestrictions(for profile: BlockedProfiles) {
+  static func scheduleTimerActivity(for profile: BlockedProfiles) {
     // Only schedule if the schedule is active
-    let center = DeviceActivityCenter()
     guard let schedule = profile.schedule else { return }
 
-    let deviceActivityName = getDeviceActivityName(from: profile)
+    let center = DeviceActivityCenter()
+    let scheduleTimerActivity = ScheduleTimerActivity()
+
+    let deviceActivityName = scheduleTimerActivity.getDeviceActivityName(
+      from: profile.id.uuidString)
 
     // If the schedule is not active, remove any existing schedule
     if !schedule.isActive {
@@ -57,31 +60,32 @@ class DeviceActivityCenterUtil {
     }
   }
 
-  static func removeScheduleRestrictions(for profile: BlockedProfiles) {
+  static func removeScheduleTimerActivities(for profile: BlockedProfiles) {
     let center = DeviceActivityCenter()
-    let deviceActivityName = getDeviceActivityName(from: profile)
+    let scheduleTimerActivity = ScheduleTimerActivity()
+    let deviceActivityName = scheduleTimerActivity.getDeviceActivityName(
+      from: profile.id.uuidString)
     center.stopMonitoring([deviceActivityName])
   }
 
-  static func removeScheduleRestrictions(for activity: DeviceActivityName) {
+  static func removeScheduleTimerActivities(for activity: DeviceActivityName) {
     let center = DeviceActivityCenter()
     center.stopMonitoring([activity])
   }
 
   static func getActiveDeviceActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
     let center = DeviceActivityCenter()
+    let scheduleTimerActivity = ScheduleTimerActivity()
     let activities = center.activities
 
-    return activities.first(where: { $0 == getDeviceActivityName(from: profile) })
+    return activities.first(where: {
+      $0 == scheduleTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
+    })
   }
 
   static func getDeviceActivities() -> [DeviceActivityName] {
     let center = DeviceActivityCenter()
     return center.activities
-  }
-
-  private static func getDeviceActivityName(from profile: BlockedProfiles) -> DeviceActivityName {
-    return DeviceActivityName(rawValue: profile.id.uuidString)
   }
 
   private static func getTimerActivityInterval(minutes: Int) -> (

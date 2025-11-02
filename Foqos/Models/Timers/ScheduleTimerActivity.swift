@@ -9,7 +9,9 @@ class ScheduleTimerActivity: TimerActivity {
   private let appBlocker = AppBlockerUtil()
 
   func getDeviceActivityName(from profileId: String) -> DeviceActivityName {
-    return DeviceActivityName(rawValue: "\(ScheduleTimerActivity.id):\(profileId)")
+    // Since schedules were implemented before the timer activities, the profile id is used as the device activity name for
+    // backward compatibility
+    return DeviceActivityName(rawValue: profileId)
   }
 
   func start(for profile: SharedData.ProfileSnapshot) {

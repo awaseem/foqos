@@ -217,7 +217,7 @@ class BlockedProfiles {
     deleteSnapshot(for: profile)
 
     // Remove the schedule restrictions
-    DeviceActivityCenterUtil.removeScheduleRestrictions(for: profile)
+    DeviceActivityCenterUtil.removeScheduleTimerActivities(for: profile)
 
     // Then delete the profile
     context.delete(profile)
