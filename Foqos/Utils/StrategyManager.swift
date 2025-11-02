@@ -378,9 +378,6 @@ class StrategyManager: ObservableObject {
     // Start the break timer activity
     DeviceActivityCenterUtil.startBreakTimerActivity(for: session.blockedProfile)
 
-    // Update live activity to show break state
-    liveActivityManager.updateBreakState(session: session)
-
     // Schedule a reminder to get back to the profile after the break
     scheduleBreakReminder(profile: session.blockedProfile)
 
@@ -389,6 +386,9 @@ class StrategyManager: ObservableObject {
 
     // Load the active session since the break start time was set in a different thread
     loadActiveSession(context: context)
+
+    // Update live activity to show break state
+    liveActivityManager.updateBreakState(session: session)
   }
 
   private func stopBreak(context: ModelContext) {
@@ -405,9 +405,6 @@ class StrategyManager: ObservableObject {
     // Remove the break timer activity
     DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
 
-    // Update live activity to show break has ended
-    liveActivityManager.updateBreakState(session: session)
-
     // Cancel all notifications that were scheduled during break
     timersUtil.cancelAllNotifications()
 
@@ -416,6 +413,9 @@ class StrategyManager: ObservableObject {
 
     // Load the active session since the break end time was set in a different thread
     loadActiveSession(context: context)
+
+    // Update live activity to show break has ended
+    liveActivityManager.updateBreakState(session: session)
   }
 
   private func dismissView() {
