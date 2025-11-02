@@ -127,7 +127,7 @@ struct HomeView: View {
               profileToShowStats = profile
             },
             onBreakTapped: { _ in
-              strategyManager.toggleBreak()
+              strategyManager.toggleBreak(context: context)
             },
             onManageTapped: {
               isProfileListPresent = true

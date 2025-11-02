@@ -77,7 +77,7 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  func toggleBreak() {
+  func toggleBreak(context: ModelContext) {
     guard let session = activeSession else {
       print("active session does not exist")
       return
@@ -86,7 +86,7 @@ class StrategyManager: ObservableObject {
     if session.isBreakActive {
       stopBreak()
     } else {
-      startBreak()
+      startBreak(context: context)
     }
   }
 
@@ -351,7 +351,7 @@ class StrategyManager: ObservableObject {
     return strategy
   }
 
-  private func startBreak() {
+  private func startBreak(context: ModelContext) {
     guard let session = activeSession else {
       print("Breaks only available in active session")
       return
@@ -362,8 +362,8 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    // Start the break on the session
-    session.startBreak()
+    // Start the break timer activity
+    DeviceActivityCenterUtil.startBreakTimerActivity(for: session.blockedProfile)
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
@@ -377,8 +377,8 @@ class StrategyManager: ObservableObject {
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
-    // Start the break timer activity
-    DeviceActivityCenterUtil.startBreakTimerActivity(for: session.blockedProfile)
+    // sync the schedule sessions
+    syncScheduleSessions(context: context)
   }
 
   private func stopBreak() {
