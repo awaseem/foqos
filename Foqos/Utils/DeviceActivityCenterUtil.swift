@@ -71,7 +71,7 @@ class DeviceActivityCenterUtil {
     center.stopMonitoring([activity])
   }
 
-  static func getActiveDeviceActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
+  static func getActiveScheduleTimerActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
     let center = DeviceActivityCenter()
     let scheduleTimerActivity = ScheduleTimerActivity()
     let activities = center.activities

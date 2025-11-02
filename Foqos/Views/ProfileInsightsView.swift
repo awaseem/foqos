@@ -510,10 +510,10 @@ extension ProfileInsightsView {
         systemImageName: "app", iconColor: .gray),
     ]
 
-    if let active = profile.activeDeviceActivity {
+    if let active = profile.activeScheduleTimerActivity {
       items.append(
         .init(
-          title: "Active Device Activity", valueText: String(active.rawValue.prefix(8)),
+          title: "Active Schedule Timer Activity", valueText: String(active.rawValue.prefix(8)),
           systemImageName: "bolt.fill",
           iconColor: .gray))
     }

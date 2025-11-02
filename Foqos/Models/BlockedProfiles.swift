@@ -34,8 +34,8 @@ class BlockedProfiles {
 
   @Relationship var sessions: [BlockedProfileSession] = []
 
-  var activeDeviceActivity: DeviceActivityName? {
-    return DeviceActivityCenterUtil.getActiveDeviceActivity(for: self)
+  var activeScheduleTimerActivity: DeviceActivityName? {
+    return DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self)
   }
 
   init(
