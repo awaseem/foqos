@@ -1,7 +1,7 @@
 import AppIntents
 import SwiftData
 
-struct CheckProfileStatusIntent: AppIntent {
+struct CheckSessionActiveIntent: AppIntent {
   @Dependency(key: "ModelContainer")
   private var modelContainer: ModelContainer
 
@@ -10,11 +10,12 @@ struct CheckProfileStatusIntent: AppIntent {
     return modelContainer.mainContext
   }
 
-  @Parameter(title: "Profile") var profile: BlockedProfileEntity
-
-  static var title: LocalizedStringResource = "Foqos Profile Status"
+  static var title: LocalizedStringResource = "Check if Foqos Session is Active"
   static var description = IntentDescription(
-    "Check if a Foqos profile is currently active and return the status as a boolean value.")
+    "Check if any Foqos blocking session is currently active and return true or false. Useful for automation and shortcuts."
+  )
+
+  static var openAppWhenRun: Bool = false
 
   @MainActor
   func perform() async throws -> some IntentResult & ReturnsValue<Bool> & ProvidesDialog {
@@ -23,13 +24,13 @@ struct CheckProfileStatusIntent: AppIntent {
     // Load the active session (this syncs scheduled sessions)
     strategyManager.loadActiveSession(context: modelContext)
 
-    // Check if there's an active session and if it belongs to the specified profile
-    let isActive = strategyManager.activeSession?.blockedProfile.id == profile.id
+    // Check if there's any active session using the isBlocking property
+    let isActive = strategyManager.isBlocking
 
     let dialogMessage =
       isActive
-      ? "\(profile.name) is currently active."
-      : "\(profile.name) is not active."
+      ? "A Foqos session is currently active."
+      : "No Foqos session is active."
 
     return .result(
       value: isActive,
