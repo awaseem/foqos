@@ -23,8 +23,16 @@ struct EmergencyView: View {
     .onAppear {
       strategyManager.checkAndResetEmergencyUnblocks()
     }
-    .toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
+  }
+
+  private var header: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Text("Emergency Access")
+          .font(.title2).bold()
+
+        Spacer()
+
         Menu {
           let currentPeriod = strategyManager.getResetPeriodInWeeks()
 
@@ -68,16 +76,25 @@ struct EmergencyView: View {
             }
           }
         } label: {
-          Image(systemName: "clock.arrow.circlepath")
+          HStack(spacing: 6) {
+            Image(systemName: "clock.arrow.circlepath")
+              .font(.caption)
+              .foregroundColor(.secondary)
+            if let nextResetDate = strategyManager.getNextResetDate() {
+              Text("Resets \(nextResetDate, format: .dateTime.month().day())")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+            Image(systemName: "chevron.down")
+              .font(.caption2)
+              .foregroundColor(.secondary)
+          }
+          .padding(.horizontal, 12)
+          .padding(.vertical, 6)
+          .background(Capsule().fill(Color.secondary.opacity(0.1)))
         }
       }
-    }
-  }
 
-  private var header: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      Text("Break Glass For Emergency Access")
-        .font(.title2).bold()
       Text(
         "Tap the glass to reveal the emergency unblock button. Use only when absolutely necessary."
       )
@@ -108,18 +125,6 @@ struct EmergencyView: View {
       Text("You have a limited number of emergency unblocks.")
         .font(.footnote)
         .foregroundColor(.secondary)
-
-      if let nextResetDate = strategyManager.getNextResetDate() {
-        HStack(spacing: 6) {
-          Image(systemName: "clock.arrow.circlepath")
-            .font(.caption)
-            .foregroundColor(.secondary)
-          Text("Resets: \(nextResetDate, format: .dateTime.month().day().year())")
-            .font(.caption)
-            .foregroundColor(.secondary)
-        }
-        .padding(.top, 4)
-      }
 
       BreakGlassButton(tapsToShatter: 3) {
         ActionButton(
