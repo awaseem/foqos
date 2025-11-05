@@ -20,6 +20,58 @@ struct EmergencyView: View {
       }
       .padding()
     }
+    .onAppear {
+      strategyManager.checkAndResetEmergencyUnblocks()
+    }
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        Menu {
+          let currentPeriod = strategyManager.getResetPeriodInWeeks()
+
+          Button {
+            strategyManager.setResetPeriodInWeeks(2)
+          } label: {
+            if currentPeriod == 2 {
+              Label("2 weeks", systemImage: "checkmark")
+            } else {
+              Text("2 weeks")
+            }
+          }
+
+          Button {
+            strategyManager.setResetPeriodInWeeks(4)
+          } label: {
+            if currentPeriod == 4 {
+              Label("4 weeks", systemImage: "checkmark")
+            } else {
+              Text("4 weeks")
+            }
+          }
+
+          Button {
+            strategyManager.setResetPeriodInWeeks(6)
+          } label: {
+            if currentPeriod == 6 {
+              Label("6 weeks", systemImage: "checkmark")
+            } else {
+              Text("6 weeks")
+            }
+          }
+
+          Button {
+            strategyManager.setResetPeriodInWeeks(8)
+          } label: {
+            if currentPeriod == 8 {
+              Label("8 weeks", systemImage: "checkmark")
+            } else {
+              Text("8 weeks")
+            }
+          }
+        } label: {
+          Image(systemName: "clock.arrow.circlepath")
+        }
+      }
+    }
   }
 
   private var header: some View {
@@ -56,6 +108,18 @@ struct EmergencyView: View {
       Text("You have a limited number of emergency unblocks.")
         .font(.footnote)
         .foregroundColor(.secondary)
+
+      if let nextResetDate = strategyManager.getNextResetDate() {
+        HStack(spacing: 6) {
+          Image(systemName: "clock.arrow.circlepath")
+            .font(.caption)
+            .foregroundColor(.secondary)
+          Text("Resets: \(nextResetDate, format: .dateTime.month().day().year())")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+        .padding(.top, 4)
+      }
 
       BreakGlassButton(tapsToShatter: 3) {
         ActionButton(

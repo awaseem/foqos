@@ -23,6 +23,10 @@ class StrategyManager: ObservableObject {
   @Published var errorMessage: String?
 
   @AppStorage("emergencyUnblocksRemaining") private var emergencyUnblocksRemaining: Int = 3
+  @AppStorage("emergencyUnblocksResetPeriodInWeeks") private
+    var emergencyUnblocksResetPeriodInWeeks: Int = 4
+  @AppStorage("lastEmergencyUnblocksResetDate") private var lastEmergencyUnblocksResetDateTimestamp:
+    Double = 0
 
   private let liveActivityManager = LiveActivityManager.shared
 
@@ -302,6 +306,48 @@ class StrategyManager: ObservableObject {
 
   func resetEmergencyUnblocks() {
     emergencyUnblocksRemaining = 3
+    lastEmergencyUnblocksResetDateTimestamp = Date().timeIntervalSinceReferenceDate
+  }
+
+  func checkAndResetEmergencyUnblocks() {
+    // Initialize the last reset date if it hasn't been set
+    if lastEmergencyUnblocksResetDateTimestamp == 0 {
+      lastEmergencyUnblocksResetDateTimestamp = Date().timeIntervalSinceReferenceDate
+      return
+    }
+
+    let lastResetDate = Date(
+      timeIntervalSinceReferenceDate: lastEmergencyUnblocksResetDateTimestamp)
+    let weeksInSeconds: TimeInterval = TimeInterval(
+      emergencyUnblocksResetPeriodInWeeks * 7 * 24 * 60 * 60)
+    let elapsedTime = Date().timeIntervalSince(lastResetDate)
+
+    // Check if the reset period has elapsed
+    if elapsedTime >= weeksInSeconds {
+      emergencyUnblocksRemaining = 3
+      lastEmergencyUnblocksResetDateTimestamp = Date().timeIntervalSinceReferenceDate
+    }
+  }
+
+  func getNextResetDate() -> Date? {
+    guard lastEmergencyUnblocksResetDateTimestamp > 0 else {
+      return nil
+    }
+
+    let lastResetDate = Date(
+      timeIntervalSinceReferenceDate: lastEmergencyUnblocksResetDateTimestamp)
+    let calendar = Calendar.current
+    return calendar.date(
+      byAdding: .weekOfYear, value: emergencyUnblocksResetPeriodInWeeks, to: lastResetDate)
+  }
+
+  func getResetPeriodInWeeks() -> Int {
+    return emergencyUnblocksResetPeriodInWeeks
+  }
+
+  func setResetPeriodInWeeks(_ weeks: Int) {
+    emergencyUnblocksResetPeriodInWeeks = weeks
+    lastEmergencyUnblocksResetDateTimestamp = Date().timeIntervalSinceReferenceDate
   }
 
   static func getStrategyFromId(id: String) -> BlockingStrategy {
