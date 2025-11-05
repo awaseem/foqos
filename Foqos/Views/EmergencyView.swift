@@ -41,12 +41,9 @@ struct EmergencyView: View {
             if let nextResetDate = strategyManager.getNextResetDate() {
               Text("Resets \(nextResetDate, format: .dateTime.month().day())")
                 .font(.caption)
-                .foregroundColor(.secondary)
             }
           }
-          .padding(.horizontal, 12)
           .padding(.vertical, 6)
-          .background(Capsule().fill(Color.secondary.opacity(0.1)))
 
           Menu {
             let currentPeriod = strategyManager.getResetPeriodInWeeks()
