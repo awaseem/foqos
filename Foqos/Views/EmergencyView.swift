@@ -33,49 +33,7 @@ struct EmergencyView: View {
 
         Spacer()
 
-        Menu {
-          let currentPeriod = strategyManager.getResetPeriodInWeeks()
-
-          Button {
-            strategyManager.setResetPeriodInWeeks(2)
-          } label: {
-            if currentPeriod == 2 {
-              Label("2 weeks", systemImage: "checkmark")
-            } else {
-              Text("2 weeks")
-            }
-          }
-
-          Button {
-            strategyManager.setResetPeriodInWeeks(4)
-          } label: {
-            if currentPeriod == 4 {
-              Label("4 weeks", systemImage: "checkmark")
-            } else {
-              Text("4 weeks")
-            }
-          }
-
-          Button {
-            strategyManager.setResetPeriodInWeeks(6)
-          } label: {
-            if currentPeriod == 6 {
-              Label("6 weeks", systemImage: "checkmark")
-            } else {
-              Text("6 weeks")
-            }
-          }
-
-          Button {
-            strategyManager.setResetPeriodInWeeks(8)
-          } label: {
-            if currentPeriod == 8 {
-              Label("8 weeks", systemImage: "checkmark")
-            } else {
-              Text("8 weeks")
-            }
-          }
-        } label: {
+        HStack(spacing: 8) {
           HStack(spacing: 6) {
             Image(systemName: "clock.arrow.circlepath")
               .font(.caption)
@@ -85,13 +43,60 @@ struct EmergencyView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             }
-            Image(systemName: "chevron.down")
-              .font(.caption2)
-              .foregroundColor(.secondary)
           }
           .padding(.horizontal, 12)
           .padding(.vertical, 6)
           .background(Capsule().fill(Color.secondary.opacity(0.1)))
+
+          Menu {
+            let currentPeriod = strategyManager.getResetPeriodInWeeks()
+
+            Button {
+              strategyManager.setResetPeriodInWeeks(2)
+            } label: {
+              if currentPeriod == 2 {
+                Label("2 weeks", systemImage: "checkmark")
+              } else {
+                Text("2 weeks")
+              }
+            }
+
+            Button {
+              strategyManager.setResetPeriodInWeeks(4)
+            } label: {
+              if currentPeriod == 4 {
+                Label("4 weeks", systemImage: "checkmark")
+              } else {
+                Text("4 weeks")
+              }
+            }
+
+            Button {
+              strategyManager.setResetPeriodInWeeks(6)
+            } label: {
+              if currentPeriod == 6 {
+                Label("6 weeks", systemImage: "checkmark")
+              } else {
+                Text("6 weeks")
+              }
+            }
+
+            Button {
+              strategyManager.setResetPeriodInWeeks(8)
+            } label: {
+              if currentPeriod == 8 {
+                Label("8 weeks", systemImage: "checkmark")
+              } else {
+                Text("8 weeks")
+              }
+            }
+          } label: {
+            Image(systemName: "gearshape.fill")
+              .font(.caption)
+              .foregroundColor(.secondary)
+              .padding(8)
+              .background(Circle().fill(Color.secondary.opacity(0.1)))
+          }
         }
       }
 
