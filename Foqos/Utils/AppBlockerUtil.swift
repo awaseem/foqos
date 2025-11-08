@@ -13,6 +13,7 @@ class AppBlockerUtil {
     let allowOnlyApps = profile.enableAllowMode
     let allowOnlyDomains = profile.enableAllowModeDomains
     let strict = profile.enableStrictMode
+    let enableSafariBlocking = profile.enableSafariBlocking
     let domains = getWebDomains(from: profile)
 
     let applicationTokens = selection.applicationTokens
@@ -22,13 +23,19 @@ class AppBlockerUtil {
     if allowOnlyApps {
       store.shield.applicationCategories =
         .all(except: applicationTokens)
-      store.shield.webDomainCategories = .all(except: webTokens)
+
+      if enableSafariBlocking {
+        store.shield.webDomainCategories = .all(except: webTokens)
+      }
 
     } else {
       store.shield.applications = applicationTokens
       store.shield.applicationCategories = .specific(categoriesTokens)
-      store.shield.webDomainCategories = .specific(categoriesTokens)
-      store.shield.webDomains = webTokens
+
+      if enableSafariBlocking {
+        store.shield.webDomainCategories = .specific(categoriesTokens)
+        store.shield.webDomains = webTokens
+      }
     }
 
     if allowOnlyDomains {
@@ -46,6 +53,7 @@ class AppBlockerUtil {
     store.shield.applications = nil
     store.shield.applicationCategories = nil
     store.shield.webDomains = nil
+    store.shield.webDomainCategories = nil
 
     store.application.denyAppRemoval = false
 
