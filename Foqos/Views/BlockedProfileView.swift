@@ -23,6 +23,7 @@ struct BlockedProfileView: View {
   @State private var customReminderMessage: String
   @State private var enableAllowMode: Bool = false
   @State private var enableAllowModeDomain: Bool = false
+  @State private var enableSafariBlocking: Bool = true
   @State private var disableBackgroundStops: Bool = false
   @State private var domains: [String] = []
 
@@ -93,6 +94,9 @@ struct BlockedProfileView: View {
     )
     _enableAllowModeDomain = State(
       initialValue: profile?.enableAllowModeDomains ?? false
+    )
+    _enableSafariBlocking = State(
+      initialValue: profile?.enableSafariBlocking ?? true
     )
     _enableReminder = State(
       initialValue: profile?.reminderTimeInSeconds != nil
@@ -175,6 +179,14 @@ struct BlockedProfileView: View {
             description:
               "Pick apps to allow and block everything else. This will erase any other selection you've made.",
             isOn: $enableAllowMode,
+            isDisabled: isBlocking
+          )
+
+          CustomToggle(
+            title: "Block Safari",
+            description:
+              "Block Safari websites that are selected in the app selector above. When disabled, Safari will remain unrestricted regardless of the websites you pick.",
+            isOn: $enableSafariBlocking,
             isDisabled: isBlocking
           )
         }
@@ -521,6 +533,7 @@ struct BlockedProfileView: View {
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
+          enableSafariBlocking: enableSafariBlocking,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,
@@ -545,6 +558,7 @@ struct BlockedProfileView: View {
           enableStrictMode: enableStrictMode,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
+          enableSafariBlocking: enableSafariBlocking,
           domains: domains,
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,

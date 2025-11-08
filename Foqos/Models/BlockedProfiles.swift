@@ -21,6 +21,7 @@ class BlockedProfiles {
   var enableStrictMode: Bool = false
   var enableAllowMode: Bool = false
   var enableAllowModeDomains: Bool = false
+  var enableSafariBlocking: Bool = true
 
   var physicalUnblockNFCTagId: String?
   var physicalUnblockQRCodeId: String?
@@ -54,6 +55,7 @@ class BlockedProfiles {
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
+    enableSafariBlocking: Bool = true,
     order: Int = 0,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
@@ -78,6 +80,7 @@ class BlockedProfiles {
     self.enableStrictMode = enableStrictMode
     self.enableAllowMode = enableAllowMode
     self.enableAllowModeDomains = enableAllowModeDomains
+    self.enableSafariBlocking = enableSafariBlocking
     self.domains = domains
 
     self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
@@ -130,6 +133,7 @@ class BlockedProfiles {
     enableStrictMode: Bool? = nil,
     enableAllowMode: Bool? = nil,
     enableAllowModeDomains: Bool? = nil,
+    enableSafariBlocking: Bool? = nil,
     order: Int? = nil,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
@@ -171,6 +175,10 @@ class BlockedProfiles {
 
     if let newEnableAllowModeDomains = enableAllowModeDomains {
       profile.enableAllowModeDomains = newEnableAllowModeDomains
+    }
+
+    if let newEnableSafariBlocking = enableSafariBlocking {
+      profile.enableSafariBlocking = newEnableSafariBlocking
     }
 
     if let newOrder = order {
@@ -253,6 +261,7 @@ class BlockedProfiles {
       enableStrictMode: profile.enableStrictMode,
       enableAllowMode: profile.enableAllowMode,
       enableAllowModeDomains: profile.enableAllowModeDomains,
+      enableSafariBlocking: profile.enableSafariBlocking,
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
@@ -304,6 +313,7 @@ class BlockedProfiles {
     enableStrictMode: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
+    enableSafariBlocking: Bool = true,
     domains: [String]? = nil,
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
@@ -324,6 +334,7 @@ class BlockedProfiles {
       enableStrictMode: enableStrictMode,
       enableAllowMode: enableAllowMode,
       enableAllowModeDomains: enableAllowModeDomains,
+      enableSafariBlocking: enableSafariBlocking,
       order: profileOrder,
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
@@ -361,6 +372,7 @@ class BlockedProfiles {
       enableStrictMode: source.enableStrictMode,
       enableAllowMode: source.enableAllowMode,
       enableAllowModeDomains: source.enableAllowModeDomains,
+      enableSafariBlocking: source.enableSafariBlocking,
       order: nextOrder,
       domains: source.domains,
       physicalUnblockNFCTagId: source.physicalUnblockNFCTagId,

@@ -31,6 +31,7 @@ enum SharedData {
     var enableStrictMode: Bool
     var enableAllowMode: Bool
     var enableAllowModeDomains: Bool
+    var enableSafariBlocking: Bool
 
     var domains: [String]?
     var physicalUnblockNFCTagId: String?
