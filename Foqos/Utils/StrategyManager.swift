@@ -143,7 +143,7 @@ class StrategyManager: ObservableObject {
 
     do {
       guard
-        let profile = try BlockedProfiles.findProfile(
+        let profile: BlockedProfiles = try BlockedProfiles.findProfile(
           byID: profileUUID,
           in: context
         )
@@ -156,12 +156,12 @@ class StrategyManager: ObservableObject {
       let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
 
       if let localActiveSession = getActiveSession(context: context) {
-        if profile.disableBackgroundStops {
+        if localActiveSession.blockedProfile.disableBackgroundStops {
           print(
-            "profile: \(profile.name) has disable background stops enabled, not stopping it"
+            "profile: \(localActiveSession.blockedProfile.name) has disable background stops enabled, not stopping it"
           )
           self.errorMessage =
-            "profile: \(profile.name) has disable background stops enabled, not stopping it"
+            "profile: \(localActiveSession.blockedProfile.name) has disable background stops enabled, not stopping it"
           return
         }
 
@@ -171,6 +171,18 @@ class StrategyManager: ObservableObject {
             context: context,
             session: localActiveSession
           )
+
+        if localActiveSession.blockedProfile.id != profile.id {
+          print(
+            "User is switching sessions from deep link"
+          )
+
+          _ = manualStrategy.startBlocking(
+            context: context,
+            profile: profile,
+            forceStart: true
+          )
+        }
       } else {
         _ = manualStrategy.startBlocking(
           context: context,
