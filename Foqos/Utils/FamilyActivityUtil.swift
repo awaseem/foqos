@@ -9,12 +9,15 @@ struct FamilyActivityUtil {
   ///   - selection: The FamilyActivitySelection to count
   ///   - allowMode: Whether this is for allow mode (affects display but not actual count)
   /// - Returns: Total count of selected items
+  /// - Note: This shows the count as displayed to users. In ALLOW mode, Apple internally expands
+  ///         categories to individual apps when enforcing the 50 app limit, so selecting a few
+  ///         categories may exceed the limit. In BLOCK mode, categories count as 1 item each.
   static func countSelectedActivities(_ selection: FamilyActivitySelection, allowMode: Bool = false)
     -> Int
   {
-    // In both allow and block modes, the API limit counts categories as 1 each
-    // The difference is that in allow mode, Apple internally expands categories
-    // to individual apps, which may cause hitting the 50 limit sooner
+    // This count shows categories + apps + domains as displayed
+    // IMPORTANT: In Allow mode, Apple enforces the 50 limit AFTER expanding categories to individual apps
+    // In Block mode, categories count as 1 regardless of how many apps they contain
     return selection.categories.count + selection.applications.count + selection.webDomains.count
   }
 

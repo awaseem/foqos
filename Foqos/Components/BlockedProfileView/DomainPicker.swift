@@ -14,8 +14,8 @@ struct DomainPicker: View {
 
   private var message: String {
     return allowMode
-      ? "Up to 50 domains can be allowed. Add domains that you want to remain accessible during sessions."
-      : "Up to 50 domains can be blocked. Add domains that you want to restrict during sessions."
+      ? "Apple limits this to 50 domains. Add domains that you want to remain accessible during sessions."
+      : "Apple limits this to 50 domains. Add domains that you want to restrict during sessions."
   }
 
   var body: some View {
@@ -72,7 +72,7 @@ struct DomainPicker: View {
               .font(.caption)
 
             if domains.count >= maxDomains {
-              Text("Maximum number of domains reached")
+              Text("⚠️ Maximum of 50 domains reached (Apple's limit)")
                 .font(.caption)
                 .foregroundStyle(.orange)
             }

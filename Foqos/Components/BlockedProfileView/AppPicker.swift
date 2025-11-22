@@ -12,7 +12,7 @@ struct AppPicker: View {
 
   @State private var updateFlag: Bool = false
   @State private var refreshID: UUID = UUID()
-  @State private var isMessageExpanded: Bool = false
+  @State private var isMessageExpanded: Bool = true  // Start expanded so users see the warning
 
   private var compactTitle: String {
     let displayText = FamilyActivityUtil.getCountDisplayText(selection, allowMode: allowMode)
@@ -22,8 +22,8 @@ struct AppPicker: View {
 
   private var detailedMessage: String {
     return allowMode
-      ? "Up to 50 apps can be allowed. Categories will expand to include all individual apps within them, which may cause you to reach the 50 app limit faster than expected."
-      : "Up to 50 apps can be blocked. Each category counts as one item toward the 50 limit, regardless of how many apps it contains."
+      ? "⚠️ Apple enforces a 50 app limit. In Allow mode, when you select a category (like 'Social Networking'), EVERY individual app in that category counts separately toward the 50 app limit. This means selecting just a few categories can quickly exceed the limit."
+      : "Apple enforces a 50 app limit. In Block mode, each category counts as only 1 item regardless of how many apps it contains. Individual apps also count as 1 item each."
   }
 
   private var shouldShowWarning: Bool {
@@ -32,7 +32,7 @@ struct AppPicker: View {
 
   private var warningMessage: String {
     return
-      "⚠️ Warning: You have selected categories in Allow mode. Each app within these categories counts toward the 50 app limit, which may cause you to exceed the limit."
+      "You have selected categories in Allow mode. This will expand to individual apps and may exceed the 50 app limit. Consider selecting individual apps instead of categories, or switch to Block mode where categories count as just 1 item each."
   }
 
   private var knownIssuesMessage: String {
@@ -86,10 +86,10 @@ struct AppPicker: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 6) {
-                  Text("Limits")
+                  Text("Apple's 50 App Limit")
                     .font(.caption)
                     .bold()
-                    .foregroundColor(.secondary)
+                    .foregroundColor(allowMode ? .orange : .secondary)
 
                   Text(detailedMessage)
                     .font(.caption)
@@ -99,7 +99,7 @@ struct AppPicker: View {
 
                 if shouldShowWarning {
                   VStack(alignment: .leading, spacing: 6) {
-                    Text("Warning")
+                    Text("⚠️ Important")
                       .font(.caption)
                       .bold()
                       .foregroundColor(.orange)
@@ -109,8 +109,8 @@ struct AppPicker: View {
                       .foregroundColor(.orange)
                       .fixedSize(horizontal: false, vertical: true)
                   }
-                  .padding(10)
-                  .background(Color.orange.opacity(0.1))
+                  .padding(12)
+                  .background(Color.orange.opacity(0.15))
                   .cornerRadius(8)
                 }
 
