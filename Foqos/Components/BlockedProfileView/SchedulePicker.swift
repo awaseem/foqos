@@ -24,10 +24,17 @@ struct SchedulePicker: View {
   }
   private var endTotalMinutes: Int { hour12To24(endDisplayHour, isPM: endIsPM) * 60 + endMinute }
 
-  private var latestMinuteOfDay: Int { 23 * 60 + 55 }
+  private var durationMinutes: Int {
+    // If end is before start, it's a cross-day schedule
+    if endTotalMinutes <= startTotalMinutes {
+      // Duration spans to next day: (minutes until midnight) + (minutes from midnight to end)
+      return (24 * 60 - startTotalMinutes) + endTotalMinutes
+    }
+    return endTotalMinutes - startTotalMinutes
+  }
 
   private var isValid: Bool {
-    !selectedDays.isEmpty && endTotalMinutes - startTotalMinutes >= minimumDurationMinutes
+    !selectedDays.isEmpty && durationMinutes >= minimumDurationMinutes
   }
 
   private var validationMessage: String? {
@@ -37,11 +44,7 @@ struct SchedulePicker: View {
       return ""
     }
 
-    if startTotalMinutes > latestMinuteOfDay - minimumDurationMinutes {
-      return "Start time must be at least 1 hour before the end of the day."
-    }
-
-    return "End time must be at least 1 hour after start time."
+    return "Schedule must be at least 1 hour long."
   }
 
   var body: some View {
@@ -59,7 +62,7 @@ struct SchedulePicker: View {
             .padding(.vertical, 12)
 
             Text(
-              "Choose when this profile starts and ends. To end early, use the strategy you set up earlier. The schedule must be at least 1 hour long."
+              "Choose when this profile starts and ends. To end early, use the strategy you set up earlier. The schedule must be at least 1 hour long. You can set an end time before the start time to create a schedule that spans across days."
             )
             .font(.subheadline)
             .foregroundStyle(.primary)
@@ -207,12 +210,6 @@ struct SchedulePicker: View {
         }
       }
       .onAppear(perform: loadFromBinding)
-      .onChange(of: startDisplayHour) { _, _ in adjustEndIfNeededForStartChange() }
-      .onChange(of: startMinute) { _, _ in adjustEndIfNeededForStartChange() }
-      .onChange(of: startIsPM) { _, _ in adjustEndIfNeededForStartChange() }
-      .onChange(of: endDisplayHour) { _, _ in clampToValidEndIfNeeded() }
-      .onChange(of: endMinute) { _, _ in clampToValidEndIfNeeded() }
-      .onChange(of: endIsPM) { _, _ in clampToValidEndIfNeeded() }
     }
   }
 
@@ -265,9 +262,6 @@ struct SchedulePicker: View {
     // End time
     setDisplay(from24Hour: schedule.endHour, forStart: false)
     endMinute = roundedToFive(schedule.endMinute)
-
-    // Ensure constraints on initial load
-    adjustEndIfNeededForStartChange()
   }
 
   private func applySelection() {
@@ -287,33 +281,6 @@ struct SchedulePicker: View {
     if remainder == 0 { return value }
     if value - down < up - value { return down }
     return up
-  }
-
-  private func adjustEndIfNeededForStartChange() {
-    // If end is before the minimum required end, try to push it forward
-    let target = startTotalMinutes + minimumDurationMinutes
-    if target <= latestMinuteOfDay && endTotalMinutes < target {
-      let hour24 = target / 60
-      endMinute = target % 60
-      let converted = from24ToDisplay(hour24)
-      endDisplayHour = converted.hour
-      endIsPM = converted.isPM
-    }
-  }
-
-  private func clampToValidEndIfNeeded() {
-    // Keep minutes on 5-minute grid (defensive)
-    endMinute = roundedToFive(endMinute)
-
-    // If user tries to set an end earlier than allowed, snap to minimum allowed when possible
-    let minimumEnd = startTotalMinutes + minimumDurationMinutes
-    if minimumEnd <= latestMinuteOfDay && endTotalMinutes < minimumEnd {
-      let hour24 = minimumEnd / 60
-      endMinute = minimumEnd % 60
-      let converted = from24ToDisplay(hour24)
-      endDisplayHour = converted.hour
-      endIsPM = converted.isPM
-    }
   }
 
   private func setDisplay(from24Hour hour24: Int, forStart: Bool) {
