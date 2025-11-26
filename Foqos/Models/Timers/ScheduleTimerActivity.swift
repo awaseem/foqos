@@ -23,12 +23,11 @@ class ScheduleTimerActivity: TimerActivity {
       return
     }
 
-    // TODO: remove today check and only wait for time
-    // if !schedule.isTodayScheduled() {
-    //   log.info(
-    //     "Start schedule timer activity for \(profileId), schedule is not scheduled for today")
-    //   return
-    // }
+    if !schedule.isTodayScheduled() {
+      log.info(
+        "Start schedule timer activity for \(profileId), schedule is not scheduled for today")
+      return
+    }
 
     if !schedule.olderThan15Minutes() {
       log.info("Start schedule timer activity for \(profileId), schedule is too new")
