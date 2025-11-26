@@ -3,6 +3,17 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+// Alert identifier for managing multiple alerts
+struct AlertIdentifier: Identifiable {
+  enum AlertType {
+    case error
+    case deleteProfile
+  }
+
+  let id: AlertType
+  var errorMessage: String?
+}
+
 struct BlockedProfileView: View {
   @Environment(\.modelContext) private var modelContext
   @Environment(\.dismiss) private var dismiss
@@ -44,9 +55,8 @@ struct BlockedProfileView: View {
   // Sheet for schedule picker
   @State private var showingSchedulePicker = false
 
-  // Error states
-  @State private var errorMessage: String?
-  @State private var showError = false
+  // Alert management
+  @State private var alertIdentifier: AlertIdentifier?
 
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
@@ -386,6 +396,14 @@ struct BlockedProfileView: View {
                 } label: {
                   Label("Duplicate Profile", systemImage: "square.on.square")
                 }
+
+                Divider()
+
+                Button(role: .destructive) {
+                  alertIdentifier = AlertIdentifier(id: .deleteProfile)
+                } label: {
+                  Label("Delete Profile", systemImage: "trash")
+                }
               } label: {
                 Image(systemName: "ellipsis.circle")
               }
@@ -488,17 +506,38 @@ struct BlockedProfileView: View {
           )
         )
       }
-      .alert("Error", isPresented: $showError) {
-        Button("OK") {}
-      } message: {
-        Text(errorMessage ?? "An unknown error occurred")
+      .alert(item: $alertIdentifier) { alert in
+        switch alert.id {
+        case .error:
+          return Alert(
+            title: Text("Error"),
+            message: Text(alert.errorMessage ?? "An unknown error occurred"),
+            dismissButton: .default(Text("OK"))
+          )
+        case .deleteProfile:
+          return Alert(
+            title: Text("Delete Profile"),
+            message: Text(
+              "Are you sure you want to delete this profile? This action cannot be undone."),
+            primaryButton: .cancel(),
+            secondaryButton: .destructive(Text("Delete")) {
+              dismiss()
+              if let profileToDelete = profile {
+                do {
+                  try BlockedProfiles.deleteProfile(profileToDelete, in: modelContext)
+                } catch {
+                  showError(message: error.localizedDescription)
+                }
+              }
+            }
+          )
+        }
       }
     }
   }
 
   private func showError(message: String) {
-    errorMessage = message
-    showError = true
+    alertIdentifier = AlertIdentifier(id: .error, errorMessage: message)
   }
 
   private func writeProfile() {
@@ -572,8 +611,7 @@ struct BlockedProfileView: View {
 
       dismiss()
     } catch {
-      errorMessage = error.localizedDescription
-      showError = true
+      alertIdentifier = AlertIdentifier(id: .error, errorMessage: error.localizedDescription)
     }
   }
 }
