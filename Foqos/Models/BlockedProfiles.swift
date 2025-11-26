@@ -237,7 +237,7 @@ class BlockedProfiles {
 
     // Then delete the profile
     context.delete(profile)
-    try context.save()
+    // Defer context saving as the reference to the profile might be used
   }
 
   static func getProfileDeepLink(_ profile: BlockedProfiles) -> String {
