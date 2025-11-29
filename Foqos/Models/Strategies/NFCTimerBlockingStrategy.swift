@@ -16,7 +16,7 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   private let appBlocker: AppBlockerUtil = AppBlockerUtil()
 
   func getIdentifier() -> String {
-    return NFCManualBlockingStrategy.id
+    return NFCTimerBlockingStrategy.id
   }
 
   func startBlocking(
