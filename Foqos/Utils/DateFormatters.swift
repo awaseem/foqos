@@ -21,4 +21,18 @@ enum DateFormatters {
       return String(format: "%ds", seconds)
     }
   }
+
+  static func formatMinutes(_ durationInMinutes: Int) -> String {
+    if durationInMinutes <= 60 {
+      return "\(durationInMinutes) min"
+    } else {
+      let hours = durationInMinutes / 60
+      let minutes = durationInMinutes % 60
+      if minutes == 0 {
+        return "\(hours)h"
+      } else {
+        return "\(hours)h \(minutes)m"
+      }
+    }
+  }
 }

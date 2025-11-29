@@ -115,7 +115,7 @@ struct BlockedProfileCard: View {
             Divider()
               .frame(height: 24)
 
-            ProfileScheduleRow(schedule: profile.schedule)
+            ProfileScheduleRow(profile: profile, isActive: isActive)
           }
 
           // Using the new ProfileStatsRow component
