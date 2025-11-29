@@ -227,6 +227,7 @@ struct HomeView: View {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
+      .presentationDetents([.height(350), .medium])
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()

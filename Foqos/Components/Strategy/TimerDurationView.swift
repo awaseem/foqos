@@ -67,7 +67,7 @@ struct TimerDurationView: View {
 
   private var header: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text(profileName)
+      Text("Timer settings")
         .font(.title2).bold()
     }
     .padding(.top, 16)
@@ -78,7 +78,7 @@ struct TimerDurationView: View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
         Image(systemName: "clock.fill")
-          .font(.title3)
+          .font(.headline)
           .foregroundColor(.secondary)
         Text("Select Duration")
           .font(.headline)
@@ -86,7 +86,7 @@ struct TimerDurationView: View {
       }
 
       Text(
-        "The timer will start when you start the profile and will stop when the duration is reached."
+        "Select how long you want \(profileName) to last, use strategy to exit early."
       )
       .font(.callout)
       .foregroundColor(.secondary)
@@ -146,7 +146,7 @@ struct TimerDurationView: View {
           }
           .padding(.horizontal, 2)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 12)
 
         // Custom input (shown when custom is selected)
         if isCustomSelected {
@@ -184,6 +184,8 @@ struct TimerDurationView: View {
             .opacity.combined(with: .scale(scale: 0.95).combined(with: .move(edge: .top))))
         }
 
+        Spacer()
+
         ActionButton(
           title: "Set Duration",
           backgroundColor: .mint,
@@ -192,7 +194,6 @@ struct TimerDurationView: View {
         ) {
           handleConfirm()
         }
-        .padding(.top, 8)
       }
     }
     .padding(16)
