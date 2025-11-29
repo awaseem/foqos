@@ -6,8 +6,9 @@ struct ProfileScheduleRow: View {
 
   private var hasSchedule: Bool { profile.schedule?.isActive == true }
 
-  private var isNFCTimerStrategy: Bool {
+  private var isTimerStrategy: Bool {
     profile.blockingStrategyId == NFCTimerBlockingStrategy.id
+      || profile.blockingStrategyId == QRTimerBlockingStrategy.id
   }
 
   private var timerDuration: Int? {
@@ -43,14 +44,11 @@ struct ProfileScheduleRow: View {
   var body: some View {
     HStack(spacing: 16) {
       VStack(alignment: .leading, spacing: 2) {
-        // Case 1: No schedule + not active -> Show nothing
         if !hasSchedule && !isActive {
           Text("No Schedule Set")
             .font(.caption)
             .foregroundColor(.secondary)
-        }
-        // Case 2: No schedule + active + NFCTimerBlockingStrategy -> Show timer duration
-        else if !hasSchedule && isActive && isNFCTimerStrategy {
+        } else if !hasSchedule && isActive && isTimerStrategy {
           Text("Duration")
             .font(.caption)
             .fontWeight(.semibold)
@@ -61,13 +59,11 @@ struct ProfileScheduleRow: View {
               .font(.caption2)
               .foregroundColor(.secondary)
           }
-        }
-        // Case 3: No schedule + active + other strategy -> Show nothing
-        else if !hasSchedule && isActive {
+        } else if !hasSchedule && isActive {
           Text("No Schedule Set")
             .font(.caption)
             .foregroundColor(.secondary)
-        } else if hasSchedule && isNFCTimerStrategy {
+        } else if hasSchedule && isTimerStrategy {
           Text("Unstable Profile with Schedule")
             .font(.caption2)
             .foregroundColor(.red)
@@ -119,7 +115,7 @@ struct ProfileScheduleRow: View {
       isActive: false
     )
 
-    // Case 3: No schedule + active + NFCTimerBlockingStrategy (should show timer)
+    // Case 3: No schedule + active + timer strategy (should show timer)
     ProfileScheduleRow(
       profile: BlockedProfiles(
         name: "Test",
@@ -129,11 +125,11 @@ struct ProfileScheduleRow: View {
       isActive: true
     )
 
-    // Case 4: Schedule set + active + NFCTimerBlockingStrategy (show both + precedence message)
+    // Case 4: Schedule set + active + timer strategy (show both + precedence message)
     ProfileScheduleRow(
       profile: BlockedProfiles(
         name: "Test",
-        blockingStrategyId: NFCTimerBlockingStrategy.id,
+        blockingStrategyId: QRTimerBlockingStrategy.id,
         strategyData: StrategyTimerData.toData(from: StrategyTimerData(durationInMinutes: 90)),
         schedule: .init(
           days: [.monday, .wednesday, .friday],

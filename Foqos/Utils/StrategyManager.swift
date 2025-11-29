@@ -12,6 +12,7 @@ class StrategyManager: ObservableObject {
     NFCTimerBlockingStrategy(),
     QRCodeBlockingStrategy(),
     QRManualBlockingStrategy(),
+    QRTimerBlockingStrategy(),
   ]
 
   @Published var elapsedTime: TimeInterval = 0
