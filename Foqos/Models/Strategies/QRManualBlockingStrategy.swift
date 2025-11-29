@@ -46,7 +46,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
   ) -> (any View)? {
     return LabeledCodeScannerView(
       heading: "Scan to stop",
-      subtitle: "Point your camera at a QR code to deactiviate a profile."
+      subtitle: "Point your camera at a QR code to deactivate a profile."
     ) { result in
       switch result {
       case .success(let result):
