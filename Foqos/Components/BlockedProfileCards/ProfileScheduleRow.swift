@@ -7,7 +7,7 @@ struct ProfileScheduleRow: View {
 
   private var daysLine: String {
     guard let schedule = schedule, schedule.isActive else {
-      return "No schedule set"
+      return "No Schedule Set"
     }
     return schedule.days
       .sorted { $0.rawValue < $1.rawValue }
