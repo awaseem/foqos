@@ -186,7 +186,7 @@ struct TimerDurationView: View {
                 .font(.caption)
                 .foregroundColor(.red)
             } else {
-              Text("Enter minutes (less than 24 hours)")
+              Text("Enter minutes (15 min to 24 hours)")
                 .font(.caption)
                 .foregroundColor(.secondary)
             }
@@ -230,7 +230,7 @@ struct TimerDurationView: View {
 
   private func isValidCustomDuration() -> Bool {
     guard let minutes = Int(customMinutes) else { return false }
-    return minutes > 0 && minutes < 24 * 60
+    return minutes >= 15 && minutes < 24 * 60
   }
 
   private func handleConfirm() {
@@ -247,9 +247,9 @@ struct TimerDurationView: View {
         return
       }
 
-      if minutes <= 0 {
+      if minutes < 15 {
         showError = true
-        errorMessage = "Duration must be greater than 0"
+        errorMessage = "Duration must be at least 15 minutes"
         return
       }
 
