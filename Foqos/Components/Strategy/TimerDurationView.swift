@@ -115,7 +115,7 @@ struct TimerDurationView: View {
                       .fill(selectedPreset == preset ? Color.mint : Color.secondary.opacity(0.1))
                   )
               }
-              .scaleEffect(selectedPreset == preset ? 1.1 : 1.0)
+              .scaleEffect(selectedPreset == preset ? 1.05 : 1.0)
               .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedPreset)
             }
 
