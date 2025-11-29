@@ -68,30 +68,4 @@ class BreakTimerActivity: TimerActivity {
       SharedData.setBreakEndTime(date: now)
     }
   }
-
-  func getBreakInterval(from minutes: Int) -> (
-    intervalStart: DateComponents, intervalEnd: DateComponents
-  ) {
-    let intervalStart = DateComponents(hour: 0, minute: 0)
-
-    // Get current time
-    let now = Date()
-    let currentComponents = Calendar.current.dateComponents([.hour, .minute], from: now)
-    let currentHour = currentComponents.hour ?? 0
-    let currentMinute = currentComponents.minute ?? 0
-
-    // Calculate end time by adding minutes to current time
-    let totalMinutes = currentMinute + minutes
-    var endHour = currentHour + (totalMinutes / 60)
-    var endMinute = totalMinutes % 60
-
-    // Cap at 23:59 if it would roll over past midnight
-    if endHour >= 24 || (endHour == 23 && endMinute >= 59) {
-      endHour = 23
-      endMinute = 59
-    }
-
-    let intervalEnd = DateComponents(hour: endHour, minute: endMinute)
-    return (intervalStart: intervalStart, intervalEnd: intervalEnd)
-  }
 }
