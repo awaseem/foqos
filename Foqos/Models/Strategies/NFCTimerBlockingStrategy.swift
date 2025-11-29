@@ -41,8 +41,7 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
           forceStart: forceStart ?? false
         )
 
-        // TODO: Let the timer start the profile, we will activate the restrictions when the timer ends
-        // self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
+        DeviceActivityCenterUtil.startStrategyTimerActivity(for: profile)
 
         self.onSessionCreation?(.started(activeSession))
       }
