@@ -21,6 +21,7 @@ enum SharedData {
     var createdAt: Date
     var updatedAt: Date
     var blockingStrategyId: String?
+    var strategyData: Data?
     var order: Int
 
     var enableLiveActivity: Bool

@@ -12,6 +12,7 @@ class BlockedProfiles {
   var createdAt: Date
   var updatedAt: Date
   var blockingStrategyId: String?
+  var strategyData: Data?
   var order: Int = 0
 
   var enableLiveActivity: Bool = false
@@ -47,6 +48,7 @@ class BlockedProfiles {
     createdAt: Date = Date(),
     updatedAt: Date = Date(),
     blockingStrategyId: String = NFCBlockingStrategy.id,
+    strategyData: Data? = nil,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String? = nil,
@@ -69,6 +71,7 @@ class BlockedProfiles {
     self.createdAt = createdAt
     self.updatedAt = updatedAt
     self.blockingStrategyId = blockingStrategyId
+    self.strategyData = strategyData
     self.order = order
 
     self.enableLiveActivity = enableLiveActivity
@@ -125,6 +128,7 @@ class BlockedProfiles {
     name: String? = nil,
     selection: FamilyActivitySelection? = nil,
     blockingStrategyId: String? = nil,
+    strategyData: Data? = nil,
     enableLiveActivity: Bool? = nil,
     reminderTime: UInt32? = nil,
     customReminderMessage: String? = nil,
@@ -151,6 +155,10 @@ class BlockedProfiles {
 
     if let newStrategyId = blockingStrategyId {
       profile.blockingStrategyId = newStrategyId
+    }
+
+    if let newStrategyData = strategyData {
+      profile.strategyData = newStrategyData
     }
 
     if let newEnableLiveActivity = enableLiveActivity {
@@ -252,6 +260,7 @@ class BlockedProfiles {
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
       blockingStrategyId: profile.blockingStrategyId,
+      strategyData: profile.strategyData,
       order: profile.order,
       enableLiveActivity: profile.enableLiveActivity,
       reminderTimeInSeconds: profile.reminderTimeInSeconds,
@@ -305,6 +314,7 @@ class BlockedProfiles {
     name: String,
     selection: FamilyActivitySelection = FamilyActivitySelection(),
     blockingStrategyId: String = NFCBlockingStrategy.id,
+    strategyData: Data? = nil,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String = "",
@@ -326,6 +336,7 @@ class BlockedProfiles {
       name: name,
       selectedActivity: selection,
       blockingStrategyId: blockingStrategyId,
+      strategyData: strategyData,
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeInSeconds,
       customReminderMessage: customReminderMessage,
@@ -364,6 +375,7 @@ class BlockedProfiles {
       name: newName,
       selectedActivity: source.selectedActivity,
       blockingStrategyId: source.blockingStrategyId ?? NFCBlockingStrategy.id,
+      strategyData: source.strategyData,
       enableLiveActivity: source.enableLiveActivity,
       reminderTimeInSeconds: source.reminderTimeInSeconds,
       customReminderMessage: source.customReminderMessage,
