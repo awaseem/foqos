@@ -67,7 +67,7 @@ struct TimerDurationView: View {
 
   private var header: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("Timer settings")
+      Text("Timer Settings")
         .font(.title2).bold()
     }
     .padding(.top, 16)
