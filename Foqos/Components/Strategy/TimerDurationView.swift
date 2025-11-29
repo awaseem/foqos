@@ -63,17 +63,6 @@ struct TimerDurationView: View {
       }
       .padding()
     }
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .navigationBarLeading) {
-        Button {
-          dismiss()
-        } label: {
-          Image(systemName: "xmark")
-            .foregroundColor(.primary)
-        }
-      }
-    }
   }
 
   private var header: some View {
@@ -102,7 +91,7 @@ struct TimerDurationView: View {
       .font(.callout)
       .foregroundColor(.secondary)
 
-      VStack(spacing: 12) {
+      VStack(spacing: 8) {
         // Horizontal scrollable list with all options
         ScrollView(.horizontal, showsIndicators: false) {
           HStack(spacing: 12) {
@@ -123,7 +112,7 @@ struct TimerDurationView: View {
                   .padding(.vertical, 12)
                   .background(
                     Capsule()
-                      .fill(selectedPreset == preset ? Color.purple : Color.secondary.opacity(0.1))
+                      .fill(selectedPreset == preset ? Color.mint : Color.secondary.opacity(0.1))
                   )
               }
               .scaleEffect(selectedPreset == preset ? 1.1 : 1.0)
@@ -149,7 +138,7 @@ struct TimerDurationView: View {
               .padding(.vertical, 12)
               .background(
                 Capsule()
-                  .fill(isCustomSelected ? Color.purple : Color.secondary.opacity(0.1))
+                  .fill(isCustomSelected ? Color.mint : Color.secondary.opacity(0.1))
               )
             }
             .scaleEffect(isCustomSelected ? 1.1 : 1.0)
@@ -161,7 +150,7 @@ struct TimerDurationView: View {
 
         // Custom input (shown when custom is selected)
         if isCustomSelected {
-          VStack(alignment: .leading, spacing: 12) {
+          VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
               TextField("Minutes", text: $customMinutes)
                 .keyboardType(.numberPad)
@@ -197,16 +186,14 @@ struct TimerDurationView: View {
 
         ActionButton(
           title: "Set Duration",
-          backgroundColor: .purple,
+          backgroundColor: .mint,
           iconName: "checkmark.circle.fill",
           isDisabled: !canConfirm
         ) {
           handleConfirm()
         }
-        .padding(.horizontal)
-        .padding(.top, 16)
+        .padding(.top, 8)
       }
-      .padding(.vertical, 16)
     }
     .padding(16)
     .background(
@@ -260,13 +247,25 @@ struct TimerDurationView: View {
   }
 }
 
-#Preview {
-  NavigationView {
-    TimerDurationView(
-      profileName: "Work Focus",
-      onDurationSelected: { timerData in
-        print("Selected duration: \(timerData.durationInMinutes) minutes")
+struct TimerDurationPreviewSheetHost: View {
+  @State private var show: Bool = true
+
+  var body: some View {
+    Color.clear
+      .sheet(isPresented: $show) {
+        NavigationView {
+          TimerDurationView(
+            profileName: "Work Focus",
+            onDurationSelected: { timerData in
+              print("Selected duration: \(timerData.durationInMinutes) minutes")
+            }
+          )
+        }
+        .presentationDetents([.medium])
       }
-    )
   }
+}
+
+#Preview {
+  TimerDurationPreviewSheetHost()
 }
