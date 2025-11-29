@@ -24,24 +24,29 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    // TODO create a view that stores a timer
-    self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
+    return TimerDurationView(
+      profileName: profile.name,
+      onDurationSelected: { duration in
+        if let strategyTimerData = StrategyTimerData.toData(from: duration) {
+          // Store the timer data so that its selected for the next time the profile is started
+          // This is also useful if the profile is started from the background like a shortcut or intent
+          _ = try? BlockedProfiles.updateProfile(
+            profile, in: context, strategyData: strategyTimerData)
+        }
 
-    let activeSession =
-      BlockedProfileSession
-      .createSession(
-        in: context,
-        // Manually starting sessions, since nothing was scanned to start there is no tag to store for each session
-        withTag: ManualBlockingStrategy.id,
-        withProfile: profile,
-        forceStart: forceStart ?? false
-      )
+        let activeSession = BlockedProfileSession.createSession(
+          in: context,
+          withTag: NFCTimerBlockingStrategy.id,
+          withProfile: profile,
+          forceStart: forceStart ?? false
+        )
 
-    self.onSessionCreation?(.started(activeSession))
+        // TODO: Let the timer start the profile, we will activate the restrictions when the timer ends
+        // self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
-    // TODO create a timer a timer
-
-    return nil
+        self.onSessionCreation?(.started(activeSession))
+      }
+    )
   }
 
   func stopBlocking(
