@@ -59,6 +59,37 @@ class DeviceActivityCenterUtil {
     }
   }
 
+  static func startStrategyTimerActivity(for profile: BlockedProfiles) {
+    guard let strategyData = profile.strategyData else {
+      print("No strategy data found for profile: \(profile.id.uuidString)")
+      return
+    }
+    let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
+
+    let center = DeviceActivityCenter()
+    let strategyTimerActivity = StrategyTimerActivity()
+    let deviceActivityName = strategyTimerActivity.getDeviceActivityName(
+      from: profile.id.uuidString)
+
+    let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
+      from: timerData.durationInMinutes)
+
+    let deviceActivitySchedule = DeviceActivitySchedule(
+      intervalStart: intervalStart,
+      intervalEnd: intervalEnd,
+      repeats: false,
+    )
+
+    do {
+      // Remove any existing activity and create a new one
+      stopActivities(for: [deviceActivityName], with: center)
+      try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
+      print("Scheduled strategy timer activity from \(intervalStart) to \(intervalEnd) daily")
+    } catch {
+      print("Failed to start strategy timer activity: \(error.localizedDescription)")
+    }
+  }
+
   static func removeScheduleTimerActivities(for profile: BlockedProfiles) {
     let scheduleTimerActivity = ScheduleTimerActivity()
     let deviceActivityName = scheduleTimerActivity.getDeviceActivityName(
@@ -82,6 +113,15 @@ class DeviceActivityCenterUtil {
     let breakTimerActivity = BreakTimerActivity()
     let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
     stopActivities(for: [deviceActivityName])
+  }
+
+  static func removeAllStrategyTimerActivities() {
+    let center = DeviceActivityCenter()
+    let activities = center.activities
+    let strategyTimerActivity = StrategyTimerActivity()
+    let strategyTimerActivities = strategyTimerActivity.getAllStrategyTimerActivities(
+      from: activities)
+    stopActivities(for: strategyTimerActivities, with: center)
   }
 
   static func getActiveScheduleTimerActivity(for profile: BlockedProfiles) -> DeviceActivityName? {

@@ -12,6 +12,11 @@ class StrategyTimerActivity: TimerActivity {
     return DeviceActivityName(rawValue: "\(StrategyTimerActivity.id):\(profileId)")
   }
 
+  func getAllStrategyTimerActivities(from activities: [DeviceActivityName]) -> [DeviceActivityName]
+  {
+    return activities.filter { $0.rawValue.starts(with: StrategyTimerActivity.id) }
+  }
+
   func start(for profile: SharedData.ProfileSnapshot) {
     let profileId = profile.id.uuidString
 
