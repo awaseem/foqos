@@ -21,11 +21,13 @@
 ## ✨ Features
 
 - **🏷️ NFC & QR Blocking**: Start or stop sessions with a quick tag tap or QR scan
-- **🧩 Mix & Match Strategies**: Manual, NFC, QR, NFC + Manual, QR + Manual
+- **🧩 Mix & Match Strategies**: Manual, NFC, QR, NFC + Manual, QR + Manual, NFC + Timer, QR + Timer
+- **⏱️ Timer-Based Blocking**: Block for a set duration, then unblock with NFC or QR
 - **🔐 Physical Unblock**: Optionally require a specific tag or code to stop
 - **📱 Profiles for Life**: Create profiles for work, study, sleep — whatever you need
 - **📊 Habit Tracking**: See your focus streaks and session history at a glance
 - **⏸️ Smart Breaks**: Take a breather without stopping your session
+- **🌐 Website Blocking**: Block distracting websites in addition to apps
 - **🔄 Live Activities**: Real-time status on your Lock Screen
 
 ## 📋 Requirements
@@ -103,14 +105,14 @@ All strategies live in `Foqos/Models/Strategies/` and are orchestrated by `Foqos
 
   - Start: scan any NFC tag to start the selected profile
   - Stop: scan the same tag to stop the session
-  - **Physical Unblock (optional)**: set `physicalUnblockNFCTagId` on a profile to require that exact tag to stop (ignores the session’s start tag)
+  - **Physical Unblock (optional)**: set `physicalUnblockNFCTagId` on a profile to require that exact tag to stop (ignores the session's start tag)
 
 - **QR Codes (`QRCodeBlockingStrategy`)**
 
   - Start: scan any QR code to start the selected profile
   - Stop: scan the same QR code to stop the session
-  - **Physical Unblock (optional)**: set `physicalUnblockQRCodeId` on a profile to require that exact code to stop (ignores the session’s start code)
-  - The app can display/share a QR representing the profile’s deep link using `QRCodeView`
+  - **Physical Unblock (optional)**: set `physicalUnblockQRCodeId` on a profile to require that exact code to stop (ignores the session's start code)
+  - The app can display/share a QR representing the profile's deep link using `QRCodeView`
 
 - **Manual (`ManualBlockingStrategy`)**
 
@@ -125,6 +127,18 @@ All strategies live in `Foqos/Models/Strategies/` and are orchestrated by `Foqos
 
   - Start: manually from within the app
   - Stop: scan any QR code (restricted to `physicalUnblockQRCodeId` if set)
+
+- **NFC + Timer (`NFCTimerBlockingStrategy`)** ⏱️
+
+  - Start: select a duration (timer) from within the app
+  - Stop: scan any NFC tag to end early (restricted to `physicalUnblockNFCTagId` if set)
+  - Perfect for time-boxed focus sessions with a physical exit mechanism
+
+- **QR + Timer (`QRTimerBlockingStrategy`)** ⏱️
+
+  - Start: select a duration (timer) from within the app
+  - Stop: scan any QR code to end early (restricted to `physicalUnblockQRCodeId` if set)
+  - Perfect for time-boxed focus sessions with a physical exit mechanism
 
 ### QR deep links
 
