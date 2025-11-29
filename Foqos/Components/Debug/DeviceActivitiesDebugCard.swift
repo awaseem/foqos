@@ -49,6 +49,8 @@ struct DeviceActivitiesDebugCard: View {
       return "Break Timer"
     } else if rawValue.hasPrefix(ScheduleTimerActivity.id) {
       return "Schedule Timer"
+    } else if rawValue.hasPrefix(StrategyTimerActivity.id) {
+      return "Strategy Timer"
     } else {
       // Check if it's a UUID (legacy schedule format)
       if UUID(uuidString: rawValue) != nil {
