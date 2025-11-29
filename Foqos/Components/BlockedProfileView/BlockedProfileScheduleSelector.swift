@@ -27,7 +27,7 @@ struct BlockedProfileScheduleSelector: View {
         .padding(.top, 4)
         .font(.caption)
     } else if daysCount == 0 {
-      Text("No schedule set")
+      Text("No Schedule Set")
         .foregroundStyle(.gray)
     } else {
       Text(schedule.summaryText)

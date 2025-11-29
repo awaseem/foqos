@@ -53,7 +53,7 @@ struct BlockedProfileSchedule: Codable, Equatable {
   }
 
   var summaryText: String {
-    guard isActive else { return "No schedule set" }
+    guard isActive else { return "No Schedule Set" }
 
     let daysSummary =
       days
