@@ -29,7 +29,7 @@ struct StrategyInfoView: View {
     HStack {
       Image(systemName: blockingStrategyIcon)
         .foregroundColor(blockingStrategyColor)
-        .font(.system(size: 16))
+        .font(.system(size: 13))
         .frame(width: 28, height: 28)
         .background(
           Circle()
