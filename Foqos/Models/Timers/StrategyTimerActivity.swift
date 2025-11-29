@@ -22,9 +22,11 @@ class StrategyTimerActivity: TimerActivity {
 
     log.info("Start strategy timer activity for \(profileId), profile: \(profileId)")
 
-    if SharedData.getActiveSharedSession() != nil {
+    if let activeSession = SharedData.getActiveSharedSession(),
+      activeSession.blockedProfileId != profile.id
+    {
       log.info(
-        "Start strategy timer activity for \(profileId), active session already exists, not continuing"
+        "Start strategy timer activity for \(profileId), active session profile does not match device activity profile, not continuing"
       )
       return
     }
