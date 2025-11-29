@@ -17,8 +17,8 @@ struct BlockedProfileDomainSelector: View {
 
   private var buttonText: String {
     return allowMode
-      ? "Select domains to allow"
-      : "Select domains to restrict"
+      ? "Select Domains to Allow"
+      : "Select Domains to Restrict"
   }
 
   var body: some View {
