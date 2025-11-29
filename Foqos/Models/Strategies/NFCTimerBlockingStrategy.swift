@@ -5,8 +5,8 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCTimerBlockingStrategy"
 
   var name: String = "NFC + Timer"
-  var description: String = "Block for a certain amount of hours, unblock by using any NFC tag"
-  var iconType: String = "bolt.badge.clock.fill"
+  var description: String = "Block for a certain amount of minutes, unblock by using any NFC tag"
+  var iconType: String = "alarm.waves.left.and.right"
   var color: Color = .mint
 
   var onSessionCreation: ((SessionStatus) -> Void)?
