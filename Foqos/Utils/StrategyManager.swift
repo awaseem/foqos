@@ -6,9 +6,10 @@ class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
 
   static let availableStrategies: [BlockingStrategy] = [
-    NFCBlockingStrategy(),
     ManualBlockingStrategy(),
+    NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
+    NFCTimerBlockingStrategy(),
     QRCodeBlockingStrategy(),
     QRManualBlockingStrategy(),
   ]
