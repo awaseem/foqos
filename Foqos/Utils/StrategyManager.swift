@@ -411,6 +411,9 @@ class StrategyManager: ObservableObject {
 
         // Remove all break timer activities
         DeviceActivityCenterUtil.removeAllBreakTimerActivities()
+
+        // Remove all strategy timer activities
+        DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
       }
     }
 
