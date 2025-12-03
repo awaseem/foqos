@@ -14,6 +14,19 @@ class ScheduleTimerActivity: TimerActivity {
     return DeviceActivityName(rawValue: profileId)
   }
 
+  func getAllScheduleTimerActivities(from activities: [DeviceActivityName]) -> [DeviceActivityName]
+  {
+    // Schedule timer activities use just the profile UUID as the rawValue (no prefix)
+    // Other activities use prefixes like "BreakScheduleActivity:" or "StrategyTimerActivity:"
+    return activities.filter { activity in
+      let rawValue = activity.rawValue
+      // If it contains ":", it's a prefixed activity (break or strategy timer), not a schedule
+      guard !rawValue.contains(":") else { return false }
+      // Must be a valid UUID
+      return UUID(uuidString: rawValue) != nil
+    }
+  }
+
   func start(for profile: SharedData.ProfileSnapshot) {
     let profileId = profile.id.uuidString
 

@@ -598,28 +598,43 @@ class StrategyManager: ObservableObject {
   }
 
   func cleanUpGhostSchedules(context: ModelContext) {
-    let activities = DeviceActivityCenterUtil.getDeviceActivities()
-    for activity in activities {
-      let profileId = activity.rawValue
-      guard let profileId = UUID(uuidString: profileId) else {
-        print("failed to parse profile id from activity: \(activity.rawValue)")
+    let allActivities = DeviceActivityCenterUtil.getDeviceActivities()
+    let scheduleTimerActivity = ScheduleTimerActivity()
+    let scheduleActivities = scheduleTimerActivity.getAllScheduleTimerActivities(
+      from: allActivities)
+
+    print(
+      "Found \(scheduleActivities.count) schedule timer activities out of \(allActivities.count) total activities"
+    )
+
+    for activity in scheduleActivities {
+      let rawValue = activity.rawValue
+      guard let profileId = UUID(uuidString: rawValue) else {
+        // This shouldn't happen since we filtered above, but print just in case
+        print("Unexpected: failed to parse profile id from filtered activity: \(rawValue)")
         continue
       }
 
-      if let profile = try? BlockedProfiles.findProfile(byID: profileId, in: context) {
-        if profile.schedule == nil {
-          print(
-            "schedule is nil for profile: \(profile.name), schedule is incorrect ❌. Deleting schedule..."
-          )
-          DeviceActivityCenterUtil.removeScheduleTimerActivities(for: profile)
+      do {
+        if let profile = try BlockedProfiles.findProfile(byID: profileId, in: context) {
+          if profile.schedule == nil {
+            print(
+              "Profile '\(profile.name)' has no schedule but has device activity registered. Removing ghost schedule..."
+            )
+            DeviceActivityCenterUtil.removeScheduleTimerActivities(for: profile)
+          } else {
+            print("Profile '\(profile.name)' has schedule - activity is valid ✅")
+          }
         } else {
-          print("schedule is not nil for profile: \(profile.name), schedule is correct ✅")
+          // Profile truly doesn't exist in database
+          print("No profile found for activity \(rawValue). Removing orphaned schedule...")
+          DeviceActivityCenterUtil.removeScheduleTimerActivities(for: activity)
         }
-      } else {
+      } catch {
+        // Database error occurred - do NOT delete the schedule since we don't know the true state
         print(
-          "no profile found for activity: \(activity.rawValue), schedule is incorrect ❌. Deleting schedule..."
+          "Error fetching profile \(rawValue): \(error.localizedDescription). Skipping cleanup for safety."
         )
-        DeviceActivityCenterUtil.removeScheduleTimerActivities(for: activity)
       }
     }
   }
