@@ -13,6 +13,7 @@ struct AppPicker: View {
   @State private var updateFlag: Bool = false
   @State private var refreshID: UUID = UUID()
   @State private var isMessageExpanded: Bool = true  // Start expanded so users see the warning
+  @State private var showLimitAlert: Bool = false
 
   private var compactTitle: String {
     let displayText = FamilyActivityUtil.getCountDisplayText(selection, allowMode: allowMode)
@@ -38,6 +39,19 @@ struct AppPicker: View {
   private var knownIssuesMessage: String {
     return
       "Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for an official fix."
+  }
+
+  private var isOverLimit: Bool {
+    let count = FamilyActivityUtil.countSelectedActivities(selection, allowMode: allowMode)
+    return count > 50
+  }
+
+  private func handleDone() {
+    if isOverLimit {
+      showLimitAlert = true
+    } else {
+      isPresented = false
+    }
   }
 
   var body: some View {
@@ -147,11 +161,21 @@ struct AppPicker: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-          Button(action: { isPresented = false }) {
+          Button(action: handleDone) {
             Image(systemName: "checkmark")
           }
           .accessibilityLabel("Done")
         }
+      }
+      .alert("Over 50 App Limit", isPresented: $showLimitAlert) {
+        Button("Cancel", role: .cancel) {}
+        Button("OK") {
+          isPresented = false
+        }
+      } message: {
+        Text(
+          "You have selected more than 50 apps and sites. This can lead to issues due to Apple's hard limit of 50."
+        )
       }
     }
   }
