@@ -41,6 +41,11 @@ class BlockedProfiles {
     return DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self)
   }
 
+  var scheduleIsOutOfSync: Bool {
+    return self.schedule != nil
+      && DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self) == nil
+  }
+
   init(
     id: UUID = UUID(),
     name: String,

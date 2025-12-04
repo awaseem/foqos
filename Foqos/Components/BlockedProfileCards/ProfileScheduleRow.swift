@@ -42,12 +42,33 @@ struct ProfileScheduleRow: View {
   }
 
   var body: some View {
-    HStack(spacing: 16) {
+    HStack(spacing: 4) {
+      // Icon
+      Group {
+        if !hasSchedule && !isTimerStrategy {
+          Image(systemName: "calendar.badge.minus")
+            .foregroundColor(.secondary)
+        } else if profile.scheduleIsOutOfSync || (hasSchedule && isTimerStrategy) {
+          Image(systemName: "exclamationmark.triangle.fill")
+            .foregroundColor(.red)
+        } else if !hasSchedule && isActive && isTimerStrategy {
+          Image(systemName: "timer")
+            .foregroundColor(.green)
+        } else if hasSchedule {
+          Image(systemName: "calendar.badge.checkmark")
+            .foregroundColor(.green)
+        }
+      }
+      .font(.body)
+
       VStack(alignment: .leading, spacing: 2) {
-        if !hasSchedule && !isActive {
+        if !hasSchedule {
           Text("No Schedule Set")
             .font(.caption)
             .foregroundColor(.secondary)
+        } else if profile.scheduleIsOutOfSync {
+          Text("Schedule is Out of Sync")
+            .font(.caption2)
         } else if !hasSchedule && isActive && isTimerStrategy {
           Text("Duration")
             .font(.caption)
@@ -59,15 +80,9 @@ struct ProfileScheduleRow: View {
               .font(.caption2)
               .foregroundColor(.secondary)
           }
-        } else if !hasSchedule && isActive {
-          Text("No Schedule Set")
-            .font(.caption)
-            .foregroundColor(.secondary)
         } else if hasSchedule && isTimerStrategy {
           Text("Unstable Profile with Schedule")
             .font(.caption2)
-            .foregroundColor(.red)
-            .italic()
         } else if hasSchedule {
           Text(daysLine)
             .font(.caption)
@@ -89,7 +104,6 @@ struct ProfileScheduleRow: View {
 
 #Preview {
   VStack(spacing: 20) {
-    // Case 1: Schedule set + not active
     ProfileScheduleRow(
       profile: BlockedProfiles(
         name: "Test",
@@ -104,60 +118,6 @@ struct ProfileScheduleRow: View {
         )
       ),
       isActive: false
-    )
-
-    // Case 2: No schedule + not active (should show nothing)
-    ProfileScheduleRow(
-      profile: BlockedProfiles(
-        name: "Test",
-        blockingStrategyId: NFCBlockingStrategy.id
-      ),
-      isActive: false
-    )
-
-    // Case 3: No schedule + active + timer strategy (should show timer)
-    ProfileScheduleRow(
-      profile: BlockedProfiles(
-        name: "Test",
-        blockingStrategyId: NFCTimerBlockingStrategy.id,
-        strategyData: StrategyTimerData.toData(from: StrategyTimerData(durationInMinutes: 45))
-      ),
-      isActive: true
-    )
-
-    // Case 4: Schedule set + active + timer strategy (show both + precedence message)
-    ProfileScheduleRow(
-      profile: BlockedProfiles(
-        name: "Test",
-        blockingStrategyId: QRTimerBlockingStrategy.id,
-        strategyData: StrategyTimerData.toData(from: StrategyTimerData(durationInMinutes: 90)),
-        schedule: .init(
-          days: [.monday, .wednesday, .friday],
-          startHour: 9,
-          startMinute: 0,
-          endHour: 17,
-          endMinute: 0,
-          updatedAt: Date()
-        )
-      ),
-      isActive: true
-    )
-
-    // Case 5: Schedule set + active + other strategy
-    ProfileScheduleRow(
-      profile: BlockedProfiles(
-        name: "Test",
-        blockingStrategyId: NFCBlockingStrategy.id,
-        schedule: .init(
-          days: [.monday, .wednesday, .friday],
-          startHour: 9,
-          startMinute: 0,
-          endHour: 17,
-          endMinute: 0,
-          updatedAt: Date()
-        )
-      ),
-      isActive: true
     )
   }
   .padding()
