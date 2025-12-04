@@ -7,6 +7,12 @@ struct NFCResult: Equatable {
   var DateScanned: Date
 }
 
+/// Scanning mode for NFC operations
+enum NFCScanMode {
+  case session(profileName: String)
+  case addToWhitelist(profileName: String)
+}
+
 class NFCScannerUtil: NSObject {
   // Callback closures for handling results and errors
   var onTagScanned: ((NFCResult) -> Void)?
@@ -14,8 +20,38 @@ class NFCScannerUtil: NSObject {
 
   private var nfcSession: NFCReaderSession?
   private var urlToWrite: String?
+  private var scanMode: NFCScanMode = .session(profileName: "")
 
   func scan(profileName: String) {
+    scanMode = .session(profileName: profileName)
+    startScanning(message: "Hold your iPhone near an NFC tag to trigger " + profileName)
+  }
+
+  /**
+   Scans for an NFC tag to add to the profile's whitelist.
+
+   - Parameter profileName: Name of the profile for user feedback
+   */
+  func scanForWhitelist(profileName: String) {
+    scanMode = .addToWhitelist(profileName: profileName)
+    startScanning(message: "Hold your iPhone near an NFC tag to add it to \(profileName) whitelist")
+  }
+
+  /**
+   Checks if NFC scanning is available on this device.
+
+   - Returns: `true` if NFC is supported and available, `false` otherwise
+   */
+  func isNFCAvailable() -> Bool {
+    return NFCReaderSession.readingAvailable
+  }
+
+  /**
+   Internal method to start NFC scanning with a custom message.
+
+   - Parameter message: Alert message to display during scanning
+   */
+  private func startScanning(message: String) {
     guard NFCReaderSession.readingAvailable else {
       self.onError?("NFC scanning not available on this device")
       return
@@ -26,7 +62,7 @@ class NFCScannerUtil: NSObject {
       delegate: self,
       queue: nil
     )
-    nfcSession?.alertMessage = "Hold your iPhone near an NFC tag to trigger " + profileName
+    nfcSession?.alertMessage = message
     nfcSession?.begin()
   }
 
@@ -121,7 +157,15 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
         return
       }
 
-      let url = self.updateWithNDEFMessageURL(message!)
+      guard let message = message else {
+        self.handleTagData(
+          id: tag.identifier.hexEncodedString(),
+          url: nil,
+          session: session
+        )
+        return
+      }
+      let url = self.updateWithNDEFMessageURL(message)
       self.handleTagData(
         id: tag.identifier.hexEncodedString(),
         url: url,
@@ -148,7 +192,15 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
         return
       }
 
-      let url = self.updateWithNDEFMessageURL(message!)
+      guard let message = message else {
+        self.handleTagData(
+          id: tag.identifier.hexEncodedString(),
+          url: nil,
+          session: session
+        )
+        return
+      }
+      let url = self.updateWithNDEFMessageURL(message)
       self.handleTagData(
         id: tag.identifier.hexEncodedString(),
         url: url,

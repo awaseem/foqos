@@ -27,6 +27,8 @@ class BlockedProfiles {
   var physicalUnblockNFCTagId: String?
   var physicalUnblockQRCodeId: String?
 
+  @Relationship var nfcWhitelist: [NFCTagWhitelist] = []
+
   var domains: [String]? = nil
 
   var schedule: BlockedProfileSchedule? = nil
@@ -420,4 +422,204 @@ class BlockedProfiles {
     let newDomains = domains.filter { $0 != domain }
     try updateProfile(profile, in: context, domains: newDomains)
   }
+
+  // MARK: - NFC Whitelist Management
+
+
+  /**
+   Migrates an existing single NFC tag to the new whitelist system.
+
+   This method safely converts legacy single-tag configurations to the new
+   multi-tag whitelist format while preserving data integrity.
+
+   - Parameters:
+     - profile: The profile to migrate
+     - context: SwiftData model context for database operations
+   - Throws: Database errors if migration fails
+   */
+  static func migrateToNFCWhitelist(_ profile: BlockedProfiles, context: ModelContext) throws {
+    if let singleTagId = profile.physicalUnblockNFCTagId,
+       profile.nfcWhitelist.isEmpty {
+
+        let whitelistTag = NFCTagWhitelist(
+            tagId: singleTagId,
+            name: "Legacy Tag",
+            dateAdded: profile.updatedAt
+        )
+
+        // Set all relationships before saving to maintain consistency
+        whitelistTag.profile = profile
+        context.insert(whitelistTag)
+        profile.nfcWhitelist.append(whitelistTag)
+        profile.physicalUnblockNFCTagId = nil
+
+        // Single transaction to prevent inconsistent state
+        try context.save()
+    }
+  }
+
+  /**
+   Adds an NFC tag to the profile's whitelist with validation.
+
+   - Parameters:
+     - profile: The profile to add the tag to
+     - context: SwiftData model context for database operations
+     - tagId: Unique identifier for the NFC tag (will be normalized)
+     - tagUrl: Optional URL from NDEF data
+     - name: Optional display name (auto-generated if nil)
+   - Throws:
+     - `NFCWhitelistError.invalidTagId` if tag ID is empty or invalid
+     - `NFCWhitelistError.tagAlreadyExists` if tag already exists
+     - `NFCWhitelistError.tagLimitReached` if maximum tags exceeded
+     - `NFCWhitelistError.invalidTagName` if name is too long
+   */
+  static func addNFCTag(
+    to profile: BlockedProfiles,
+    context: ModelContext,
+    tagId: String,
+    tagUrl: String? = nil,
+    name: String? = nil
+  ) throws {
+
+    // Input validation
+    let normalizedTagId = tagId.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !normalizedTagId.isEmpty else {
+        throw NFCWhitelistError.invalidTagId
+    }
+
+    guard normalizedTagId.count <= 100 else {
+        throw NFCWhitelistError.invalidTagId
+    }
+
+    if let name = name, name.count > 50 {
+        throw NFCWhitelistError.invalidTagName
+    }
+
+    // Check for duplicates (case-insensitive)
+    let duplicateCheck = profile.nfcWhitelist.first {
+        $0.tagId.caseInsensitiveCompare(normalizedTagId) == .orderedSame
+    }
+
+    guard duplicateCheck == nil else {
+        throw NFCWhitelistError.tagAlreadyExists
+    }
+
+    // Check tag limit
+    guard profile.nfcWhitelist.count < 15 else {
+        throw NFCWhitelistError.tagLimitReached
+    }
+
+    // Generate safe default name using timestamp to avoid race conditions
+    let defaultName = name ?? "NFC Tag \(Int(Date().timeIntervalSince1970))"
+
+    let newTag = NFCTagWhitelist(
+        tagId: normalizedTagId,
+        tagUrl: tagUrl,
+        name: defaultName
+    )
+
+    newTag.profile = profile
+    context.insert(newTag)
+    profile.nfcWhitelist.append(newTag)
+
+    try updateProfile(profile, in: context)
+  }
+
+  /**
+   Removes an NFC tag from the profile's whitelist.
+
+   - Parameters:
+     - profile: The profile to remove the tag from
+     - context: SwiftData model context for database operations
+     - tagId: Identifier of the tag to remove
+   - Throws:
+     - `NFCWhitelistError.tagNotFound` if tag doesn't exist
+     - Database errors if removal fails
+   */
+  static func removeNFCTag(
+    from profile: BlockedProfiles,
+    context: ModelContext,
+    tagId: String
+  ) throws {
+    let normalizedTagId = tagId.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    guard let tagIndex = profile.nfcWhitelist.firstIndex(where: {
+        $0.tagId.caseInsensitiveCompare(normalizedTagId) == .orderedSame
+    }) else {
+        throw NFCWhitelistError.tagNotFound
+    }
+
+    let tag = profile.nfcWhitelist.remove(at: tagIndex)
+    context.delete(tag)
+
+    try updateProfile(profile, in: context)
+  }
+
+  /**
+   Simple migration to move legacy single NFC tags to whitelist.
+   Call this once when the app starts up.
+   */
+  static func migrateLegacyNFCTags(context: ModelContext) {
+    do {
+      let profiles = try context.fetch(FetchDescriptor<BlockedProfiles>())
+
+      for profile in profiles {
+        // If profile has legacy tag but no whitelist entries, migrate it
+        if let legacyTagId = profile.physicalUnblockNFCTagId,
+           !legacyTagId.isEmpty,
+           profile.nfcWhitelist.isEmpty {
+
+          let tag = NFCTagWhitelist(tagId: legacyTagId, name: "Legacy NFC Tag")
+          tag.profile = profile
+          context.insert(tag)
+
+          // Keep the legacy field for now as backup
+          // profile.physicalUnblockNFCTagId = nil // Uncomment to remove legacy field
+        }
+      }
+
+      try context.save()
+    } catch {
+      print("Migration failed: \(error)")
+    }
+  }
+}
+
+/// Errors that can occur during NFC whitelist operations
+enum NFCWhitelistError: LocalizedError {
+    case tagAlreadyExists
+    case tagLimitReached
+    case tagNotFound
+    case invalidTagId
+    case invalidTagName
+
+    var errorDescription: String? {
+        switch self {
+        case .tagAlreadyExists:
+            return "This NFC tag is already in the whitelist"
+        case .tagLimitReached:
+            return "Maximum of 15 NFC tags allowed"
+        case .tagNotFound:
+            return "NFC tag not found in whitelist"
+        case .invalidTagId:
+            return "Invalid NFC tag identifier"
+        case .invalidTagName:
+            return "Tag name must be 50 characters or less"
+        }
+    }
+
+    var recoverySuggestion: String? {
+        switch self {
+        case .tagAlreadyExists:
+            return "This tag is already configured. You can rename it or remove it first."
+        case .tagLimitReached:
+            return "Remove some existing tags before adding new ones."
+        case .invalidTagId:
+            return "Ensure the NFC tag was scanned properly and try again."
+        case .invalidTagName:
+            return "Use a shorter name for this tag."
+        case .tagNotFound:
+            return "Check that the tag exists in the whitelist."
+        }
+    }
 }
