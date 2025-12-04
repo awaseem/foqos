@@ -42,7 +42,7 @@ class BlockedProfiles {
   }
 
   var scheduleIsOutOfSync: Bool {
-    return self.schedule != nil
+    return self.schedule?.isActive == true
       && DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self) == nil
   }
 

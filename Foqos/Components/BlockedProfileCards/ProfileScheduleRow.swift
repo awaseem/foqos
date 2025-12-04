@@ -45,18 +45,9 @@ struct ProfileScheduleRow: View {
     HStack(spacing: 4) {
       // Icon
       Group {
-        if !hasSchedule && !isTimerStrategy {
-          Image(systemName: "calendar.badge.minus")
-            .foregroundColor(.secondary)
-        } else if profile.scheduleIsOutOfSync || (hasSchedule && isTimerStrategy) {
+        if profile.scheduleIsOutOfSync || (hasSchedule && isTimerStrategy) {
           Image(systemName: "exclamationmark.triangle.fill")
             .foregroundColor(.red)
-        } else if !hasSchedule && isActive && isTimerStrategy {
-          Image(systemName: "timer")
-            .foregroundColor(.green)
-        } else if hasSchedule {
-          Image(systemName: "calendar.badge.checkmark")
-            .foregroundColor(.green)
         }
       }
       .font(.body)
