@@ -171,6 +171,12 @@ struct BlockedProfileView: View {
           }
         }
 
+        if profile?.scheduleIsOutOfSync == true {
+          Section {
+            ScheduleWarningPrompt(onApply: { saveProfile() }, disabled: isBlocking)
+          }
+        }
+
         Section("Name") {
           TextField("Profile Name", text: $name)
             .textContentType(.none)
