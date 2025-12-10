@@ -38,10 +38,20 @@ struct EmergencyView: View {
             Image(systemName: "clock.arrow.circlepath")
               .font(.caption)
               .foregroundColor(.secondary)
-            if let nextResetDate = strategyManager.getNextResetDate() {
-              Text("Resets \(nextResetDate, format: .dateTime.month().day())")
-                .font(.caption)
-            }
+              
+              Group {
+                if let nextResetDate = strategyManager.getNextResetDate() {
+                  let timeUntilReset = nextResetDate.timeIntervalSinceNow
+                  if timeUntilReset <= 24 * 60 * 60 { // Less than 24 hours
+                    let hoursRemaining = max(1, Int(ceil(timeUntilReset / 3600)))
+                    Text("Resets in \(hoursRemaining)h")
+                      .font(.caption)
+                  } else {
+                    Text("Resets \(nextResetDate, format: .dateTime.month().day())")
+                      .font(.caption)
+                  }
+                }
+              }
           }
           .padding(.vertical, 6)
 
