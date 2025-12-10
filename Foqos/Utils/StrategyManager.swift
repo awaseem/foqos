@@ -351,8 +351,16 @@ class StrategyManager: ObservableObject {
     let lastResetDate = Date(
       timeIntervalSinceReferenceDate: lastEmergencyUnblocksResetDateTimestamp)
     let calendar = Calendar.current
-    return calendar.date(
-      byAdding: .weekOfYear, value: emergencyUnblocksResetPeriodInWeeks, to: lastResetDate)
+    if let weekAdjusted = calendar.date(
+      byAdding: .weekOfYear,
+      value: emergencyUnblocksResetPeriodInWeeks,
+      to: lastResetDate
+    ) {
+        // Add one extra day to display the day the reset has occurred
+        return calendar.date(byAdding: .day, value: 1, to: weekAdjusted)
+    }
+      
+    return nil
   }
 
   func getResetPeriodInWeeks() -> Int {
