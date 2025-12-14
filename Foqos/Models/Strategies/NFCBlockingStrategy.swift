@@ -1,6 +1,26 @@
 import SwiftData
 import SwiftUI
 
+/**
+ NFC-based blocking strategy that uses NFC tags for session management.
+
+ This strategy allows users to start blocking sessions by scanning an NFC tag and then
+ unlock the session by scanning either the same tag (legacy mode) or any tag in the
+ profile's whitelist (new mode). Supports both legacy single-tag configuration and
+ new multi-tag whitelist functionality.
+
+ ## Features:
+ - Legacy single NFC tag support for backward compatibility
+ - Multiple NFC tag whitelist for enhanced flexibility
+ - Optimized Set-based lookup for performance with large whitelists
+ - Comprehensive error handling and user feedback
+
+ ## Usage:
+ ```swift
+ let strategy = NFCBlockingStrategy()
+ strategy.startBlocking(context: context, profile: profile, forceStart: false)
+ ```
+ */
 class NFCBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCBlockingStrategy"
 
@@ -52,19 +72,23 @@ class NFCBlockingStrategy: BlockingStrategy {
     nfcScanner.onTagScanned = { tag in
       let tag = tag.url ?? tag.id
 
-      if let physicalUnblockNFCTagId = session.blockedProfile.physicalUnblockNFCTagId {
-        // Physical unblock tag is set - only this specific tag can unblock
-        if physicalUnblockNFCTagId != tag {
-          self.onErrorMessage?(
-            "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"
-          )
+      // Check if this tag can unlock the profile
+      if let legacyTagId = session.blockedProfile.physicalUnblockNFCTagId {
+        // Legacy single tag mode
+        if legacyTagId != tag {
+          self.onErrorMessage?("This NFC tag cannot unlock this profile")
+          return
+        }
+      } else if !session.blockedProfile.nfcWhitelist.isEmpty {
+        // Whitelist mode - check if tag is allowed
+        let isAllowed = session.blockedProfile.nfcWhitelist.contains { $0.tagId == tag }
+        if !isAllowed {
+          self.onErrorMessage?("This NFC tag is not in the whitelist")
           return
         }
       } else if !session.forceStarted && session.tag != tag {
-        // No physical unblock tag - must use original session tag (unless force started)
-        self.onErrorMessage?(
-          "You must scan the original tag to stop focus"
-        )
+        // Original mode - must use same tag that started session
+        self.onErrorMessage?("You must scan the original tag to stop focus")
         return
       }
 
