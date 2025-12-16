@@ -53,11 +53,7 @@ struct ProfileScheduleRow: View {
       .font(.body)
 
       VStack(alignment: .leading, spacing: 2) {
-        if !hasSchedule {
-          Text("No Schedule Set")
-            .font(.caption)
-            .foregroundColor(.secondary)
-        } else if profile.scheduleIsOutOfSync {
+        if profile.scheduleIsOutOfSync {
           Text("Schedule is Out of Sync")
             .font(.caption2)
         } else if !hasSchedule && isActive && isTimerStrategy {
@@ -74,6 +70,10 @@ struct ProfileScheduleRow: View {
         } else if hasSchedule && isTimerStrategy {
           Text("Unstable Profile with Schedule")
             .font(.caption2)
+        } else if !hasSchedule {
+          Text("No Schedule Set")
+            .font(.caption)
+            .foregroundColor(.secondary)
         } else if hasSchedule {
           Text(daysLine)
             .font(.caption)
