@@ -9,6 +9,7 @@ struct LabeledCodeScannerView: View {
 
   @State private var isShowingScanner = true
   @State private var errorMessage: String? = nil
+  @State private var isTorchOn = false
 
   init(
     heading: String,
@@ -33,26 +34,44 @@ struct LabeledCodeScannerView: View {
         .padding(.bottom)
 
       if isShowingScanner {
-        CodeScannerView(
-          codeTypes: [
-            .aztec,
-            .code128,
-            .code39,
-            .code39Mod43,
-            .code93,
-            .ean8,
-            .ean13,
-            .interleaved2of5,
-            .itf14,
-            .pdf417,
-            .upce,
-            .qr,
-            .dataMatrix,
-          ],
-          showViewfinder: true, shouldVibrateOnSuccess: true, completion: handleScanResult
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .cornerRadius(12)
+        ZStack(alignment: .topTrailing) {
+          CodeScannerView(
+            codeTypes: [
+              .aztec,
+              .code128,
+              .code39,
+              .code39Mod43,
+              .code93,
+              .ean8,
+              .ean13,
+              .interleaved2of5,
+              .itf14,
+              .pdf417,
+              .upce,
+              .qr,
+              .dataMatrix,
+            ],
+            showViewfinder: true,
+            shouldVibrateOnSuccess: true,
+            isTorchOn: isTorchOn,
+            completion: handleScanResult
+          )
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .cornerRadius(12)
+
+          // Flashlight toggle button
+          Button(action: {
+            isTorchOn.toggle()
+          }) {
+            Image(systemName: isTorchOn ? "flashlight.on.fill" : "flashlight.slash")
+              .font(.system(size: 24))
+              .foregroundColor(.white)
+              .padding(12)
+              .background(Color.black.opacity(0.6))
+              .clipShape(Circle())
+          }
+          .padding(16)
+        }
         .padding(.vertical, 10)
       } else if let errorMessage = errorMessage {
         Text("Error: \(errorMessage)")
@@ -67,13 +86,16 @@ struct LabeledCodeScannerView: View {
 
       Spacer()
     }
-    .padding()
+    .padding(.top, 12)
+    .padding(.horizontal)
     .onAppear {
       isShowingScanner = true
       errorMessage = nil
+      isTorchOn = false
     }
     .onDisappear {
       isShowingScanner = false
+      isTorchOn = false
     }
   }
 
