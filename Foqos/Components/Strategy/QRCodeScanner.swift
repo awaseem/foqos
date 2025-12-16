@@ -86,8 +86,7 @@ struct LabeledCodeScannerView: View {
 
       Spacer()
     }
-    .padding(.top, 12)
-    .padding(.horizontal)
+    .padding()
     .onAppear {
       isShowingScanner = true
       errorMessage = nil
