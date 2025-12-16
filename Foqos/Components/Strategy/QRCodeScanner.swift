@@ -34,7 +34,7 @@ struct LabeledCodeScannerView: View {
         .padding(.bottom)
 
       if isShowingScanner {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .bottomTrailing) {
           CodeScannerView(
             codeTypes: [
               .aztec,
