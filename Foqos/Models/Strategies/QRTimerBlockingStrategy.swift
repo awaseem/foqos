@@ -29,8 +29,10 @@ class QRTimerBlockingStrategy: BlockingStrategy {
         if let strategyTimerData = StrategyTimerData.toData(from: duration) {
           // Store the timer data so that its selected for the next time the profile is started
           // This is also useful if the profile is started from the background like a shortcut or intent
-          _ = try? BlockedProfiles.updateProfile(
-            profile, in: context, strategyData: strategyTimerData)
+          profile.strategyData = strategyTimerData
+          profile.updatedAt = Date()
+          BlockedProfiles.updateSnapshot(for: profile)
+          try? context.save()
         }
 
         let activeSession = BlockedProfileSession.createSession(
