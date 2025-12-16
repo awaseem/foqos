@@ -28,7 +28,7 @@ struct TimerDurationView: View {
           .font(.title2).bold()
 
         Text(
-          "Select how long you want \(profileName) to last, use strategy to exit early."
+          "Select how long you want \(profileName) to last."
         )
         .font(.callout)
         .foregroundColor(.secondary)
