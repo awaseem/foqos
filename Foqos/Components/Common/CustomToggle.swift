@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CustomToggle: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let title: String
   let description: String
   @Binding var isOn: Bool
@@ -11,6 +13,7 @@ struct CustomToggle: View {
     VStack(alignment: .leading, spacing: 0) {
       Toggle(title, isOn: $isOn)
         .disabled(isDisabled)
+        .tint(themeManager.themeColor)
 
       Text(description)
         .font(.caption)

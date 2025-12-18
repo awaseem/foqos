@@ -2,6 +2,8 @@ import FamilyControls
 import SwiftUI
 
 struct BlockedProfileCard: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let profile: BlockedProfiles
 
   var isActive: Bool = false
@@ -18,15 +20,7 @@ struct BlockedProfileCard: View {
 
   // Keep a reference to the CardBackground to access color
   private var cardBackground: CardBackground {
-    CardBackground(isActive: isActive, customColor: blockingStrategyColor)
-  }
-
-  // Get blocking strategy color for the background
-  private var blockingStrategyColor: Color {
-    guard let strategyId = profile.blockingStrategyId else {
-      return .gray
-    }
-    return StrategyManager.getStrategyFromId(id: strategyId).color
+    CardBackground(isActive: isActive, customColor: themeManager.themeColor)
   }
 
   var body: some View {
