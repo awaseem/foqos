@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TimerDurationView: View {
+  @EnvironmentObject var themeManager: ThemeManager
   @Environment(\.dismiss) private var dismiss
 
   let profileName: String
@@ -47,7 +48,7 @@ struct TimerDurationView: View {
       // Confirm button
       ActionButton(
         title: "Set Duration",
-        backgroundColor: .mint,
+        backgroundColor: themeManager.themeColor,
         iconName: "checkmark.circle.fill"
       ) {
         handleConfirm()
@@ -96,7 +97,7 @@ struct TimerDurationView: View {
               }
             }
           )
-          .tint(.mint)
+          .tint(themeManager.themeColor)
           .sensoryFeedback(.selection, trigger: durationMinutes)
 
           // Min/Max labels

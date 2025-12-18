@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct StrategyRow: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let strategy: BlockingStrategy
   let isSelected: Bool
   let onTap: () -> Void
@@ -27,7 +29,7 @@ struct StrategyRow: View {
         Spacer()
 
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-          .foregroundColor(isSelected ? .green : .secondary)
+          .foregroundColor(isSelected ? themeManager.themeColor : .secondary)
           .font(.system(size: 20))
       }
     }

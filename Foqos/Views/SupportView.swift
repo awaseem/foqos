@@ -6,6 +6,8 @@ let DONATE_URL = "https://buymeacoffee.com/softwarecuddler"  // You can replace 
 
 struct SupportView: View {
   @EnvironmentObject var donationManager: TipManager
+  @EnvironmentObject var themeManager: ThemeManager
+
   @State private var stampScale: CGFloat = 0.1
   @State private var stampRotation: Double = 0
   @State private var stampOpacity: Double = 0.0
@@ -68,7 +70,7 @@ struct SupportView: View {
 
       ActionButton(
         title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
-        backgroundColor: donationManager.hasPurchasedTip ? .gray : .green,
+        backgroundColor: donationManager.hasPurchasedTip ? .gray : themeManager.themeColor,
         iconName: "heart.fill",
         iconColor: donationManager.hasPurchasedTip ? .red : nil,
         isLoading: donationManager.loadingTip,
