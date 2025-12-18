@@ -4,21 +4,6 @@ struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var themeManager: ThemeManager
 
-  // Available iOS system colors
-  private let availableColors: [(name: String, color: Color)] = [
-    ("Purple", .purple),
-    ("Blue", .blue),
-    ("Teal", .teal),
-    ("Green", .green),
-    ("Yellow", .yellow),
-    ("Orange", .orange),
-    ("Red", .red),
-    ("Pink", .pink),
-    ("Indigo", .indigo),
-  ]
-
-  @State private var selectedColorName: String = "Purple"
-
   var body: some View {
     NavigationStack {
       Form {
@@ -38,8 +23,8 @@ struct SettingsView: View {
           }
           .padding(.vertical, 8)
 
-          Picker("Theme Color", selection: $selectedColorName) {
-            ForEach(availableColors, id: \.name) { colorOption in
+          Picker("Theme Color", selection: $themeManager.selectedColorName) {
+            ForEach(ThemeManager.availableColors, id: \.name) { colorOption in
               HStack {
                 Circle()
                   .fill(colorOption.color)
@@ -49,11 +34,8 @@ struct SettingsView: View {
               .tag(colorOption.name)
             }
           }
-          .onChange(of: selectedColorName) { _, newColorName in
-            if let selectedColor = availableColors.first(where: { $0.name == newColorName })?.color
-            {
-              selectColor(selectedColor)
-            }
+          .onChange(of: themeManager.selectedColorName) { _, _ in
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
         }
       }
@@ -66,19 +48,7 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .onAppear {
-        // Set initial selected color name based on current theme
-        let currentHex = themeManager.themeColor.toHex() ?? ""
-        if let matchingColor = availableColors.first(where: { $0.color.toHex() == currentHex }) {
-          selectedColorName = matchingColor.name
-        }
-      }
     }
-  }
-
-  private func selectColor(_ color: Color) {
-    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-    themeManager.setTheme(color)
   }
 }
 
