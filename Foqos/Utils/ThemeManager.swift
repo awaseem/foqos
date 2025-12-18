@@ -6,7 +6,6 @@ class ThemeManager: ObservableObject {
   // Single source of truth for all theme colors
   static let availableColors: [(name: String, color: Color)] = [
     ("Grimace Purple", Color(hex: "#894fa3")),
-    ("Electric Purple", Color(hex: "#9349f9")),
     ("Ocean Blue", Color(hex: "#007aff")),
     ("Mint Fresh", Color(hex: "#00c6bf")),
     ("Lime Zest", Color(hex: "#7fd800")),
@@ -14,7 +13,13 @@ class ThemeManager: ObservableObject {
     ("Hot Pink", Color(hex: "#ff2da5")),
     ("Tangerine", Color(hex: "#ff9300")),
     ("Lavender Dream", Color(hex: "#ba8eff")),
-    ("Cyber Cyan", Color(hex: "#00e5ff")),
+    // 80s Neon Collection
+    ("Miami Vice", Color(hex: "#ff6ec7")),
+    ("Electric Lemonade", Color(hex: "#ccff00")),
+    ("Neon Grape", Color(hex: "#b026ff")),
+    // Calm & Earthy
+    ("Slate Stone", Color(hex: "#708090")),
+    ("Warm Sandstone", Color(hex: "#c4a77d")),
   ]
 
   private static let defaultColorName = "Grimace Purple"
