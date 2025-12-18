@@ -3,26 +3,40 @@ import SwiftUI
 class ThemeManager: ObservableObject {
   static let shared = ThemeManager()
 
-  @AppStorage(
-    "foqosThemeColorHex", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
-  private var themeColorHex: String = ""
+  // Single source of truth for all theme colors
+  static let availableColors: [(name: String, color: Color)] = [
+    ("Grimace Purple", Color(hex: "#894fa3")),
+    ("Electric Purple", Color(hex: "#9349f9")),
+    ("Ocean Blue", Color(hex: "#007aff")),
+    ("Mint Fresh", Color(hex: "#00c6bf")),
+    ("Lime Zest", Color(hex: "#7fd800")),
+    ("Sunset Coral", Color(hex: "#ff5966")),
+    ("Hot Pink", Color(hex: "#ff2da5")),
+    ("Tangerine", Color(hex: "#ff9300")),
+    ("Lavender Dream", Color(hex: "#ba8eff")),
+    ("Cyber Cyan", Color(hex: "#00e5ff")),
+  ]
 
-  var themeColor: Color {
-    get {
-      if themeColorHex.isEmpty {
-        return .purple  // Default to iOS system purple
-      }
-      return Color(hex: themeColorHex)
-    }
+  private static let defaultColorName = "Grimace Purple"
+
+  @AppStorage(
+    "foqosThemeColorName", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
+  private var themeColorName: String = defaultColorName
+
+  var selectedColorName: String {
+    get { themeColorName }
     set {
-      if let hex = newValue.toHex() {
-        themeColorHex = hex
-        objectWillChange.send()
-      }
+      themeColorName = newValue
+      objectWillChange.send()
     }
   }
 
-  func setTheme(_ color: Color) {
-    self.themeColor = color
+  var themeColor: Color {
+    Self.availableColors.first(where: { $0.name == themeColorName })?.color
+      ?? Self.availableColors.first!.color
+  }
+
+  func setTheme(named name: String) {
+    selectedColorName = name
   }
 }
