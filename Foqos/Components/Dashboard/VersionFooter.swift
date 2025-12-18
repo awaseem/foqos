@@ -4,6 +4,8 @@ import SwiftUI
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
 
 struct VersionFooter: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let profileIsActive: Bool
   let tapProfileDebugHandler: () -> Void
 
@@ -66,7 +68,7 @@ struct VersionFooter: View {
           destination: URL(string: AMZN_STORE_LINK)!
         )
         .font(.footnote)
-        .tint(.blue)
+        .tint(themeManager.themeColor)
       }
     }
     .padding(.bottom, 8)

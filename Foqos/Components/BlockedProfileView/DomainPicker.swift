@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DomainPicker: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   @Binding var domains: [String]
   @Binding var isPresented: Bool
 
@@ -33,7 +35,7 @@ struct DomainPicker: View {
 
             Button(action: addDomain) {
               Image(systemName: "plus.circle.fill")
-                .foregroundStyle(.blue)
+                .foregroundStyle(themeManager.themeColor)
                 .font(.title2)
             }
             .disabled(newDomain.isEmpty || domains.count >= maxDomains)
