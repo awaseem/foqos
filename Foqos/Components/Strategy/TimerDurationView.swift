@@ -118,7 +118,7 @@ struct TimerDurationView: View {
         } label: {
           Image(systemName: "plus.circle.fill")
             .font(.system(size: 32))
-            .foregroundColor(durationMinutes < maxMinutes ? .mint : .gray)
+            .foregroundColor(durationMinutes < maxMinutes ? themeManager.themeColor : .gray)
         }
         .disabled(durationMinutes >= maxMinutes)
         .scaleEffect(durationMinutes >= maxMinutes ? 0.9 : 1.0)
