@@ -42,9 +42,11 @@ struct RoundedButton: View {
             .fontWeight(fontWeight)
         }
 
-        Text(text)
-          .font(font)
-          .fontWeight(fontWeight)
+        if !text.isEmpty {
+          Text(text)
+            .font(font)
+            .fontWeight(fontWeight)
+        }
       }
       .foregroundColor(textColor)
       .padding(.horizontal, 12)
