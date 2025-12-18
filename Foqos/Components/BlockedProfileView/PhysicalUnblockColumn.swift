@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PhysicalUnblockColumn: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let title: String
   let description: String
   let systemImage: String
@@ -25,7 +27,7 @@ struct PhysicalUnblockColumn: View {
 
           if id != nil {
             Image(systemName: "checkmark.circle.fill")
-              .foregroundColor(.green)
+              .foregroundColor(themeManager.themeColor)
               .font(.caption)
           }
         }

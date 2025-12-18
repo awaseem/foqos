@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BlockedProfileScheduleSelector: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   var schedule: BlockedProfileSchedule
   var buttonAction: () -> Void
   var disabled: Bool = false
@@ -14,6 +16,7 @@ struct BlockedProfileScheduleSelector: View {
     Button(action: buttonAction) {
       HStack {
         Text(buttonText)
+          .foregroundStyle(themeManager.themeColor)
         Spacer()
         Image(systemName: "chevron.right")
           .foregroundStyle(.gray)

@@ -2,6 +2,8 @@ import FamilyControls
 import SwiftUI
 
 struct BlockedProfileAppSelector: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   var selection: FamilyActivitySelection
   var buttonAction: () -> Void
   var allowMode: Bool = false
@@ -35,6 +37,7 @@ struct BlockedProfileAppSelector: View {
     Button(action: buttonAction) {
       HStack {
         Text(buttonText)
+          .foregroundStyle(themeManager.themeColor)
         Spacer()
         Image(systemName: "chevron.right")
           .foregroundStyle(.gray)

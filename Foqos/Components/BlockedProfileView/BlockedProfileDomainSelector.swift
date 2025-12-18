@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BlockedProfileDomainSelector: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   var domains: [String]
   var buttonAction: () -> Void
   var allowMode: Bool = false
@@ -25,6 +27,7 @@ struct BlockedProfileDomainSelector: View {
     Button(action: buttonAction) {
       HStack {
         Text(buttonText)
+          .foregroundStyle(themeManager.themeColor)
         Spacer()
         Image(systemName: "chevron.right")
           .foregroundStyle(.gray)
