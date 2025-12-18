@@ -32,6 +32,7 @@ struct foqosApp: App {
   // Singletons for shared functionality
   @StateObject private var startegyManager = StrategyManager.shared
   @StateObject private var liveActivityManager = LiveActivityManager.shared
+  @StateObject private var themeManager = ThemeManager.shared
 
   init() {
     TimersUtil.registerBackgroundTasks()
@@ -67,6 +68,7 @@ struct foqosApp: App {
         .environmentObject(nfcWriter)
         .environmentObject(ratingManager)
         .environmentObject(liveActivityManager)
+        .environmentObject(themeManager)
     }
     .modelContainer(container)
   }
