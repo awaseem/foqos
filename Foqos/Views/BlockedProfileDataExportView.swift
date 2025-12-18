@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct BlockedProfileDataExportView: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   @Environment(\.modelContext) private var context
 
   @Query(sort: [
@@ -77,7 +79,7 @@ struct BlockedProfileDataExportView: View {
 
         ActionButton(
           title: "Export as CSV",
-          backgroundColor: .blue,
+          backgroundColor: themeManager.themeColor,
           isLoading: isGenerating,
           isDisabled: isExportDisabled
         ) {
@@ -94,7 +96,7 @@ struct BlockedProfileDataExportView: View {
         contentType: .commaSeparatedText,
         defaultFilename: defaultFilename,
         onCompletion: { result in
-          if case let .failure(error) = result {
+          if case .failure(let error) = result {
             errorMessage = error.localizedDescription
           }
         }

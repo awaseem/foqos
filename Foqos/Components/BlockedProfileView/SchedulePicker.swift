@@ -172,11 +172,11 @@ struct SchedulePicker: View {
                   .font(.subheadline)
                   .fontWeight(.semibold)
                   .frame(width: 40, height: 40)
-                  .background(isSelected ? Color.blue : Color.clear)
-                  .foregroundStyle(isSelected ? Color.white : themeManager.themeColor)
+                  .background(isSelected ? themeManager.themeColor : Color.clear)
+                  .foregroundStyle(isSelected ? Color.white : Color.primary)
                   .overlay(
                     Circle()
-                      .stroke(isSelected ? Color.blue : Color.secondary, lineWidth: 1)
+                      .stroke(isSelected ? themeManager.themeColor : Color.secondary, lineWidth: 1)
                   )
                   .clipShape(Circle())
                   .accessibilityLabel(day.name)
@@ -254,7 +254,7 @@ struct SchedulePicker: View {
         } footer: {
           VStack(alignment: .center, spacing: 4) {
             Text(
-              "If you're looking for more granularity, you can use Shortcuts. \(Text("[Here is a quick video](https://youtube.com/shorts/1xZeO9lg5f8)").foregroundStyle(.blue))"
+              "If you're looking for more granularity, you can use Shortcuts. \(Text("[Here is a quick video](https://youtube.com/shorts/1xZeO9lg5f8)").foregroundStyle(themeManager.themeColor))"
             )
             .font(.caption)
             .foregroundStyle(.secondary)
