@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct StrategyInfoView: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let strategyId: String?
 
   // Get blocking strategy name
@@ -28,13 +30,13 @@ struct StrategyInfoView: View {
   var body: some View {
     HStack {
       Image(systemName: blockingStrategyIcon)
-        .foregroundColor(blockingStrategyColor)
+        .foregroundColor(themeManager.themeColor)
         .font(.system(size: 13))
         .frame(width: 28, height: 28)
         .background(
           Circle()
             .fill(
-              blockingStrategyColor.opacity(0.15)
+              themeManager.themeColor.opacity(0.15)
             )
         )
 

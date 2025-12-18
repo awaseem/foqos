@@ -26,7 +26,7 @@ struct ProfileIndicators: View {
   private func indicatorView(label: String) -> some View {
     HStack(spacing: 6) {
       Circle()
-        .fill(Color.green.opacity(0.85))
+        .fill(Color.primary.opacity(0.85))
         .frame(width: 6, height: 6)
 
       Text(label)

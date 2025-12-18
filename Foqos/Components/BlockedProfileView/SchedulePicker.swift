@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SchedulePicker: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   @Binding var schedule: BlockedProfileSchedule
   @Binding var isPresented: Bool
 
@@ -171,7 +173,7 @@ struct SchedulePicker: View {
                   .fontWeight(.semibold)
                   .frame(width: 40, height: 40)
                   .background(isSelected ? Color.blue : Color.clear)
-                  .foregroundStyle(isSelected ? Color.white : Color.primary)
+                  .foregroundStyle(isSelected ? Color.white : themeManager.themeColor)
                   .overlay(
                     Circle()
                       .stroke(isSelected ? Color.blue : Color.secondary, lineWidth: 1)

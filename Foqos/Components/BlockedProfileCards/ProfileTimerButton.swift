@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ProfileTimerButton: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let isActive: Bool
 
   let isBreakAvailable: Bool
@@ -42,7 +44,7 @@ struct ProfileTimerButton: View {
               .overlay(
                 RoundedRectangle(cornerRadius: 16)
                   .stroke(
-                    Color.primary.opacity(0.2),
+                    themeManager.themeColor.opacity(0.2),
                     lineWidth: 1
                   )
               )
