@@ -33,6 +33,9 @@ struct HomeView: View {
   // Donation View
   @State private var showDonationView = false
 
+  // Settings View
+  @State private var showSettingsView = false
+
   // Emergency View
   @State private var showEmergencyView = false
 
@@ -84,11 +87,18 @@ struct HomeView: View {
         HStack(alignment: .center) {
           AppTitle()
           Spacer()
-          RoundedButton(
-            "Support",
-            action: {
-              showDonationView = true
-            }, iconName: "heart.fill")
+          HStack(spacing: 8) {
+            RoundedButton(
+              "Support",
+              action: {
+                showDonationView = true
+              }, iconName: "heart.fill")
+            RoundedButton(
+              "",
+              action: {
+                showSettingsView = true
+              }, iconName: "gear")
+          }
         }
         .padding(.trailing, 16)
         .padding(.top, 16)
@@ -231,6 +241,9 @@ struct HomeView: View {
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()
+    }
+    .sheet(isPresented: $showSettingsView) {
+      SettingsView()
     }
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()

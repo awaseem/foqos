@@ -3,6 +3,8 @@ import SwiftData
 import SwiftUI
 
 struct BlockedSessionsHabitTracker: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let sessions: [BlockedProfileSession]
   @State private var selectedDate: Date?
   @State private var selectedSessions: [BlockedProfileSession] = []
@@ -91,13 +93,13 @@ struct BlockedSessionsHabitTracker: View {
     case 0:
       return Color.gray.opacity(0.15)
     case 0..<1:
-      return Color.purple.opacity(0.3)
+      return themeManager.themeColor.opacity(0.3)
     case 1..<3:
-      return Color.purple.opacity(0.5)
+      return themeManager.themeColor.opacity(0.5)
     case 3..<5:
-      return Color.purple.opacity(0.7)
+      return themeManager.themeColor.opacity(0.7)
     default:
-      return Color.purple.opacity(0.9)
+      return themeManager.themeColor.opacity(0.9)
     }
   }
 
@@ -150,7 +152,7 @@ struct BlockedSessionsHabitTracker: View {
         ForEach(legendData, id: \.0) { label, opacity in
           HStack(spacing: 4) {
             Rectangle()
-              .fill(Color.purple.opacity(opacity))
+              .fill(themeManager.themeColor.opacity(opacity))
               .frame(width: 10, height: 10)
               .cornerRadius(2)
 
