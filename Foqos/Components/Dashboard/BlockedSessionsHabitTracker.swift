@@ -181,7 +181,7 @@ struct BlockedSessionsHabitTracker: View {
         .overlay(
           RoundedRectangle(cornerRadius: 4)
             .stroke(
-              isSelected ? Color.purple : Color.clear,
+              isSelected ? themeManager.themeColor : Color.clear,
               lineWidth: 2
             )
         )
