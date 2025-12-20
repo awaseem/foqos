@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ScheduleWarningPrompt: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   let onApply: () -> Void
   let disabled: Bool
 
@@ -27,7 +29,7 @@ struct ScheduleWarningPrompt: View {
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(.purple)
+            .background(themeManager.themeColor)
             .cornerRadius(10)
         }
         .disabled(disabled)
