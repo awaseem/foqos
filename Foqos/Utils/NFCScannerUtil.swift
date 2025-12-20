@@ -106,18 +106,20 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
   private func readMiFareTag(_ tag: NFCMiFareTag, session: NFCTagReaderSession) {
     tag.readNDEF { (message: NFCNDEFMessage?, error: Error?) in
       if error != nil || message == nil {
-        if let nfcError = error as? NFCReaderError,
-          nfcError.code == NFCReaderError.ndefReaderSessionErrorZeroLengthMessage
-        {
-          self.handleTagData(
-            id: tag.identifier.hexEncodedString(),
-            url: nil,
-            session: session
+        let tagId = tag.identifier.hexEncodedString()
+
+        if let error = error {
+          print(
+            "⚠️ NDEF read failed (non-critical): \(error.localizedDescription). using tag id: \(tagId)"
           )
-          return
         }
 
-        session.invalidate(errorMessage: "Read error. Please try again.")
+        // Still use the identifier - works for all tag types
+        self.handleTagData(
+          id: tagId,
+          url: nil,
+          session: session
+        )
         return
       }
 
@@ -133,18 +135,19 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
   private func readISO15693Tag(_ tag: NFCISO15693Tag, session: NFCTagReaderSession) {
     tag.readNDEF { (message: NFCNDEFMessage?, error: Error?) in
       if error != nil || message == nil {
-        if let nfcError = error as? NFCReaderError,
-          nfcError.code == NFCReaderError.ndefReaderSessionErrorZeroLengthMessage
-        {
-          self.handleTagData(
-            id: tag.identifier.hexEncodedString(),
-            url: nil,
-            session: session
+        let tagId = tag.identifier.hexEncodedString()
+
+        if let error = error {
+          print(
+            "⚠️ ISO15693 NDEF read failed (non-critical): \(error.localizedDescription). using tag id: \(tagId)"
           )
-          return
         }
 
-        session.invalidate(errorMessage: "Read error. Please try again.")
+        self.handleTagData(
+          id: tagId,
+          url: nil,
+          session: session
+        )
         return
       }
 
