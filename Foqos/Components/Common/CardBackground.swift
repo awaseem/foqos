@@ -1,29 +1,23 @@
 import SwiftUI
 
 struct CardBackground: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
   var isActive: Bool = false
   var customColor: Color? = nil
 
   // Metaball blob specs (randomized once for organic motion)
   @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 5)
 
-  // Exposed colors for easy tweaking
-  public static var activeBlobColor: Color = .green.opacity(0.5)
-  public static var inactiveBlobColor: Color = .blue
-
-  // Default color if no custom color is provided (kept for API compatibility)
-  @available(*, deprecated, message: "Use CardBackground.inactiveBlobColor instead")
-  private let defaultColor: Color = CardBackground.inactiveBlobColor
-
   // No position calculations needed for the simplified design
 
   // Select a color based on custom color or active state
   private var cardColor: Color {
     if isActive {
-      return CardBackground.activeBlobColor
+      return themeManager.themeColor.opacity(0.5)
     }
 
-    return customColor ?? CardBackground.inactiveBlobColor
+    return customColor ?? .blue
   }
 
   var body: some View {
