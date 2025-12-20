@@ -83,22 +83,6 @@ struct CardBackground: View {
           .mask(MetaballMaskView(blobs: blobs, t: t))
           .blendMode(.plusLighter)
           .opacity(0.95)
-
-        // Subtle glassy highlight to unify everything.
-        RoundedRectangle(cornerRadius: 24)
-          .fill(
-            LinearGradient(
-              colors: [
-                .white.opacity(0.18),
-                .white.opacity(0.04),
-                .clear,
-              ],
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            )
-          )
-          .blendMode(.overlay)
-          .opacity(0.8)
       }
     }
 
