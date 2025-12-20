@@ -7,6 +7,7 @@
 
 import ManagedSettings
 import ManagedSettingsUI
+import SwiftUI
 import UIKit
 
 // Override the functions below to customize the shields used in various situations.
@@ -38,8 +39,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   private func createCustomShieldConfiguration(for type: BlockedContentType, title: String)
     -> ShieldConfiguration
   {
-    // Foqos brand color - purple
-    let brandColor = UIColor(red: 0.643, green: 0.204, blue: 0.922, alpha: 1.0)
+    // Get user's selected theme color
+    let brandColor = UIColor(ThemeManager.shared.themeColor)
 
     // Get random fun message
     let randomMessage = getFunBlockMessage(for: type, title: title)
