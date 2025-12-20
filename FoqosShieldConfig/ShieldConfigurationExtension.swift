@@ -45,120 +45,124 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     // Get random fun message
     let randomMessage = getFunBlockMessage(for: type, title: title)
 
-    // Pre-tint the icon to use the brand color
-    let tintedIcon = UIImage(systemName: "hourglass")?.withTintColor(
-      brandColor, renderingMode: .alwaysOriginal)
-
-    // Dynamic background: white in light mode, black in dark mode
-    let dynamicBackgroundColor = UIColor { trait in
-      switch trait.userInterfaceStyle {
-      case .dark:
-        return .black
-      default:
-        return .white
-      }
-    }
+    // Emoji “icon” (rendered to an image so it works with ShieldConfiguration.icon)
+    let emojiIcon = makeEmojiIcon(randomMessage.emoji, size: 96)
 
     return ShieldConfiguration(
       backgroundBlurStyle: nil,
-      backgroundColor: dynamicBackgroundColor,
-      icon: tintedIcon,
+      backgroundColor: brandColor,
+      icon: emojiIcon,
       title: ShieldConfiguration.Label(
         text: randomMessage.title,
-        color: UIColor.label
+        color: .white
       ),
       subtitle: ShieldConfiguration.Label(
         text: randomMessage.subtitle,
-        color: UIColor.secondaryLabel
+        color: UIColor.white.withAlphaComponent(0.88)
       ),
       primaryButtonLabel: ShieldConfiguration.Label(
         text: randomMessage.buttonText,
-        color: .white
+        color: .black
       ),
-      primaryButtonBackgroundColor: brandColor,
+      primaryButtonBackgroundColor: .white,
       secondaryButtonLabel: nil
     )
   }
 
-  private func getFunBlockMessage(for type: BlockedContentType, title: String) -> (
-    title: String, subtitle: String, buttonText: String
+  private func getFunBlockMessage(for _: BlockedContentType, title: String) -> (
+    emoji: String, title: String, subtitle: String, buttonText: String
   ) {
-    let messages = [
-      (
-        title: "Quick pause",
-        subtitle:
-          "Let \(title) wait a minute — your attention is doing real work.",
-        buttonText: "Back to it"
-      ),
-      (
-        title: "Small win",
-        subtitle:
-          "You almost opened \(title). You also chose focus. Nice trade.",
-        buttonText: "Keep going"
-      ),
-      (
-        title: "Back on track",
-        subtitle:
-          "The fastest way to finish is to stay here a little longer.",
-        buttonText: "Stay focused"
-      ),
-      (
-        title: "Good call",
-        subtitle:
-          "\(title) will still be there. This moment won’t.",
-        buttonText: "Carry on"
-      ),
-      (
-        title: "Stay in stride",
-        subtitle:
-          "Tiny distractions add up. So do tiny decisions like this one.",
-        buttonText: "Onward"
-      ),
-      (
-        title: "Momentum matters",
-        subtitle:
-          "A few more minutes beats a few more scrolls.",
-        buttonText: "Back to it"
-      ),
-      (
-        title: "Nice restraint",
-        subtitle:
-          "Curiosity noted. Priorities kept.",
-        buttonText: "Resume"
-      ),
-      (
-        title: "Almost there",
-        subtitle:
-          "Finish the next step, then check \(title) guilt‑free.",
-        buttonText: "One more step"
-      ),
-      (
-        title: "Focus pays",
-        subtitle:
-          "This is the quiet part that makes the loud results.",
-        buttonText: "Keep at it"
-      ),
-      (
-        title: "Light nudge",
-        subtitle:
-          "Take a breath. Reopen the task. You’ll thank yourself later.",
-        buttonText: "Return"
-      ),
-      (
-        title: "Streak builder",
-        subtitle:
-          "Choosing not to open \(title) just kept your streak alive.",
-        buttonText: "Stay the course"
-      ),
-      (
-        title: "Clear choice",
-        subtitle:
-          "If everything is urgent, nothing is. This is not.",
-        buttonText: "Not now"
-      ),
-    ]
+    typealias FunMessage = (emoji: String, title: String, subtitle: String, buttonText: String)
 
-    return messages.randomElement() ?? messages[0]
+    // Curated message "bundles" where the emoji and copy are designed to match.
+    // This keeps things fun without feeling chaotic or mismatched.
+    let messages: [FunMessage] = [
+      ("📵", "Not right now", "\(title) can wait. You’re choosing your time on purpose.", "Back"),
+      ("🧠", "Brain check", "Do you actually want \(title)… or was it autopilot?", "Return"),
+      (
+        "🎯", "Stay on target", "One small step toward your goal first. Then decide on \(title).",
+        "Continue"
+      ),
+      (
+        "⏳", "Give it 2 minutes", "Finish the next tiny thing. \(title) will still be there after.",
+        "Keep going"
+      ),
+      ("🛡️", "Shield up", "Focus is protected. You’ve got this.", "Onward"),
+      ("🔒", "Locked in", "This block is temporary. Your momentum isn’t.", "Stay here"),
+      ("🧱", "Boundary set", "You made a plan. This is you sticking to it.", "Back"),
+      ("✨", "Glow mode", "You’re building attention — that’s the real flex.", "Nice"),
+      ("🫶", "Be kind to you", "No shame. Just a gentle nudge back to what matters.", "Got it"),
+      (
+        "🌐", "Not this detour", "\(title) isn’t part of the mission right now.", "Return"
+      ),
+      (
+        "🕸️", "Avoid the trap", "One click turns into twenty. Let’s not.", "Back"
+      ),
+      ("🛡️", "Protected zone", "We’re keeping your attention where you wanted it.", "Got it"),
+      ("🔒", "Locked in", "This is a temporary block for a long-term win.", "Return"),
+      (
+        "🎯", "Back to the task", "Close the detour. Finish the task. Then come back on purpose.",
+        "Back to work"
+      ),
+      (
+        "⏳", "Protect the time", "A few minutes can become an hour. Keep your momentum.",
+        "Stay focused"
+      ),
+      ("📵", "Not missing anything", "You’re not missing anything important right now.", "Back"),
+      ("✨", "Momentum mode", "Tiny choices like this add up fast.", "Continue"),
+    ]
+    guard !messages.isEmpty else { return ("🧠", "Quick pause", "Not right now.", "Back") }
+
+    let comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+    let dayKey =
+      (comps.year ?? 0) * 10_000
+      + (comps.month ?? 0) * 100
+      + (comps.day ?? 0)
+
+    let seed = Int(stableSeed(for: title) % UInt64(Int.max)) ^ dayKey
+    let idx = abs(seed) % messages.count
+
+    return messages[idx]
+  }
+
+  private func stableSeed(for title: String) -> UInt64 {
+    // FNV-1a 64-bit over unicode scalars (deterministic across runs/devices).
+    var hash: UInt64 = 14_695_981_039_346_656_037
+    for scalar in title.unicodeScalars {
+      hash ^= UInt64(scalar.value)
+      hash &*= 1_099_511_628_211
+    }
+    return hash
+  }
+
+  private func makeEmojiIcon(_ emoji: String, size: CGFloat) -> UIImage? {
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+    return renderer.image { _ in
+      let paragraph = NSMutableParagraphStyle()
+      paragraph.alignment = .center
+
+      let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: size * 0.78),
+        .paragraphStyle: paragraph,
+      ]
+
+      let rect = CGRect(x: 0, y: 0, width: size, height: size)
+      let attributed = NSAttributedString(string: emoji, attributes: attributes)
+      let bounds = attributed.boundingRect(
+        with: rect.size,
+        options: [.usesLineFragmentOrigin, .usesFontLeading],
+        context: nil
+      )
+
+      // Vertically center emoji
+      let drawRect = CGRect(
+        x: rect.minX,
+        y: rect.minY + (rect.height - bounds.height) / 2,
+        width: rect.width,
+        height: bounds.height
+      )
+      attributed.draw(in: drawRect)
+    }
   }
 }
 
