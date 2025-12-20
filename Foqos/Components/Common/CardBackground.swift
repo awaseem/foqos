@@ -27,28 +27,21 @@ struct CardBackground: View {
         GeometryReader { geometry in
           ZStack {
             if isActive {
-              // Gooey metaball lava-lamp effect
+              // Animations should ONLY play when the profile is active.
               TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate
-
-                Rectangle()
-                  .fill(cardColor)
-                  .mask(MetaballMaskView(blobs: blobs, t: t))
-                  .opacity(0.9)
+                ActiveAuroraBackground(
+                  baseColor: cardColor,
+                  blobs: blobs,
+                  t: t,
+                  size: geometry.size
+                )
               }
               .allowsHitTesting(false)
               .drawingGroup()
             } else {
-              // Default single circle for inactive state
-              Circle()
-                .fill(cardColor.opacity(0.5))
-                .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
-                .position(
-                  x: geometry.size.width * 0.9,
-                  y: geometry.size.height / 2
-                )
-                .blur(radius: 15)
-                .allowsHitTesting(false)
+              // Inactive profiles get a consistent, calm, non-animated accent.
+              SpotlightBlob(color: cardColor, in: geometry.size)
             }
           }
         }
@@ -68,6 +61,179 @@ struct CardBackground: View {
   // Utility method to get the card color for other components
   public func getCardColor() -> Color {
     return cardColor
+  }
+
+  // MARK: - Styles
+  private struct ActiveAuroraBackground: View {
+    let baseColor: Color
+    let blobs: [BlobSpec]
+    let t: TimeInterval
+    let size: CGSize
+
+    var body: some View {
+      ZStack {
+        // Aurora is the default active animation.
+        // We keep the same gooey metaball mask so it feels as delightful as the original lava lamp.
+        Rectangle()
+          .fill(fillGradient)
+          .mask(MetaballMaskView(blobs: blobs, t: t))
+          .opacity(0.82)
+
+        AuroraOverlays(baseColor: baseColor, t: t, size: size)
+          .mask(MetaballMaskView(blobs: blobs, t: t))
+          .blendMode(.plusLighter)
+          .opacity(0.95)
+
+        // Subtle glassy highlight to unify everything.
+        RoundedRectangle(cornerRadius: 24)
+          .fill(
+            LinearGradient(
+              colors: [
+                .white.opacity(0.18),
+                .white.opacity(0.04),
+                .clear,
+              ],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            )
+          )
+          .blendMode(.overlay)
+          .opacity(0.8)
+      }
+    }
+
+    private var fillGradient: LinearGradient {
+      let a = colorShift(baseColor, hue: 0.06 * Foundation.sin(t * 0.12), sat: 1.10, bri: 1.12)
+      let b = colorShift(
+        baseColor, hue: 0.10 * Foundation.cos(t * 0.10 + 1.4), sat: 1.18, bri: 1.00)
+      let c = colorShift(
+        baseColor, hue: -0.08 * Foundation.sin(t * 0.14 + 2.2), sat: 1.00, bri: 0.95)
+
+      // Slowly drifting gradient direction feels organic.
+      let sx = 0.15 + 0.70 * ((Foundation.sin(t * 0.07) + 1) / 2)
+      let sy = 0.20 + 0.60 * ((Foundation.cos(t * 0.06 + 1.1) + 1) / 2)
+      let ex = 1.0 - sx
+      let ey = 1.0 - sy
+
+      return LinearGradient(
+        colors: [a.opacity(0.95), b.opacity(0.92), c.opacity(0.88)],
+        startPoint: UnitPoint(x: sx, y: sy),
+        endPoint: UnitPoint(x: ex, y: ey)
+      )
+    }
+  }
+
+  private struct AuroraOverlays: View {
+    let baseColor: Color
+    let t: TimeInterval
+    let size: CGSize
+
+    var body: some View {
+      let r = min(size.width, size.height)
+      let p1 = CGPoint(
+        x: size.width * (0.35 + 0.18 * CGFloat(Foundation.cos(t * 0.22))),
+        y: size.height * (0.35 + 0.22 * CGFloat(Foundation.sin(t * 0.18 + 1.1)))
+      )
+      let p2 = CGPoint(
+        x: size.width * (0.72 + 0.16 * CGFloat(Foundation.cos(t * 0.19 + 2.0))),
+        y: size.height * (0.55 + 0.18 * CGFloat(Foundation.sin(t * 0.24 + 0.7)))
+      )
+      let p3 = CGPoint(
+        x: size.width * (0.50 + 0.20 * CGFloat(Foundation.cos(t * 0.16 + 4.2))),
+        y: size.height * (0.80 + 0.14 * CGFloat(Foundation.sin(t * 0.20 + 2.8)))
+      )
+
+      ZStack {
+        RadialGradient(
+          colors: [
+            colorShift(baseColor, hue: 0.14, sat: 1.25, bri: 1.15).opacity(0.55),
+            .clear,
+          ],
+          center: .center,
+          startRadius: 0,
+          endRadius: r * 0.70
+        )
+        .frame(width: r * 1.6, height: r * 1.6)
+        .position(p1)
+        .blur(radius: 26)
+
+        RadialGradient(
+          colors: [
+            colorShift(baseColor, hue: -0.10, sat: 1.15, bri: 1.05).opacity(0.45),
+            .clear,
+          ],
+          center: .center,
+          startRadius: 0,
+          endRadius: r * 0.62
+        )
+        .frame(width: r * 1.45, height: r * 1.45)
+        .position(p2)
+        .blur(radius: 28)
+
+        RadialGradient(
+          colors: [
+            colorShift(baseColor, hue: 0.04, sat: 1.05, bri: 1.25).opacity(0.35),
+            .clear,
+          ],
+          center: .center,
+          startRadius: 0,
+          endRadius: r * 0.75
+        )
+        .frame(width: r * 1.75, height: r * 1.75)
+        .position(p3)
+        .blur(radius: 30)
+      }
+    }
+  }
+
+  private struct SpotlightBlob: View {
+    let color: Color
+    let size: CGSize
+
+    init(color: Color, in size: CGSize) {
+      self.color = color
+      self.size = size
+    }
+
+    var body: some View {
+      Circle()
+        .fill(color.opacity(0.5))
+        .frame(width: size.width * 0.5, height: size.width * 0.5)
+        .position(
+          x: size.width * 0.9,
+          y: size.height / 2
+        )
+        .blur(radius: 15)
+        .allowsHitTesting(false)
+    }
+  }
+
+  // MARK: - Color helpers (local, to keep everything on-theme)
+  private static func colorShift(
+    _ color: Color,
+    hue: Double,
+    sat: Double,
+    bri: Double
+  ) -> Color {
+    let ui = UIColor(color)
+    var h: CGFloat = 0
+    var s: CGFloat = 0
+    var b: CGFloat = 0
+    var a: CGFloat = 0
+
+    if ui.getHue(&h, saturation: &s, brightness: &b, alpha: &a) {
+      let nh = (h + CGFloat(hue)).truncatingRemainder(dividingBy: 1.0)
+      let ns = max(0, min(1, s * CGFloat(sat)))
+      let nb = max(0, min(1, b * CGFloat(bri)))
+      return Color(UIColor(hue: nh < 0 ? nh + 1.0 : nh, saturation: ns, brightness: nb, alpha: a))
+    }
+
+    // Fallback: if we can't extract HSB (rare), just return original.
+    return color
+  }
+
+  private func colorShift(_ color: Color, hue: Double, sat: Double, bri: Double) -> Color {
+    Self.colorShift(color, hue: hue, sat: sat, bri: bri)
   }
 
   // MARK: - Metaball Specs
@@ -152,17 +318,10 @@ struct CardBackground: View {
     Color(.systemGroupedBackground).ignoresSafeArea()
 
     VStack(spacing: 16) {
-      CardBackground(customColor: .blue)
-        .frame(height: 170)
-        .padding(.horizontal)
-
-      CardBackground(customColor: .red)
-        .frame(height: 170)
-        .padding(.horizontal)
-
-      CardBackground(customColor: .purple)
+      CardBackground(isActive: true, customColor: .blue)
         .frame(height: 170)
         .padding(.horizontal)
     }
   }
+  .environmentObject(ThemeManager.shared)
 }
