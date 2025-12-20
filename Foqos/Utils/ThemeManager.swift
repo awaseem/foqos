@@ -13,11 +13,11 @@ class ThemeManager: ObservableObject {
     ("Hot Pink", Color(hex: "#ff2da5")),
     ("Tangerine", Color(hex: "#ff9300")),
     ("Lavender Dream", Color(hex: "#ba8eff")),
-    // 80s Neon Collection
+    ("San Diego Merlot", Color(hex: "#7a1e3a")),
+    ("Forest Green", Color(hex: "#0b6e4f")),
     ("Miami Vice", Color(hex: "#ff6ec7")),
     ("Electric Lemonade", Color(hex: "#ccff00")),
     ("Neon Grape", Color(hex: "#b026ff")),
-    // Calm & Earthy
     ("Slate Stone", Color(hex: "#708090")),
     ("Warm Sandstone", Color(hex: "#c4a77d")),
   ]
