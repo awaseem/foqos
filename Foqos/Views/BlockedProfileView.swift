@@ -62,6 +62,9 @@ struct BlockedProfileView: View {
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
 
+  // Sheet for NFC tag management
+  @State private var showingNFCTagManager = false
+
   // Alert for cloning
   @State private var showingClonePrompt = false
   @State private var cloneName: String = ""
@@ -280,18 +283,33 @@ struct BlockedProfileView: View {
         Section("Strict Unlocks") {
           BlockedProfilePhysicalUnblockSelector(
             nfcTagId: physicalUnblockNFCTagId,
+            nfcWhitelistCount: profile?.nfcWhitelist.count ?? 0,
             qrCodeId: physicalUnblockQRCodeId,
             disabled: isBlocking,
+            disabledText: isBlocking ? "Cannot modify settings during active session" : nil,
             onSetNFC: {
-              physicalReader.readNFCTag(
-                onSuccess: { physicalUnblockNFCTagId = $0 },
-              )
+              showingNFCTagManager = true
             },
             onSetQRCode: {
               showingPhysicalUnblockView = true
             },
-            onUnsetNFC: { physicalUnblockNFCTagId = nil },
-            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
+            onUnsetNFC: {
+              // Clear both legacy and whitelist
+              physicalUnblockNFCTagId = nil
+              if let profile = profile {
+                for tag in profile.nfcWhitelist {
+                  try? BlockedProfiles.removeNFCTag(
+                    from: profile,
+                    context: modelContext,
+                    tagId: tag.tagId
+                  )
+                }
+              }
+            },
+            onUnsetQRCode: { physicalUnblockQRCodeId = nil },
+            onManageNFC: {
+              showingNFCTagManager = true
+            }
           )
         }
 
@@ -425,9 +443,6 @@ struct BlockedProfileView: View {
           }
         }
 
-        if #available(iOS 26.0, *) {
-          ToolbarSpacer(.flexible, placement: .topBarTrailing)
-        }
 
         if !isBlocking {
           ToolbarItem(placement: .topBarTrailing) {
@@ -472,6 +487,14 @@ struct BlockedProfileView: View {
       .sheet(isPresented: $showingInsights) {
         if let validProfile = profile {
           ProfileInsightsView(profile: validProfile)
+        }
+      }
+      .sheet(isPresented: $showingNFCTagManager) {
+        if let validProfile = profile {
+          NFCTagManager(
+            profile: .constant(validProfile),
+            isPresented: $showingNFCTagManager
+          )
         }
       }
       .background(
