@@ -12,6 +12,7 @@ import WidgetKit
 
 // MARK: - Widget View
 struct ProfileWidgetEntryView: View {
+  @Environment(\.widgetFamily) var widgetFamily
   var entry: ProfileControlProvider.Entry
 
   // Computed property to determine if we should use white text
@@ -45,6 +46,22 @@ struct ProfileWidgetEntryView: View {
   }
 
   var body: some View {
+    switch widgetFamily {
+    case .systemSmall:
+      smallWidgetView
+    case .systemMedium:
+      mediumWidgetView
+    case .accessoryCircular:
+      circularAccessoryView
+    case .accessoryRectangular:
+      rectangularAccessoryView
+    default:
+      smallWidgetView
+    }
+  }
+
+  // MARK: - Small Widget View (Original)
+  private var smallWidgetView: some View {
     ZStack {
       // Main content
       VStack(spacing: 8) {
@@ -136,25 +153,180 @@ struct ProfileWidgetEntryView: View {
 
       // Unavailable overlay
       if isUnavailable {
-        VStack(spacing: 4) {
-          Image(systemName: "exclamationmark.triangle.fill")
-            .font(.title2)
-            .foregroundColor(.orange)
-
-          Text("Unavailable")
-            .font(.system(size: 16))
-            .fontWeight(.bold)
-            .foregroundColor(.primary)
-
-          Text("Different profile active")
-            .font(.system(size: 10))
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground).opacity(0.9))
-        .cornerRadius(8)
+        unavailableOverlay
       }
+    }
+  }
+
+  // MARK: - Medium Widget View
+  private var mediumWidgetView: some View {
+    ZStack {
+      HStack(spacing: 16) {
+        // Left side: Profile info
+        VStack(alignment: .leading, spacing: 8) {
+          Text(entry.profileName ?? "No Profile")
+            .font(.headline)
+            .fontWeight(.bold)
+            .foregroundColor(shouldUseWhiteText ? .white : .primary)
+            .lineLimit(1)
+
+          if let profile = entry.profileSnapshot {
+            let blockedCount = getBlockedCount(from: profile)
+            Text("\(blockedCount) apps blocked")
+              .font(.subheadline)
+              .foregroundColor(shouldUseWhiteText ? .white.opacity(0.8) : .secondary)
+          }
+
+          Spacer()
+
+          // Status indicator
+          HStack(spacing: 6) {
+            Circle()
+              .fill(entry.isSessionActive ? (entry.isBreakActive ? Color.orange : Color.green) : Color.gray)
+              .frame(width: 8, height: 8)
+            Text(entry.isSessionActive ? (entry.isBreakActive ? "On Break" : "Active") : "Inactive")
+              .font(.caption)
+              .foregroundColor(shouldUseWhiteText ? .white : .secondary)
+          }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        // Right side: Timer or action
+        VStack(alignment: .trailing, spacing: 8) {
+          Image(systemName: entry.isSessionActive ? "shield.fill" : "shield")
+            .font(.title)
+            .foregroundColor(shouldUseWhiteText ? .white : .purple)
+
+          Spacer()
+
+          if entry.isSessionActive, let startTime = entry.sessionStartTime {
+            Text(
+              Date(
+                timeIntervalSinceNow: startTime.timeIntervalSince1970
+                  - Date().timeIntervalSince1970
+              ),
+              style: .timer
+            )
+            .font(.title2)
+            .fontWeight(.bold)
+            .foregroundColor(shouldUseWhiteText ? .white : .primary)
+            .monospacedDigit()
+          } else {
+            Link(destination: linkToOpen) {
+              Text("Start")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.purple)
+                .cornerRadius(8)
+            }
+          }
+        }
+      }
+      .padding()
+      .blur(radius: isUnavailable ? 3 : 0)
+
+      if isUnavailable {
+        unavailableOverlay
+      }
+    }
+  }
+
+  // MARK: - Circular Lock Screen Widget
+  private var circularAccessoryView: some View {
+    ZStack {
+      AccessoryWidgetBackground()
+
+      VStack(spacing: 2) {
+        Image(systemName: entry.isSessionActive ? "shield.fill" : "shield")
+          .font(.title2)
+          .foregroundColor(entry.isSessionActive ? .green : .secondary)
+
+        if entry.isSessionActive, !entry.isBreakActive {
+          Text(elapsedTimeShort)
+            .font(.caption2)
+            .monospacedDigit()
+        } else if entry.isBreakActive {
+          Image(systemName: "cup.and.saucer.fill")
+            .font(.caption2)
+        }
+      }
+    }
+  }
+
+  // MARK: - Rectangular Lock Screen Widget
+  private var rectangularAccessoryView: some View {
+    HStack(spacing: 8) {
+      Image(systemName: entry.isSessionActive ? "shield.fill" : "shield")
+        .font(.title3)
+        .foregroundColor(entry.isSessionActive ? .green : .secondary)
+
+      VStack(alignment: .leading, spacing: 2) {
+        Text(entry.profileName ?? "Foqos")
+          .font(.headline)
+          .lineLimit(1)
+
+        if entry.isSessionActive {
+          if entry.isBreakActive {
+            Text("On Break")
+              .font(.caption)
+              .foregroundColor(.orange)
+          } else if let startTime = entry.sessionStartTime {
+            Text(
+              Date(
+                timeIntervalSinceNow: startTime.timeIntervalSince1970
+                  - Date().timeIntervalSince1970
+              ),
+              style: .timer
+            )
+            .font(.caption)
+            .monospacedDigit()
+          }
+        } else {
+          Text("Tap to start")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+      }
+
+      Spacer()
+    }
+  }
+
+  // MARK: - Unavailable Overlay
+  private var unavailableOverlay: some View {
+    VStack(spacing: 4) {
+      Image(systemName: "exclamationmark.triangle.fill")
+        .font(.title2)
+        .foregroundColor(.orange)
+
+      Text("Unavailable")
+        .font(.system(size: 16))
+        .fontWeight(.bold)
+        .foregroundColor(.primary)
+
+      Text("Different profile active")
+        .font(.system(size: 10))
+        .foregroundColor(.secondary)
+        .multilineTextAlignment(.center)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color(UIColor.systemBackground).opacity(0.9))
+    .cornerRadius(8)
+  }
+
+  // MARK: - Elapsed Time Short Format
+  private var elapsedTimeShort: String {
+    guard let startTime = entry.sessionStartTime else { return "0:00" }
+    let elapsed = Date().timeIntervalSince(startTime)
+    let minutes = Int(elapsed) / 60
+    let hours = minutes / 60
+    if hours > 0 {
+      return "\(hours)h"
+    } else {
+      return "\(minutes)m"
     }
   }
 

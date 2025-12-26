@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CardBackground: View {
   @EnvironmentObject var themeManager: ThemeManager
+  @Environment(\.accessibilityReduceMotion) var reduceMotion
 
   var isActive: Bool = false
   var customColor: Color? = nil
@@ -21,24 +22,29 @@ struct CardBackground: View {
   }
 
   var body: some View {
-    RoundedRectangle(cornerRadius: 24)
+    RoundedRectangle(cornerRadius: CornerRadius.xl)
       .fill(Color(UIColor.systemBackground))
       .overlay(
         GeometryReader { geometry in
           ZStack {
             if isActive {
-              // Animations should ONLY play when the profile is active.
-              TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate
-                ActiveAuroraBackground(
-                  baseColor: cardColor,
-                  blobs: blobs,
-                  t: t,
-                  size: geometry.size
-                )
+              if reduceMotion {
+                // Static gradient for reduced motion preference
+                StaticActiveBackground(baseColor: cardColor, size: geometry.size)
+              } else {
+                // Animations should ONLY play when the profile is active.
+                TimelineView(.animation) { timeline in
+                  let t = timeline.date.timeIntervalSinceReferenceDate
+                  ActiveAuroraBackground(
+                    baseColor: cardColor,
+                    blobs: blobs,
+                    t: t,
+                    size: geometry.size
+                  )
+                }
+                .allowsHitTesting(false)
+                .drawingGroup()
               }
-              .allowsHitTesting(false)
-              .drawingGroup()
             } else {
               // Inactive profiles get a consistent, calm, non-animated accent.
               SpotlightBlob(color: cardColor, in: geometry.size)
@@ -47,14 +53,14 @@ struct CardBackground: View {
         }
       )
       .overlay(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: CornerRadius.xl)
           .stroke(Color.gray.opacity(0.3), lineWidth: 1)
       )
       .background(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: CornerRadius.xl)
           .fill(.ultraThinMaterial.opacity(0.7))
       )
-      .clipShape(RoundedRectangle(cornerRadius: 24))
+      .clipShape(RoundedRectangle(cornerRadius: CornerRadius.xl))
     // TimelineView drives animation; no imperative animation triggers needed
   }
 
@@ -189,6 +195,24 @@ struct CardBackground: View {
         )
         .blur(radius: 15)
         .allowsHitTesting(false)
+    }
+  }
+
+  // MARK: - Static background for reduced motion
+  private struct StaticActiveBackground: View {
+    let baseColor: Color
+    let size: CGSize
+
+    var body: some View {
+      LinearGradient(
+        colors: [
+          baseColor.opacity(0.6),
+          baseColor.opacity(0.3)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+      .allowsHitTesting(false)
     }
   }
 
