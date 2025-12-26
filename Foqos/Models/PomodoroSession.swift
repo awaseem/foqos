@@ -24,11 +24,18 @@ class PomodoroSession {
 
   // Session state
   var completedPomodoros: Int = 0
-  var currentPhase: PomodoroPhase = .focus
+  // Store as raw value for SwiftData compatibility
+  var currentPhaseRawValue: String = PomodoroPhase.focus.rawValue
   var isActive: Bool = false
 
   // Associated profile
   var profileId: String?
+
+  // Computed property for type-safe access
+  var currentPhase: PomodoroPhase {
+    get { PomodoroPhase(rawValue: currentPhaseRawValue) ?? .focus }
+    set { currentPhaseRawValue = newValue.rawValue }
+  }
 
   init(
     focusDuration: Int = 25,

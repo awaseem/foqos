@@ -50,11 +50,12 @@ class FocusModeManager: ObservableObject {
     // Get initial status
     updateFocusStatus()
 
-    // Listen for focus status changes
+    // Listen for app lifecycle to check focus status when app becomes active
+    // Note: The Intents framework doesn't provide a public notification for focus status changes
     NotificationCenter.default.addObserver(
       self,
-      selector: #selector(focusStatusDidChange),
-      name: .INFocusStatusDidChange,
+      selector: #selector(appDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
       object: nil
     )
   }
@@ -62,12 +63,12 @@ class FocusModeManager: ObservableObject {
   func stopObservingFocusStatus() {
     NotificationCenter.default.removeObserver(
       self,
-      name: .INFocusStatusDidChange,
+      name: UIApplication.didBecomeActiveNotification,
       object: nil
     )
   }
 
-  @objc private func focusStatusDidChange() {
+  @objc private func appDidBecomeActive() {
     Task { @MainActor in
       updateFocusStatus()
     }
@@ -102,12 +103,6 @@ class FocusModeManager: ObservableObject {
 
     return nil
   }
-}
-
-// MARK: - Notification Extension
-
-extension Notification.Name {
-  static let INFocusStatusDidChange = Notification.Name("INFocusStatusDidChangeNotification")
 }
 
 // MARK: - Focus Session Sync Helper

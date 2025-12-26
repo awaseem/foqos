@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct PomodoroTimerView: View {
-  @Binding var session: PomodoroSession
+  // Use @Bindable for SwiftData @Model classes (iOS 17+)
+  @Bindable var session: PomodoroSession
   @Binding var remainingSeconds: TimeInterval
   @State private var isRunning: Bool = false
 
@@ -247,7 +248,7 @@ struct PomodoroTimerView: View {
     @State private var remaining: TimeInterval = 25 * 60
 
     var body: some View {
-      PomodoroTimerView(session: $session, remainingSeconds: $remaining)
+      PomodoroTimerView(session: session, remainingSeconds: $remaining)
         .environmentObject(ThemeManager.shared)
     }
   }

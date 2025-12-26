@@ -16,7 +16,8 @@ private let container: ModelContainer = {
     return try ModelContainer(
       for: BlockedProfileSession.self,
       BlockedProfiles.self,
-      FocusStreak.self
+      FocusStreak.self,
+      PomodoroSession.self
     )
   } catch {
     fatalError("Couldn't create ModelContainer: \(error)")
