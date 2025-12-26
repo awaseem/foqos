@@ -17,5 +17,38 @@
 		<string>fetch</string>
 		<string>processing</string>
 	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.foqos.quickaction.startfocus</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Start Focus</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Begin a focus session</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>bolt.fill</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.foqos.quickaction.insights</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>View Insights</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Check your focus stats</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>chart.bar.fill</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.foqos.quickaction.newprofile</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New Profile</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Create a focus profile</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>plus.circle.fill</string>
+		</dict>
+	</array>
 </dict>
 </plist>

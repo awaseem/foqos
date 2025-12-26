@@ -9,6 +9,7 @@ struct IntroStepper: View {
   let showBackButton: Bool
 
   @State private var buttonsVisible: Bool = false
+  @Environment(\.accessibilityReduceMotion) var reduceMotion
 
   init(
     currentStep: Int,
@@ -26,43 +27,52 @@ struct IntroStepper: View {
     self.showBackButton = showBackButton
   }
 
+  // Accessibility progress label
+  private var progressLabel: String {
+    "Step \(currentStep + 1) of \(totalSteps)"
+  }
+
   var body: some View {
-    VStack(spacing: 16) {
+    VStack(spacing: Spacing.md) {
       // Buttons
-      HStack(spacing: 12) {
+      HStack(spacing: Spacing.sm) {
         // Back button
         if showBackButton && currentStep > 0 {
           Button(action: onBack) {
-            HStack {
+            HStack(spacing: Spacing.xs) {
               Image(systemName: "chevron.left")
                 .font(.system(size: 14, weight: .semibold))
+                .accessibilityHidden(true)
               Text("Back")
                 .font(.system(size: 16, weight: .semibold))
             }
             .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
+            .frame(height: TouchTarget.comfortable)
             .background(
-              RoundedRectangle(cornerRadius: 12)
+              RoundedRectangle(cornerRadius: CornerRadius.md)
                 .fill(Color.gray.opacity(0.1))
             )
           }
+          .accessibilityLabel("Go back to previous step")
+          .accessibilityHint("Returns to step \(currentStep) of \(totalSteps)")
           .transition(.scale.combined(with: .opacity))
         }
 
         // Next/Continue button
         Button(action: onNext) {
-          HStack {
+          HStack(spacing: Spacing.xs) {
             Text(nextButtonTitle)
               .font(.system(size: 16, weight: .semibold))
             Image(systemName: "chevron.right")
               .font(.system(size: 14, weight: .semibold))
+              .accessibilityHidden(true)
           }
           .foregroundColor(.white)
           .frame(maxWidth: .infinity)
-          .frame(height: 50)
+          .frame(height: TouchTarget.comfortable)
           .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: CornerRadius.md)
               .fill(
                 LinearGradient(
                   gradient: Gradient(colors: [Color.purple, Color.purple.opacity(0.8)]),
@@ -72,31 +82,43 @@ struct IntroStepper: View {
               )
           )
         }
+        .accessibilityLabel(nextButtonTitle)
+        .accessibilityHint(currentStep < totalSteps - 1
+          ? "Continues to step \(currentStep + 2) of \(totalSteps)"
+          : "Completes the introduction"
+        )
       }
       .opacity(buttonsVisible ? 1 : 0)
       .offset(y: buttonsVisible ? 0 : 20)
     }
-    .padding(.horizontal, 20)
-    .padding(.top, 30)
-    .padding(.bottom, 20)
+    .padding(.horizontal, Spacing.lg - 4)
+    .padding(.top, Spacing.xl - 2)
+    .padding(.bottom, Spacing.lg - 4)
     .onAppear {
-      withAnimation(.easeOut(duration: 0.5).delay(0.2)) {
+      if reduceMotion {
         buttonsVisible = true
+      } else {
+        withAnimation(.easeOut(duration: 0.5).delay(0.2)) {
+          buttonsVisible = true
+        }
       }
     }
 
     // Progress dots
-    HStack(spacing: 8) {
+    HStack(spacing: Spacing.xs) {
       ForEach(0..<totalSteps, id: \.self) { index in
         Circle()
           .fill(
             index == currentStep ? Color.primary : Color.gray.opacity(0.3)
           )
           .frame(width: index == currentStep ? 10 : 8, height: index == currentStep ? 10 : 8)
-          .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentStep)
+          .animation(reduceMotion ? nil : .snappy, value: currentStep)
       }
     }
-    .padding(.bottom, 8)
+    .padding(.bottom, Spacing.xs)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(progressLabel)
+    .accessibilityAddTraits(.updatesFrequently)
   }
 }
 

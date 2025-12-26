@@ -27,8 +27,16 @@ struct StrategyInfoView: View {
     return StrategyManager.getStrategyFromId(id: strategyId).color
   }
 
+  // Accessibility description for strategy
+  private var accessibilityDescription: String {
+    guard strategyId != nil else {
+      return "No blocking strategy selected"
+    }
+    return "Blocking strategy: \(blockingStrategyName)"
+  }
+
   var body: some View {
-    HStack {
+    HStack(spacing: Spacing.xs) {
       Image(systemName: blockingStrategyIcon)
         .foregroundColor(themeManager.themeColor)
         .font(.system(size: 13))
@@ -36,9 +44,10 @@ struct StrategyInfoView: View {
         .background(
           Circle()
             .fill(
-              themeManager.themeColor.opacity(0.15)
+              themeManager.themeColor.opacity(Opacity.tertiary)
             )
         )
+        .accessibilityHidden(true)
 
       VStack(alignment: .leading, spacing: 2) {
         Text(blockingStrategyName)
@@ -47,6 +56,9 @@ struct StrategyInfoView: View {
           .fontWeight(.medium)
       }
     }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(accessibilityDescription)
+    .accessibilityHint("The method used to unlock this focus profile")
   }
 }
 

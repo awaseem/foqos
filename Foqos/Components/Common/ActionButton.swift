@@ -7,6 +7,7 @@ struct ActionButton: View {
   let iconColor: Color?
   let isLoading: Bool
   let isDisabled: Bool
+  let accessibilityHint: String?
 
   let action: () -> Void
 
@@ -17,6 +18,7 @@ struct ActionButton: View {
     iconColor: Color? = nil,
     isLoading: Bool = false,
     isDisabled: Bool = false,
+    accessibilityHint: String? = nil,
     action: @escaping () -> Void
   ) {
     self.title = title
@@ -25,21 +27,34 @@ struct ActionButton: View {
     self.iconColor = iconColor
     self.isLoading = isLoading
     self.isDisabled = isDisabled
+    self.accessibilityHint = accessibilityHint
     self.action = action
+  }
+
+  // Accessibility label based on state
+  private var accessibilityLabel: String {
+    if isLoading {
+      return "\(title), loading"
+    } else if isDisabled {
+      return "\(title), disabled"
+    }
+    return title
   }
 
   var body: some View {
     Button(action: (isLoading || isDisabled) ? {} : action) {
-      HStack(spacing: 8) {
+      HStack(spacing: Spacing.xs) {
         if isLoading {
           ProgressView()
             .progressViewStyle(CircularProgressViewStyle(tint: .white))
             .scaleEffect(0.8)
+            .accessibilityHidden(true)
         } else {
           if let iconName = iconName {
             Image(systemName: iconName)
               .font(.headline)
               .foregroundColor(iconColor ?? .white)
+              .accessibilityHidden(true)
           }
 
           Text(title)
@@ -57,6 +72,11 @@ struct ActionButton: View {
       )
     )
     .disabled(isLoading || isDisabled)
+    // Accessibility enhancements
+    .accessibilityLabel(accessibilityLabel)
+    .accessibilityHint(accessibilityHint ?? "")
+    .accessibilityAddTraits(isLoading ? .updatesFrequently : [])
+    .accessibilityRemoveTraits(isDisabled ? .isButton : [])
   }
 }
 

@@ -9,15 +9,25 @@ struct FoqosWidgetAttributes: ActivityAttributes {
     var breakStartTime: Date?
     var breakEndTime: Date?
 
-    func getTimeIntervalSinceNow() -> Double {
-      // Calculate the break duration to subtract from elapsed time
+    /// Returns the adjusted start time for use with SwiftUI's .timer style
+    /// The timer style counts up from this date, so we need to return the effective start time
+    /// accounting for any break durations
+    var adjustedStartTime: Date {
+      // Subtract break duration from the start time to effectively "pause" the timer during breaks
       let breakDuration = calculateBreakDuration()
+      return startTime.addingTimeInterval(breakDuration)
+    }
 
-      // Calculate elapsed time minus break duration
-      let adjustedStartTime = startTime.addingTimeInterval(breakDuration)
+    /// Returns the elapsed time since the session started (excluding breaks)
+    func getElapsedTime() -> TimeInterval {
+      let breakDuration = calculateBreakDuration()
+      return Date().timeIntervalSince(startTime) - breakDuration
+    }
 
-      return adjustedStartTime.timeIntervalSince1970
-        - Date().timeIntervalSince1970
+    /// Legacy method for compatibility - returns time interval for timer display
+    /// Note: For SwiftUI .timer style, use adjustedStartTime directly
+    func getTimeIntervalSinceNow() -> Double {
+      return Date().timeIntervalSince(adjustedStartTime)
     }
 
     private func calculateBreakDuration() -> TimeInterval {
@@ -30,7 +40,12 @@ struct FoqosWidgetAttributes: ActivityAttributes {
         return breakEnd.timeIntervalSince(breakStart)
       }
 
-      // Break is not yet ended, don't count it
+      // Break is currently active, calculate duration so far
+      // This pauses the timer during the break
+      if isBreakActive {
+        return Date().timeIntervalSince(breakStart)
+      }
+
       return 0
     }
   }
@@ -79,17 +94,13 @@ struct FoqosWidgetLiveActivity: Widget {
                 .foregroundColor(.orange)
             }
           } else {
-            Text(
-              Date(
-                timeIntervalSinceNow: context.state
-                  .getTimeIntervalSinceNow()
-              ),
-              style: .timer
-            )
-            .font(.title)
-            .fontWeight(.semibold)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.trailing)
+            // Use adjustedStartTime for accurate elapsed time display
+            // The .timer style counts up from the provided date
+            Text(context.state.adjustedStartTime, style: .timer)
+              .font(.title)
+              .fontWeight(.semibold)
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.trailing)
           }
         }
       }
@@ -124,16 +135,11 @@ struct FoqosWidgetLiveActivity: Widget {
                   .foregroundColor(.orange)
               }
             } else {
-              Text(
-                Date(
-                  timeIntervalSinceNow: context.state
-                    .getTimeIntervalSinceNow()
-                ),
-                style: .timer
-              )
-              .font(.title2)
-              .fontWeight(.semibold)
-              .multilineTextAlignment(.center)
+              // Use adjustedStartTime for accurate elapsed time display
+              Text(context.state.adjustedStartTime, style: .timer)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
             }
           }
           .padding(.horizontal, 16)

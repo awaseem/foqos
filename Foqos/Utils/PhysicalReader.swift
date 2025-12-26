@@ -26,7 +26,15 @@ class PhysicalReader {
     ) { result in
       switch result {
       case .success(let scanResult):
-        onSuccess(scanResult.string)
+        // Validate and sanitize the QR code for security
+        let sanitizedCode = QRCodeValidator.sanitize(scanResult.string)
+        let validationResult = QRCodeValidator.validate(sanitizedCode)
+
+        if validationResult.isValid {
+          onSuccess(sanitizedCode)
+        } else {
+          onFailure(validationResult.errorMessage ?? "Invalid QR code")
+        }
       case .failure(let error):
         onFailure(error.localizedDescription)
       }

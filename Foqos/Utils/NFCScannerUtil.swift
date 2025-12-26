@@ -161,7 +161,19 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
   }
 
   private func handleTagData(id: String, url: String?, session: NFCTagReaderSession) {
-    let result = NFCResult(id: id, url: url, DateScanned: Date())
+    // Validate and sanitize the tag ID for security
+    let sanitizedId = NFCTagIDValidator.sanitize(id)
+    let validationResult = NFCTagIDValidator.validate(sanitizedId)
+
+    guard validationResult.isValid else {
+      DispatchQueue.main.async {
+        self.onError?(validationResult.errorMessage ?? "Invalid NFC tag ID")
+        session.invalidate(errorMessage: "Invalid tag")
+      }
+      return
+    }
+
+    let result = NFCResult(id: sanitizedId, url: url, DateScanned: Date())
 
     DispatchQueue.main.async {
       self.onTagScanned?(result)
