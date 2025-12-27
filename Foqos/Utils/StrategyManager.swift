@@ -94,7 +94,8 @@ class StrategyManager: ObservableObject {
   }
 
   func startTimer() {
-    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+      guard let self = self else { return }
       guard let session = self.activeSession else { return }
 
       if session.isBreakActive {

@@ -30,9 +30,7 @@ struct RoundedButton: View {
 
   var body: some View {
     Button(action: {
-      let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-      impactFeedback.impactOccurred()
-
+      HapticFeedback.light.trigger()
       action()
     }) {
       HStack(spacing: 6) {
@@ -58,7 +56,18 @@ struct RoundedButton: View {
           .strokeBorder(.white.opacity(0.15))
       )
     }
-    .buttonStyle(PlainButtonStyle())
+    .buttonStyle(PressableButtonStyle())
+    .accessibilityLabel(text.isEmpty ? (iconName ?? "Button") : text)
+  }
+}
+
+// MARK: - Pressable Button Style
+struct PressableButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+      .opacity(configuration.isPressed ? 0.9 : 1.0)
+      .animation(.micro, value: configuration.isPressed)
   }
 }
 

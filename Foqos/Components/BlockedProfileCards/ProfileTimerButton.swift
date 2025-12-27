@@ -24,31 +24,35 @@ struct ProfileTimerButton: View {
   }
 
   var body: some View {
-    VStack(spacing: 8) {
-      HStack(spacing: 8) {
+    VStack(spacing: Spacing.xs) {
+      HStack(spacing: Spacing.xs) {
         if isActive, let elapsedTimeVal = elapsedTime {
           // Timer
-          HStack(spacing: 8) {
+          HStack(spacing: Spacing.xs) {
             Text(timeString(from: elapsedTimeVal))
               .foregroundColor(.primary)
-              .font(.system(size: 16, weight: .semibold))
-              .contentTransition(.numericText())
-              .animation(.default, value: elapsedTimeVal)
+              .font(Typography.timer())
+              .contentTransition(.numericText(countsDown: isBreakActive))
+              .animation(.snappy, value: elapsedTimeVal)
           }
           .padding(.vertical, 10)
-          .padding(.horizontal, 12)
+          .padding(.horizontal, Spacing.sm)
           .frame(minWidth: 0, maxWidth: .infinity)
           .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
               .fill(.thinMaterial)
               .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
                   .stroke(
-                    themeManager.themeColor.opacity(0.2),
+                    themeManager.themeColor.opacity(Opacity.border),
                     lineWidth: 1
                   )
               )
           )
+          .accessibilityElement(children: .combine)
+          .accessibilityLabel(isBreakActive ? "Break time remaining" : "Session time")
+          .accessibilityValue(accessibleTimeString(from: elapsedTimeVal))
+          .accessibilityAddTraits(.updatesFrequently)
 
           // Stop button
           GlassButton(
@@ -57,7 +61,7 @@ struct ProfileTimerButton: View {
             fullWidth: false,
             equalWidth: true
           ) {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            HapticFeedback.medium.trigger()
             onStopTapped()
           }
         } else {
@@ -68,6 +72,7 @@ struct ProfileTimerButton: View {
             fullWidth: true,
             longPressEnabled: true
           ) {
+            HapticFeedback.medium.trigger()
             onStartTapped()
           }
         }
@@ -81,6 +86,7 @@ struct ProfileTimerButton: View {
           longPressEnabled: true,
           color: breakColor
         ) {
+          HapticFeedback.light.trigger()
           onBreakTapped()
         }
       }
@@ -93,6 +99,21 @@ struct ProfileTimerButton: View {
     let minutes = Int(timeInterval) / 60 % 60
     let seconds = Int(timeInterval) % 60
     return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+  }
+
+  // Accessible time format for VoiceOver
+  private func accessibleTimeString(from interval: TimeInterval) -> String {
+    let hours = Int(interval) / 3600
+    let minutes = Int(interval) / 60 % 60
+    let seconds = Int(interval) % 60
+
+    if hours > 0 {
+      return "\(hours) hours, \(minutes) minutes, \(seconds) seconds"
+    } else if minutes > 0 {
+      return "\(minutes) minutes, \(seconds) seconds"
+    } else {
+      return "\(seconds) seconds"
+    }
   }
 }
 

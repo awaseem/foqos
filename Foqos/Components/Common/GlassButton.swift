@@ -8,7 +8,10 @@ struct GlassButton: View {
   var longPressEnabled: Bool = false
   var longPressDuration: Double = 0.8
   var color: Color? = nil
+  var accessibilityHint: String? = nil
   let action: () -> Void
+
+  @Environment(\.accessibilityReduceMotion) var reduceMotion
 
   var body: some View {
     if longPressEnabled {
@@ -19,11 +22,16 @@ struct GlassButton: View {
   }
 
   private var standardButton: some View {
-    Button(action: action) {
+    Button(action: {
+      HapticFeedback.light.trigger()
+      action()
+    }) {
       buttonContent
     }
     .buttonStyle(PressableButtonStyle())
     .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
+    .accessibilityLabel(title)
+    .accessibilityHint(accessibilityHint ?? "")
   }
 
   @State private var isPressed = false
@@ -33,25 +41,31 @@ struct GlassButton: View {
       .contentShape(Rectangle())
       .frame(minWidth: 0, maxWidth: equalWidth ? .infinity : nil)
       .scaleEffect(isPressed ? 0.96 : 1.0)
-      .animation(.spring(response: 0.3), value: isPressed)
+      .animation(reduceMotion ? nil : .snappy, value: isPressed)
       .onLongPressGesture(
         minimumDuration: longPressDuration,
         pressing: { pressing in
           isPressed = pressing
+          if pressing {
+            HapticFeedback.light.trigger()
+          }
         },
         perform: {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          HapticFeedback.medium.trigger()
           action()
           isPressed = false
         }
       )
-
+      .accessibilityLabel(title)
+      .accessibilityHint(accessibilityHint ?? "Hold to activate")
+      .accessibilityAddTraits(.startsMediaSession)
   }
 
   private var buttonContent: some View {
-    HStack(spacing: 6) {
+    HStack(spacing: Spacing.xxs + 2) {
       Image(systemName: icon)
         .font(.system(size: 16, weight: .medium))
+        .accessibilityHidden(true)
       Text(title)
         .fontWeight(.semibold)
         .font(.subheadline)
@@ -60,14 +74,14 @@ struct GlassButton: View {
       minWidth: 0,
       maxWidth: fullWidth ? .infinity : (equalWidth ? .infinity : nil)
     )
-    .padding(.vertical, 12)
-    .padding(.horizontal, fullWidth ? nil : 24)
+    .padding(.vertical, Spacing.sm)
+    .padding(.horizontal, fullWidth ? nil : Spacing.lg)
     .background(
-      RoundedRectangle(cornerRadius: 16)
+      RoundedRectangle(cornerRadius: CornerRadius.lg)
         .fill(.thinMaterial)
         .overlay(
-          RoundedRectangle(cornerRadius: 16)
-            .stroke((color ?? Color.primary).opacity(0.2), lineWidth: 1)
+          RoundedRectangle(cornerRadius: CornerRadius.lg)
+            .stroke((color ?? Color.primary).opacity(Opacity.tertiary), lineWidth: 1)
         )
     )
     .foregroundColor(color ?? .primary)

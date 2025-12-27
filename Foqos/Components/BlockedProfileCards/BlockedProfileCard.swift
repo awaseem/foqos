@@ -52,13 +52,13 @@ struct BlockedProfileCard: View {
           // Menu button moved to top right
           Menu {
             Button(action: {
-              UIImpactFeedbackGenerator(style: .light).impactOccurred()
+              HapticFeedback.light.trigger()
               onEditTapped()
             }) {
               Label("Edit", systemImage: "pencil")
             }
             Button(action: {
-              UIImpactFeedbackGenerator(style: .light).impactOccurred()
+              HapticFeedback.light.trigger()
               onStatsTapped()
             }) {
               Label("Stats for Nerds", systemImage: "eyeglasses")
@@ -68,14 +68,14 @@ struct BlockedProfileCard: View {
 
             if isActive {
               Button(action: {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                HapticFeedback.light.trigger()
                 onStopTapped()
               }) {
                 Label("Stop", systemImage: "stop.fill")
               }
             } else {
               Button(action: {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                HapticFeedback.light.trigger()
                 onStartTapped()
               }) {
                 Label("Start", systemImage: "play.fill")
@@ -92,12 +92,14 @@ struct BlockedProfileCard: View {
                   .overlay(
                     Circle()
                       .stroke(
-                        Color.primary.opacity(0.2),
+                        Color.primary.opacity(Opacity.border),
                         lineWidth: 1
                       )
                   )
               )
           }
+          .accessibilityLabel("Profile options for \(profile.name)")
+          .accessibilityHint("Opens menu with edit, stats, and \(isActive ? "stop" : "start") options")
         }
 
         // Middle section - Strategy and apps info

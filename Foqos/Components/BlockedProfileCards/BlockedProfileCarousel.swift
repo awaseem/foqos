@@ -22,9 +22,10 @@ struct BlockedProfileCarousel: View {
   @State private var currentIndex: Int = 0
   @State private var dragOffset: CGFloat = 0
   @State private var animatingOffset: CGFloat = 0
+  @State private var isDragging: Bool = false
 
   // Constants for the carousel
-  private let cardSpacing: CGFloat = 12
+  private let cardSpacing: CGFloat = Spacing.sm
   private let dragThreshold: CGFloat = 50
 
   private var cardHeight: CGFloat = 240
@@ -168,10 +169,12 @@ struct BlockedProfileCarousel: View {
               DragGesture()
                 .onChanged { value in
                   if !isBlocking {  // Only allow dragging when not blocking
+                    isDragging = true
                     dragOffset = value.translation.width
                   }
                 }
                 .onEnded { value in
+                  isDragging = false
                   if !isBlocking {  // Only allow dragging when not blocking
                     let offsetAmount = value.translation
                       .width
@@ -180,6 +183,7 @@ struct BlockedProfileCarousel: View {
                     let swipedLeft =
                       offsetAmount < -dragThreshold
 
+                    let previousIndex = currentIndex
                     if swipedLeft
                       && currentIndex < profiles.count - 1
                     {
@@ -188,6 +192,11 @@ struct BlockedProfileCarousel: View {
                       && currentIndex > 0
                     {
                       currentIndex -= 1
+                    }
+
+                    // Trigger haptic feedback on page change
+                    if previousIndex != currentIndex {
+                      HapticFeedback.selection.trigger()
                     }
 
                     dragOffset = 0
@@ -200,7 +209,7 @@ struct BlockedProfileCarousel: View {
         .padding(.bottom, 10)
 
         // Page indicator dots
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.xs) {
           if !isBlocking && profiles.count > 1 {
             ForEach(0..<profiles.count, id: \.self) { index in
               Circle()
@@ -209,16 +218,24 @@ struct BlockedProfileCarousel: View {
                     ? Color.primary
                     : Color.secondary.opacity(0.3)
                 )
-                .frame(width: 8, height: 8)
-                .animation(.easeInOut, value: currentIndex)
+                .frame(
+                  width: index == currentIndex ? 10 : 8,
+                  height: index == currentIndex ? 10 : 8
+                )
+                .scaleEffect(index == currentIndex ? 1.0 : 0.8)
+                .animation(.standard, value: currentIndex)
             }
           }
         }
-        .frame(height: 8)
+        .frame(height: 10)
         .opacity(!isBlocking && profiles.count > 1 ? 1 : 0)
-        .animation(.easeInOut, value: isBlocking)
+        .animation(.standard, value: isBlocking)
+        .accessibilityHidden(true)
       }
     }
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Profile carousel")
+    .accessibilityHint(profiles.count > 1 ? "Swipe left or right to navigate between profiles" : "")
     .onAppear {
       initialSetup()
     }
@@ -230,6 +247,13 @@ struct BlockedProfileCarousel: View {
     }
     .onChange(of: startingProfileId) { _, _ in
       initialSetup()
+    }
+    .onChange(of: currentIndex) { oldValue, newValue in
+      // Announce position change to VoiceOver
+      if oldValue != newValue && profiles.indices.contains(newValue) {
+        let announcement = "Profile \(newValue + 1) of \(profiles.count): \(profiles[newValue].name)"
+        UIAccessibility.post(notification: .announcement, argument: announcement)
+      }
     }
   }
 

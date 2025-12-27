@@ -23,6 +23,7 @@ class ThemeManager: ObservableObject {
   ]
 
   private static let defaultColorName = "Grimace Purple"
+  private static let fallbackColor = Color(hex: "#894fa3")  // Grimace Purple
 
   @AppStorage(
     "foqosThemeColorName", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
@@ -38,7 +39,8 @@ class ThemeManager: ObservableObject {
 
   var themeColor: Color {
     Self.availableColors.first(where: { $0.name == themeColorName })?.color
-      ?? Self.availableColors.first!.color
+      ?? Self.availableColors.first?.color
+      ?? Self.fallbackColor
   }
 
   func setTheme(named name: String) {

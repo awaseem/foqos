@@ -22,6 +22,7 @@ struct SectionTitle: View {
         .font(.headline)
         .fontWeight(.medium)
         .foregroundColor(.secondary)
+        .accessibilityAddTraits(.isHeader)
 
       Spacer()
 
@@ -29,7 +30,7 @@ struct SectionTitle: View {
         RoundedButton(buttonText, action: buttonAction, iconName: buttonIcon)
       }
     }
-    .padding(.bottom, 10)
+    .padding(.bottom, Spacing.sm - 2)
   }
 }
 

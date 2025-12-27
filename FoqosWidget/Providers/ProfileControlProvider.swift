@@ -38,31 +38,42 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
   > {
     let currentEntry = createEntry(for: configuration)
 
-    // Create multiple entries for smoother updates
+    // Efficient timeline: use fewer entries with smart refresh policies
     var entries: [ProfileWidgetEntry] = [currentEntry]
 
-    // Add more frequent updates for the next hour if session is active
+    // Calculate next refresh time based on session state
+    let refreshPolicy: TimelineReloadPolicy
+    let now = Date()
+
     if currentEntry.isSessionActive {
-      for minuteOffset in 1...60 {
-        let futureDate =
-          Calendar.current.date(byAdding: .minute, value: minuteOffset, to: Date()) ?? Date()
-        let futureEntry = ProfileWidgetEntry(
-          date: futureDate,
-          selectedProfileId: currentEntry.selectedProfileId,
-          profileName: currentEntry.profileName,
-          activeSession: currentEntry.activeSession,
-          profileSnapshot: currentEntry.profileSnapshot,
-          deepLinkURL: currentEntry.deepLinkURL,
-          focusMessage: currentEntry.focusMessage,
-          useProfileURL: currentEntry.useProfileURL
-        )
-        entries.append(futureEntry)
+      // When session is active, add entries at key intervals (5, 15, 30 min)
+      // This reduces memory and CPU usage while keeping widget reasonably fresh
+      let refreshIntervals = [5, 15, 30]  // minutes
+
+      for minutes in refreshIntervals {
+        if let futureDate = Calendar.current.date(byAdding: .minute, value: minutes, to: now) {
+          let futureEntry = ProfileWidgetEntry(
+            date: futureDate,
+            selectedProfileId: currentEntry.selectedProfileId,
+            profileName: currentEntry.profileName,
+            activeSession: currentEntry.activeSession,
+            profileSnapshot: currentEntry.profileSnapshot,
+            deepLinkURL: currentEntry.deepLinkURL,
+            focusMessage: currentEntry.focusMessage,
+            useProfileURL: currentEntry.useProfileURL
+          )
+          entries.append(futureEntry)
+        }
       }
+
+      // Refresh after 30 minutes for active sessions
+      refreshPolicy = .after(Calendar.current.date(byAdding: .minute, value: 30, to: now) ?? now)
+    } else {
+      // Inactive: refresh every 15 minutes to check for new sessions
+      refreshPolicy = .after(Calendar.current.date(byAdding: .minute, value: 15, to: now) ?? now)
     }
 
-    // Use .atEnd policy so the widget will request a new timeline when entries are exhausted
-    // This ensures the widget stays up-to-date even if the app doesn't trigger manual refreshes
-    return Timeline(entries: entries, policy: .atEnd)
+    return Timeline(entries: entries, policy: refreshPolicy)
   }
 
   private func createEntry(for configuration: ProfileSelectionIntent) -> ProfileWidgetEntry {

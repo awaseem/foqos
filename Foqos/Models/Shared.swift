@@ -2,9 +2,13 @@ import FamilyControls
 import Foundation
 
 enum SharedData {
-  private static let suite = UserDefaults(
-    suiteName: "group.dev.ambitionsoftware.foqos"
-  )!
+  private static let suite: UserDefaults = {
+    guard let suite = UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos") else {
+      assertionFailure("Failed to initialize UserDefaults suite - check entitlements")
+      return UserDefaults.standard
+    }
+    return suite
+  }()
 
   // MARK: – Keys
   private enum Key: String {
