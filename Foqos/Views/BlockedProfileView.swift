@@ -226,7 +226,7 @@ struct BlockedProfileView: View {
         }
 
         BlockingStrategyList(
-          strategies: StrategyManager.availableStrategies,
+          strategies: StrategyManager.availableStrategies.filter { !$0.hidden },
           selectedStrategy: $selectedStrategy,
           disabled: isBlocking
         )

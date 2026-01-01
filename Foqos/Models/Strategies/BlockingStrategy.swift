@@ -13,6 +13,8 @@ protocol BlockingStrategy {
   var iconType: String { get }
   var color: Color { get }
 
+  var hidden: Bool { get }
+
   // Callback closures session creation
   var onSessionCreation: ((SessionStatus) -> Void)? {
     get set

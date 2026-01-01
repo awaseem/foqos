@@ -13,6 +13,7 @@ class StrategyManager: ObservableObject {
     QRCodeBlockingStrategy(),
     QRManualBlockingStrategy(),
     QRTimerBlockingStrategy(),
+    ShortcutTimerBlockingStrategy(),
   ]
 
   @Published var elapsedTime: TimeInterval = 0
@@ -199,43 +200,8 @@ class StrategyManager: ObservableObject {
 
   func startSessionFromBackground(
     _ profileId: UUID,
-    context: ModelContext
-  ) {
-    do {
-      guard
-        let profile = try BlockedProfiles.findProfile(
-          byID: profileId,
-          in: context
-        )
-      else {
-        self.errorMessage =
-          "Failed to find a profile stored locally that matches the tag"
-        return
-      }
-
-      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
-
-      if let localActiveSession = getActiveSession(context: context) {
-        print(
-          "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
-        )
-        return
-      }
-
-      _ = manualStrategy.startBlocking(
-        context: context,
-        profile: profile,
-        forceStart: true
-      )
-    } catch {
-      self.errorMessage = "Something went wrong fetching profile"
-    }
-  }
-
-  func startSessionFromBackgroundWithTimer(
-    _ profileId: UUID,
     context: ModelContext,
-    durationInMinutes: Int
+    durationInMinutes: Int? = nil
   ) {
     do {
       guard
@@ -256,26 +222,35 @@ class StrategyManager: ObservableObject {
         return
       }
 
-      if durationInMinutes < 15 || durationInMinutes > 1440 {
-        self.errorMessage = "Duration must be between 15 and 1440 minutes"
-        return
-      }
+      if let duration = durationInMinutes {
+        if duration < 15 || duration > 1440 {
+          self.errorMessage = "Duration must be between 15 and 1440 minutes"
+          return
+        }
 
-      if let strategyTimerData = StrategyTimerData.toData(
-        from: StrategyTimerData(durationInMinutes: durationInMinutes)
-      ) {
-        profile.strategyData = strategyTimerData
-        profile.updatedAt = Date()
-        BlockedProfiles.updateSnapshot(for: profile)
-        try context.save()
-      }
+        if let strategyTimerData = StrategyTimerData.toData(
+          from: StrategyTimerData(durationInMinutes: duration)
+        ) {
+          profile.strategyData = strategyTimerData
+          profile.updatedAt = Date()
+          BlockedProfiles.updateSnapshot(for: profile)
+          try context.save()
+        }
 
-      let shortcutTimerStrategy = ShortcutTimerBlockingStrategy()
-      _ = shortcutTimerStrategy.startBlocking(
-        context: context,
-        profile: profile,
-        forceStart: true
-      )
+        let shortcutTimerStrategy = getStrategy(id: ShortcutTimerBlockingStrategy.id)
+        _ = shortcutTimerStrategy.startBlocking(
+          context: context,
+          profile: profile,
+          forceStart: true
+        )
+      } else {
+        let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+        _ = manualStrategy.startBlocking(
+          context: context,
+          profile: profile,
+          forceStart: true
+        )
+      }
     } catch {
       self.errorMessage = "Something went wrong fetching profile"
     }

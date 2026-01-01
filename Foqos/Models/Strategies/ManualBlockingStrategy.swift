@@ -10,6 +10,8 @@ class ManualBlockingStrategy: BlockingStrategy {
   var iconType: String = "button.horizontal.top.press.fill"
   var color: Color = .blue
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

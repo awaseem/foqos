@@ -10,6 +10,8 @@ class NFCBlockingStrategy: BlockingStrategy {
   var iconType: String = "wave.3.right.circle.fill"
   var color: Color = .yellow
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

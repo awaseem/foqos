@@ -11,6 +11,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
   var iconType: String = "qrcode.viewfinder"
   var color: Color = .pink
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 
