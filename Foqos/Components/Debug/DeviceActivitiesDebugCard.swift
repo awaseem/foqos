@@ -69,12 +69,12 @@ struct DeviceActivitiesDebugCard: View {
       return rawValue.hasSuffix(profileIdString)
     }
 
-    // Check if it's a schedule timer activity for this profile
-    if rawValue.hasPrefix(ScheduleTimerActivity.id) {
+    // Check if it's a strategy timer activity for this profile
+    if rawValue.hasPrefix(StrategyTimerActivity.id) {
       return rawValue.hasSuffix(profileIdString)
     }
 
-    // Check if it's a legacy schedule format (just the UUID)
+    // Check if it's a schedule timer activity or legacy format (just the UUID)
     return rawValue == profileIdString
   }
 }
