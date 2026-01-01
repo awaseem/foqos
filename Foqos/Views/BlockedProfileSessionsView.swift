@@ -43,26 +43,26 @@ struct BlockedProfileSessionsView: View {
   var body: some View {
     NavigationStack {
       List {
-        if activeSession != nil {
+        if let activeSession = activeSession {
           Section("Active Session") {
-            if let session = activeSession {
-              SessionRow(session: session, onDelete: nil)
-            }
+            SessionRow(session: activeSession)
           }
         }
 
         if !inactiveSessions.isEmpty {
           Section("Past Sessions") {
             ForEach(inactiveSessions) { session in
-              SessionRow(
-                session: session,
-                onDelete: {
-                  alertIdentifier = SessionAlertIdentifier(
-                    id: .deleteSession,
-                    session: session
-                  )
+              SessionRow(session: session)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                  Button(role: .destructive) {
+                    alertIdentifier = SessionAlertIdentifier(
+                      id: .deleteSession,
+                      session: session
+                    )
+                  } label: {
+                    Label("Delete", systemImage: "trash")
+                  }
                 }
-              )
             }
           }
         }
@@ -170,101 +170,6 @@ struct BlockedProfileSessionsView: View {
   }
 }
 
-struct SessionRow: View {
-  @EnvironmentObject private var themeManager: ThemeManager
-
-  var session: BlockedProfileSession
-  var onDelete: (() -> Void)?
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      HStack {
-        Text(formatDate(session.startTime))
-          .font(.headline)
-
-        Spacer()
-
-        if onDelete != nil {
-          Button(action: onDelete!) {
-            Image(systemName: "trash")
-              .foregroundColor(.red)
-          }
-        } else {
-          Image(systemName: "play.fill")
-            .foregroundColor(.green)
-        }
-      }
-
-      HStack {
-        Label(
-          formatTime(session.startTime),
-          systemImage: "clock"
-        )
-        .font(.caption)
-        .foregroundColor(.secondary)
-
-        Spacer()
-
-        if session.isActive {
-          Label("Active", systemImage: "flame.fill")
-            .font(.caption)
-            .foregroundColor(.orange)
-        } else if let endTime = session.endTime {
-          Label("Duration: \(formatDuration(session.duration))", systemImage: "hourglass")
-            .font(.caption)
-            .foregroundColor(.secondary)
-        }
-      }
-
-      if session.tag.isEmpty == false {
-        HStack {
-          Label(session.tag, systemImage: "tag.fill")
-            .font(.caption)
-            .foregroundColor(themeManager.themeColor)
-          Spacer()
-        }
-      }
-
-      if let breakStartTime = session.breakStartTime {
-        HStack {
-          Label(
-            "Break: \(formatTime(breakStartTime))",
-            systemImage: "cup.and.saucer.fill"
-          )
-          .font(.caption)
-          .foregroundColor(.secondary)
-          Spacer()
-        }
-      }
-    }
-    .padding(.vertical, 4)
-  }
-
-  private func formatDate(_ date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .medium
-    return formatter.string(from: date)
-  }
-
-  private func formatTime(_ date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.timeStyle = .short
-    return formatter.string(from: date)
-  }
-
-  private func formatDuration(_ timeInterval: TimeInterval) -> String {
-    let minutes = Int(timeInterval) / 60
-    let hours = minutes / 60
-    let remainingMinutes = minutes % 60
-
-    if hours > 0 {
-      return "\(hours)h \(remainingMinutes)m"
-    } else {
-      return "\(minutes)m"
-    }
-  }
-}
-
 #Preview {
   struct PreviewWrapper: View {
     let container: ModelContainer
@@ -282,23 +187,33 @@ struct SessionRow: View {
 
       let context = container.mainContext
       let profile = BlockedProfiles(
-        name: "Test Profile",
+        name: "Work Focus",
         selectedActivity: FamilyActivitySelection()
       )
       context.insert(profile)
 
       let activeSession = BlockedProfileSession(
-        tag: "Focus",
+        tag: "Deep Work",
         blockedProfile: profile
       )
+      activeSession.forceStarted = true
       context.insert(activeSession)
 
-      let pastSession = BlockedProfileSession(
-        tag: "Morning",
+      let pastSession1 = BlockedProfileSession(
+        tag: "Morning Focus",
         blockedProfile: profile
       )
-      pastSession.endTime = Date().addingTimeInterval(-3600)
-      context.insert(pastSession)
+      pastSession1.endTime = Date().addingTimeInterval(-3600)
+      context.insert(pastSession1)
+
+      let pastSession2 = BlockedProfileSession(
+        tag: "Afternoon Session",
+        blockedProfile: profile
+      )
+      pastSession2.endTime = Date().addingTimeInterval(-86400 * 2)
+      pastSession2.breakStartTime = Date().addingTimeInterval(-86400 * 2 + 1800)
+      pastSession2.breakEndTime = Date().addingTimeInterval(-86400 * 2 + 2400)
+      context.insert(pastSession2)
 
       self.profile = profile
     }
