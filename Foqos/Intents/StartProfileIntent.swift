@@ -22,24 +22,11 @@ struct StartProfileIntent: AppIntent {
 
   @MainActor
   func perform() async throws -> some IntentResult {
-    let strategyManager = StrategyManager.shared
-
-    if let duration = durationInMinutes {
-      if duration < 15 || duration > 1440 {
-        strategyManager.errorMessage = "Duration must be between 15 and 1440 minutes"
-        return .result()
-      }
-      strategyManager.startSessionFromBackgroundWithTimer(
-        profile.id,
-        context: modelContext,
-        durationInMinutes: duration
-      )
-    } else {
-      strategyManager.startSessionFromBackground(
-        profile.id,
-        context: modelContext
-      )
-    }
+    StrategyManager.shared.startSessionFromBackground(
+      profile.id,
+      context: modelContext,
+      durationInMinutes: durationInMinutes
+    )
 
     return .result()
   }

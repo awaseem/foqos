@@ -9,6 +9,8 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   var iconType: String = "alarm.waves.left.and.right"
   var color: Color = .mint
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

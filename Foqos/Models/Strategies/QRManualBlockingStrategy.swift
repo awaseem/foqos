@@ -10,6 +10,8 @@ class QRManualBlockingStrategy: BlockingStrategy {
   var iconType: String = "bolt.square"
   var color: Color = .pink
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

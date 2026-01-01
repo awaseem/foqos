@@ -9,6 +9,8 @@ class QRTimerBlockingStrategy: BlockingStrategy {
   var iconType: String = "bolt.badge.clock"
   var color: Color = .mint
 
+  var hidden: Bool = false
+
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 
