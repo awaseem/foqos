@@ -232,6 +232,55 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  func startSessionFromBackgroundWithTimer(
+    _ profileId: UUID,
+    context: ModelContext,
+    durationInMinutes: Int
+  ) {
+    do {
+      guard
+        let profile = try BlockedProfiles.findProfile(
+          byID: profileId,
+          in: context
+        )
+      else {
+        self.errorMessage =
+          "Failed to find a profile stored locally that matches the tag"
+        return
+      }
+
+      if let localActiveSession = getActiveSession(context: context) {
+        print(
+          "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
+        )
+        return
+      }
+
+      if durationInMinutes < 15 || durationInMinutes > 1440 {
+        self.errorMessage = "Duration must be between 15 and 1440 minutes"
+        return
+      }
+
+      if let strategyTimerData = StrategyTimerData.toData(
+        from: StrategyTimerData(durationInMinutes: durationInMinutes)
+      ) {
+        profile.strategyData = strategyTimerData
+        profile.updatedAt = Date()
+        BlockedProfiles.updateSnapshot(for: profile)
+        try context.save()
+      }
+
+      let shortcutTimerStrategy = ShortcutTimerBlockingStrategy()
+      _ = shortcutTimerStrategy.startBlocking(
+        context: context,
+        profile: profile,
+        forceStart: true
+      )
+    } catch {
+      self.errorMessage = "Something went wrong fetching profile"
+    }
+  }
+
   func stopSessionFromBackground(
     _ profileId: UUID,
     context: ModelContext
