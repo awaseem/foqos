@@ -160,10 +160,6 @@ struct HomeView: View {
           profileIsActive: isBlocking,
           tapProfileDebugHandler: {
             showingDebugMode = true
-          },
-          authorizationStatus: requestAuthorizer.getAuthorizationStatus(),
-          onAuthorizationHandler: {
-            requestAuthorizer.requestAuthorization()
           }
         )
         .frame(maxWidth: .infinity)
