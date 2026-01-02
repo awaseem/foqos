@@ -1,8 +1,6 @@
 import FamilyControls
 import SwiftUI
 
-let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
-
 struct VersionFooter: View {
   @EnvironmentObject var themeManager: ThemeManager
 
@@ -11,12 +9,6 @@ struct VersionFooter: View {
 
   let authorizationStatus: AuthorizationStatus
   let onAuthorizationHandler: () -> Void
-
-  // Get the current app version from the bundle
-  private var appVersion: String {
-    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-      ?? "1.0"
-  }
 
   private var isAuthorized: Bool {
     authorizationStatus == .approved
@@ -46,10 +38,6 @@ struct VersionFooter: View {
           }
           .foregroundColor(.red)
         }
-
-        Text("(v\(appVersion))")
-          .font(.footnote)
-          .foregroundColor(.secondary)
       }
 
       Text("Made with ❤️ in Calgary, AB 🇨🇦")
@@ -62,46 +50,36 @@ struct VersionFooter: View {
             .font(.footnote)
             .foregroundColor(.blue)
         }
-      } else {
-        Link(
-          "Buy NFC Tags",
-          destination: URL(string: AMZN_STORE_LINK)!
-        )
-        .font(.footnote)
-        .tint(themeManager.themeColor)
       }
     }
     .padding(.bottom, 8)
   }
 }
 
-// Preview provider for SwiftUI canvas
-struct VersionFooter_Previews: PreviewProvider {
-  static var previews: some View {
-    VStack(spacing: 20) {
-      VersionFooter(
-        profileIsActive: false,
-        tapProfileDebugHandler: {},
-        authorizationStatus: .approved,
-        onAuthorizationHandler: {}
-      )
-      .previewDisplayName("Authorized")
+#Preview {
+  VStack(spacing: 20) {
+    VersionFooter(
+      profileIsActive: false,
+      tapProfileDebugHandler: {},
+      authorizationStatus: .approved,
+      onAuthorizationHandler: {}
+    )
+    .environmentObject(ThemeManager.shared)
 
-      VersionFooter(
-        profileIsActive: false,
-        tapProfileDebugHandler: {},
-        authorizationStatus: .denied,
-        onAuthorizationHandler: {}
-      )
-      .previewDisplayName("Not Authorized")
+    VersionFooter(
+      profileIsActive: false,
+      tapProfileDebugHandler: {},
+      authorizationStatus: .denied,
+      onAuthorizationHandler: {}
+    )
+    .environmentObject(ThemeManager.shared)
 
-      VersionFooter(
-        profileIsActive: true,
-        tapProfileDebugHandler: {},
-        authorizationStatus: .approved,
-        onAuthorizationHandler: {}
-      )
-      .previewDisplayName("Profile is active")
-    }
+    VersionFooter(
+      profileIsActive: true,
+      tapProfileDebugHandler: {},
+      authorizationStatus: .approved,
+      onAuthorizationHandler: {}
+    )
+    .environmentObject(ThemeManager.shared)
   }
 }
