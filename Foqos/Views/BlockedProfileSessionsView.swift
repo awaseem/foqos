@@ -63,7 +63,7 @@ struct BlockedProfileSessionsView: View {
                     Label("Delete", systemImage: "trash")
                   }
                 }
-              }
+            }
           }
         }
 
@@ -107,6 +107,7 @@ struct BlockedProfileSessionsView: View {
               showDeleteAllConfirmation = true
             } label: {
               Image(systemName: "trash.fill")
+                .foregroundColor(.red)
             }
           }
         }
