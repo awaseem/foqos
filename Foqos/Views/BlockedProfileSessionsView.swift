@@ -63,48 +63,51 @@ struct BlockedProfileSessionsView: View {
                     Label("Delete", systemImage: "trash")
                   }
                 }
-            }
+              }
           }
         }
 
         if sessions.isEmpty {
-          Section {
-            VStack(alignment: .center, spacing: 12) {
-              Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
+          VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "clock.arrow.circlepath")
+              .font(.system(size: 48))
+              .foregroundColor(.secondary)
+
+            VStack(spacing: 8) {
               Text("No sessions yet")
                 .font(.headline)
                 .foregroundColor(.secondary)
+
               Text("When you use this profile, sessions will appear here")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 32)
+
+            Spacer()
           }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .listRowBackground(Color.clear)
+          .listRowSeparator(.hidden)
         }
       }
-      .navigationTitle("Session History")
+      .navigationTitle("Sessions")
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
-          if !inactiveSessions.isEmpty {
-            Button(role: .destructive) {
-              showDeleteAllConfirmation = true
-            } label: {
-              Text("Delete All")
-            }
-          } else {
-            Button(action: { dismiss() }) {
-              Image(systemName: "xmark")
-            }
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
           }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-          Button(action: { dismiss() }) {
-            Image(systemName: "xmark")
+          if !inactiveSessions.isEmpty {
+            Button(role: .destructive) {
+              showDeleteAllConfirmation = true
+            } label: {
+              Image(systemName: "trash.fill")
+            }
           }
         }
       }
