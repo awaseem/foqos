@@ -12,44 +12,67 @@ struct AuthorizationCallout: View {
   }
 
   var body: some View {
-    if !isAuthorized {
-      VStack(spacing: 16) {
-        Image(systemName: "exclamationmark.shield.fill")
-          .font(.system(size: 48))
-          .foregroundColor(.orange)
-
-        VStack(spacing: 8) {
-          Text("Authorization Required")
-            .font(.headline)
-            .fontWeight(.semibold)
-
-          Text(
-            "Foqos needs permission to block apps and websites. Please authorize to continue."
-          )
-          .font(.subheadline)
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-        }
-
+    Group {
+      if !isAuthorized {
         Button(action: onAuthorizationHandler) {
-          HStack(spacing: 8) {
-            Image(systemName: "checkmark.shield.fill")
-            Text("Authorize Now")
-              .fontWeight(.semibold)
+          HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.shield.fill")
+              .font(.title3)
+              .foregroundStyle(.red)
+              .padding(10)
+              .background(
+                Circle()
+                  .fill(Color.red.opacity(0.18))
+              )
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text("Authorization required")
+                .font(.headline)
+                .foregroundStyle(.primary)
+
+              Text("Authorize Family Controls to enable blocking.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+              HStack(spacing: 6) {
+                Text("Tap to authorize")
+                  .font(.caption)
+                  .fontWeight(.semibold)
+                  .foregroundStyle(themeManager.themeColor)
+
+                Image(systemName: "chevron.right")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
+              .padding(.top, 6)
+            }
+
+            Spacer(minLength: 0)
           }
-          .frame(maxWidth: .infinity)
-          .padding()
+          .padding(16)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(calloutBackground)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.plain)
+        .accessibilityLabel("Authorization required")
+        .accessibilityHint("Tap to authorize Family Controls")
+      } else {
+        Color.clear.frame(height: 0)
       }
-      .padding(20)
-      .background(Color(UIColor.systemBackground))
-      .overlay(
-        RoundedRectangle(cornerRadius: 24)
-          .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-      )
-      .clipShape(RoundedRectangle(cornerRadius: 24))
     }
+  }
+
+  private var calloutBackground: some View {
+    RoundedRectangle(cornerRadius: 24, style: .continuous)
+      .fill(Color(UIColor.systemBackground))
+      .overlay(
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+          .fill(.ultraThinMaterial.opacity(0.7))
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+          .stroke(Color.gray.opacity(0.25), lineWidth: 1)
+      )
   }
 }
 
