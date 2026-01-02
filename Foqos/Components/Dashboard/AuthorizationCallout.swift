@@ -56,8 +56,6 @@ struct AuthorizationCallout: View {
         .buttonStyle(.plain)
         .accessibilityLabel("Authorization required")
         .accessibilityHint("Tap to authorize Family Controls")
-      } else {
-        Color.clear.frame(height: 0)
       }
     }
   }
