@@ -1,3 +1,4 @@
+import FamilyControls
 import SwiftUI
 
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
@@ -5,6 +6,7 @@ let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
 struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var themeManager: ThemeManager
+  @EnvironmentObject var requestAuthorizer: RequestAuthorizer
 
   private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -54,9 +56,23 @@ struct SettingsView: View {
             Text("v\(appVersion)")
               .foregroundStyle(.secondary)
           }
+
+          HStack {
+            Text("Screen Time Access")
+              .foregroundStyle(.primary)
+            Spacer()
+            HStack(spacing: 8) {
+              Circle()
+                .fill(requestAuthorizer.isAuthorized ? .green : .red)
+                .frame(width: 8, height: 8)
+              Text(requestAuthorizer.isAuthorized ? "Authorized" : "Not Authorized")
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
+            }
+          }
         }
 
-        Section("Buy Tags") {
+        Section("Buy NFC Tags") {
           Link(destination: URL(string: AMZN_STORE_LINK)!) {
             HStack {
               Text("Amazon")
@@ -84,4 +100,5 @@ struct SettingsView: View {
 #Preview {
   SettingsView()
     .environmentObject(ThemeManager.shared)
+    .environmentObject(RequestAuthorizer())
 }
