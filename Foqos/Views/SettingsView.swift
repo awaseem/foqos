@@ -1,8 +1,15 @@
 import SwiftUI
 
+let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
+
 struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var themeManager: ThemeManager
+
+  private var appVersion: String {
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+      ?? "1.0"
+  }
 
   var body: some View {
     NavigationStack {
@@ -36,6 +43,28 @@ struct SettingsView: View {
           }
           .onChange(of: themeManager.selectedColorName) { _, _ in
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          }
+        }
+
+        Section("About") {
+          HStack {
+            Text("Version")
+              .foregroundStyle(.primary)
+            Spacer()
+            Text("v\(appVersion)")
+              .foregroundStyle(.secondary)
+          }
+        }
+
+        Section("Buy Tags") {
+          Link(destination: URL(string: AMZN_STORE_LINK)!) {
+            HStack {
+              Text("Amazon")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
           }
         }
       }
