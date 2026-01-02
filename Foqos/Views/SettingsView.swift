@@ -63,12 +63,20 @@ struct SettingsView: View {
             Spacer()
             HStack(spacing: 8) {
               Circle()
-                .fill(requestAuthorizer.isAuthorized ? .green : .red)
+                .fill(requestAuthorizer.getAuthorizationStatus() == .approved ? .green : .red)
                 .frame(width: 8, height: 8)
-              Text(requestAuthorizer.isAuthorized ? "Authorized" : "Not Authorized")
+              Text(requestAuthorizer.getAuthorizationStatus() == .approved ? "Authorized" : "Not Authorized")
                 .foregroundStyle(.secondary)
                 .font(.subheadline)
             }
+          }
+
+          HStack {
+            Text("Made in")
+              .foregroundStyle(.primary)
+            Spacer()
+            Text("Calgary AB 🇨🇦")
+              .foregroundStyle(.secondary)
           }
         }
 

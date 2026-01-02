@@ -8,15 +8,11 @@ struct VersionFooter: View {
 
   var body: some View {
     VStack(spacing: 10) {
-      Text("Made with ❤️ in Calgary, AB 🇨🇦")
-        .font(.footnote)
-        .foregroundColor(.secondary)
-
       if profileIsActive {
         Button(action: tapProfileDebugHandler) {
           Text("Debug mode")
             .font(.footnote)
-            .foregroundColor(.blue)
+            .foregroundColor(themeManager.themeColor)
         }
       }
     }
