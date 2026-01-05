@@ -49,6 +49,7 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
     session: BlockedProfileSession
   ) -> (any View)? {
     session.endSession()
+    try? context.save()
     self.appBlocker.deactivateRestrictions()
 
     self.onSessionCreation?(.ended(session.blockedProfile))
