@@ -665,4 +665,27 @@ class StrategyManager: ObservableObject {
       }
     }
   }
+
+  func resetBlockingState(context: ModelContext) {
+    guard !isBlocking else {
+      print("Cannot reset blocking state while a profile is active")
+      return
+    }
+
+    print("Resetting blocking state...")
+
+    // Clean up ghost schedules
+    cleanUpGhostSchedules(context: context)
+
+    // Clear all restrictions
+    appBlocker.deactivateRestrictions()
+
+    // Remove all break timer activities
+    DeviceActivityCenterUtil.removeAllBreakTimerActivities()
+
+    // Remove all strategy timer activities
+    DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
+
+    print("Blocking state reset complete")
+  }
 }

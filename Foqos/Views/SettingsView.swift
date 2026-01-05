@@ -1,12 +1,17 @@
 import FamilyControls
+import SwiftData
 import SwiftUI
 
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
 
 struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.modelContext) private var context
   @EnvironmentObject var themeManager: ThemeManager
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
+  @EnvironmentObject var strategyManager: StrategyManager
+
+  @State private var showResetBlockingStateAlert = false
 
   private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -103,6 +108,17 @@ struct SettingsView: View {
             }
           }
         }
+
+        if !strategyManager.isBlocking {
+          Section("Troubleshooting") {
+            Button {
+              showResetBlockingStateAlert = true
+            } label: {
+              Text("Reset Blocking State")
+                .foregroundColor(themeManager.themeColor)
+            }
+          }
+        }
       }
       .navigationTitle("Settings")
       .toolbar {
@@ -113,6 +129,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
+      .alert("Reset Blocking State", isPresented: $showResetBlockingStateAlert) {
+        Button("Cancel", role: .cancel) { }
+        Button("Reset", role: .destructive) {
+          strategyManager.resetBlockingState(context: context)
+        }
+      } message: {
+        Text("This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active.")
+      }
     }
   }
 }
@@ -121,4 +145,5 @@ struct SettingsView: View {
   SettingsView()
     .environmentObject(ThemeManager.shared)
     .environmentObject(RequestAuthorizer())
+    .environmentObject(StrategyManager.shared)
 }
