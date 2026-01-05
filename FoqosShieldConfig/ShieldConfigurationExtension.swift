@@ -49,7 +49,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     let emojiIcon = makeEmojiIcon(randomMessage.emoji, size: 96)
 
     return ShieldConfiguration(
-      backgroundBlurStyle: nil,
+      backgroundBlurStyle: .dark,
       backgroundColor: brandColor,
       icon: emojiIcon,
       title: ShieldConfiguration.Label(
