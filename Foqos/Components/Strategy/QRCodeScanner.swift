@@ -1,5 +1,6 @@
 import CodeScanner
 import SwiftUI
+import UIKit
 
 struct LabeledCodeScannerView: View {
   let heading: String
@@ -9,6 +10,7 @@ struct LabeledCodeScannerView: View {
 
   @State private var isShowingScanner = true
   @State private var errorMessage: String? = nil
+  @State private var scanError: ScanError? = nil
   @State private var isTorchOn = false
 
   init(
@@ -73,10 +75,39 @@ struct LabeledCodeScannerView: View {
           .padding(16)
         }
         .padding(.vertical, 10)
-      } else if let errorMessage = errorMessage {
-        Text("Error: \(errorMessage)")
-          .foregroundColor(.red)
-          .padding()
+      } else if let scanError = scanError {
+        if case ScanError.permissionDenied = scanError {
+          VStack(spacing: 16) {
+            Image(systemName: "camera.fill")
+              .font(.system(size: 30))
+
+            Text("Camera Access Required")
+              .font(.headline)
+
+            Text("To scan QR codes, you need to grant camera access to Foqos.")
+              .font(.subheadline)
+              .multilineTextAlignment(.center)
+              .foregroundColor(.secondary)
+              .padding(.horizontal)
+
+            ActionButton(
+              title: "Open Settings",
+              backgroundColor: .red,
+              iconName: "gearshape.fill"
+            ) {
+              if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
+              }
+            }
+            .padding(.horizontal, 24)
+          }
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 30)
+        } else {
+          Text("Error: \(errorMessage ?? "Unknown error")")
+            .foregroundColor(.red)
+            .padding()
+        }
       } else {
 
         Text("Scanner Paused or Not Available")
@@ -90,10 +121,12 @@ struct LabeledCodeScannerView: View {
     .onAppear {
       isShowingScanner = true
       errorMessage = nil
+      scanError = nil
       isTorchOn = false
     }
     .onDisappear {
       isShowingScanner = false
+      scanError = nil
       isTorchOn = false
     }
   }
@@ -103,11 +136,19 @@ struct LabeledCodeScannerView: View {
     case .success(let scanResult):
       isShowingScanner = false
       errorMessage = nil
+      scanError = nil
       onScanResult(.success(scanResult))
     case .failure(let error):
-      isShowingScanner = false
-      errorMessage = error.localizedDescription
-      onScanResult(.failure(error))
+      if case ScanError.permissionDenied = error {
+        isShowingScanner = false
+        errorMessage = error.localizedDescription
+        scanError = error
+      } else {
+        isShowingScanner = false
+        errorMessage = error.localizedDescription
+        scanError = error
+        onScanResult(.failure(error))
+      }
     }
   }
 }
