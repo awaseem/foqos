@@ -32,7 +32,7 @@
 
 ## 📋 Requirements
 
-- iOS 16.0+
+- iOS 17.6+
 - iPhone with NFC capability (for NFC features)
 - Screen Time permissions (for app blocking)
 
