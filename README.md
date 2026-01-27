@@ -62,17 +62,17 @@ Automate triggering Foqos profiles with iOS Shortcuts. Note that you'll need to 
 3. Scan an NFC tag and give it a name for the Foqos profile you want to run.  
 4. Enable **Run Immediately** and turn on **Notify When Run**. Tap **Next**.  
 
-<img width="250" alt="iOS Shortcuts NFC setup screen" src="/images/shortcut-1.png" />
+<img width="250" alt="iOS Shortcuts NFC setup screen" src="/images/shortcut-instructions-1.png" />
 
 5. Create a New Blank Automation. Search for 'Foqos' and add **Check if Foqos Session is Active**. Turn off **Show When Run**.  
 
-<img width="250" alt="iOS Shortcuts action setup" src="/images/shortcut-2.png" />
+<img width="250" alt="iOS Shortcuts action setup" src="/images/shortcut-instructions-2.png" />
 
 6. Add an **If** block with **Start Foqos Profile** and **Stop Foqos Profile**. For the Start and Stop actions, tap on the variable name, clear it, then select the Foqos profile you wish to trigger.  
 7. Arrange the actions so the profile is stopped if active; otherwise, it starts.  
 
-<img width="250" alt="iOS Shortcuts If block setup" src="/images/shortcut-3.png" />  
-<img width="250" alt="iOS Shortcuts If block configuration" src="/images/shortcut-4.png" />
+<img width="250" alt="iOS Shortcuts If block setup" src="/images/shortcut-instructions-3.png" />  
+<img width="250" alt="iOS Shortcuts If block configuration" src="/images/shortcut-instructions-4.png" />
 
 ### 3D Printable NFC Accessories
 
