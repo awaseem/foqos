@@ -62,17 +62,17 @@ Automate triggering Foqos profiles with iOS Shortcuts. Note that you'll need to 
 3. Scan an NFC tag and give it a name for the Foqos profile you want to run.  
 4. Enable **Run Immediately** and turn on **Notify When Run**. Tap **Next**.  
 
-<img width="250" alt="iOS Shortcuts NFC setup screen" src="https://github.com/user-attachments/assets/acb6cf86-b51d-4610-b135-c09bc10658fb" />
+<img width="250" alt="iOS Shortcuts NFC setup screen" src="/images/shortcut-1.png" />
 
 5. Create a New Blank Automation. Search for 'Foqos' and add **Check if Foqos Session is Active**. Turn off **Show When Run**.  
 
-<img width="250" alt="iOS Shortcuts action setup" src="https://github.com/user-attachments/assets/556b15ca-9c79-4dce-964d-8e9c4d3d1246" />
+<img width="250" alt="iOS Shortcuts action setup" src="/images/shortcut-2.png" />
 
 6. Add an **If** block with **Start Foqos Profile** and **Stop Foqos Profile**. For the Start and Stop actions, tap on the variable name, clear it, then select the Foqos profile you wish to trigger.  
 7. Arrange the actions so the profile is stopped if active; otherwise, it starts.  
 
-<img width="250" alt="iOS Shortcuts If block setup" src="https://github.com/user-attachments/assets/95e20bfa-4aca-45d0-bd40-46bb80b26684" />  
-<img width="250" alt="iOS Shortcuts If block configuration" src="https://github.com/user-attachments/assets/deec2403-9da1-4b3e-a8b1-c65ce1295ec1" />
+<img width="250" alt="iOS Shortcuts If block setup" src="/images/shortcut-3.png" />  
+<img width="250" alt="iOS Shortcuts If block configuration" src="/images/shortcut-4.png" />
 
 ### 3D Printable NFC Accessories
 
@@ -80,7 +80,7 @@ Enhance your Foqos setup with a 3D printable brick or keychain, compatible with 
 
 - [Foqos NFC Brick & Keychain on Printables](https://www.printables.com/model/1537982-foqos-nfc-brick-keychain)
 
-<img width="500" alt="3D printable Foqos NFC brick and keychain" src="https://github.com/user-attachments/assets/da8f35c4-d2ac-4647-931a-9aa36cd4eca4" />
+<img width="500" alt="3D printable Foqos NFC brick and keychain" src="/images/foqos-brick-keychain.png" />
 
 ## 🛠️ Development
 
