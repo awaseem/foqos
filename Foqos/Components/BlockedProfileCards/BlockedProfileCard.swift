@@ -18,6 +18,13 @@ struct BlockedProfileCard: View {
   var onStatsTapped: () -> Void = {}
   var onBreakTapped: () -> Void
 
+  // Computed property to extract hideStopButton from strategyData
+  private var hideStopButton: Bool {
+    guard let strategyData = profile.strategyData else { return false }
+    let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
+    return timerData.hideStopButton
+  }
+
   // Keep a reference to the CardBackground to access color
   private var cardBackground: CardBackground {
     CardBackground(isActive: isActive, customColor: themeManager.themeColor)
@@ -127,6 +134,7 @@ struct BlockedProfileCard: View {
           isBreakAvailable: isBreakAvailable,
           isBreakActive: isBreakActive,
           elapsedTime: elapsedTime,
+          hideStopButton: hideStopButton,
           onStartTapped: onStartTapped,
           onStopTapped: onStopTapped,
           onBreakTapped: onBreakTapped

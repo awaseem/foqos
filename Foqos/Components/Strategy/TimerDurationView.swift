@@ -10,6 +10,7 @@ struct TimerDurationView: View {
   // State for slider-based duration selection
   @State private var durationMinutes: Double = 60  // Default 1 hour
   @State private var isSliding = false
+  @State private var hideStopButton = false  // Toggle for hiding stop button
 
   // Constants
   private let minMinutes: Double = 15
@@ -43,7 +44,8 @@ struct TimerDurationView: View {
       // Slider with +/- buttons
       sliderControls
 
-      Spacer()
+      // Hide stop button toggle
+      hideStopButtonToggle
 
       // Confirm button
       ActionButton(
@@ -183,8 +185,30 @@ struct TimerDurationView: View {
     }
   }
 
+  private var hideStopButtonToggle: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 2) {
+        Text("Hide Stop Button")
+          .font(.body)
+          .fontWeight(.medium)
+
+        Text("Prevent early stopping during timer sessions")
+          .font(.caption)
+          .foregroundColor(.secondary)
+          .lineLimit(1)
+      }
+
+      Spacer()
+
+      Toggle("", isOn: $hideStopButton)
+        .labelsHidden()
+        .tint(themeManager.themeColor)
+    }
+  }
+
   private func handleConfirm() {
-    let data = StrategyTimerData(durationInMinutes: Int(durationMinutes))
+    let data = StrategyTimerData(
+      durationInMinutes: Int(durationMinutes), hideStopButton: hideStopButton)
     onDurationSelected(data)
     dismiss()
   }

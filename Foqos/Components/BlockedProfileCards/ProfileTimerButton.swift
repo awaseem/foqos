@@ -10,6 +10,8 @@ struct ProfileTimerButton: View {
 
   let elapsedTime: TimeInterval?
 
+  let hideStopButton: Bool
+
   let onStartTapped: () -> Void
   let onStopTapped: () -> Void
 
@@ -50,15 +52,17 @@ struct ProfileTimerButton: View {
               )
           )
 
-          // Stop button
-          GlassButton(
-            title: "Stop",
-            icon: "stop.fill",
-            fullWidth: false,
-            equalWidth: true
-          ) {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            onStopTapped()
+          // Stop button (hidden when hideStopButton is true)
+          if !hideStopButton {
+            GlassButton(
+              title: "Stop",
+              icon: "stop.fill",
+              fullWidth: false,
+              equalWidth: true
+            ) {
+              UIImpactFeedbackGenerator(style: .light).impactOccurred()
+              onStopTapped()
+            }
           }
         } else {
           // Start button (full width when no timer is shown)
@@ -103,6 +107,7 @@ struct ProfileTimerButton: View {
       isBreakAvailable: false,
       isBreakActive: false,
       elapsedTime: nil,
+      hideStopButton: false,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
@@ -113,6 +118,7 @@ struct ProfileTimerButton: View {
       isBreakAvailable: true,
       isBreakActive: false,
       elapsedTime: 3665,
+      hideStopButton: false,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
