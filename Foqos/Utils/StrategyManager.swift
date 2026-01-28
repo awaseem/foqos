@@ -229,7 +229,7 @@ class StrategyManager: ObservableObject {
         }
 
         if let strategyTimerData = StrategyTimerData.toData(
-          from: StrategyTimerData(durationInMinutes: duration)
+          from: StrategyTimerData(durationInMinutes: duration, hideStopButton: false)
         ) {
           profile.strategyData = strategyTimerData
           profile.updatedAt = Date()
