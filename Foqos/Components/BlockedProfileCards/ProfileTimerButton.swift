@@ -10,7 +10,7 @@ struct ProfileTimerButton: View {
 
   let elapsedTime: TimeInterval?
 
-  let hideStopButton: Bool
+  let showStopButton: Bool
 
   let onStartTapped: () -> Void
   let onStopTapped: () -> Void
@@ -52,8 +52,8 @@ struct ProfileTimerButton: View {
               )
           )
 
-          // Stop button (hidden when hideStopButton is true)
-          if !hideStopButton {
+          // Stop button (shown when showStopButton is true)
+          if showStopButton {
             GlassButton(
               title: "Stop",
               icon: "stop.fill",
@@ -107,7 +107,7 @@ struct ProfileTimerButton: View {
       isBreakAvailable: false,
       isBreakActive: false,
       elapsedTime: nil,
-      hideStopButton: false,
+      showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
@@ -118,7 +118,7 @@ struct ProfileTimerButton: View {
       isBreakAvailable: true,
       isBreakActive: false,
       elapsedTime: 3665,
-      hideStopButton: false,
+      showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
