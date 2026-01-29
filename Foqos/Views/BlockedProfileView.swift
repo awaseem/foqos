@@ -8,6 +8,7 @@ struct AlertIdentifier: Identifiable {
   enum AlertType {
     case error
     case deleteProfile
+    case overwriteNFCWarning
   }
 
   let id: AlertType
@@ -58,6 +59,9 @@ struct BlockedProfileView: View {
 
   // Alert management
   @State private var alertIdentifier: AlertIdentifier?
+
+  // NFC write URL storage for overwrite warning
+  @State private var pendingNFCWriteURL: String?
 
   // Sheet for physical unblock
   @State private var showingPhysicalUnblockView = false
@@ -553,6 +557,20 @@ struct BlockedProfileView: View {
               }
             }
           )
+        case .overwriteNFCWarning:
+          return Alert(
+            title: Text("Warning: NFC Tag Already Set"),
+            message: Text(
+              "Writing to this NFC tag will overwrite its current data. If this is the tag you previously set for unblocking, it will no longer match and you won't be able to unblock your profile. Continue?"
+            ),
+            primaryButton: .cancel(),
+            secondaryButton: .default(Text("Continue")) {
+              if let url = pendingNFCWriteURL {
+                nfcWriter.writeURL(url)
+              }
+              pendingNFCWriteURL = nil
+            }
+          )
         }
       }
     }
@@ -565,7 +583,14 @@ struct BlockedProfileView: View {
   private func writeProfile() {
     if let profileToWrite = profile {
       let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
-      nfcWriter.writeURL(url)
+
+      // Check if a physical unblock NFC tag is already set
+      if profileToWrite.physicalUnblockNFCTagId != nil {
+        pendingNFCWriteURL = url
+        alertIdentifier = AlertIdentifier(id: .overwriteNFCWarning)
+      } else {
+        nfcWriter.writeURL(url)
+      }
     }
   }
 
