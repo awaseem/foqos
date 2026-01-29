@@ -98,6 +98,19 @@ class BlockedProfiles {
     self.disableBackgroundStops = disableBackgroundStops
   }
 
+  func showStopButton(elapsedTime: TimeInterval) -> Bool {
+    guard let strategyData = self.strategyData else { return true }
+    let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
+
+    // If hideStopButton is false, always show the stop button
+    if !timerData.hideStopButton {
+      return true
+    }
+
+    let durationInSeconds = Double(timerData.durationInMinutes * 60)
+    return elapsedTime >= durationInSeconds
+  }
+
   static func fetchProfiles(in context: ModelContext) throws
     -> [BlockedProfiles]
   {
