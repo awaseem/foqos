@@ -2,9 +2,12 @@ import SwiftUI
 
 struct AnimatedIntroContainer: View {
   @State private var currentStep: Int = 0
+  @State private var showPasscodeMessage: Bool = false
+  @State private var authorizationRequested: Bool = false
   let onRequestAuthorization: () -> Void
 
   private let totalSteps = 3
+  private let passcodeMessageDelay: TimeInterval = 3.0
 
   var body: some View {
     VStack(spacing: 0) {
@@ -16,7 +19,7 @@ struct AnimatedIntroContainer: View {
         case 1:
           FeaturesIntroScreen()
         case 2:
-          PermissionsIntroScreen()
+          PermissionsIntroScreen(showPasscodeMessage: showPasscodeMessage)
         default:
           WelcomeIntroScreen()
         }
@@ -50,7 +53,18 @@ struct AnimatedIntroContainer: View {
       }
     } else {
       // Last step - request authorization
+      authorizationRequested = true
+      showPasscodeMessage = false
       onRequestAuthorization()
+
+      // Show passcode message after delay if still on this screen
+      DispatchQueue.main.asyncAfter(deadline: .now() + passcodeMessageDelay) {
+        if authorizationRequested && currentStep == totalSteps - 1 {
+          withAnimation {
+            showPasscodeMessage = true
+          }
+        }
+      }
     }
   }
 
@@ -58,6 +72,11 @@ struct AnimatedIntroContainer: View {
     if currentStep > 0 {
       withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
         currentStep -= 1
+        // Reset authorization state when navigating back
+        if currentStep < totalSteps - 1 {
+          authorizationRequested = false
+          showPasscodeMessage = false
+        }
       }
     }
   }
