@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PermissionsIntroScreen: View {
+  let showPasscodeMessage: Bool
+
   @State private var showContent: Bool = false
   @State private var shieldScale: CGFloat = 0.5
   @State private var pulseAnimation: Bool = false
@@ -87,6 +89,25 @@ struct PermissionsIntroScreen: View {
           .foregroundColor(.secondary)
           .multilineTextAlignment(.center)
           .lineSpacing(4)
+
+        // Passcode warning message
+        if showPasscodeMessage {
+          HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+              .foregroundColor(.orange)
+            Text("Still here? You need to set a passcode on your phone for Screen Time to work properly.")
+              .font(.system(size: 14, weight: .medium))
+              .foregroundColor(.orange)
+              .multilineTextAlignment(.center)
+          }
+          .padding(.horizontal, 16)
+          .padding(.vertical, 12)
+          .background(
+            RoundedRectangle(cornerRadius: 12)
+              .fill(Color.orange.opacity(0.15))
+          )
+          .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
       }
       .padding(.horizontal, 10)
       .opacity(showContent ? 1 : 0)
@@ -113,6 +134,6 @@ struct PermissionsIntroScreen: View {
 }
 
 #Preview {
-  PermissionsIntroScreen()
+  PermissionsIntroScreen(showPasscodeMessage: false)
     .background(Color(.systemBackground))
 }
