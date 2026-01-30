@@ -7,21 +7,15 @@ struct FeaturesIntroScreen: View {
   let features = [
     Feature(
       imageName: "NFCLogo",
-      title: "NFC Tags",
+      title: "DO Card Lock/Unlock",
       description:
-        "Tap your phone on an NFC tag to instantly start or stop a focus session. You can buy them on Amazon for a few dollars."
-    ),
-    Feature(
-      imageName: "QRCodeLogo",
-      title: "QR Codes",
-      description:
-        "Scan a QR code to control your focus sessions. Place codes around your space to create intentional focus triggers. You can even use barcodes."
+        "Tap your phone on your DO Card to instantly lock or unlock apps. Same card to start, same card to stop."
     ),
     Feature(
       imageName: "ScheduleIcon",
-      title: "Smart Schedules",
+      title: "Timed Sessions",
       description:
-        "Set up automatic focus sessions based on your routine. Create schedules for work, study, personal time, and more."
+        "Set a timer duration to lock apps. Unlock early by tapping your DO Card, or let them auto-unlock when time expires."
     ),
   ]
 

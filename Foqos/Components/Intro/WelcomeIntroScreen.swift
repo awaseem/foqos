@@ -12,13 +12,13 @@ struct WelcomeIntroScreen: View {
     VStack(spacing: 0) {
       // Heading
       VStack(spacing: 8) {
-        Text("Welcome to Foqos")
+        Text("Welcome to DO")
           .font(.system(size: 34, weight: .bold))
           .foregroundColor(.primary)
           .opacity(showContent ? 1 : 0)
           .offset(y: showContent ? 0 : -20)
 
-        Text("Live your best life with focus and intention.")
+        Text("Block distractions. Stay focused. Get things done.")
           .font(.system(size: 16))
           .foregroundColor(.secondary)
           .opacity(showContent ? 1 : 0)
@@ -38,31 +38,13 @@ struct WelcomeIntroScreen: View {
           .rotationEffect(.degrees(orbitRotation))
           .opacity(showIcons ? 1 : 0)
 
-        // Orbiting Barcode Icon (90 degrees)
-        Image("BarcodeIcon")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
-          .rotationEffect(.degrees(orbitRotation + 90))
-          .opacity(showIcons ? 1 : 0)
-
-        // Orbiting QR Code Logo (180 degrees)
-        Image("QRCodeLogo")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
-          .rotationEffect(.degrees(orbitRotation + 180))
-          .opacity(showIcons ? 1 : 0)
-
-        // Orbiting Schedule Icon (270 degrees)
+        // Orbiting Schedule Icon (180 degrees)
         Image("ScheduleIcon")
           .resizable()
           .scaledToFit()
           .frame(width: 50, height: 50)
           .offset(x: ORBIT_OFFSET)  // Orbit radius
-          .rotationEffect(.degrees(orbitRotation + 270))
+          .rotationEffect(.degrees(orbitRotation + 180))
           .opacity(showIcons ? 1 : 0)
 
         // 3D Logo (center/sun)
@@ -80,7 +62,7 @@ struct WelcomeIntroScreen: View {
       // Message text
       VStack(spacing: 12) {
         Text(
-          "No need to waste hundreds on gimmicky plastic bricks and overpriced metal cards."
+          "Use your DO Card to lock and unlock apps. Stay focused with timed sessions."
         )
         .font(.system(size: 18, weight: .medium))
         .foregroundColor(.secondary)

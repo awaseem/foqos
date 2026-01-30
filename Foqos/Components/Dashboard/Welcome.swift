@@ -9,7 +9,7 @@ struct Welcome: View {
       VStack(alignment: .leading, spacing: 12) {
         // Top row with category and icon
         HStack {
-          Text("Physically block distracting apps ")
+          Text("Block distracting apps with DO Card")
             .font(.subheadline)
             .fontWeight(.medium)
             .foregroundColor(.primary)
@@ -30,13 +30,13 @@ struct Welcome: View {
           .frame(height: 10)
 
         // Title and subtitle
-        Text("Welcome to Foqos")
+        Text("Welcome to DO")
           .font(.title)
           .fontWeight(.bold)
           .foregroundColor(.primary)
 
         Text(
-          "Tap here to get started on your first profile. You can use NFC Tags, QR codes or even Barcode codes."
+          "Tap here to get started on your first profile. Use your DO Card to lock and unlock apps."
         )
         .font(.subheadline)
         .foregroundColor(.secondary)

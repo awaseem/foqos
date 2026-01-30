@@ -5,16 +5,22 @@ import WidgetKit
 class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
 
+  // DO App: Only two locking methods - NFC Card and NFC + Timer
   static let availableStrategies: [BlockingStrategy] = [
-    ManualBlockingStrategy(),
     NFCBlockingStrategy(),
-    NFCManualBlockingStrategy(),
     NFCTimerBlockingStrategy(),
-    QRCodeBlockingStrategy(),
-    QRManualBlockingStrategy(),
-    QRTimerBlockingStrategy(),
+  ]
+
+  // Internal strategies for background operations (not shown in UI)
+  private static let internalStrategies: [BlockingStrategy] = [
+    ManualBlockingStrategy(),
     ShortcutTimerBlockingStrategy(),
   ]
+
+  // All strategies for lookup purposes
+  private static var allStrategies: [BlockingStrategy] {
+    return availableStrategies + internalStrategies
+  }
 
   @Published var elapsedTime: TimeInterval = 0
   @Published var timer: Timer?
@@ -392,7 +398,7 @@ class StrategyManager: ObservableObject {
   }
 
   static func getStrategyFromId(id: String) -> BlockingStrategy {
-    if let strategy = availableStrategies.first(
+    if let strategy = allStrategies.first(
       where: {
         $0.getIdentifier() == id
       })

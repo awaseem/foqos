@@ -4,10 +4,10 @@ import SwiftUI
 class NFCTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCTimerBlockingStrategy"
 
-  var name: String = "NFC + Timer"
-  var description: String = "Block for a certain amount of minutes, unblock by using any NFC tag"
+  var name: String = "Timed Lock with Early Unlock"
+  var description: String = "Set a timer duration. Unlock early with DO Card, or auto-unlock when timer expires."
   var iconType: String = "alarm.waves.left.and.right"
-  var color: Color = .mint
+  var color: Color = Color(hex: "#FF6B35").opacity(0.8)
 
   var hidden: Bool = false
 
@@ -63,7 +63,7 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
         physicalUnblockNFCTagId != tag
       {
         self.onErrorMessage?(
-          "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"
+          "This DO Card is not allowed to unlock this profile. Physical unlock setting is on for this profile."
         )
         return
       }

@@ -270,7 +270,7 @@ struct BlockedProfileView: View {
           CustomToggle(
             title: "Strict",
             description:
-              "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
+              "Block deleting apps from your phone, stops you from deleting DO to access apps",
             isOn: $enableStrictMode,
             isDisabled: isBlocking
           )
@@ -278,7 +278,7 @@ struct BlockedProfileView: View {
           CustomToggle(
             title: "Disable Background Stops",
             description:
-              "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from NFC tags or QR codes.",
+              "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from DO Card.",
             isOn: $disableBackgroundStops,
             isDisabled: isBlocking
           )
@@ -396,13 +396,7 @@ struct BlockedProfileView: View {
                 Button {
                   writeProfile()
                 } label: {
-                  Label("Write to NFC Tag", systemImage: "tag")
-                }
-
-                Button {
-                  showingGeneratedQRCode = true
-                } label: {
-                  Label("Generate QR code", systemImage: "qrcode")
+                  Label("Write to DO Card", systemImage: "tag")
                 }
 
                 Button {
@@ -559,9 +553,9 @@ struct BlockedProfileView: View {
           )
         case .overwriteNFCWarning:
           return Alert(
-            title: Text("Warning: NFC Tag Already Set"),
+            title: Text("Warning: DO Card Already Set"),
             message: Text(
-              "Writing to this NFC tag will overwrite its current data. If this is the tag you previously set for unblocking, it will no longer match and you won't be able to unblock your profile. Continue?"
+              "Writing to this DO Card will overwrite its current data. If this is the card you previously set for unlocking, it will no longer match and you won't be able to unlock your profile. Continue?"
             ),
             primaryButton: .cancel(),
             secondaryButton: .default(Text("Continue")) {

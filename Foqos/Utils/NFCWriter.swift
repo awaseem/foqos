@@ -45,7 +45,7 @@ class NFCWriter: NSObject, ObservableObject {
       delegate: self,
       queue: nil
     )
-    tagSession?.alertMessage = "Hold your iPhone near an NFC tag to write the profile."
+    tagSession?.alertMessage = "Hold your iPhone near your DO Card to write the profile."
     tagSession?.begin()
 
     isScanning = true
@@ -191,7 +191,7 @@ extension NFCWriter: NFCTagReaderSessionDelegate {
         session.invalidate(
           errorMessage: "Write failed. Please try again.")
       } else {
-        session.alertMessage = "✓ Successfully wrote profile to tag"
+        session.alertMessage = "✓ Successfully wrote profile to DO Card"
         DispatchQueue.main.async {
           self.isScanning = false
         }

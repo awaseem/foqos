@@ -3,26 +3,18 @@ import SwiftUI
 class ThemeManager: ObservableObject {
   static let shared = ThemeManager()
 
-  // Single source of truth for all theme colors
+  // DO App fixed color scheme - Orange accent on black background
+  static let primaryColor = Color(hex: "#FF6B35")  // Vibrant orange
+  static let backgroundColor = Color(hex: "#000000")  // Pure black
+  static let textColor = Color.white
+  static let secondaryTextColor = Color(hex: "#AAAAAA")
+
+  // Single source of truth for all theme colors (keeping for compatibility, but using fixed orange)
   static let availableColors: [(name: String, color: Color)] = [
-    ("Grimace Purple", Color(hex: "#894fa3")),
-    ("Ocean Blue", Color(hex: "#007aff")),
-    ("Mint Fresh", Color(hex: "#00c6bf")),
-    ("Lime Zest", Color(hex: "#7fd800")),
-    ("Sunset Coral", Color(hex: "#ff5966")),
-    ("Hot Pink", Color(hex: "#ff2da5")),
-    ("Tangerine", Color(hex: "#ff9300")),
-    ("Lavender Dream", Color(hex: "#ba8eff")),
-    ("San Diego Merlot", Color(hex: "#7a1e3a")),
-    ("Forest Green", Color(hex: "#0b6e4f")),
-    ("Miami Vice", Color(hex: "#ff6ec7")),
-    ("Electric Lemonade", Color(hex: "#ccff00")),
-    ("Neon Grape", Color(hex: "#b026ff")),
-    ("Slate Stone", Color(hex: "#708090")),
-    ("Warm Sandstone", Color(hex: "#c4a77d")),
+    ("DO Orange", Color(hex: "#FF6B35")),
   ]
 
-  private static let defaultColorName = "Grimace Purple"
+  private static let defaultColorName = "DO Orange"
 
   @AppStorage(
     "foqosThemeColorName", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
@@ -37,8 +29,8 @@ class ThemeManager: ObservableObject {
   }
 
   var themeColor: Color {
-    Self.availableColors.first(where: { $0.name == themeColorName })?.color
-      ?? Self.availableColors.first!.color
+    // Always return the DO orange color
+    return ThemeManager.primaryColor
   }
 
   func setTheme(named name: String) {

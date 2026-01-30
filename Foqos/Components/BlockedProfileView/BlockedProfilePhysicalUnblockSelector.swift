@@ -13,30 +13,16 @@ struct BlockedProfilePhysicalUnblockSelector: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      HStack(spacing: 12) {
-        // NFC Tag Column
-        PhysicalUnblockColumn(
-          title: "NFC Tag",
-          description: "Set a specific NFC tag that can only unblock this profile when active",
-          systemImage: "wave.3.right.circle.fill",
-          id: nfcTagId,
-          disabled: disabled,
-          onSet: onSetNFC,
-          onUnset: onUnsetNFC
-        )
-
-        // QR Code Column
-        PhysicalUnblockColumn(
-          title: "QR/Barcode Code",
-          description:
-            "Set a specific QR/Barcode code that can only unblock this profile when active",
-          systemImage: "qrcode.viewfinder",
-          id: qrCodeId,
-          disabled: disabled,
-          onSet: onSetQRCode,
-          onUnset: onUnsetQRCode
-        )
-      }
+      // DO Card Column (NFC-based unlock)
+      PhysicalUnblockColumn(
+        title: "DO Card",
+        description: "Set a specific DO Card that can only unlock this profile when active",
+        systemImage: "wave.3.right.circle.fill",
+        id: nfcTagId,
+        disabled: disabled,
+        onSet: onSetNFC,
+        onUnset: onUnsetNFC
+      )
 
       if let disabledText = disabledText, disabled {
         Text(disabledText)
@@ -52,42 +38,42 @@ struct BlockedProfilePhysicalUnblockSelector: View {
   NavigationStack {
     Form {
       Section {
-        // Example with no IDs set
+        // Example with no ID set
         BlockedProfilePhysicalUnblockSelector(
           nfcTagId: nil,
           qrCodeId: nil,
           disabled: false,
-          onSetNFC: { print("Set NFC") },
-          onSetQRCode: { print("Set QR Code") },
-          onUnsetNFC: { print("Unset NFC") },
-          onUnsetQRCode: { print("Unset QR Code") }
+          onSetNFC: { print("Set DO Card") },
+          onSetQRCode: { },
+          onUnsetNFC: { print("Unset DO Card") },
+          onUnsetQRCode: { }
         )
       }
 
       Section {
-        // Example with IDs set
+        // Example with ID set
         BlockedProfilePhysicalUnblockSelector(
-          nfcTagId: "nfc_12345678901234567890",
-          qrCodeId: "qr_abcdefghijklmnopqrstuvwxyz",
+          nfcTagId: "do_card_12345678901234567890",
+          qrCodeId: nil,
           disabled: false,
-          onSetNFC: { print("Set NFC") },
-          onSetQRCode: { print("Set QR Code") },
-          onUnsetNFC: { print("Unset NFC") },
-          onUnsetQRCode: { print("Unset QR Code") }
+          onSetNFC: { print("Set DO Card") },
+          onSetQRCode: { },
+          onUnsetNFC: { print("Unset DO Card") },
+          onUnsetQRCode: { }
         )
       }
 
       Section {
         // Example disabled
         BlockedProfilePhysicalUnblockSelector(
-          nfcTagId: "nfc_12345678901234567890",
+          nfcTagId: "do_card_12345678901234567890",
           qrCodeId: nil,
           disabled: true,
-          disabledText: "Physical unblock options are locked",
-          onSetNFC: { print("Set NFC") },
-          onSetQRCode: { print("Set QR Code") },
-          onUnsetNFC: { print("Unset NFC") },
-          onUnsetQRCode: { print("Unset QR Code") }
+          disabledText: "Physical unlock options are locked",
+          onSetNFC: { print("Set DO Card") },
+          onSetQRCode: { },
+          onUnsetNFC: { print("Unset DO Card") },
+          onUnsetQRCode: { }
         )
       }
     }

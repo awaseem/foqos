@@ -110,79 +110,41 @@ struct PhysicalUnblockColumn: View {
   NavigationStack {
     Form {
       Section("Not Set") {
-        HStack(spacing: 12) {
-          PhysicalUnblockColumn(
-            title: "NFC Tag",
-            description: "Set a specific NFC tag that can only unblock this profile when active",
-            systemImage: "wave.3.right",
-            id: nil,
-            disabled: false,
-            onSet: { print("Set NFC") },
-            onUnset: { print("Unset NFC") }
-          )
-
-          PhysicalUnblockColumn(
-            title: "QR Code",
-            description:
-              "Set a specific QR/Barcode code that can only unblock this profile when active",
-            systemImage: "qrcode",
-            id: nil,
-            disabled: false,
-            onSet: { print("Set QR Code") },
-            onUnset: { print("Unset QR Code") }
-          )
-        }
+        PhysicalUnblockColumn(
+          title: "DO Card",
+          description: "Set a specific DO Card that can only unlock this profile when active",
+          systemImage: "wave.3.right",
+          id: nil,
+          disabled: false,
+          onSet: { print("Set DO Card") },
+          onUnset: { print("Unset DO Card") }
+        )
       }
 
       Section("Set") {
-        HStack(spacing: 12) {
-          PhysicalUnblockColumn(
-            title: "NFC Tag",
-            description: "Set a specific NFC tag that can only unblock this profile when active",
-            systemImage: "wave.3.right",
-            id: "nfc_12345678901234567890",
-            disabled: false,
-            onSet: { print("Set NFC") },
-            onUnset: { print("Unset NFC") }
-          )
-
-          PhysicalUnblockColumn(
-            title: "QR Code",
-            description:
-              "Set a specific QR/Barcode code that can only unblock this profile when active",
-            systemImage: "qrcode",
-            id: "qr_abcdefghijklmnopqrstuvwxyz",
-            disabled: false,
-            onSet: { print("Set QR Code") },
-            onUnset: { print("Unset QR Code") }
-          )
-        }
+        PhysicalUnblockColumn(
+          title: "DO Card",
+          description: "Set a specific DO Card that can only unlock this profile when active",
+          systemImage: "wave.3.right",
+          id: "do_card_12345678901234567890",
+          disabled: false,
+          onSet: { print("Set DO Card") },
+          onUnset: { print("Unset DO Card") }
+        )
       }
 
       Section("Disabled") {
-        HStack(spacing: 12) {
-          PhysicalUnblockColumn(
-            title: "NFC Tag",
-            description: "Set a specific NFC tag that can only unblock this profile when active",
-            systemImage: "wave.3.right",
-            id: "nfc_12345678901234567890",
-            disabled: true,
-            onSet: { print("Set NFC") },
-            onUnset: { print("Unset NFC") }
-          )
-
-          PhysicalUnblockColumn(
-            title: "QR Code",
-            description: "Set a specific QR code that can only unblock this profile when active",
-            systemImage: "qrcode",
-            id: nil,
-            disabled: true,
-            onSet: { print("Set QR Code") },
-            onUnset: { print("Unset QR Code") }
-          )
-        }
+        PhysicalUnblockColumn(
+          title: "DO Card",
+          description: "Set a specific DO Card that can only unlock this profile when active",
+          systemImage: "wave.3.right",
+          id: "do_card_12345678901234567890",
+          disabled: true,
+          onSet: { print("Set DO Card") },
+          onUnset: { print("Unset DO Card") }
+        )
       }
     }
-    .navigationTitle("Physical Unblock Columns")
+    .navigationTitle("Physical Unlock Settings")
   }
 }

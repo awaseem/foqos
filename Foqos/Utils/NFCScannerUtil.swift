@@ -26,7 +26,7 @@ class NFCScannerUtil: NSObject {
       delegate: self,
       queue: nil
     )
-    nfcSession?.alertMessage = "Hold your iPhone near an NFC tag to trigger " + profileName
+    nfcSession?.alertMessage = "Hold your iPhone near your DO Card to trigger " + profileName
     nfcSession?.begin()
   }
 
@@ -47,7 +47,7 @@ class NFCScannerUtil: NSObject {
     let ndefSession = NFCNDEFReaderSession(
       delegate: self, queue: nil, invalidateAfterFirstRead: false)
     ndefSession.alertMessage =
-      "Hold your iPhone near an NFC tag to write the profile."
+      "Hold your iPhone near your DO Card to write the profile."
     ndefSession.begin()
   }
 }
@@ -254,7 +254,7 @@ extension NFCScannerUtil: NFCNDEFReaderSessionDelegate {
         session.invalidate(
           errorMessage: "Write failed: \(error.localizedDescription)")
       } else {
-        session.alertMessage = "Successfully wrote URL to tag"
+        session.alertMessage = "Successfully wrote profile to DO Card"
         session.invalidate()
       }
     }

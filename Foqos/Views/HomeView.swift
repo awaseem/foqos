@@ -30,9 +30,6 @@ struct HomeView: View {
   // Stats sheet
   @State private var profileToShowStats: BlockedProfiles? = nil
 
-  // Donation View
-  @State private var showDonationView = false
-
   // Settings View
   @State private var showSettingsView = false
 
@@ -41,9 +38,6 @@ struct HomeView: View {
 
   // Navigate to profile
   @State private var navigateToProfileId: UUID? = nil
-
-  // Debug mode
-  @State private var showingDebugMode = false
 
   // Activity sessions
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
@@ -87,18 +81,11 @@ struct HomeView: View {
         HStack(alignment: .center) {
           AppTitle()
           Spacer()
-          HStack(spacing: 8) {
-            RoundedButton(
-              "Support",
-              action: {
-                showDonationView = true
-              }, iconName: "heart.fill")
-            RoundedButton(
-              "",
-              action: {
-                showSettingsView = true
-              }, iconName: "gear")
-          }
+          RoundedButton(
+            "",
+            action: {
+              showSettingsView = true
+            }, iconName: "gear")
         }
         .padding(.trailing, 16)
         .padding(.top, 16)
@@ -156,14 +143,6 @@ struct HomeView: View {
           )
         }
 
-        VersionFooter(
-          profileIsActive: isBlocking,
-          tapProfileDebugHandler: {
-            showingDebugMode = true
-          }
-        )
-        .frame(maxWidth: .infinity)
-        .padding(.top, 15)
       }
     }
     .refreshable {
@@ -243,18 +222,12 @@ struct HomeView: View {
       )
       .presentationDetents([.medium])
     }
-    .sheet(isPresented: $showDonationView) {
-      SupportView()
-    }
     .sheet(isPresented: $showSettingsView) {
       SettingsView()
     }
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350)])
-    }
-    .sheet(isPresented: $showingDebugMode) {
-      DebugView()
     }
     .alert(alertTitle, isPresented: $showingAlert) {
       Button("OK", role: .cancel) { dismissAlert() }
@@ -302,9 +275,10 @@ struct HomeView: View {
 #Preview {
   HomeView()
     .environmentObject(RequestAuthorizer())
-    .environmentObject(TipManager())
     .environmentObject(NavigationManager())
     .environmentObject(StrategyManager())
+    .environmentObject(ThemeManager.shared)
+    .environmentObject(RatingManager())
     .defaultAppStorage(UserDefaults(suiteName: "preview")!)
     .onAppear {
       UserDefaults(suiteName: "preview")!.set(

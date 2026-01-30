@@ -68,23 +68,13 @@ struct PermissionsIntroScreen: View {
 
       // Message text
       VStack(spacing: 16) {
-        (Text("Foqos is 100% open source, ")
-          + Text("read the code yourself")
-          .foregroundColor(.accentColor)
-          + Text(
-            " if you're skeptical. We don't care who you are, we just want you to live with focus and intention."
-          ))
+        Text("DO uses Screen Time to block distracting apps. Your data stays on your device.")
           .font(.system(size: 16, weight: .medium))
           .foregroundColor(.secondary)
           .multilineTextAlignment(.center)
           .lineSpacing(4)
-          .onTapGesture {
-            if let url = URL(string: "https://github.com/awaseem/foqos") {
-              UIApplication.shared.open(url)
-            }
-          }
 
-        Text("No account required. No subscription fees. No tracking. No BS.")
+        Text("No account required. No subscription fees. No tracking.")
           .font(.system(size: 16, weight: .medium))
           .foregroundColor(.secondary)
           .multilineTextAlignment(.center)
