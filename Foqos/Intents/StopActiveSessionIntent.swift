@@ -12,7 +12,7 @@ struct StopActiveSessionIntent: AppIntent {
 
   static var title: LocalizedStringResource = "Stop Active Foqos Session"
   static var description = IntentDescription(
-    "Stops the currently active Foqos session, if any. Useful for quickly ending a blocking session from Shortcuts or Siri."
+    "Attempts to stop any currently active Foqos session."
   )
 
   static var openAppWhenRun: Bool = false
