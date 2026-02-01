@@ -18,32 +18,30 @@ struct StopActiveSessionIntent: AppIntent {
   static var openAppWhenRun: Bool = false
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog {
+  func perform() async throws -> some IntentResult & ReturnsValue<Bool> & ProvidesDialog {
     let strategyManager = StrategyManager.shared
 
     // Load the active session
     strategyManager.loadActiveSession(context: modelContext)
-
+      
     // Check if there's an active session
-    guard let activeSession = strategyManager.activeSession, activeSession.isActive else {
-      return .result(dialog: "No active session to stop.")
+    guard let blockedProfile = strategyManager.activeSession?.blockedProfile, strategyManager.isBlocking else {
+      return .result(value: true, dialog: "No active Foqos session to stop")
     }
 
-    let profileName = activeSession.blockedProfile.name
+    let profileName = blockedProfile.name
 
     // Check if the profile has background stops disabled
-    if activeSession.blockedProfile.disableBackgroundStops {
-      return .result(
-        dialog: "Cannot stop \(profileName) from a shortcut. Background stops are disabled for this profile."
-      )
+    if blockedProfile.disableBackgroundStops {
+      return .result(value: false, dialog: "Background stop disabled for profile: \(profileName)")
     }
 
     // Stop the session using the manual strategy
     strategyManager.stopSessionFromBackground(
-      activeSession.blockedProfile.id,
+      blockedProfile.id,
       context: modelContext
     )
 
-    return .result(dialog: "Stopped \(profileName) session.")
+    return .result(value: true, dialog: "Stopped profile: \(profileName)")
   }
 }
