@@ -23,9 +23,11 @@ struct StopActiveSessionIntent: AppIntent {
 
     // Load the active session
     strategyManager.loadActiveSession(context: modelContext)
-      
+
     // Check if there's an active session
-    guard let blockedProfile = strategyManager.activeSession?.blockedProfile, strategyManager.isBlocking else {
+    guard let blockedProfile = strategyManager.activeSession?.blockedProfile,
+      strategyManager.isBlocking
+    else {
       return .result(value: true, dialog: "No active Foqos session to stop")
     }
 
