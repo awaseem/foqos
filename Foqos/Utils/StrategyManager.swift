@@ -618,7 +618,7 @@ class StrategyManager: ObservableObject {
     if breakNotificationTimeInSeconds > 0 {
       timersUtil.scheduleNotification(
         title: "Break almost over!",
-        message: "Hope you enjoyed your break, starting " + profileName + " in a 1 minute.",
+        message: "Hope you enjoyed your break, starting " + profileName + " in 1 minute.",
         seconds: TimeInterval(breakNotificationTimeInSeconds)
       )
     }
