@@ -16,7 +16,6 @@ struct BlockedProfileCarousel: View {
   var onEditTapped: (BlockedProfiles) -> Void
   var onStatsTapped: (BlockedProfiles) -> Void
   var onBreakTapped: (BlockedProfiles) -> Void
-  var onEndPauseTapped: (BlockedProfiles) -> Void
   var onManageTapped: () -> Void
   var onEmergencyTapped: () -> Void
 
@@ -61,7 +60,6 @@ struct BlockedProfileCarousel: View {
     onEditTapped: @escaping (BlockedProfiles) -> Void,
     onStatsTapped: @escaping (BlockedProfiles) -> Void,
     onBreakTapped: @escaping (BlockedProfiles) -> Void,
-    onEndPauseTapped: @escaping (BlockedProfiles) -> Void,
     onManageTapped: @escaping () -> Void,
     onEmergencyTapped: @escaping () -> Void
   ) {
@@ -78,7 +76,6 @@ struct BlockedProfileCarousel: View {
     self.onEditTapped = onEditTapped
     self.onStatsTapped = onStatsTapped
     self.onBreakTapped = onBreakTapped
-    self.onEndPauseTapped = onEndPauseTapped
     self.onManageTapped = onManageTapped
     self.onEmergencyTapped = onEmergencyTapped
   }
@@ -152,9 +149,6 @@ struct BlockedProfileCarousel: View {
                   },
                   onBreakTapped: {
                     onBreakTapped(profiles[index])
-                  },
-                  onEndPauseTapped: {
-                    onEndPauseTapped(profiles[index])
                   }
                 )
                 .frame(width: cardWidth)
@@ -299,7 +293,6 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
-      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )
@@ -348,7 +341,6 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
-      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )
@@ -401,7 +393,6 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
-      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )
