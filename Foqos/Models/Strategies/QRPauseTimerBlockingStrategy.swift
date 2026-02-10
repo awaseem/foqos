@@ -6,7 +6,8 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "QRPauseTimerBlockingStrategy"
 
   var name: String = "QR + Pause Timer"
-  var description: String = "Block with pause timer. Stop requires QR scan to pause, scan again to fully stop."
+  var description: String =
+    "Block with pause timer. Stop requires QR scan to pause, scan again to fully stop."
   var iconType: String = "pause.circle.fill"
   var color: Color = .indigo
 
@@ -60,7 +61,8 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
   ) -> (any View)? {
     let isPauseActive = session.isPauseActive
     let heading = isPauseActive ? "Scan to stop" : "Scan to pause"
-    let subtitle = isPauseActive
+    let subtitle =
+      isPauseActive
       ? "Point your camera at a QR code to fully stop this profile."
       : "Point your camera at a QR code to temporarily pause this profile."
 
@@ -92,7 +94,8 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
         } else {
           // No pause active - initiate pause mode
           DeviceActivityCenterUtil.startPauseTimerActivity(for: session.blockedProfile)
-          // Don't call onSessionCreation since session is still active
+
+          self.onSessionCreation?(.paused)
         }
 
       case .failure(let error):

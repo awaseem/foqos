@@ -177,7 +177,7 @@ class StrategyManager: ObservableObject {
         return
       }
 
-      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
 
       if let localActiveSession = getActiveSession(context: context) {
         if localActiveSession.blockedProfile.disableBackgroundStops {
@@ -258,14 +258,15 @@ class StrategyManager: ObservableObject {
           try context.save()
         }
 
-        let shortcutTimerStrategy = getStrategy(id: ShortcutTimerBlockingStrategy.id)
+        let shortcutTimerStrategy = getStrategy(
+          id: ShortcutTimerBlockingStrategy.id, context: context)
         _ = shortcutTimerStrategy.startBlocking(
           context: context,
           profile: profile,
           forceStart: true
         )
       } else {
-        let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+        let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
         _ = manualStrategy.startBlocking(
           context: context,
           profile: profile,
@@ -293,7 +294,7 @@ class StrategyManager: ObservableObject {
         return
       }
 
-      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+      let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
 
       guard let localActiveSession = getActiveSession(context: context) else {
         print(
@@ -345,7 +346,7 @@ class StrategyManager: ObservableObject {
     }
 
     // Stop the active session using the manual strategy, by passes any other strategy in view
-    let manualStrategy = getStrategy(id: ManualBlockingStrategy.id)
+    let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
     _ = manualStrategy.stopBlocking(
       context: context,
       session: activeSession
@@ -424,53 +425,17 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  func getStrategy(id: String) -> BlockingStrategy {
+  private func getStrategy(id: String, context: ModelContext) -> BlockingStrategy {
     var strategy = StrategyManager.getStrategyFromId(id: id)
 
     strategy.onSessionCreation = { session in
       switch session {
       case .paused:
-        self.dismissView()
+        self.handlePauseStarted(context: context)
       case .started(let session):
-        self.dismissView()
-
-        // Remove any timers and notifications that were scheduled
-        self.timersUtil.cancelAll()
-        // Update the snapshot of the profile in case some settings were changed
-        BlockedProfiles.updateSnapshot(for: session.blockedProfile)
-
-        self.errorMessage = nil
-
-        self.activeSession = session
-        self.startTimer()
-        self.liveActivityManager
-          .startSessionActivity(session: session)
-
-        // Refresh widgets when session starts
-        WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+        self.handleSessionStarted(session: session)
       case .ended(let endedProfile):
-        self.dismissView()
-
-        // Remove any timers and notifications that were scheduled
-        self.timersUtil.cancelAll()
-        self.activeSession = nil
-        self.liveActivityManager.endSessionActivity()
-        self.scheduleReminder(profile: endedProfile)
-
-        self.stopTimer()
-        self.elapsedTime = 0
-
-        // Refresh widgets when session ends
-        WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
-
-        // Remove all break timer activities
-        DeviceActivityCenterUtil.removeAllBreakTimerActivities()
-
-        // Remove all strategy timer activities
-        DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
-
-        // Remove all pause timer activities
-        DeviceActivityCenterUtil.removeAllPauseTimerActivities()
+        self.handleSessionEnded(profile: endedProfile)
       }
     }
 
@@ -537,6 +502,63 @@ class StrategyManager: ObservableObject {
     liveActivityManager.updateBreakState(session: session)
   }
 
+  private func handlePauseStarted(context: ModelContext) {
+    self.dismissView()
+
+    // load the active session since the pause start time was set in a different thread
+    loadActiveSession(context: context)
+
+    // Refresh widgets when session ends
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // TODO handle widget
+    // TODO handle live activity
+  }
+
+  private func handleSessionStarted(session: BlockedProfileSession) {
+    self.dismissView()
+
+    // Remove any timers and notifications that were scheduled
+    self.timersUtil.cancelAll()
+    // Update the snapshot of the profile in case some settings were changed
+    BlockedProfiles.updateSnapshot(for: session.blockedProfile)
+
+    self.errorMessage = nil
+
+    self.activeSession = session
+    self.startTimer()
+    self.liveActivityManager
+      .startSessionActivity(session: session)
+
+    // Refresh widgets when session starts
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+  }
+
+  private func handleSessionEnded(profile: BlockedProfiles) {
+    self.dismissView()
+
+    // Remove any timers and notifications that were scheduled
+    self.timersUtil.cancelAll()
+    self.activeSession = nil
+    self.liveActivityManager.endSessionActivity()
+    self.scheduleReminder(profile: profile)
+
+    self.stopTimer()
+    self.elapsedTime = 0
+
+    // Refresh widgets when session ends
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Remove all break timer activities
+    DeviceActivityCenterUtil.removeAllBreakTimerActivities()
+
+    // Remove all strategy timer activities
+    DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
+
+    // Remove all pause timer activities
+    DeviceActivityCenterUtil.removeAllPauseTimerActivities()
+  }
+
   private func dismissView() {
     showCustomStrategyView = false
     customStrategyView = nil
@@ -591,7 +613,7 @@ class StrategyManager: ObservableObject {
     }
 
     if let strategyId = definedProfile.blockingStrategyId {
-      let strategy = getStrategy(id: strategyId)
+      let strategy = getStrategy(id: strategyId, context: context)
       let view = strategy.startBlocking(
         context: context,
         profile: definedProfile,
@@ -614,7 +636,7 @@ class StrategyManager: ObservableObject {
     }
 
     if let strategyId = session.blockedProfile.blockingStrategyId {
-      let strategy = getStrategy(id: strategyId)
+      let strategy = getStrategy(id: strategyId, context: context)
       let view = strategy.stopBlocking(context: context, session: session)
 
       if let customView = view {
