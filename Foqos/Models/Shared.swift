@@ -172,6 +172,11 @@ enum SharedData {
     activeSharedSession?.endTime = date
   }
 
+  static func resetPause() {
+    activeSharedSession?.pauseStartTime = nil
+    activeSharedSession?.pauseEndTime = nil
+  }
+
   static func setPauseStartTime(date: Date) {
     activeSharedSession?.pauseStartTime = date
   }
