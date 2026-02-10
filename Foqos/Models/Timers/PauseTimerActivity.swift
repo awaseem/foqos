@@ -37,6 +37,8 @@ class PauseTimerActivity: TimerActivity {
 
     // Track pause start time
     let now = Date()
+
+    SharedData.resetPause()
     SharedData.setPauseStartTime(date: now)
 
     log.info("Started pause for profile \(profileId)")

@@ -26,17 +26,21 @@ class PauseTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    return TimerDurationView(
+    return PauseDurationView(
       profileName: profile.name,
-      onDurationSelected: { duration in
+      onDurationSelected: { pauseDurationMinutes in
+        // Save the pause duration to the profile
         let pauseTimerData = StrategyPauseTimerData(
-          pauseDurationInMinutes: duration.durationInMinutes)
+          pauseDurationInMinutes: pauseDurationMinutes)
         if let data = StrategyPauseTimerData.toData(from: pauseTimerData) {
           profile.strategyData = data
           profile.updatedAt = Date()
           BlockedProfiles.updateSnapshot(for: profile)
           try? context.save()
         }
+
+        // Immediately start blocking (like QRManualBlockingStrategy)
+        self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
         let activeSession = BlockedProfileSession.createSession(
           in: context,
