@@ -6,6 +6,7 @@ struct BlockedProfileCarousel: View {
   let isBlocking: Bool
   let isBreakAvailable: Bool
   let isBreakActive: Bool
+  let isPauseActive: Bool
   let activeSessionProfileId: UUID?
   let elapsedTime: TimeInterval
   let startingProfileId: UUID?
@@ -15,6 +16,7 @@ struct BlockedProfileCarousel: View {
   var onEditTapped: (BlockedProfiles) -> Void
   var onStatsTapped: (BlockedProfiles) -> Void
   var onBreakTapped: (BlockedProfiles) -> Void
+  var onEndPauseTapped: (BlockedProfiles) -> Void
   var onManageTapped: () -> Void
   var onEmergencyTapped: () -> Void
 
@@ -50,6 +52,7 @@ struct BlockedProfileCarousel: View {
     isBlocking: Bool,
     isBreakAvailable: Bool,
     isBreakActive: Bool,
+    isPauseActive: Bool,
     activeSessionProfileId: UUID?,
     elapsedTime: TimeInterval,
     startingProfileId: UUID? = nil,
@@ -58,6 +61,7 @@ struct BlockedProfileCarousel: View {
     onEditTapped: @escaping (BlockedProfiles) -> Void,
     onStatsTapped: @escaping (BlockedProfiles) -> Void,
     onBreakTapped: @escaping (BlockedProfiles) -> Void,
+    onEndPauseTapped: @escaping (BlockedProfiles) -> Void,
     onManageTapped: @escaping () -> Void,
     onEmergencyTapped: @escaping () -> Void
   ) {
@@ -65,6 +69,7 @@ struct BlockedProfileCarousel: View {
     self.isBlocking = isBlocking
     self.isBreakAvailable = isBreakAvailable
     self.isBreakActive = isBreakActive
+    self.isPauseActive = isPauseActive
     self.activeSessionProfileId = activeSessionProfileId
     self.elapsedTime = elapsedTime
     self.startingProfileId = startingProfileId
@@ -73,6 +78,7 @@ struct BlockedProfileCarousel: View {
     self.onEditTapped = onEditTapped
     self.onStatsTapped = onStatsTapped
     self.onBreakTapped = onBreakTapped
+    self.onEndPauseTapped = onEndPauseTapped
     self.onManageTapped = onManageTapped
     self.onEmergencyTapped = onEmergencyTapped
   }
@@ -130,6 +136,7 @@ struct BlockedProfileCarousel: View {
                     == activeSessionProfileId,
                   isBreakAvailable: isBreakAvailable,
                   isBreakActive: isBreakActive,
+                  isPauseActive: isPauseActive,
                   elapsedTime: elapsedTime,
                   onStartTapped: {
                     onStartTapped(profiles[index])
@@ -145,6 +152,9 @@ struct BlockedProfileCarousel: View {
                   },
                   onBreakTapped: {
                     onBreakTapped(profiles[index])
+                  },
+                  onEndPauseTapped: {
+                    onEndPauseTapped(profiles[index])
                   }
                 )
                 .frame(width: cardWidth)
@@ -281,6 +291,7 @@ struct BlockedProfileCarousel: View {
       isBlocking: true,
       isBreakAvailable: true,
       isBreakActive: false,
+      isPauseActive: false,
       activeSessionProfileId: activeId,
       elapsedTime: 1234,
       onStartTapped: { _ in },
@@ -288,6 +299,7 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
+      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )
@@ -328,6 +340,7 @@ struct BlockedProfileCarousel: View {
       isBlocking: false,
       isBreakAvailable: false,
       isBreakActive: false,
+      isPauseActive: false,
       activeSessionProfileId: nil,
       elapsedTime: 1234,
       onStartTapped: { _ in },
@@ -335,6 +348,7 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
+      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )
@@ -378,6 +392,7 @@ struct BlockedProfileCarousel: View {
       isBlocking: false,
       isBreakAvailable: false,
       isBreakActive: false,
+      isPauseActive: false,
       activeSessionProfileId: nil,
       elapsedTime: 1234,
       startingProfileId: gamingProfileId,
@@ -386,6 +401,7 @@ struct BlockedProfileCarousel: View {
       onEditTapped: { _ in },
       onStatsTapped: { _ in },
       onBreakTapped: { _ in },
+      onEndPauseTapped: { _ in },
       onManageTapped: {},
       onEmergencyTapped: {}
     )

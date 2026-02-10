@@ -132,6 +132,7 @@
 				Models/Schedule.swift,
 				Models/Shared.swift,
 				Models/Timers/BreakTimerActivity.swift,
+				Models/Timers/PauseTimerActivity.swift,
 				Models/Timers/ScheduleTimerActivity.swift,
 				Models/Timers/StrategyTimerActivity.swift,
 				Models/Timers/TimerActivity.swift,

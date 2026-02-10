@@ -81,6 +81,10 @@ struct HomeView: View {
     return strategyManager.isBreakActive
   }
 
+  var isPauseActive: Bool {
+    return strategyManager.isPauseActive
+  }
+
   var body: some View {
     ScrollView(showsIndicators: false) {
       VStack(alignment: .leading, spacing: 30) {
@@ -129,6 +133,7 @@ struct HomeView: View {
             isBlocking: isBlocking,
             isBreakAvailable: isBreakAvailable,
             isBreakActive: isBreakActive,
+            isPauseActive: isPauseActive,
             activeSessionProfileId: activeSessionProfileId,
             elapsedTime: strategyManager.elapsedTime,
             startingProfileId: navigateToProfileId,
@@ -146,6 +151,9 @@ struct HomeView: View {
             },
             onBreakTapped: { _ in
               strategyManager.toggleBreak(context: context)
+            },
+            onEndPauseTapped: { _ in
+              strategyManager.endPause(context: context)
             },
             onManageTapped: {
               isProfileListPresent = true
