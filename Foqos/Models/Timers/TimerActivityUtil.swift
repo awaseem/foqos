@@ -49,6 +49,8 @@ class TimerActivityUtil {
       return BreakTimerActivity()
     case StrategyTimerActivity.id:
       return StrategyTimerActivity()
+    case PauseTimerActivity.id:
+      return PauseTimerActivity()
     default:
       return nil
     }

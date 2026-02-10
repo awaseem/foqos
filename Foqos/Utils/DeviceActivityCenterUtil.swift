@@ -124,6 +124,61 @@ class DeviceActivityCenterUtil {
     stopActivities(for: strategyTimerActivities, with: center)
   }
 
+  static func startPauseTimerActivity(for profile: BlockedProfiles) {
+    guard let strategyData = profile.strategyData else {
+      print("No strategy data found for pause timer")
+      return
+    }
+    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
+
+    let center = DeviceActivityCenter()
+    let pauseTimerActivity = PauseTimerActivity()
+    let deviceActivityName = pauseTimerActivity.getDeviceActivityName(
+      from: profile.id.uuidString)
+
+    let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
+      from: pauseData.pauseDurationInMinutes)
+
+    let deviceActivitySchedule = DeviceActivitySchedule(
+      intervalStart: intervalStart,
+      intervalEnd: intervalEnd,
+      repeats: false,
+    )
+
+    do {
+      stopActivities(for: [deviceActivityName], with: center)
+      try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
+      print("Scheduled pause timer activity from \(intervalStart) to \(intervalEnd)")
+    } catch {
+      print("Failed to start pause timer activity: \(error.localizedDescription)")
+    }
+  }
+
+  static func removePauseTimerActivity(for profile: BlockedProfiles) {
+    let pauseTimerActivity = PauseTimerActivity()
+    let deviceActivityName = pauseTimerActivity.getDeviceActivityName(
+      from: profile.id.uuidString)
+    stopActivities(for: [deviceActivityName])
+  }
+
+  static func removeAllPauseTimerActivities() {
+    let center = DeviceActivityCenter()
+    let activities = center.activities
+    let pauseTimerActivity = PauseTimerActivity()
+    let pauseTimerActivities = pauseTimerActivity.getAllPauseTimerActivities(from: activities)
+    stopActivities(for: pauseTimerActivities, with: center)
+  }
+
+  static func getActivePauseTimerActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
+    let center = DeviceActivityCenter()
+    let pauseTimerActivity = PauseTimerActivity()
+    let activities = center.activities
+
+    return activities.first(where: {
+      $0 == pauseTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
+    })
+  }
+
   static func getActiveScheduleTimerActivity(for profile: BlockedProfiles) -> DeviceActivityName? {
     let center = DeviceActivityCenter()
     let scheduleTimerActivity = ScheduleTimerActivity()

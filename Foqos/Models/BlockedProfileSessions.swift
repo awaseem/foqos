@@ -14,6 +14,9 @@ class BlockedProfileSession {
   var breakStartTime: Date?
   var breakEndTime: Date?
 
+  var pauseStartTime: Date?
+  var pauseEndTime: Date?
+
   var forceStarted: Bool = false
 
   var isActive: Bool {
@@ -29,6 +32,10 @@ class BlockedProfileSession {
     return blockedProfile.enableBreaks == true
       && breakStartTime != nil
       && breakEndTime == nil
+  }
+
+  var isPauseActive: Bool {
+    return pauseStartTime != nil && pauseEndTime == nil
   }
 
   var duration: TimeInterval {
@@ -65,6 +72,20 @@ class BlockedProfileSession {
     self.breakEndTime = breakEndTime
   }
 
+  func startPause() {
+    let pauseStartTime = Date()
+
+    SharedData.setPauseStartTime(date: pauseStartTime)
+    self.pauseStartTime = pauseStartTime
+  }
+
+  func endPause() {
+    let pauseEndTime = Date()
+
+    SharedData.setPauseEndTime(date: pauseEndTime)
+    self.pauseEndTime = pauseEndTime
+  }
+
   func endSession() {
     let endTime = Date()
 
@@ -84,6 +105,8 @@ class BlockedProfileSession {
       endTime: endTime,
       breakStartTime: breakStartTime,
       breakEndTime: breakEndTime,
+      pauseStartTime: pauseStartTime,
+      pauseEndTime: pauseEndTime,
       forceStarted: forceStarted
     )
   }
@@ -137,6 +160,8 @@ class BlockedProfileSession {
       existingSession.endTime = snapshot.endTime
       existingSession.breakStartTime = snapshot.breakStartTime
       existingSession.breakEndTime = snapshot.breakEndTime
+      existingSession.pauseStartTime = snapshot.pauseStartTime
+      existingSession.pauseEndTime = snapshot.pauseEndTime
       existingSession.forceStarted = snapshot.forceStarted
 
       // manually save to ensure changes are persisted
@@ -156,6 +181,8 @@ class BlockedProfileSession {
     newSession.endTime = snapshot.endTime
     newSession.breakStartTime = snapshot.breakStartTime
     newSession.breakEndTime = snapshot.breakEndTime
+    newSession.pauseStartTime = snapshot.pauseStartTime
+    newSession.pauseEndTime = snapshot.pauseEndTime
 
     // Let auto-save handle inserts
     context.insert(newSession)

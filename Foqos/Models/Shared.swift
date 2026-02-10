@@ -55,6 +55,9 @@ enum SharedData {
     var breakStartTime: Date?
     var breakEndTime: Date?
 
+    var pauseStartTime: Date?
+    var pauseEndTime: Date?
+
     var forceStarted: Bool
   }
 
@@ -167,5 +170,13 @@ enum SharedData {
 
   static func setEndTime(date: Date) {
     activeSharedSession?.endTime = date
+  }
+
+  static func setPauseStartTime(date: Date) {
+    activeSharedSession?.pauseStartTime = date
+  }
+
+  static func setPauseEndTime(date: Date) {
+    activeSharedSession?.pauseEndTime = date
   }
 }

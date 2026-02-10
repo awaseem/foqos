@@ -14,6 +14,7 @@ class StrategyManager: ObservableObject {
     QRManualBlockingStrategy(),
     QRTimerBlockingStrategy(),
     ShortcutTimerBlockingStrategy(),
+    PauseTimerBlockingStrategy(),
   ]
 
   @Published var elapsedTime: TimeInterval = 0
@@ -46,6 +47,10 @@ class StrategyManager: ObservableObject {
 
   var isBreakAvailable: Bool {
     return activeSession?.isBreakAvailable ?? false
+  }
+
+  var isPauseActive: Bool {
+    return activeSession?.isPauseActive == true
   }
 
   func defaultReminderMessage(forProfile profile: BlockedProfiles?) -> String {
@@ -94,11 +99,51 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  func endPause(context: ModelContext) {
+    guard let session = activeSession else {
+      print("active session does not exist")
+      return
+    }
+
+    // End the pause
+    session.endPause()
+    try? context.save()
+
+    // Remove the pause timer activity
+    DeviceActivityCenterUtil.removePauseTimerActivity(for: session.blockedProfile)
+
+    // Reactivate restrictions
+    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
+
+    // Cancel any notifications that were scheduled
+    timersUtil.cancelAllNotifications()
+
+    // Refresh widgets when pause ends
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Load the active session to update state
+    loadActiveSession(context: context)
+  }
+
+  private func getPauseDurationInSeconds(for profile: BlockedProfiles) -> TimeInterval {
+    guard let strategyData = profile.strategyData else {
+      return TimeInterval(15 * 60)  // Default 15 minutes
+    }
+    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
+    return TimeInterval(pauseData.pauseDurationInMinutes * 60)
+  }
+
   func startTimer() {
     timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
       guard let session = self.activeSession else { return }
 
-      if session.isBreakActive {
+      if self.isPauseActive {
+        // Calculate pause time remaining (countdown)
+        guard let pauseStartTime = session.pauseStartTime else { return }
+        let timeSincePauseStart = Date().timeIntervalSince(pauseStartTime)
+        let pauseDurationInSeconds = self.getPauseDurationInSeconds(for: session.blockedProfile)
+        self.elapsedTime = max(0, pauseDurationInSeconds - timeSincePauseStart)
+      } else if session.isBreakActive {
         // Calculate break time remaining (countdown)
         guard let breakStartTime = session.breakStartTime else { return }
         let timeSinceBreakStart = Date().timeIntervalSince(breakStartTime)
@@ -442,6 +487,9 @@ class StrategyManager: ObservableObject {
 
         // Remove all strategy timer activities
         DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
+
+        // Remove all pause timer activities
+        DeviceActivityCenterUtil.removeAllPauseTimerActivities()
       }
     }
 

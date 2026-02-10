@@ -9,6 +9,7 @@ struct BlockedProfileCard: View {
   var isActive: Bool = false
   var isBreakAvailable: Bool = false
   var isBreakActive: Bool = false
+  var isPauseActive: Bool = false
 
   var elapsedTime: TimeInterval? = nil
 
@@ -17,6 +18,7 @@ struct BlockedProfileCard: View {
   var onEditTapped: () -> Void
   var onStatsTapped: () -> Void = {}
   var onBreakTapped: () -> Void
+  var onEndPauseTapped: () -> Void = {}
 
   // Keep a reference to the CardBackground to access color
   private var cardBackground: CardBackground {
@@ -126,11 +128,13 @@ struct BlockedProfileCard: View {
           isActive: isActive,
           isBreakAvailable: isBreakAvailable,
           isBreakActive: isBreakActive,
+          isPauseActive: isPauseActive,
           elapsedTime: elapsedTime,
           showStopButton: profile.showStopButton(elapsedTime: elapsedTime ?? 0),
           onStartTapped: onStartTapped,
           onStopTapped: onStopTapped,
-          onBreakTapped: onBreakTapped
+          onBreakTapped: onBreakTapped,
+          onEndPauseTapped: onEndPauseTapped
         )
       }
       .padding(16)

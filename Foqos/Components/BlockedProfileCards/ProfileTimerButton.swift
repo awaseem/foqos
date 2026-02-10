@@ -8,6 +8,8 @@ struct ProfileTimerButton: View {
   let isBreakAvailable: Bool
   let isBreakActive: Bool
 
+  let isPauseActive: Bool
+
   let elapsedTime: TimeInterval?
 
   let showStopButton: Bool
@@ -16,6 +18,8 @@ struct ProfileTimerButton: View {
   let onStopTapped: () -> Void
 
   let onBreakTapped: () -> Void
+
+  let onEndPauseTapped: () -> Void
 
   var breakMessage: String {
     return "Hold to" + (isBreakActive ? " Stop Break" : " Start Break")
@@ -77,7 +81,18 @@ struct ProfileTimerButton: View {
         }
       }
 
-      if isBreakAvailable {
+      if isPauseActive {
+        // During pause: show End Pause and Stop Completely buttons
+        GlassButton(
+          title: "End Pause",
+          icon: "play.fill",
+          fullWidth: true,
+          longPressEnabled: true,
+          color: .orange
+        ) {
+          onEndPauseTapped()
+        }
+      } else if isBreakAvailable {
         GlassButton(
           title: breakMessage,
           icon: "cup.and.heat.waves.fill",
@@ -106,22 +121,39 @@ struct ProfileTimerButton: View {
       isActive: false,
       isBreakAvailable: false,
       isBreakActive: false,
+      isPauseActive: false,
       elapsedTime: nil,
       showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
-      onBreakTapped: {}
+      onBreakTapped: {},
+      onEndPauseTapped: {}
     )
 
     ProfileTimerButton(
       isActive: true,
       isBreakAvailable: true,
       isBreakActive: false,
+      isPauseActive: false,
       elapsedTime: 3665,
       showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
-      onBreakTapped: {}
+      onBreakTapped: {},
+      onEndPauseTapped: {}
+    )
+
+    ProfileTimerButton(
+      isActive: true,
+      isBreakAvailable: false,
+      isBreakActive: false,
+      isPauseActive: true,
+      elapsedTime: 900,
+      showStopButton: true,
+      onStartTapped: {},
+      onStopTapped: {},
+      onBreakTapped: {},
+      onEndPauseTapped: {}
     )
   }
   .padding()
