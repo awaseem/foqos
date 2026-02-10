@@ -4,6 +4,7 @@ import SwiftUI
 enum SessionStatus {
   case started(BlockedProfileSession)
   case ended(BlockedProfiles)
+  case paused
 }
 
 protocol BlockingStrategy {

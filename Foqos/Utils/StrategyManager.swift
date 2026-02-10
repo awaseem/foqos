@@ -428,13 +428,14 @@ class StrategyManager: ObservableObject {
     var strategy = StrategyManager.getStrategyFromId(id: id)
 
     strategy.onSessionCreation = { session in
-      self.dismissView()
-
-      // Remove any timers and notifications that were scheduled
-      self.timersUtil.cancelAll()
-
       switch session {
+      case .paused:
+        self.dismissView()
       case .started(let session):
+        self.dismissView()
+
+        // Remove any timers and notifications that were scheduled
+        self.timersUtil.cancelAll()
         // Update the snapshot of the profile in case some settings were changed
         BlockedProfiles.updateSnapshot(for: session.blockedProfile)
 
@@ -448,6 +449,10 @@ class StrategyManager: ObservableObject {
         // Refresh widgets when session starts
         WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
       case .ended(let endedProfile):
+        self.dismissView()
+
+        // Remove any timers and notifications that were scheduled
+        self.timersUtil.cancelAll()
         self.activeSession = nil
         self.liveActivityManager.endSessionActivity()
         self.scheduleReminder(profile: endedProfile)

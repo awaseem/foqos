@@ -129,6 +129,7 @@ struct BlockedProfileCard: View {
           isPauseActive: isPauseActive,
           elapsedTime: elapsedTime,
           showStopButton: profile.showStopButton(elapsedTime: elapsedTime ?? 0),
+          strategyId: profile.blockingStrategyId,
           onStartTapped: onStartTapped,
           onStopTapped: onStopTapped,
           onBreakTapped: onBreakTapped

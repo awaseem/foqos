@@ -14,10 +14,16 @@ struct ProfileTimerButton: View {
 
   let showStopButton: Bool
 
+  let strategyId: String?
+
   let onStartTapped: () -> Void
   let onStopTapped: () -> Void
 
   let onBreakTapped: () -> Void
+
+  var stopButtonTitle: String {
+    return isPauseActive ? "End" : "Stop"
+  }
 
   var breakMessage: String {
     return "Hold to" + (isBreakActive ? " Stop Break" : " Start Break")
@@ -57,7 +63,7 @@ struct ProfileTimerButton: View {
           // Stop button (shown when showStopButton is true)
           if showStopButton {
             GlassButton(
-              title: "Stop",
+              title: stopButtonTitle,
               icon: "stop.fill",
               fullWidth: false,
               equalWidth: true
@@ -111,6 +117,7 @@ struct ProfileTimerButton: View {
       isPauseActive: false,
       elapsedTime: nil,
       showStopButton: true,
+      strategyId: nil,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
@@ -123,6 +130,7 @@ struct ProfileTimerButton: View {
       isPauseActive: false,
       elapsedTime: 3665,
       showStopButton: true,
+      strategyId: NFCBlockingStrategy.id,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
@@ -135,6 +143,7 @@ struct ProfileTimerButton: View {
       isPauseActive: true,
       elapsedTime: 900,
       showStopButton: true,
+      strategyId: NFCPauseTimerBlockingStrategy.id,
       onStartTapped: {},
       onStopTapped: {},
       onBreakTapped: {}
