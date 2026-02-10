@@ -30,6 +30,10 @@
 - **🌐 Website Blocking**: Block distracting websites in addition to apps
 - **🔄 Live Activities**: Real-time status on your Lock Screen
 
+## 🤖 Android Alternative
+
+Looking for similar functionality on Android? Check out **[Switchly](https://switchly.saltyy.at/#features)** — a physical blocker for Android that helps you stay focused by putting your distracting apps behind NFC tags.
+
 ## 📋 Requirements
 
 - iOS 17.6+
