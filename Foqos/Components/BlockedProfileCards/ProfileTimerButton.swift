@@ -19,8 +19,6 @@ struct ProfileTimerButton: View {
 
   let onBreakTapped: () -> Void
 
-  let onEndPauseTapped: () -> Void
-
   var breakMessage: String {
     return "Hold to" + (isBreakActive ? " Stop Break" : " Start Break")
   }
@@ -81,18 +79,7 @@ struct ProfileTimerButton: View {
         }
       }
 
-      if isPauseActive {
-        // During pause: show End Pause and Stop Completely buttons
-        GlassButton(
-          title: "End Pause",
-          icon: "play.fill",
-          fullWidth: true,
-          longPressEnabled: true,
-          color: .orange
-        ) {
-          onEndPauseTapped()
-        }
-      } else if isBreakAvailable {
+      if !isPauseActive && isBreakAvailable {
         GlassButton(
           title: breakMessage,
           icon: "cup.and.heat.waves.fill",
@@ -126,8 +113,7 @@ struct ProfileTimerButton: View {
       showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
-      onBreakTapped: {},
-      onEndPauseTapped: {}
+      onBreakTapped: {}
     )
 
     ProfileTimerButton(
@@ -139,8 +125,7 @@ struct ProfileTimerButton: View {
       showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
-      onBreakTapped: {},
-      onEndPauseTapped: {}
+      onBreakTapped: {}
     )
 
     ProfileTimerButton(
@@ -152,8 +137,7 @@ struct ProfileTimerButton: View {
       showStopButton: true,
       onStartTapped: {},
       onStopTapped: {},
-      onBreakTapped: {},
-      onEndPauseTapped: {}
+      onBreakTapped: {}
     )
   }
   .padding()

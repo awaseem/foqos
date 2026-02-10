@@ -152,9 +152,6 @@ struct HomeView: View {
             onBreakTapped: { _ in
               strategyManager.toggleBreak(context: context)
             },
-            onEndPauseTapped: { _ in
-              strategyManager.endPause(context: context)
-            },
             onManageTapped: {
               isProfileListPresent = true
             },

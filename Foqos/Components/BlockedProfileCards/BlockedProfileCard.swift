@@ -18,8 +18,6 @@ struct BlockedProfileCard: View {
   var onEditTapped: () -> Void
   var onStatsTapped: () -> Void = {}
   var onBreakTapped: () -> Void
-  var onEndPauseTapped: () -> Void = {}
-
   // Keep a reference to the CardBackground to access color
   private var cardBackground: CardBackground {
     CardBackground(isActive: isActive, customColor: themeManager.themeColor)
@@ -133,8 +131,7 @@ struct BlockedProfileCard: View {
           showStopButton: profile.showStopButton(elapsedTime: elapsedTime ?? 0),
           onStartTapped: onStartTapped,
           onStopTapped: onStopTapped,
-          onBreakTapped: onBreakTapped,
-          onEndPauseTapped: onEndPauseTapped
+          onBreakTapped: onBreakTapped
         )
       }
       .padding(16)

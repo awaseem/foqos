@@ -9,9 +9,11 @@ class StrategyManager: ObservableObject {
     ManualBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
+    NFCPauseTimerBlockingStrategy(),
     NFCTimerBlockingStrategy(),
     QRCodeBlockingStrategy(),
     QRManualBlockingStrategy(),
+    QRPauseTimerBlockingStrategy(),
     QRTimerBlockingStrategy(),
     ShortcutTimerBlockingStrategy(),
     PauseTimerBlockingStrategy(),
@@ -97,32 +99,6 @@ class StrategyManager: ObservableObject {
     } else {
       startBreak(context: context)
     }
-  }
-
-  func endPause(context: ModelContext) {
-    guard let session = activeSession else {
-      print("active session does not exist")
-      return
-    }
-
-    // End the pause
-    session.endPause()
-    try? context.save()
-
-    // Remove the pause timer activity
-    DeviceActivityCenterUtil.removePauseTimerActivity(for: session.blockedProfile)
-
-    // Reactivate restrictions
-    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
-
-    // Cancel any notifications that were scheduled
-    timersUtil.cancelAllNotifications()
-
-    // Refresh widgets when pause ends
-    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
-
-    // Load the active session to update state
-    loadActiveSession(context: context)
   }
 
   private func getPauseDurationInSeconds(for profile: BlockedProfiles) -> TimeInterval {
