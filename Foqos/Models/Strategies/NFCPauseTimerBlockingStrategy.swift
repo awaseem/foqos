@@ -5,7 +5,8 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCPauseTimerBlockingStrategy"
 
   var name: String = "NFC + Pause Timer"
-  var description: String = "Block with pause timer. Stop requires NFC scan to pause, scan again to fully stop."
+  var description: String =
+    "Block with pause timer. Stop requires NFC scan to pause, scan again to fully stop."
   var iconType: String = "pause.circle.fill"
   var color: Color = .orange
 
@@ -83,7 +84,8 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
       } else {
         // No pause active - initiate pause mode
         DeviceActivityCenterUtil.startPauseTimerActivity(for: session.blockedProfile)
-        // Don't call onSessionCreation since session is still active
+
+        self.onSessionCreation?(.paused)
       }
     }
 
