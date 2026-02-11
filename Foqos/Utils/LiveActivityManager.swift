@@ -85,7 +85,10 @@ class LiveActivityManager: ObservableObject {
       startTime: session.startTime,
       isBreakActive: session.isBreakActive,
       breakStartTime: session.breakStartTime,
-      breakEndTime: session.breakEndTime
+      breakEndTime: session.breakEndTime,
+      isPauseActive: session.isPauseActive,
+      pauseStartTime: session.pauseStartTime,
+      pauseEndTime: session.pauseEndTime
     )
 
     do {
@@ -114,7 +117,10 @@ class LiveActivityManager: ObservableObject {
       startTime: session.startTime,
       isBreakActive: session.isBreakActive,
       breakStartTime: session.breakStartTime,
-      breakEndTime: session.breakEndTime
+      breakEndTime: session.breakEndTime,
+      isPauseActive: session.isPauseActive,
+      pauseStartTime: session.pauseStartTime,
+      pauseEndTime: session.pauseEndTime
     )
 
     Task {
@@ -133,12 +139,37 @@ class LiveActivityManager: ObservableObject {
       startTime: session.startTime,
       isBreakActive: session.isBreakActive,
       breakStartTime: session.breakStartTime,
-      breakEndTime: session.breakEndTime
+      breakEndTime: session.breakEndTime,
+      isPauseActive: session.isPauseActive,
+      pauseStartTime: session.pauseStartTime,
+      pauseEndTime: session.pauseEndTime
     )
 
     Task {
       await activity.update(using: updatedState)
       print("Updated Live Activity break state: \(session.isBreakActive)")
+    }
+  }
+
+  func updatePauseState(session: BlockedProfileSession) {
+    guard let activity = currentActivity else {
+      print("No Live Activity to update for pause state")
+      return
+    }
+
+    let updatedState = FoqosWidgetAttributes.ContentState(
+      startTime: session.startTime,
+      isBreakActive: session.isBreakActive,
+      breakStartTime: session.breakStartTime,
+      breakEndTime: session.breakEndTime,
+      isPauseActive: session.isPauseActive,
+      pauseStartTime: session.pauseStartTime,
+      pauseEndTime: session.pauseEndTime
+    )
+
+    Task {
+      await activity.update(using: updatedState)
+      print("Updated Live Activity pause state: \(session.isPauseActive)")
     }
   }
 

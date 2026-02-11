@@ -32,6 +32,11 @@ struct ProfileWidgetEntry: TimelineEntry {
     return session.breakStartTime != nil && session.breakEndTime == nil
   }
 
+  var isPauseActive: Bool {
+    guard let session = activeSession else { return false }
+    return session.pauseStartTime != nil && session.pauseEndTime == nil
+  }
+
   var sessionStartTime: Date? {
     return activeSession?.startTime
   }

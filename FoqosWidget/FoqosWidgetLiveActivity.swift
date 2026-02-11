@@ -8,6 +8,9 @@ struct FoqosWidgetAttributes: ActivityAttributes {
     var isBreakActive: Bool = false
     var breakStartTime: Date?
     var breakEndTime: Date?
+    var isPauseActive: Bool = false
+    var pauseStartTime: Date?
+    var pauseEndTime: Date?
 
     func getTimeIntervalSinceNow() -> Double {
       // Calculate the break duration to subtract from elapsed time
@@ -66,9 +69,19 @@ struct FoqosWidgetLiveActivity: Widget {
 
         Spacer()
 
-        // Right side - Timer or break indicator
+        // Right side - Timer or break/pause indicator
         VStack(alignment: .trailing, spacing: 4) {
-          if context.state.isBreakActive {
+          if context.state.isPauseActive {
+            HStack(spacing: 6) {
+              Image(systemName: "pause.circle.fill")
+                .font(.title2)
+                .foregroundColor(.yellow)
+              Text("Paused")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.yellow)
+            }
+          } else if context.state.isBreakActive {
             HStack(spacing: 6) {
               Image(systemName: "cup.and.heat.waves.fill")
                 .font(.title2)
@@ -113,7 +126,17 @@ struct FoqosWidgetLiveActivity: Widget {
               .foregroundColor(.secondary)
               .multilineTextAlignment(.center)
 
-            if context.state.isBreakActive {
+            if context.state.isPauseActive {
+              VStack(spacing: 2) {
+                Image(systemName: "pause.circle.fill")
+                  .font(.title2)
+                  .foregroundColor(.yellow)
+                Text("Paused")
+                  .font(.subheadline)
+                  .fontWeight(.semibold)
+                  .foregroundColor(.yellow)
+              }
+            } else if context.state.isBreakActive {
               VStack(spacing: 2) {
                 Image(systemName: "cup.and.heat.waves.fill")
                   .font(.title2)
@@ -176,7 +199,10 @@ extension FoqosWidgetAttributes.ContentState {
         startTime: Date(timeInterval: 60, since: Date.now),
         isBreakActive: false,
         breakStartTime: nil,
-        breakEndTime: nil
+        breakEndTime: nil,
+        isPauseActive: false,
+        pauseStartTime: nil,
+        pauseEndTime: nil
       )
   }
 
@@ -185,7 +211,10 @@ extension FoqosWidgetAttributes.ContentState {
       startTime: Date(timeInterval: 60, since: Date.now),
       isBreakActive: false,
       breakStartTime: nil,
-      breakEndTime: nil
+      breakEndTime: nil,
+      isPauseActive: false,
+      pauseStartTime: nil,
+      pauseEndTime: nil
     )
   }
 
@@ -194,7 +223,22 @@ extension FoqosWidgetAttributes.ContentState {
       startTime: Date(timeInterval: 60, since: Date.now),
       isBreakActive: true,
       breakStartTime: Date.now,
-      breakEndTime: nil
+      breakEndTime: nil,
+      isPauseActive: false,
+      pauseStartTime: nil,
+      pauseEndTime: nil
+    )
+  }
+
+  fileprivate static var pauseActive: FoqosWidgetAttributes.ContentState {
+    FoqosWidgetAttributes.ContentState(
+      startTime: Date(timeInterval: 60, since: Date.now),
+      isBreakActive: false,
+      breakStartTime: nil,
+      breakEndTime: nil,
+      isPauseActive: true,
+      pauseStartTime: Date.now,
+      pauseEndTime: nil
     )
   }
 }
@@ -205,4 +249,5 @@ extension FoqosWidgetAttributes.ContentState {
   FoqosWidgetAttributes.ContentState.shortTime
   FoqosWidgetAttributes.ContentState.longTime
   FoqosWidgetAttributes.ContentState.breakActive
+  FoqosWidgetAttributes.ContentState.pauseActive
 }

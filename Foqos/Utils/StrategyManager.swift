@@ -508,11 +508,13 @@ class StrategyManager: ObservableObject {
     // load the active session since the pause start time was set in a different thread
     loadActiveSession(context: context)
 
-    // Refresh widgets when session ends
+    // Refresh widgets when pause starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
-    // TODO handle widget
-    // TODO handle live activity
+    // Update live activity to show pause state
+    if let session = activeSession {
+      liveActivityManager.updatePauseState(session: session)
+    }
   }
 
   private func handleSessionStarted(session: BlockedProfileSession) {
