@@ -172,6 +172,17 @@ class BlockedProfiles {
     }
 
     if let newStrategyId = blockingStrategyId {
+      let oldStrategyId = profile.blockingStrategyId
+      let timerStrategyIds = [QRTimerBlockingStrategy.id, NFCTimerBlockingStrategy.id]
+
+      // Check if switching FROM timer TO non-timer strategy
+      let wasTimer = oldStrategyId != nil && timerStrategyIds.contains(oldStrategyId!)
+      let isTimer = timerStrategyIds.contains(newStrategyId)
+
+      if wasTimer && !isTimer {
+        profile.strategyData = nil
+      }
+
       profile.blockingStrategyId = newStrategyId
     }
 
