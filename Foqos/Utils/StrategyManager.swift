@@ -16,7 +16,6 @@ class StrategyManager: ObservableObject {
     QRPauseTimerBlockingStrategy(),
     QRTimerBlockingStrategy(),
     ShortcutTimerBlockingStrategy(),
-    PauseTimerBlockingStrategy(),
   ]
 
   @Published var elapsedTime: TimeInterval = 0
@@ -78,6 +77,9 @@ class StrategyManager: ObservableObject {
       // Close live activity if no session is active and a scheduled session might have ended
       liveActivityManager.endSessionActivity()
     }
+
+    // Reload widget to reflect any changes from extension (e.g., timer expiration)
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
   func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
