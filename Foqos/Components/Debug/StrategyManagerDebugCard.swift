@@ -8,6 +8,7 @@ struct StrategyManagerDebugCard: View {
       // Blocking Status
       Group {
         DebugRow(label: "Is Blocking", value: "\(strategyManager.isBlocking)")
+        DebugRow(label: "Is Pause Active", value: "\(strategyManager.isPauseActive)")
         DebugRow(label: "Is Break Active", value: "\(strategyManager.isBreakActive)")
         DebugRow(label: "Is Break Available", value: "\(strategyManager.isBreakAvailable)")
       }
