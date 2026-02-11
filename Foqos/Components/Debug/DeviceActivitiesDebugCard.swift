@@ -45,7 +45,9 @@ struct DeviceActivitiesDebugCard: View {
   private func activityType(for activity: DeviceActivityName) -> String {
     let rawValue = activity.rawValue
 
-    if rawValue.hasPrefix(BreakTimerActivity.id) {
+    if rawValue.hasPrefix(PauseTimerActivity.id) {
+      return "Pause Timer"
+    } else if rawValue.hasPrefix(BreakTimerActivity.id) {
       return "Break Timer"
     } else if rawValue.hasPrefix(ScheduleTimerActivity.id) {
       return "Schedule Timer"
@@ -63,6 +65,11 @@ struct DeviceActivitiesDebugCard: View {
   private func isActivityForProfile(_ activity: DeviceActivityName, profileId: UUID) -> Bool {
     let rawValue = activity.rawValue
     let profileIdString = profileId.uuidString
+
+    // Check if it's a pause timer activity for this profile
+    if rawValue.hasPrefix(PauseTimerActivity.id) {
+      return rawValue.hasSuffix(profileIdString)
+    }
 
     // Check if it's a break timer activity for this profile
     if rawValue.hasPrefix(BreakTimerActivity.id) {
@@ -83,6 +90,8 @@ struct DeviceActivitiesDebugCard: View {
   DeviceActivitiesDebugCard(
     activities: [
       DeviceActivityName(rawValue: "550e8400-e29b-41d4-a716-446655440000"),
+      DeviceActivityName(
+        rawValue: "PauseScheduleActivity:550e8400-e29b-41d4-a716-446655440000"),
       DeviceActivityName(
         rawValue: "BreakScheduleActivity:550e8400-e29b-41d4-a716-446655440000"),
       DeviceActivityName(

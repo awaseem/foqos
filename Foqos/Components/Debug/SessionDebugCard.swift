@@ -25,6 +25,7 @@ struct SessionDebugCard: View {
         DebugRow(label: "Is Active", value: "\(session.isActive)")
         DebugRow(label: "Is Break Available", value: "\(session.isBreakAvailable)")
         DebugRow(label: "Is Break Active", value: "\(session.isBreakActive)")
+        DebugRow(label: "Is Pause Active", value: "\(session.isPauseActive)")
       }
 
       Divider()
@@ -38,6 +39,20 @@ struct SessionDebugCard: View {
         DebugRow(
           label: "Break End Time",
           value: session.breakEndTime.map { DateFormatters.formatDate($0) } ?? "nil"
+        )
+      }
+
+      Divider()
+
+      // Pause Times
+      Group {
+        DebugRow(
+          label: "Pause Start Time",
+          value: session.pauseStartTime.map { DateFormatters.formatDate($0) } ?? "nil"
+        )
+        DebugRow(
+          label: "Pause End Time",
+          value: session.pauseEndTime.map { DateFormatters.formatDate($0) } ?? "nil"
         )
       }
 
@@ -73,6 +88,20 @@ struct SessionDebugCard: View {
     forceStarted: false
   )
   session.startBreak()
+
+  return SessionDebugCard(session: session)
+    .padding()
+    .modelContainer(for: [BlockedProfiles.self, BlockedProfileSession.self])
+}
+
+#Preview("Active Session with Pause") {
+  let profile = BlockedProfiles(name: "Work Focus")
+  let session = BlockedProfileSession(
+    tag: "manual-start",
+    blockedProfile: profile,
+    forceStarted: false
+  )
+  session.startPause()
 
   return SessionDebugCard(session: session)
     .padding()
