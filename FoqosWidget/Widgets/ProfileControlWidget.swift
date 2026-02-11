@@ -22,7 +22,7 @@ struct ProfileControlWidget: Widget {
           // Use the entry's background color or clear if inactive
           if entry.isSessionActive {
             if entry.isPauseActive {
-              Color.yellow
+              Color(red: 0.9, green: 0.7, blue: 0.0)
             } else if entry.isBreakActive {
               Color.orange
             } else {
