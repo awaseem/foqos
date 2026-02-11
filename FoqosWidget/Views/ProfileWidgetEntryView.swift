@@ -16,7 +16,7 @@ struct ProfileWidgetEntryView: View {
 
   // Computed property to determine if we should use white text
   private var shouldUseWhiteText: Bool {
-    return entry.isBreakActive || entry.isSessionActive
+    return entry.isBreakActive || entry.isPauseActive || entry.isSessionActive
   }
 
   // Computed property to determine if the widget should show as unavailable
@@ -98,6 +98,16 @@ struct ProfileWidgetEntryView: View {
                 .font(.body)
                 .foregroundColor(.white)
               Text("On a Break")
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            }
+          } else if entry.isPauseActive {
+            HStack(spacing: 4) {
+              Image(systemName: "pause.circle.fill")
+                .font(.body)
+                .foregroundColor(.white)
+              Text("Paused")
                 .font(.body)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
@@ -309,7 +319,53 @@ struct ProfileWidgetEntryView: View {
     focusMessage: "Take a well-deserved break",
     useProfileURL: true
   )
-  // Preview 4: No profile selected
+
+  // Preview 4: Active session with pause matching widget profile
+  let pauseProfileId = UUID()
+  ProfileWidgetEntry(
+    date: .now,
+    selectedProfileId: pauseProfileId.uuidString,
+    profileName: "Work Session",
+    activeSession: SharedData.SessionSnapshot(
+      id: "test-session-pause",
+      tag: "test-tag-pause",
+      blockedProfileId: pauseProfileId,  // Matches selectedProfileId
+      startTime: Date(timeIntervalSinceNow: -900),  // Started 15 minutes ago
+      endTime: nil,
+      breakStartTime: nil,
+      breakEndTime: nil,
+      pauseStartTime: Date(timeIntervalSinceNow: -120),  // Pause started 2 minutes ago
+      pauseEndTime: nil,
+      forceStarted: true
+    ),
+    profileSnapshot: SharedData.ProfileSnapshot(
+      id: pauseProfileId,
+      name: "Work Session",
+      selectedActivity: FamilyActivitySelection(),
+      createdAt: Date(),
+      updatedAt: Date(),
+      blockingStrategyId: nil,
+      order: 0,
+      enableLiveActivity: true,
+      reminderTimeInSeconds: nil,
+      customReminderMessage: nil,
+      enableBreaks: true,
+      enableStrictMode: true,
+      enableAllowMode: false,
+      enableAllowModeDomains: false,
+      enableSafariBlocking: true,
+      domains: ["facebook.com", "twitter.com"],
+      physicalUnblockNFCTagId: nil,
+      physicalUnblockQRCodeId: nil,
+      schedule: nil,
+      disableBackgroundStops: nil
+    ),
+    deepLinkURL: URL(string: "https://foqos.app/profile/\(pauseProfileId.uuidString)"),
+    focusMessage: "Session is paused",
+    useProfileURL: true
+  )
+
+  // Preview 5: No profile selected
   ProfileWidgetEntry(
     date: .now,
     selectedProfileId: nil,
@@ -321,7 +377,7 @@ struct ProfileWidgetEntryView: View {
     useProfileURL: false
   )
 
-  // Preview 5: Unavailable state - different profile active
+  // Preview 6: Unavailable state - different profile active
   let unavailableProfileId = UUID()
   let differentActiveProfileId = UUID()  // Different from unavailableProfileId
   ProfileWidgetEntry(
