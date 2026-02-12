@@ -5,9 +5,12 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCTimerBlockingStrategy"
 
   var name: String = "NFC + Timer"
-  var description: String = "Block for a certain amount of minutes, unblock by using any NFC tag"
+  var description: String = "Set a focus duration, then scan any NFC tag to stop early."
   var iconType: String = "alarm.waves.left.and.right"
   var color: Color = .mint
+
+  var usesNFC: Bool = true
+  var hasTimer: Bool = true
 
   var hidden: Bool = false
 

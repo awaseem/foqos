@@ -6,9 +6,12 @@ class QRManualBlockingStrategy: BlockingStrategy {
   static var id: String = "QRManualBlockingStrategy"
 
   var name: String = "QR + Manual"
-  var description: String = "Block manually, but unblock by using any QR/Barcode code"
+  var description: String = "Start in the app, then scan any QR code to stop."
   var iconType: String = "bolt.square"
   var color: Color = .pink
+
+  var usesQRCode: Bool = true
+  var startsManually: Bool = true
 
   var hidden: Bool = false
 

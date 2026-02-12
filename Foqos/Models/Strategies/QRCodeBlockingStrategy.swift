@@ -6,10 +6,12 @@ class QRCodeBlockingStrategy: BlockingStrategy {
   static var id: String = "QRCodeBlockingStrategy"
 
   var name: String = "QR Codes"
-  var description: String =
-    "Block and unblock profiles by scanning the same QR/Barcode code"
+  var description: String = "Start by scanning a QR code, then scan the same code to stop."
   var iconType: String = "qrcode.viewfinder"
   var color: Color = .pink
+
+  var usesQRCode: Bool = true
+  var requiresSameCodeToStop: Bool = true
 
   var hidden: Bool = false
 

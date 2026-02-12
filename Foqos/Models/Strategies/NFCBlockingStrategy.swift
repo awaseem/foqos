@@ -5,10 +5,12 @@ class NFCBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCBlockingStrategy"
 
   var name: String = "NFC Tags"
-  var description: String =
-    "Block and unblock profiles by using the exact same NFC tag"
+  var description: String = "Start by scanning an NFC tag, then scan the same tag to stop."
   var iconType: String = "wave.3.right.circle.fill"
   var color: Color = .yellow
+
+  var usesNFC: Bool = true
+  var requiresSameCodeToStop: Bool = true
 
   var hidden: Bool = false
 

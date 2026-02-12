@@ -5,9 +5,12 @@ class QRTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "QRTimerBlockingStrategy"
 
   var name: String = "QR + Timer"
-  var description: String = "Block for a certain amount of minutes, unblock by using any QR code"
+  var description: String = "Set a focus duration, then scan any QR code to stop early."
   var iconType: String = "bolt.badge.clock"
   var color: Color = .mint
+
+  var usesQRCode: Bool = true
+  var hasTimer: Bool = true
 
   var hidden: Bool = false
 

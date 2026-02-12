@@ -5,9 +5,12 @@ class NFCManualBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCManualBlockingStrategy"
 
   var name: String = "NFC + Manual"
-  var description: String = "Block manually, but unblock by using any NFC tag"
+  var description: String = "Start in the app, then scan any NFC tag to stop."
   var iconType: String = "badge.plus.radiowaves.forward"
   var color: Color = .yellow
+
+  var usesNFC: Bool = true
+  var startsManually: Bool = true
 
   var hidden: Bool = false
 
