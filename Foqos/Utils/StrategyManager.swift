@@ -9,12 +9,12 @@ class StrategyManager: ObservableObject {
     ManualBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
-    NFCPauseTimerBlockingStrategy(),
     NFCTimerBlockingStrategy(),
+    NFCPauseTimerBlockingStrategy(),
     QRCodeBlockingStrategy(),
     QRManualBlockingStrategy(),
-    QRPauseTimerBlockingStrategy(),
     QRTimerBlockingStrategy(),
+    QRPauseTimerBlockingStrategy(),
     ShortcutTimerBlockingStrategy(),
   ]
 

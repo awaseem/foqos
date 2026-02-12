@@ -8,7 +8,7 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
   var name: String = "QR + Pause Timer"
   var description: String =
     "Set a pause duration, scan once to pause, and scan again to fully stop."
-  var iconType: String = "pause.circle.fill"
+  var iconType: String = "pause.rectangle"
   var color: Color = .indigo
 
   var usesQRCode: Bool = true
