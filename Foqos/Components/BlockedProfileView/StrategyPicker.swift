@@ -94,10 +94,12 @@ struct StrategyPicker: View {
                   Text(filter.title)
                     .font(.caption)
                     .fontWeight(isSelected ? .semibold : .medium)
-                    .foregroundStyle(isSelected ? themeManager.themeColor : .secondary)
+                    .foregroundStyle(isSelected ? Color.white : .secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.secondary.opacity(0.16))
+                    .background(
+                      isSelected ? themeManager.themeColor : Color.secondary.opacity(0.16)
+                    )
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -128,6 +130,7 @@ struct StrategyPicker: View {
           Text("Available Strategies")
         }
       }
+      .listSectionSpacing(.compact)
       .navigationTitle("Blocking Strategy")
       .navigationBarTitleDisplayMode(.inline)
       .searchable(text: $searchText, prompt: "Search strategies")
