@@ -193,6 +193,29 @@ struct BlockedProfileView: View {
             .textContentType(.none)
         }
 
+        Section("Blocking Strategy") {
+          Button(action: { showingStrategyPicker = true }) {
+            HStack {
+              Text("Set Strategy")
+                .foregroundStyle(themeManager.themeColor)
+              Spacer()
+              Image(systemName: "chevron.right")
+                .foregroundStyle(.gray)
+            }
+          }
+          .disabled(isBlocking)
+
+          if let selectedStrategy {
+            StrategyRow(
+              strategy: selectedStrategy,
+              isSelected: false,
+              onTap: {},
+              accessoryStyle: .none
+            )
+            .allowsHitTesting(false)
+          }
+        }
+
         Section((enableAllowMode ? "Allowed" : "Blocked") + " Apps") {
           BlockedProfileAppSelector(
             selection: selectedActivity,
@@ -235,11 +258,21 @@ struct BlockedProfileView: View {
           )
         }
 
-        Section("Blocking Strategy") {
-          BlockedProfileStrategySelector(
-            selectedStrategy: selectedStrategy,
-            buttonAction: { showingStrategyPicker = true },
-            disabled: isBlocking
+        Section("Strict Unlocks") {
+          BlockedProfilePhysicalUnblockSelector(
+            nfcTagId: physicalUnblockNFCTagId,
+            qrCodeId: physicalUnblockQRCodeId,
+            disabled: isBlocking,
+            onSetNFC: {
+              physicalReader.readNFCTag(
+                onSuccess: { physicalUnblockNFCTagId = $0 },
+              )
+            },
+            onSetQRCode: {
+              showingPhysicalUnblockView = true
+            },
+            onUnsetNFC: { physicalUnblockNFCTagId = nil },
+            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
           )
         }
 
@@ -286,24 +319,6 @@ struct BlockedProfileView: View {
               "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from NFC tags or QR codes.",
             isOn: $disableBackgroundStops,
             isDisabled: isBlocking
-          )
-        }
-
-        Section("Strict Unlocks") {
-          BlockedProfilePhysicalUnblockSelector(
-            nfcTagId: physicalUnblockNFCTagId,
-            qrCodeId: physicalUnblockQRCodeId,
-            disabled: isBlocking,
-            onSetNFC: {
-              physicalReader.readNFCTag(
-                onSuccess: { physicalUnblockNFCTagId = $0 },
-              )
-            },
-            onSetQRCode: {
-              showingPhysicalUnblockView = true
-            },
-            onUnsetNFC: { physicalUnblockNFCTagId = nil },
-            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
           )
         }
 
