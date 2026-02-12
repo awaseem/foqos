@@ -3,9 +3,16 @@ import SwiftUI
 struct StrategyRow: View {
   @EnvironmentObject var themeManager: ThemeManager
 
+  enum AccessoryStyle {
+    case selection
+    case chevron
+    case none
+  }
+
   let strategy: BlockingStrategy
   let isSelected: Bool
   let onTap: () -> Void
+  var accessoryStyle: AccessoryStyle = .selection
 
   private func backgroundColor(for tag: BlockingStrategyTag) -> Color {
     if tag == .beta {
@@ -36,13 +43,20 @@ struct StrategyRow: View {
 
           Text(strategy.name)
             .font(.headline)
-            .foregroundStyle(isSelected ? themeManager.themeColor : .primary)
+            .foregroundStyle(
+              accessoryStyle == .selection && isSelected ? themeManager.themeColor : .primary)
 
           Spacer(minLength: 8)
 
-          Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-            .foregroundStyle(isSelected ? themeManager.themeColor : .secondary)
-            .font(.system(size: 20))
+          if accessoryStyle == .selection {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+              .foregroundStyle(isSelected ? themeManager.themeColor : .secondary)
+              .font(.system(size: 20))
+          } else if accessoryStyle == .chevron {
+            Image(systemName: "chevron.right")
+              .foregroundStyle(.secondary)
+              .font(.system(size: 14, weight: .semibold))
+          }
         }
 
         Text(strategy.description)
