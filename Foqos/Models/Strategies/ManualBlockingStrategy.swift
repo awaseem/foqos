@@ -5,10 +5,11 @@ class ManualBlockingStrategy: BlockingStrategy {
   static var id: String = "ManualBlockingStrategy"
 
   var name: String = "Manual"
-  var description: String =
-    "Block and unblock profiles manually through the app"
+  var description: String = "Start and stop sessions directly in the app."
   var iconType: String = "button.horizontal.top.press.fill"
   var color: Color = .blue
+
+  var startsManually: Bool = true
 
   var hidden: Bool = false
 

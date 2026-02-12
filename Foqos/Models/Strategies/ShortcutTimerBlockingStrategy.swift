@@ -5,9 +5,11 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "ShortcutTimerBlockingStrategy"
 
   var name: String = "Timer"
-  var description: String = "Block for a specified duration"
+  var description: String = "Runs from a Shortcut and ends automatically when the timer finishes."
   var iconType: String = "alarm.waves.left.and.right"
   var color: Color = .mint
+
+  var hasTimer: Bool = true
 
   var hidden: Bool = true
 
