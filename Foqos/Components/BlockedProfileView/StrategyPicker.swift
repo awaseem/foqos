@@ -83,33 +83,24 @@ struct StrategyPicker: View {
     NavigationStack {
       Form {
         Section {
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-              ForEach(StrategyFilter.allCases) { filter in
-                let isSelected = selectedFilter == filter
-
-                Button {
-                  selectedFilter = filter
-                } label: {
-                  Text(filter.title)
-                    .font(.caption)
-                    .fontWeight(isSelected ? .semibold : .medium)
-                    .foregroundStyle(isSelected ? Color.white : .secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(
-                      isSelected ? themeManager.themeColor : Color.secondary.opacity(0.16)
-                    )
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-              }
+          VStack(alignment: .leading, spacing: 12) {
+            HStack {
+              Spacer()
+              Image(systemName: "shield.fill")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+              Spacer()
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 12)
+
+            Text(
+              "Blocking strategies control how this profile activates and deactivates. Choose a method that works best for your workflow."
+            )
+            .font(.subheadline)
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.center)
           }
-          .listRowBackground(Color.clear)
-        } header: {
-          Text("Filters")
+          .padding(.horizontal, 8)
         }
 
         Section {
@@ -130,11 +121,29 @@ struct StrategyPicker: View {
           Text("Available Strategies")
         }
       }
-      .listSectionSpacing(.compact)
       .navigationTitle("Blocking Strategy")
       .navigationBarTitleDisplayMode(.inline)
       .searchable(text: $searchText, prompt: "Search strategies")
       .toolbar {
+          ToolbarItem(placement: .topBarLeading) {
+          Menu {
+            ForEach(StrategyFilter.allCases) { filter in
+              Button {
+                selectedFilter = filter
+              } label: {
+                Label(
+                  filter.title,
+                  systemImage: selectedFilter == filter ? "checkmark" : ""
+                )
+              }
+            }
+          } label: {
+            Image(systemName: "slider.horizontal.3")
+              .foregroundStyle(selectedFilter == .all ? Color.primary : themeManager.themeColor)
+          }
+          .accessibilityLabel("Filter")
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
           Button(action: { isPresented = false }) {
             Image(systemName: "checkmark")
