@@ -3,7 +3,7 @@ name: Bump Build Number
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   bump-build:
