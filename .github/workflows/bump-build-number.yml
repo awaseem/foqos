@@ -20,13 +20,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Get current build number
-        id: get_build
-        run: |
-          CURRENT_BUILD=$(xcrun agvtool what-version -terse foqos.xcodeproj)
-          echo "current_build=$CURRENT_BUILD" >> $GITHUB_OUTPUT
-          echo "Current build number: $CURRENT_BUILD"
-      
       - name: Bump build number for main app only
         run: |
           cd foqos.xcodeproj
