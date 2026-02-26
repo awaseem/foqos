@@ -11,7 +11,8 @@ jobs:
     permissions:
       contents: write
     # Skip if the commit was made by GitHub Actions to avoid infinite loops
-    if: github.actor != 'github-actions[bot]'
+    # Also skip if it's a version reset commit (contains "Set version" in message)
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Set version')
     
     steps:
       - name: Checkout repository

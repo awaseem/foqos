@@ -1,0 +1,119 @@
+name: Bump Version Number
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+'
+
+jobs:
+  bump-version:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    # Skip if the commit was made by GitHub Actions to avoid infinite loops
+    if: github.actor != 'github-actions[bot]'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract version from tag
+        id: extract_version
+        run: |
+          # Get tag name and remove 'v' prefix
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION from tag: $TAG"
+      
+      - name: Update version and reset build number
+        run: |
+          cd foqos.xcodeproj
+          
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          
+          # Update MARKETING_VERSION in main app's Debug (801B20BB2CB363A20073E9E2) and Release (801B20BC2CB363A20073E9E2) configs
+          # Reset CURRENT_PROJECT_VERSION to 1
+          awk -v version="$VERSION" '
+          /801B20BB2CB363A20073E9E2 \/\* Debug \*\/ = \{/ { in_debug=1 }
+          /801B20BC2CB363A20073E9E2 \/\* Release \*\/ = \{/ { in_release=1 }
+          in_debug && /MARKETING_VERSION = [0-9.]+;/ {
+            sub(/MARKETING_VERSION = [0-9.]+;/, "MARKETING_VERSION = " version ";")
+          }
+          in_release && /MARKETING_VERSION = [0-9.]+;/ {
+            sub(/MARKETING_VERSION = [0-9.]+;/, "MARKETING_VERSION = " version ";")
+          }
+          in_debug && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
+            sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = 1;")
+            in_debug=0
+          }
+          in_release && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
+            sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = 1;")
+            in_release=0
+          }
+          { print }
+          ' project.pbxproj > project.pbxproj.tmp && mv project.pbxproj.tmp project.pbxproj
+          
+          echo "Updated MARKETING_VERSION to $VERSION and reset CURRENT_PROJECT_VERSION to 1"
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # No previous tag, get all commits
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges)
+          else
+            # Get commits since previous tag
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges $PREVIOUS_TAG..HEAD)
+          fi
+          
+          # Save release notes to file
+          echo "## What's New" > release_notes.md
+          echo "" >> release_notes.md
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Version:** ${{ steps.extract_version.outputs.version }}" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Build:** 1" >> release_notes.md
+          
+          cat release_notes.md
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add foqos.xcodeproj/project.pbxproj
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "Set version to ${{ steps.extract_version.outputs.version }}, reset build number to 1"
+          
+          # Push to the branch that the tag points to
+          # Get the branch name from the tag
+          BRANCH=$(git branch -r --contains ${{ steps.extract_version.outputs.tag }} | grep -E 'origin/(main|master)' | head -1 | sed 's/origin\///')
+          
+          if [ -n "$BRANCH" ]; then
+            git push origin HEAD:$BRANCH
+          else
+            # If no main/master branch found, push to main as default
+            git push origin HEAD:main
+          fi
+      
+      - name: Upload release notes artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ steps.extract_version.outputs.version }}
+          path: release_notes.md
+          retention-days: 30
