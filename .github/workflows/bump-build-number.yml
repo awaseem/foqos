@@ -1,0 +1,79 @@
+name: Bump Build Number
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  bump-build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    # Skip if the commit was made by GitHub Actions to avoid infinite loops
+    if: github.actor != 'github-actions[bot]'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Get current build number
+        id: get_build
+        run: |
+          CURRENT_BUILD=$(xcrun agvtool what-version -terse foqos.xcodeproj)
+          echo "current_build=$CURRENT_BUILD" >> $GITHUB_OUTPUT
+          echo "Current build number: $CURRENT_BUILD"
+      
+      - name: Bump build number for main app only
+        run: |
+          cd foqos.xcodeproj
+          
+          # Get the main app's current build number
+          # The main app has configurations:
+          # - Debug: 801B20BB2CB363A20073E9E2
+          # - Release: 801B20BC2CB363A20073E9E2
+          
+          # Extract current build number from Debug configuration
+          CURRENT_BUILD=$(grep -A 10 "801B20BB2CB363A20073E9E2 /\* Debug \*/ = {" project.pbxproj | grep "CURRENT_PROJECT_VERSION" | head -1 | sed 's/.*= \([0-9]*\);.*/\1/')
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          
+          # Update CURRENT_PROJECT_VERSION only in the main app's Debug and Release configurations
+          # Using awk with proper variable passing
+          awk -v new_build="$NEW_BUILD" '
+          /801B20BB2CB363A20073E9E2 \/\* Debug \*\/ = \{/ { in_debug=1 }
+          /801B20BC2CB363A20073E9E2 \/\* Release \*\/ = \{/ { in_release=1 }
+          in_debug && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
+            sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = " new_build ";")
+            in_debug=0
+          }
+          in_release && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
+            sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = " new_build ";")
+            in_release=0
+          }
+          { print }
+          ' project.pbxproj > project.pbxproj.tmp && mv project.pbxproj.tmp project.pbxproj
+          
+          echo "Bumped build number from $CURRENT_BUILD to $NEW_BUILD"
+          echo "new_build=$NEW_BUILD" >> $GITHUB_ENV
+      
+      - name: Get new build number
+        id: get_new_build
+        run: |
+          NEW_BUILD=${{ env.new_build }}
+          echo "new_build=$NEW_BUILD" >> $GITHUB_OUTPUT
+          echo "New build number: $NEW_BUILD"
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add foqos.xcodeproj/project.pbxproj
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Bump build number to ${{ steps.get_new_build.outputs.new_build }}"
+          git push
