@@ -64,12 +64,11 @@ jobs:
           }
           in_debug && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
             sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = 1;")
-            in_debug=0
           }
           in_release && /CURRENT_PROJECT_VERSION = [0-9]+;/ {
             sub(/CURRENT_PROJECT_VERSION = [0-9]+;/, "CURRENT_PROJECT_VERSION = 1;")
-            in_release=0
           }
+          /^\s*\};\s*$/ { in_debug=0; in_release=0 }
           { print }
           ' project.pbxproj > project.pbxproj.tmp && mv project.pbxproj.tmp project.pbxproj
           
