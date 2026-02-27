@@ -33,8 +33,8 @@ class BreakTimerActivity: TimerActivity {
       return
     }
 
-    // End restrictions for break
-    appBlocker.deactivateRestrictions()
+    // End restrictions for break, preserving strict mode if enabled
+    appBlocker.deactivateRestrictionsForBreak(for: profile)
 
     // End the active scheduled session
     let now = Date()

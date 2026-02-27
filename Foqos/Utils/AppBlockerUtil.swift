@@ -62,6 +62,21 @@ class AppBlockerUtil {
     store.clearAllSettings()
   }
 
+  func deactivateRestrictionsForBreak(for profile: SharedData.ProfileSnapshot) {
+    print("Stopping restrictions for break (strict mode: \(profile.enableStrictMode))...")
+
+    store.shield.applications = nil
+    store.shield.applicationCategories = nil
+    store.shield.webDomains = nil
+    store.shield.webDomainCategories = nil
+
+    store.webContent.blockedByFilter = nil
+
+    if !profile.enableStrictMode {
+      store.application.denyAppRemoval = false
+    }
+  }
+
   func getWebDomains(from profile: SharedData.ProfileSnapshot) -> Set<WebDomain> {
     if let domains = profile.domains {
       return Set(domains.map { WebDomain(domain: $0) })
