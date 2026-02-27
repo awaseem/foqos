@@ -32,8 +32,8 @@ class PauseTimerActivity: TimerActivity {
       return
     }
 
-    // End restrictions for pause
-    appBlocker.deactivateRestrictions()
+    // End restrictions for pause, preserving strict mode if enabled
+    appBlocker.deactivateRestrictionsForBreak(for: profile)
 
     // Track pause start time
     let now = Date()
