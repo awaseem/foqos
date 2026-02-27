@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Extract version from tag
+      - name: Extract version and checkout branch
         id: extract_version
         run: |
           # Get tag name and remove 'v' prefix
@@ -31,6 +31,19 @@ jobs:
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected version: $VERSION from tag: $TAG"
+          
+          # Get the branch name from the tag
+          BRANCH=$(git branch -r --contains $TAG | grep -E 'origin/(main|master)' | head -1 | sed 's/origin\///' | xargs)
+          
+          if [ -z "$BRANCH" ]; then
+            BRANCH="main"
+          fi
+          
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Target branch: $BRANCH"
+          
+          # Checkout the branch so we're not in detached HEAD state
+          git checkout $BRANCH
       
       - name: Update version and reset build number
         run: |
@@ -91,6 +104,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          
           git add foqos.xcodeproj/project.pbxproj
           
           if git diff --cached --quiet; then
@@ -100,16 +114,8 @@ jobs:
           
           git commit -m "Set version to ${{ steps.extract_version.outputs.version }}, reset build number to 1"
           
-          # Push to the branch that the tag points to
-          # Get the branch name from the tag
-          BRANCH=$(git branch -r --contains ${{ steps.extract_version.outputs.tag }} | grep -E 'origin/(main|master)' | head -1 | sed 's/origin\///')
-          
-          if [ -n "$BRANCH" ]; then
-            git push origin HEAD:$BRANCH
-          else
-            # If no main/master branch found, push to main as default
-            git push origin HEAD:main
-          fi
+          # Push to the branch
+          git push origin ${{ steps.extract_version.outputs.branch }}
       
       - name: Upload release notes artifact
         uses: actions/upload-artifact@v4
