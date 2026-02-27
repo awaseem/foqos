@@ -38,6 +38,7 @@ struct BlockedProfileView: View {
   @State private var enableAllowModeDomain: Bool = false
   @State private var enableSafariBlocking: Bool = true
   @State private var disableBackgroundStops: Bool = false
+  @State private var enableEmergencyUnblock: Bool = true
   @State private var domains: [String] = []
 
   @State private var physicalUnblockNFCTagId: String?
@@ -124,6 +125,9 @@ struct BlockedProfileView: View {
     )
     _disableBackgroundStops = State(
       initialValue: profile?.disableBackgroundStops ?? false
+    )
+    _enableEmergencyUnblock = State(
+      initialValue: profile?.enableEmergencyUnblock ?? true
     )
     _reminderTimeInMinutes = State(
       initialValue: Int(profile?.reminderTimeInSeconds ?? 900) / 60
@@ -318,6 +322,14 @@ struct BlockedProfileView: View {
             description:
               "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from NFC tags or QR codes.",
             isOn: $disableBackgroundStops,
+            isDisabled: isBlocking
+          )
+
+          CustomToggle(
+            title: "Allow Emergency Unblock",
+            description:
+              "Enable the emergency unblock feature for this profile. When disabled, you won't be able to use emergency unblocks during active sessions.",
+            isOn: $enableEmergencyUnblock,
             isDisabled: isBlocking
           )
         }
@@ -651,7 +663,8 @@ struct BlockedProfileView: View {
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,
           schedule: schedule,
-          disableBackgroundStops: disableBackgroundStops
+          disableBackgroundStops: disableBackgroundStops,
+          enableEmergencyUnblock: enableEmergencyUnblock
         )
 
         // Schedule restrictions
@@ -676,7 +689,8 @@ struct BlockedProfileView: View {
           physicalUnblockNFCTagId: physicalUnblockNFCTagId,
           physicalUnblockQRCodeId: physicalUnblockQRCodeId,
           schedule: schedule,
-          disableBackgroundStops: disableBackgroundStops
+          disableBackgroundStops: disableBackgroundStops,
+          enableEmergencyUnblock: enableEmergencyUnblock
         )
 
         // Schedule restrictions

@@ -33,6 +33,8 @@ class BlockedProfiles {
 
   var disableBackgroundStops: Bool = false
 
+  var enableEmergencyUnblock: Bool = true
+
   var customReminderMessage: String?
 
   @Relationship var sessions: [BlockedProfileSession] = []
@@ -68,7 +70,8 @@ class BlockedProfiles {
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
     schedule: BlockedProfileSchedule? = nil,
-    disableBackgroundStops: Bool = false
+    disableBackgroundStops: Bool = false,
+    enableEmergencyUnblock: Bool = true
   ) {
     self.id = id
     self.name = name
@@ -96,6 +99,7 @@ class BlockedProfiles {
     self.schedule = schedule
 
     self.disableBackgroundStops = disableBackgroundStops
+    self.enableEmergencyUnblock = enableEmergencyUnblock
   }
 
   func showStopButton(elapsedTime: TimeInterval) -> Bool {
@@ -161,7 +165,8 @@ class BlockedProfiles {
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
     schedule: BlockedProfileSchedule? = nil,
-    disableBackgroundStops: Bool? = nil
+    disableBackgroundStops: Bool? = nil,
+    enableEmergencyUnblock: Bool? = nil
   ) throws -> BlockedProfiles {
     if let newName = name {
       profile.name = newName
@@ -234,6 +239,10 @@ class BlockedProfiles {
       profile.disableBackgroundStops = newDisableBackgroundStops
     }
 
+    if let newEnableEmergencyUnblock = enableEmergencyUnblock {
+      profile.enableEmergencyUnblock = newEnableEmergencyUnblock
+    }
+
     // Values can be nil when removed
     profile.physicalUnblockNFCTagId = physicalUnblockNFCTagId
     profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
@@ -304,7 +313,8 @@ class BlockedProfiles {
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
       schedule: profile.schedule,
-      disableBackgroundStops: profile.disableBackgroundStops
+      disableBackgroundStops: profile.disableBackgroundStops,
+      enableEmergencyUnblock: profile.enableEmergencyUnblock
     )
   }
 
@@ -357,7 +367,8 @@ class BlockedProfiles {
     physicalUnblockNFCTagId: String? = nil,
     physicalUnblockQRCodeId: String? = nil,
     schedule: BlockedProfileSchedule? = nil,
-    disableBackgroundStops: Bool = false
+    disableBackgroundStops: Bool = false,
+    enableEmergencyUnblock: Bool = true
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 
@@ -379,7 +390,8 @@ class BlockedProfiles {
       domains: domains,
       physicalUnblockNFCTagId: physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: physicalUnblockQRCodeId,
-      disableBackgroundStops: disableBackgroundStops
+      disableBackgroundStops: disableBackgroundStops,
+      enableEmergencyUnblock: enableEmergencyUnblock
     )
 
     if let schedule = schedule {
@@ -418,7 +430,8 @@ class BlockedProfiles {
       domains: source.domains,
       physicalUnblockNFCTagId: source.physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: source.physicalUnblockQRCodeId,
-      schedule: source.schedule
+      schedule: source.schedule,
+      enableEmergencyUnblock: source.enableEmergencyUnblock
     )
 
     context.insert(cloned)
