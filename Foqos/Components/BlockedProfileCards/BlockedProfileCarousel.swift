@@ -34,16 +34,34 @@ struct BlockedProfileCarousel: View {
     return isBlocking ? "Active Profile" : "Profile"
   }
 
-  private var actionButtonText: String {
-    return isBlocking ? "Emergency" : "Manage"
+  private var activeProfile: BlockedProfiles? {
+    guard let activeId = activeSessionProfileId else { return nil }
+    return profiles.first(where: { $0.id == activeId })
   }
 
-  private var actionButtonIcon: String {
-    return isBlocking ? "exclamationmark.triangle.fill" : "person.crop.circle"
+  private var emergencyUnblockEnabled: Bool {
+    return activeProfile?.enableEmergencyUnblock ?? true
   }
 
-  private var actionButtonAction: () -> Void {
-    return isBlocking ? onEmergencyTapped : onManageTapped
+  private var actionButtonText: String? {
+    if isBlocking {
+      return emergencyUnblockEnabled ? "Emergency" : nil
+    }
+    return "Manage"
+  }
+
+  private var actionButtonIcon: String? {
+    if isBlocking {
+      return emergencyUnblockEnabled ? "exclamationmark.triangle.fill" : nil
+    }
+    return "person.crop.circle"
+  }
+
+  private var actionButtonAction: (() -> Void)? {
+    if isBlocking {
+      return emergencyUnblockEnabled ? onEmergencyTapped : nil
+    }
+    return onManageTapped
   }
 
   init(
@@ -111,9 +129,7 @@ struct BlockedProfileCarousel: View {
       SectionTitle(
         titleMessage,
         buttonText: actionButtonText,
-        buttonAction: {
-          actionButtonAction()
-        },
+        buttonAction: actionButtonAction,
         buttonIcon: actionButtonIcon
       )
       .padding(.horizontal, 16)
