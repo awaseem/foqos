@@ -12,6 +12,7 @@ struct SettingsView: View {
   @EnvironmentObject var strategyManager: StrategyManager
 
   @State private var showResetBlockingStateAlert = false
+  @State private var showDebugView = false
 
   private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -119,6 +120,21 @@ struct SettingsView: View {
             }
           }
         }
+
+        Section("Developer") {
+          Button {
+            showDebugView = true
+          } label: {
+            HStack {
+              Text("Debug Mode")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
+                .font(.caption)
+            }
+          }
+        }
       }
       .navigationTitle("Settings")
       .toolbar {
@@ -137,6 +153,9 @@ struct SettingsView: View {
       } message: {
         Text("This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active.")
       }
+      .sheet(isPresented: $showDebugView) {
+        DebugView()
+      }
     }
   }
 }
@@ -146,4 +165,5 @@ struct SettingsView: View {
     .environmentObject(ThemeManager.shared)
     .environmentObject(RequestAuthorizer())
     .environmentObject(StrategyManager.shared)
+    .modelContainer(for: BlockedProfiles.self, inMemory: true)
 }
