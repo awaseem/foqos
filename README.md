@@ -30,9 +30,12 @@
 - **🌐 Website Blocking**: Block distracting websites in addition to apps
 - **🔄 Live Activities**: Real-time status on your Lock Screen
 
-## 🤖 Android Alternative
+## 🤖 Android Alternatives
 
-Looking for similar functionality on Android? Check out **[Switchly](https://switchly.saltyy.at/#features)** — a physical blocker for Android that helps you stay focused by putting your distracting apps behind NFC tags.
+Looking for similar functionality on Android? Check out these open-source physical blockers:
+
+- **[Switchly](https://switchly.saltyy.at/#features)** — a physical blocker for Android that helps you stay focused by putting your distracting apps behind NFC tags.
+- **[TapBlok](https://github.com/cajdata/TapBlok)** — an open-source Android app that blocks distracting apps behind NFC tags or QR codes, built with Kotlin and Jetpack Compose.
 
 ## 📋 Requirements
 
