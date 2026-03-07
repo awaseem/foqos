@@ -6,12 +6,66 @@ import SwiftUI
 struct WeeklySessionChart: View {
   @StateObject private var viewModel: WeeklyProfileInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
+  @Environment(\.colorScheme) private var colorScheme
   @State private var selectedDay: WeeklyDayAggregate?
   @State private var selectedLabel: String?
   @State private var previousLabel: String?
 
   init(profile: BlockedProfiles) {
     _viewModel = StateObject(wrappedValue: WeeklyProfileInsightsUtil(profile: profile))
+  }
+
+  private var chartView: some View {
+    Chart {
+      ForEach(viewModel.weeklySummary.days) { day in
+        BarMark(
+          x: .value("Day", day.displayLabel),
+          y: .value("Duration", day.totalSessionTime)
+        )
+        .foregroundStyle(
+          selectedLabel == day.displayLabel
+            ? themeManager.themeColor.opacity(0.7)
+            : themeManager.themeColor
+        )
+        .cornerRadius(6)
+      }
+    }
+    .chartYAxis {
+      AxisMarks(position: .trailing) { value in
+        AxisValueLabel {
+          if let duration = value.as(TimeInterval.self) {
+            Text(viewModel.formattedDurationShort(duration))
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+          }
+        }
+      }
+    }
+    .chartXAxis {
+      AxisMarks { value in
+        AxisValueLabel {
+          if let label = value.as(String.self) {
+            Text(label)
+              .font(.caption)
+              .fontWeight(.medium)
+              .foregroundStyle(.secondary)
+          }
+        }
+      }
+    }
+    .chartPlotStyle { plotArea in
+      plotArea
+        .padding(.trailing, 10)
+    }
+  }
+
+  private func handleSelectionChange(oldValue: String?, newValue: String?) {
+    if let label = newValue {
+      selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
+    } else {
+      selectedDay = nil
+    }
+    previousLabel = newValue
   }
 
   var body: some View {
@@ -35,7 +89,7 @@ struct WeeklySessionChart: View {
               .foregroundStyle(.secondary)
           }
         } else {
-          Text("Avg Session")
+          Text("Avg Focus Session")
             .font(.title3)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
@@ -50,56 +104,19 @@ struct WeeklySessionChart: View {
       .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDay)
 
       // Bar Chart
-      Chart(viewModel.weeklySummary.days) { day in
-        BarMark(
-          x: .value("Day", day.displayLabel),
-          y: .value("Duration", day.totalSessionTime)
-        )
-        .foregroundStyle(
-          selectedLabel == day.displayLabel
-            ? themeManager.themeColor.opacity(0.7)
-            : themeManager.themeColor
-        )
-        .cornerRadius(6)
-      }
-      .chartYAxis(.hidden)
-      .chartXAxis {
-        AxisMarks { value in
-          AxisValueLabel {
-            if let label = value.as(String.self) {
-              Text(label)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-            }
-          }
+      chartView
+        .chartXSelection(value: $selectedLabel)
+        .onChange(of: selectedLabel) { oldValue, newValue in
+          handleSelectionChange(oldValue: oldValue, newValue: newValue)
         }
-      }
-      .chartXSelection(value: $selectedLabel)
-      .onChange(of: selectedLabel) { oldValue, newValue in
-        if let label = newValue {
-          selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
-          // Haptic feedback: impact on initial selection, selection feedback on change
-          if oldValue == nil {
-            // Initial selection - light impact
-          } else if oldValue != newValue {
-            // Changed to different bar - selection feedback
-          }
-        } else {
-          selectedDay = nil
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) { old, new in
+          old == nil && new != nil
         }
-        previousLabel = newValue
-      }
-      .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) { old, new in
-        // Trigger when transitioning from nil to a value (initial selection)
-        old == nil && new != nil
-      }
-      .sensoryFeedback(.selection, trigger: previousLabel) { old, new in
-        // Trigger when changing between different bars
-        guard let oldLabel = old, let newLabel = new else { return false }
-        return oldLabel != newLabel
-      }
-      .frame(height: 180)
+        .sensoryFeedback(.selection, trigger: previousLabel) { old, new in
+          guard let oldLabel = old, let newLabel = new else { return false }
+          return oldLabel != newLabel
+        }
+        .frame(height: 180)
     }
   }
 }
