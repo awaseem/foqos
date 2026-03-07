@@ -57,8 +57,8 @@ struct WeeklySessionChart: View {
         )
         .foregroundStyle(
           selectedLabel == day.displayLabel
-            ? themeManager.themeColor
-            : themeManager.themeColor.opacity(0.7)
+            ? themeManager.themeColor.opacity(0.7)
+            : themeManager.themeColor
         )
         .cornerRadius(6)
       }
@@ -90,7 +90,7 @@ struct WeeklySessionChart: View {
         }
         previousLabel = newValue
       }
-      .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.5), trigger: selectedLabel) { old, new in
+      .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) { old, new in
         // Trigger when transitioning from nil to a value (initial selection)
         old == nil && new != nil
       }
@@ -100,30 +100,6 @@ struct WeeklySessionChart: View {
         return oldLabel != newLabel
       }
       .frame(height: 180)
-
-      // Total time
-      StatItem(
-        title: "Total Time",
-        value: viewModel.formattedDuration(viewModel.weeklySummary.totalFocusTime)
-      )
-      .padding(.top, 8)
-    }
-  }
-}
-
-private struct StatItem: View {
-  let title: String
-  let value: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 2) {
-      Text(title)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-
-      Text(value)
-        .font(.subheadline)
-        .fontWeight(.semibold)
     }
   }
 }
