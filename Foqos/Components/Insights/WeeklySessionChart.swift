@@ -70,11 +70,18 @@ struct WeeklySessionChart: View {
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
 
-          Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
-                .font(.system(size: 40, weight: .bold, design: .rounded))
-            .fontWeight(.bold)
-            .foregroundStyle(.primary)
-            .contentTransition(.numericText())
+          HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
+              .font(.system(size: 40, weight: .bold, design: .rounded))
+              .fontWeight(.bold)
+              .foregroundStyle(.primary)
+              .contentTransition(.numericText())
+
+            Text("total")
+              .font(.title3)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+          }
         }
         .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
       } else {

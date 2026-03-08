@@ -86,21 +86,17 @@ struct ProfileInsightsView: View {
     NavigationStack {
       List {
         Section {
-          VStack(alignment: .leading, spacing: 20) {
-            weekFilterChips
-              
-            WeeklySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.vertical, 8)
-          .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-          .listRowBackground(Color.clear)
+          WeeklySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 8)
+            .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+            .listRowBackground(Color.clear)
         }
 
-        Section(sessionsSectionTitle) {
-          if filteredSessions.isEmpty {
-            emptyState
-          } else {
+        if filteredSessions.isEmpty {
+          emptyState
+        } else {
+          Section(sessionsSectionTitle) {
             ForEach(filteredSessions) { session in
               Button {
                 selectedSession = session
@@ -128,6 +124,41 @@ struct ProfileInsightsView: View {
             Image(systemName: "xmark")
           }
           .accessibilityLabel("Close")
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+          Menu {
+            Button {
+              selectedWeekFilter = .thisWeek
+              selectedDay = nil
+              viewModel.setWeek(for: Date())
+            } label: {
+              Label("This Week", systemImage: selectedWeekFilter == .thisWeek ? "checkmark" : "")
+            }
+            
+            Button {
+              selectedWeekFilter = .lastWeek
+              selectedDay = nil
+              if let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) {
+                viewModel.setWeek(for: lastWeek)
+              }
+            } label: {
+              Label("Last Week", systemImage: selectedWeekFilter == .lastWeek ? "checkmark" : "")
+            }
+            
+            Button {
+              showingWeekPicker = true
+            } label: {
+              Label("Select Date...", systemImage: selectedWeekFilter == .specific ? "checkmark" : "")
+            }
+          } label: {
+            HStack(spacing: 4) {
+              Image(systemName: "calendar")
+              Text(weekFilterMenuTitle)
+                .font(.subheadline.weight(.medium))
+            }
+            .foregroundStyle(.primary)
+          }
         }
       }
       .sheet(item: $selectedSession) { session in
@@ -168,29 +199,6 @@ struct ProfileInsightsView: View {
     }
   }
 
-  private var weekFilterChips: some View {
-    HStack(spacing: 10) {
-      weekChip(title: "This Week", isSelected: selectedWeekFilter == .thisWeek) {
-        selectedWeekFilter = .thisWeek
-        selectedDay = nil
-        viewModel.setWeek(for: Date())
-      }
-
-      weekChip(title: "Last Week", isSelected: selectedWeekFilter == .lastWeek) {
-        selectedWeekFilter = .lastWeek
-        selectedDay = nil
-        if let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) {
-          viewModel.setWeek(for: lastWeek)
-        }
-      }
-
-      weekChip(title: specificWeekChipTitle, isSelected: selectedWeekFilter == .specific) {
-        showingWeekPicker = true
-      }
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-  }
-
   private var emptyState: some View {
     VStack(spacing: 10) {
       Image(systemName: "chart.bar.xaxis")
@@ -211,31 +219,19 @@ struct ProfileInsightsView: View {
       .multilineTextAlignment(.center)
     }
     .frame(maxWidth: .infinity)
-    .padding(.vertical, 20)
+    .padding(.vertical, 40)
     .listRowBackground(Color.clear)
   }
 
-  private var currentWeekTitle: String {
-    formatWeekRange(start: weekSummary.weekStartDate, end: weekSummary.weekEndDate)
-  }
-
-  private var specificWeekChipTitle: String {
-    selectedWeekFilter == .specific ? currentWeekTitle : "Specific Week"
-  }
-
-  private func weekChip(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View
-  {
-    Button(action: action) {
-      Text(title)
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(isSelected ? Color.black : Color.primary)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(
-          isSelected ? themeManager.themeColor : Color(.secondarySystemGroupedBackground),
-          in: Capsule())
+  private var weekFilterMenuTitle: String {
+    switch selectedWeekFilter {
+    case .thisWeek:
+      return "This Week"
+    case .lastWeek:
+      return "Last Week"
+    case .specific:
+      return formatWeekRange(start: weekSummary.weekStartDate, end: weekSummary.weekEndDate)
     }
-    .buttonStyle(.plain)
   }
 
   private func formatWeekRange(start: Date, end: Date) -> String {
