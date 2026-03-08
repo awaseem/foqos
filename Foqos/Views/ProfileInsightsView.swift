@@ -33,8 +33,8 @@ struct ProfileInsightsView: View {
   @Environment(\.modelContext) private var modelContext
   @EnvironmentObject private var themeManager: ThemeManager
 
-  @StateObject private var weeklyViewModel: WeeklyProfileInsightsUtil
-  @StateObject private var monthlyViewModel: MonthlyProfileInsightsUtil
+  @StateObject private var weeklyViewModel: WeeklyInsightsUtil
+  @StateObject private var monthlyViewModel: MonthlyInsightsUtil
   @State private var selectedWeekDay: WeeklyDayAggregate?
   @State private var selectedMonthDay: MonthlyDayAggregate?
   @State private var selectedSession: BlockedProfileSession?
@@ -79,8 +79,8 @@ struct ProfileInsightsView: View {
   }
 
   init(profile: BlockedProfiles) {
-    _weeklyViewModel = StateObject(wrappedValue: WeeklyProfileInsightsUtil(profile: profile))
-    _monthlyViewModel = StateObject(wrappedValue: MonthlyProfileInsightsUtil(profile: profile))
+    _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: [profile]))
+    _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: [profile]))
   }
 
   private var weekSummary: WeeklySummary {
@@ -93,7 +93,9 @@ struct ProfileInsightsView: View {
 
   private var weekSessions: [BlockedProfileSession] {
     allSessions.filter { session in
-      guard session.blockedProfile.id == weeklyViewModel.profile.id, let endTime = session.endTime
+      guard let profileId = weeklyViewModel.profiles.first?.id,
+            session.blockedProfile.id == profileId,
+            let endTime = session.endTime
       else {
         return false
       }
@@ -103,7 +105,9 @@ struct ProfileInsightsView: View {
 
   private var monthSessions: [BlockedProfileSession] {
     allSessions.filter { session in
-      guard session.blockedProfile.id == monthlyViewModel.profile.id, let endTime = session.endTime
+      guard let profileId = monthlyViewModel.profiles.first?.id,
+            session.blockedProfile.id == profileId,
+            let endTime = session.endTime
       else {
         return false
       }
@@ -113,7 +117,8 @@ struct ProfileInsightsView: View {
 
   private var allProfileSessions: [BlockedProfileSession] {
     allSessions.filter { session in
-      session.blockedProfile.id == weeklyViewModel.profile.id && session.endTime != nil
+      guard let profileId = weeklyViewModel.profiles.first?.id else { return false }
+      return session.blockedProfile.id == profileId && session.endTime != nil
     }
   }
 

@@ -25,8 +25,8 @@ struct MonthlySummary {
   let daysInMonth: Int
 }
 
-class MonthlyProfileInsightsUtil: ObservableObject {
-  let profile: BlockedProfiles
+class MonthlyInsightsUtil: ObservableObject {
+  let profiles: [BlockedProfiles]
 
   @Published var selectedDate: Date = Date()
 
@@ -34,8 +34,12 @@ class MonthlyProfileInsightsUtil: ObservableObject {
     computeMonthlySummary(for: selectedDate)
   }
 
-  init(profile: BlockedProfiles) {
-    self.profile = profile
+  var hasData: Bool {
+    !profiles.isEmpty && profiles.contains { !$0.sessions.isEmpty }
+  }
+
+  init(profiles: [BlockedProfiles]) {
+    self.profiles = profiles
   }
 
   func setMonth(for date: Date) {
@@ -65,11 +69,17 @@ class MonthlyProfileInsightsUtil: ObservableObject {
     let dayStart = calendar.startOfDay(for: date)
     guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return [] }
 
-    return profile.sessions.filter { session in
-      let sessionStart = session.startTime
-      let sessionEnd = session.endTime ?? Date()
-      return sessionStart < dayEnd && sessionEnd > dayStart
-    }.sorted { $0.duration > $1.duration }
+    var allSessions: [BlockedProfileSession] = []
+    for profile in profiles {
+      let profileSessions = profile.sessions.filter { session in
+        let sessionStart = session.startTime
+        let sessionEnd = session.endTime ?? Date()
+        return sessionStart < dayEnd && sessionEnd > dayStart
+      }
+      allSessions.append(contentsOf: profileSessions)
+    }
+
+    return allSessions.sorted { $0.duration > $1.duration }
   }
 
   private func computeMonthlySummary(for date: Date) -> MonthlySummary {
@@ -79,13 +89,18 @@ class MonthlyProfileInsightsUtil: ObservableObject {
     let daysInMonth = MonthlySessionAggregator.daysInMonth(for: date, calendar: calendar)
     let monthEnd = calendar.date(byAdding: .day, value: daysInMonth - 1, to: monthStart)!
 
-    let completedSessions: [MonthlySessionInterval] = profile.sessions.compactMap { session in
-      guard let endTime = session.endTime else { return nil }
-      return MonthlySessionInterval(startTime: session.startTime, endTime: endTime)
+    // Aggregate sessions from all profiles
+    var allCompletedSessions: [MonthlySessionInterval] = []
+    for profile in profiles {
+      let profileSessions: [MonthlySessionInterval] = profile.sessions.compactMap { session in
+        guard let endTime = session.endTime else { return nil }
+        return MonthlySessionInterval(startTime: session.startTime, endTime: endTime)
+      }
+      allCompletedSessions.append(contentsOf: profileSessions)
     }
 
     let aggregation = MonthlySessionAggregator.aggregate(
-      sessions: completedSessions,
+      sessions: allCompletedSessions,
       monthStart: monthStart,
       calendar: calendar
     )

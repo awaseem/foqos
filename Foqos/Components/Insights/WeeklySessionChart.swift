@@ -2,7 +2,7 @@ import Charts
 import SwiftUI
 
 struct WeeklySessionChart: View {
-  @ObservedObject var viewModel: WeeklyProfileInsightsUtil
+  @ObservedObject var viewModel: WeeklyInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: WeeklyDayAggregate?
   @State private var dragLabel: String?
@@ -152,7 +152,7 @@ struct WeeklySessionChart: View {
 #Preview {
   struct PreviewWrapper: View {
     @State private var selectedDay: WeeklyDayAggregate?
-    let viewModel: WeeklyProfileInsightsUtil
+    let viewModel: WeeklyInsightsUtil
 
     init() {
       let profile = BlockedProfiles(name: "Work Focus")
@@ -174,7 +174,7 @@ struct WeeklySessionChart: View {
         }
       }
 
-      viewModel = WeeklyProfileInsightsUtil(profile: profile)
+      viewModel = WeeklyInsightsUtil(profiles: [profile])
     }
 
     var body: some View {

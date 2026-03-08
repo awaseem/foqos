@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MonthlySessionChart: View {
-  @ObservedObject var viewModel: MonthlyProfileInsightsUtil
+  @ObservedObject var viewModel: MonthlyInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: MonthlyDayAggregate?
   @State private var dragDay: MonthlyDayAggregate?
@@ -310,7 +310,7 @@ struct DayFramePreferenceKey: PreferenceKey {
 #Preview {
   struct PreviewWrapper: View {
     @State private var selectedDay: MonthlyDayAggregate?
-    let viewModel: MonthlyProfileInsightsUtil
+    let viewModel: MonthlyInsightsUtil
 
     init() {
       let profile = BlockedProfiles(name: "Work Focus")
@@ -334,7 +334,7 @@ struct DayFramePreferenceKey: PreferenceKey {
         }
       }
 
-      viewModel = MonthlyProfileInsightsUtil(profile: profile)
+      viewModel = MonthlyInsightsUtil(profiles: [profile])
     }
 
     var body: some View {

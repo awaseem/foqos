@@ -2,44 +2,81 @@ import FamilyControls
 import SwiftData
 import SwiftUI
 
+enum HabitChartType: String, CaseIterable {
+  case fourWeek = "4 Week"
+  case weekly = "Weekly"
+  case monthly = "Monthly"
+
+  var icon: String {
+    switch self {
+    case .fourWeek:
+      return "calendar.day.timeline.left"
+    case .weekly:
+      return "calendar.badge.clock"
+    case .monthly:
+      return "calendar"
+    }
+  }
+}
+
 struct BlockedSessionsHabitTracker: View {
   @EnvironmentObject var themeManager: ThemeManager
 
   let sessions: [BlockedProfileSession]
+  let profiles: [BlockedProfiles]
+
+  // 4-week view state
   @State private var selectedDate: Date?
   @State private var selectedSessions: [BlockedProfileSession] = []
   @State private var showingSessionDetails = false
+
+  // Weekly chart state
+  @StateObject private var weeklyViewModel: WeeklyInsightsUtil
+  @State private var selectedWeekDay: WeeklyDayAggregate?
+
+  // Monthly chart state
+  @StateObject private var monthlyViewModel: MonthlyInsightsUtil
+  @State private var selectedMonthDay: MonthlyDayAggregate?
+
+  // Settings
   @AppStorage("showHabitTracker") private var showHabitTracker = true
+  @AppStorage("habitChartType") private var chartTypeRaw = HabitChartType.fourWeek.rawValue
+  @State private var showingConfiguration = false
+
+  private var chartType: HabitChartType {
+    get { HabitChartType(rawValue: chartTypeRaw) ?? .fourWeek }
+    set { chartTypeRaw = newValue.rawValue }
+  }
 
   // Number of days to show in the tracker
   private let daysToShow = 28  // 4 weeks (7 days x 4)
 
-  // MARK: - Lazy Multi-Day Session Support
+  init(sessions: [BlockedProfileSession], profiles: [BlockedProfiles]) {
+    self.sessions = sessions
+    self.profiles = profiles
+    _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: profiles))
+    _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: profiles))
+  }
 
-  /// Calculates total session hours for a specific date by checking overlap with all sessions
+  // MARK: - 4-Week View Helpers
+
   private func sessionHoursForDate(_ date: Date) -> Double {
     let calendar = Calendar.current
     let dayStart = calendar.startOfDay(for: date)
     guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return 0 }
 
     let totalSeconds = sessions.reduce(0.0) { total, session in
-      // Calculate overlap between session and this specific day
       let sessionStart = session.startTime
       let sessionEnd = session.endTime ?? Date()
-
-      // Find intersection between session time range and day time range
       let overlapStart = max(sessionStart, dayStart)
       let overlapEnd = min(sessionEnd, dayEnd)
-
-      // Only count positive overlap
       let overlapDuration = max(0, overlapEnd.timeIntervalSince(overlapStart))
       return total + overlapDuration
     }
 
-    return totalSeconds / 3600  // Convert to hours
+    return totalSeconds / 3600
   }
 
-  /// Gets sessions that have any overlap with the specified date
   private func sessionsForDate(_ date: Date) -> [BlockedProfileSession] {
     let calendar = Calendar.current
     let dayStart = calendar.startOfDay(for: date)
@@ -48,13 +85,10 @@ struct BlockedSessionsHabitTracker: View {
     return sessions.filter { session in
       let sessionStart = session.startTime
       let sessionEnd = session.endTime ?? Date()
-
-      // Check if session overlaps with this day
       return sessionStart < dayEnd && sessionEnd > dayStart
     }.sorted { $0.duration > $1.duration }
   }
 
-  /// Determines if a session spans multiple days (for display purposes)
   private func isMultiDaySession(_ session: BlockedProfileSession) -> Bool {
     guard let endTime = session.endTime else { return false }
     let calendar = Calendar.current
@@ -63,16 +97,13 @@ struct BlockedSessionsHabitTracker: View {
     return startDay != endDay
   }
 
-  /// Calculates how much of a session occurred on a specific date
-  private func sessionDurationForDate(_ session: BlockedProfileSession, date: Date) -> TimeInterval
-  {
+  private func sessionDurationForDate(_ session: BlockedProfileSession, date: Date) -> TimeInterval {
     let calendar = Calendar.current
     let dayStart = calendar.startOfDay(for: date)
     guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return 0 }
 
     let sessionStart = session.startTime
     let sessionEnd = session.endTime ?? Date()
-
     let overlapStart = max(sessionStart, dayStart)
     let overlapEnd = min(sessionEnd, dayEnd)
 
@@ -115,7 +146,6 @@ struct BlockedSessionsHabitTracker: View {
     return formatter.string(from: date)
   }
 
-  // MARK: - Computed Properties
   private var legendData: [(String, Double)] {
     [("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)]
   }
@@ -128,22 +158,55 @@ struct BlockedSessionsHabitTracker: View {
     }
   }
 
-  // MARK: - View Helpers
+  // MARK: - 4-Week View Handlers
+
   private func handleDateTap(_ date: Date) {
     let isCurrentlySelected = selectedDate == date
 
     if isCurrentlySelected {
-      // Deselect if already selected
       selectedDate = nil
       selectedSessions = []
       showingSessionDetails = false
     } else {
-      // Select a new date
       selectedDate = date
       selectedSessions = sessionsForDate(date)
       showingSessionDetails = true
     }
   }
+
+  // MARK: - Chart Content Views
+
+  @ViewBuilder
+  private var chartContent: some View {
+    switch chartType {
+    case .fourWeek:
+      fourWeekChartView
+    case .weekly:
+      WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
+    case .monthly:
+      MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
+    }
+  }
+
+  private var fourWeekChartView: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      legendView()
+
+      LazyVStack(spacing: 8) {
+        ForEach(weeklyDates.indices, id: \.self) { weekIndex in
+          weekRowView(for: weeklyDates[weekIndex])
+        }
+      }
+      .frame(maxWidth: .infinity)
+
+      if showingSessionDetails, let date = selectedDate {
+        sessionDetailsView(for: date)
+      }
+    }
+    .padding(16)
+  }
+
+  // MARK: - 4-Week Subviews
 
   private func legendView() -> some View {
     HStack {
@@ -268,14 +331,61 @@ struct BlockedSessionsHabitTracker: View {
     .padding(.vertical, 4)
   }
 
+  // MARK: - Configuration Sheet
+
+  private var configurationSheet: some View {
+    NavigationStack {
+      List {
+        Section("Chart Type") {
+          ForEach(HabitChartType.allCases, id: \.self) { type in
+            Button {
+              chartTypeRaw = type.rawValue
+            } label: {
+              HStack {
+                Image(systemName: type.icon)
+                  .foregroundStyle(themeManager.themeColor)
+                  .frame(width: 24)
+
+                Text(type.rawValue)
+                  .foregroundStyle(.primary)
+
+                Spacer()
+
+                if chartType == type {
+                  Image(systemName: "checkmark")
+                    .foregroundStyle(themeManager.themeColor)
+                }
+              }
+            }
+          }
+        }
+
+        Section {
+          Toggle("Show Chart", isOn: $showHabitTracker)
+        }
+      }
+      .navigationTitle("Configure")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Done") {
+            showingConfiguration = false
+          }
+        }
+      }
+    }
+  }
+
+  // MARK: - Main Body
+
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(alignment: .center) {
         SectionTitle(
-          "4 Week Activity",
-          buttonText: showHabitTracker ? "Hide" : "Show",
-          buttonAction: { showHabitTracker.toggle() },
-          buttonIcon: showHabitTracker ? "eye.slash" : "eye"
+          "Activity History",
+          buttonText: "Configure",
+          buttonAction: { showingConfiguration = true },
+          buttonIcon: "gear"
         )
       }
 
@@ -284,21 +394,14 @@ struct BlockedSessionsHabitTracker: View {
           RoundedRectangle(cornerRadius: 24)
             .fill(Color(.systemBackground))
 
-          VStack(alignment: .leading, spacing: 12) {
-            legendView()
-
-            LazyVStack(spacing: 8) {
-              ForEach(weeklyDates.indices, id: \.self) { weekIndex in
-                weekRowView(for: weeklyDates[weekIndex])
-              }
-            }
-            .frame(maxWidth: .infinity)
-
-            if showingSessionDetails, let date = selectedDate {
-              sessionDetailsView(for: date)
+          if chartType == .fourWeek {
+            fourWeekChartView
+          } else {
+            VStack(alignment: .leading, spacing: 12) {
+              chartContent
+                .padding(16)
             }
           }
-          .padding(16)
         }
       }
       .overlay(
@@ -306,8 +409,13 @@ struct BlockedSessionsHabitTracker: View {
           .stroke(Color.gray.opacity(0.3), lineWidth: 1)
       )
       .animation(.easeInOut(duration: 0.3), value: showHabitTracker)
+      .animation(.easeInOut(duration: 0.3), value: chartType)
       .frame(height: showHabitTracker ? nil : 0, alignment: .top)
       .clipped()
+      .sheet(isPresented: $showingConfiguration) {
+        configurationSheet
+          .presentationDetents([.medium])
+      }
     }
   }
 }
@@ -341,9 +449,9 @@ struct BlockedSessionsHabitTracker: View {
   // Session 2: Multi-day session starting 2 days ago, ending yesterday
   let session2 = BlockedProfileSession(tag: "weekend-detox", blockedProfile: profile2)
   session2.startTime = calendar.date(byAdding: .day, value: -2, to: calendar.startOfDay(for: now))!
-  session2.startTime = calendar.date(byAdding: .hour, value: 22, to: session2.startTime)!  // Started at 10 PM
+  session2.startTime = calendar.date(byAdding: .hour, value: 22, to: session2.startTime)!
   session2.endTime = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: now))!
-  session2.endTime = calendar.date(byAdding: .hour, value: 8, to: session2.endTime!)  // Ended at 8 AM next day
+  session2.endTime = calendar.date(byAdding: .hour, value: 8, to: session2.endTime!)
 
   // Session 3: Another session yesterday
   let session3 = BlockedProfileSession(tag: "afternoon-work", blockedProfile: profile3)
@@ -354,9 +462,9 @@ struct BlockedSessionsHabitTracker: View {
   // Session 4: Long multi-day session spanning 3 days (started 5 days ago, ended 2 days ago)
   let session4 = BlockedProfileSession(tag: "extended-focus", blockedProfile: profile1)
   session4.startTime = calendar.date(byAdding: .day, value: -5, to: calendar.startOfDay(for: now))!
-  session4.startTime = calendar.date(byAdding: .hour, value: 14, to: session4.startTime)!  // Started at 2 PM
+  session4.startTime = calendar.date(byAdding: .hour, value: 14, to: session4.startTime)!
   session4.endTime = calendar.date(byAdding: .day, value: -2, to: calendar.startOfDay(for: now))!
-  session4.endTime = calendar.date(byAdding: .hour, value: 10, to: session4.endTime!)  // Ended at 10 AM
+  session4.endTime = calendar.date(byAdding: .hour, value: 10, to: session4.endTime!)
 
   // Session 5: Short session today
   let session5 = BlockedProfileSession(tag: "morning-routine", blockedProfile: profile2)
@@ -371,12 +479,13 @@ struct BlockedSessionsHabitTracker: View {
   // Session 7: Another multi-day session from a week ago
   let session7 = BlockedProfileSession(tag: "weekly-detox", blockedProfile: profile2)
   session7.startTime = calendar.date(byAdding: .day, value: -7, to: calendar.startOfDay(for: now))!
-  session7.startTime = calendar.date(byAdding: .hour, value: 20, to: session7.startTime)!  // Started at 8 PM
+  session7.startTime = calendar.date(byAdding: .hour, value: 20, to: session7.startTime)!
   session7.endTime = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: now))!
-  session7.endTime = calendar.date(byAdding: .hour, value: 12, to: session7.endTime!)  // Ended at 12 PM next day
+  session7.endTime = calendar.date(byAdding: .hour, value: 12, to: session7.endTime!)
 
   let exampleSessions = [session1, session2, session3, session4, session5, session6, session7]
+  let exampleProfiles = [profile1, profile2, profile3]
 
-  return BlockedSessionsHabitTracker(sessions: exampleSessions)
-        .environmentObject(ThemeManager.shared)
+  return BlockedSessionsHabitTracker(sessions: exampleSessions, profiles: exampleProfiles)
+    .environmentObject(ThemeManager.shared)
 }

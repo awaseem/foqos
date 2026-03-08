@@ -121,7 +121,8 @@ struct HomeView: View {
 
         if !profiles.isEmpty {
           BlockedSessionsHabitTracker(
-            sessions: recentCompletedSessions
+            sessions: recentCompletedSessions,
+            profiles: profiles
           )
           .padding(.horizontal, 16)
 
