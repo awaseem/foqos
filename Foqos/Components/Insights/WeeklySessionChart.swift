@@ -34,7 +34,7 @@ struct WeeklySessionChart: View {
       AxisMarks(position: .trailing) { value in
         AxisValueLabel {
           if let duration = value.as(TimeInterval.self) {
-            Text(viewModel.formattedDurationShort(duration))
+            Text(DateFormatters.formatDurationShort(duration))
               .font(.caption2)
               .foregroundStyle(.secondary)
           }
@@ -73,12 +73,12 @@ struct WeeklySessionChart: View {
       // Header with big number
       VStack(alignment: .leading, spacing: 8) {
         if let selectedDay = selectedDay {
-          Text(selectedDay.date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+          Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
             .font(.title3)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
           HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(viewModel.formattedDurationHHMMSS(selectedDay.totalSessionTime))
+            Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
               .font(.system(size: 40, weight: .bold, design: .rounded))
               .foregroundStyle(.primary)
               .contentTransition(.numericText())
@@ -94,7 +94,7 @@ struct WeeklySessionChart: View {
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
           HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(viewModel.formattedDurationHHMMSS(viewModel.weeklySummary.averageSessionDuration))
+            Text(DateFormatters.formatDurationHoursSeconds(viewModel.weeklySummary.averageSessionDuration))
               .font(.system(size: 40, weight: .bold, design: .rounded))
               .foregroundStyle(.primary)
               .contentTransition(.numericText())

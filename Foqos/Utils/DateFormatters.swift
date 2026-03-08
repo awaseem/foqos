@@ -35,4 +35,40 @@ enum DateFormatters {
       }
     }
   }
+
+  static func formatDurationHoursMinutes(_ interval: TimeInterval) -> String {
+    guard interval > 0 else { return "0m" }
+    let totalSeconds = Int(interval)
+    let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
+
+    if hours > 0 {
+      return "\(hours)h \(minutes)m"
+    }
+    return "\(minutes)m"
+  }
+
+  static func formatDurationShort(_ interval: TimeInterval) -> String {
+    guard interval > 0 else { return "0m" }
+    let totalSeconds = Int(interval)
+    let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
+
+    if hours > 0 {
+      return "\(hours)h"
+    }
+    return "\(minutes)m"
+  }
+
+  static func formatDurationHoursSeconds(_ interval: TimeInterval) -> String {
+    guard interval > 0 else { return "0h 0s" }
+    let totalSeconds = Int(interval)
+    let hours = totalSeconds / 3600
+    let seconds = totalSeconds % 60
+    return "\(hours)h \(seconds)s"
+  }
+
+  static func formatSelectedDayHeader(_ date: Date) -> String {
+    return date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
+  }
 }
