@@ -4,6 +4,7 @@ struct MonthlySessionChart: View {
   @ObservedObject var viewModel: MonthlyInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: MonthlyDayAggregate?
+  let onDateSelected: ((Date?) -> Void)?
   @State private var dragDay: MonthlyDayAggregate?
   @State private var previousDragDay: MonthlyDayAggregate?
   @State private var isDragging = false
@@ -82,6 +83,9 @@ struct MonthlySessionChart: View {
 
   private func selectDay(_ day: MonthlyDayAggregate?) {
     selectedDay = day
+    if let selectedDay = day {
+      onDateSelected?(selectedDay.date)
+    }
   }
 
   private func clearSelection() {
@@ -89,6 +93,7 @@ struct MonthlySessionChart: View {
     dragDay = nil
     previousDragDay = nil
     isDragging = false
+    onDateSelected?(nil)
   }
 
   private func legendView() -> some View {
@@ -190,6 +195,7 @@ struct MonthlySessionChart: View {
       previousDragDay = dragDay
       dragDay = day
       selectedDay = day
+      onDateSelected?(day.date)
     }
   }
 
@@ -297,6 +303,10 @@ struct MonthlySessionChart: View {
 struct DayFrame: Equatable {
   let day: MonthlyDayAggregate
   let frame: CGRect
+
+  static func == (lhs: DayFrame, rhs: DayFrame) -> Bool {
+    lhs.day.id == rhs.day.id && lhs.frame == rhs.frame
+  }
 }
 
 struct DayFramePreferenceKey: PreferenceKey {
@@ -338,9 +348,13 @@ struct DayFramePreferenceKey: PreferenceKey {
     }
 
     var body: some View {
-      MonthlySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
-        .environmentObject(ThemeManager.shared)
-        .padding()
+      MonthlySessionChart(
+        viewModel: viewModel,
+        selectedDay: $selectedDay,
+        onDateSelected: nil
+      )
+      .environmentObject(ThemeManager.shared)
+      .padding()
     }
   }
 

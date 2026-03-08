@@ -30,6 +30,9 @@ struct HomeView: View {
   // Stats sheet
   @State private var profileToShowStats: BlockedProfiles? = nil
 
+  // Dashboard insights sheet
+  @State private var dashboardInsightsProfile: BlockedProfiles? = nil
+
   // Donation View
   @State private var showDonationView = false
 
@@ -122,7 +125,10 @@ struct HomeView: View {
         if !profiles.isEmpty {
           BlockedSessionsHabitTracker(
             sessions: recentCompletedSessions,
-            profiles: profiles
+            profiles: profiles,
+            onInsightsTapped: { profile in
+              dashboardInsightsProfile = profile
+            }
           )
           .padding(.horizontal, 16)
 
@@ -224,6 +230,9 @@ struct HomeView: View {
       BlockedProfileView(profile: profile)
     }
     .sheet(item: $profileToShowStats) { profile in
+      ProfileInsightsView(profile: profile)
+    }
+    .sheet(item: $dashboardInsightsProfile) { profile in
       ProfileInsightsView(profile: profile)
     }
     .sheet(

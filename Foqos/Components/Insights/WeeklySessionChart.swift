@@ -5,6 +5,7 @@ struct WeeklySessionChart: View {
   @ObservedObject var viewModel: WeeklyInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: WeeklyDayAggregate?
+  let onDateSelected: ((Date?) -> Void)?
   @State private var dragLabel: String?
   @State private var previousLabel: String?
 
@@ -54,12 +55,16 @@ struct WeeklySessionChart: View {
 
   private func selectDay(_ label: String) {
     selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
+    if let day = selectedDay {
+      onDateSelected?(day.date)
+    }
   }
 
   private func clearSelection() {
     selectedDay = nil
     dragLabel = nil
     previousLabel = nil
+    onDateSelected?(nil)
   }
 
   var body: some View {
@@ -178,9 +183,13 @@ struct WeeklySessionChart: View {
     }
 
     var body: some View {
-      WeeklySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
-        .environmentObject(ThemeManager.shared)
-        .padding()
+      WeeklySessionChart(
+        viewModel: viewModel,
+        selectedDay: $selectedDay,
+        onDateSelected: nil
+      )
+      .environmentObject(ThemeManager.shared)
+      .padding()
     }
   }
 

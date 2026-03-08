@@ -202,13 +202,13 @@ struct ProfileInsightsView: View {
         if viewMode != .allSessions {
           Section {
             if viewMode == .week {
-              WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
+              WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay, onDateSelected: nil)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 8)
                 .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
                 .listRowBackground(Color.clear)
             } else {
-              MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
+              MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay, onDateSelected: nil)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 8)
                 .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))

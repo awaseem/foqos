@@ -35,11 +35,10 @@ struct BlockedSessionsHabitTracker: View {
 
   let sessions: [BlockedProfileSession]
   let profiles: [BlockedProfiles]
+  let onInsightsTapped: (BlockedProfiles) -> Void
 
   // 4-week view state
   @State private var selectedDate: Date?
-  @State private var selectedSessions: [BlockedProfileSession] = []
-  @State private var showingSessionDetails = false
 
   // Weekly chart state
   @StateObject private var weeklyViewModel: WeeklyInsightsUtil
@@ -48,6 +47,10 @@ struct BlockedSessionsHabitTracker: View {
   // Monthly chart state
   @StateObject private var monthlyViewModel: MonthlyInsightsUtil
   @State private var selectedMonthDay: MonthlyDayAggregate?
+
+  // Profile activity state
+  @State private var selectedDateProfiles: [DashboardProfileActivity] = []
+  @State private var showingProfileActivity = false
 
   // Settings
   @AppStorage("showHabitTracker") private var showHabitTracker = true
@@ -62,9 +65,14 @@ struct BlockedSessionsHabitTracker: View {
   // Number of days to show in the tracker
   private let daysToShow = 28  // 4 weeks (7 days x 4)
 
-  init(sessions: [BlockedProfileSession], profiles: [BlockedProfiles]) {
+  init(
+    sessions: [BlockedProfileSession],
+    profiles: [BlockedProfiles],
+    onInsightsTapped: @escaping (BlockedProfiles) -> Void
+  ) {
     self.sessions = sessions
     self.profiles = profiles
+    self.onInsightsTapped = onInsightsTapped
     _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: profiles))
     _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: profiles))
   }
@@ -98,27 +106,6 @@ struct BlockedSessionsHabitTracker: View {
       let sessionEnd = session.endTime ?? Date()
       return sessionStart < dayEnd && sessionEnd > dayStart
     }.sorted { $0.duration > $1.duration }
-  }
-
-  private func isMultiDaySession(_ session: BlockedProfileSession) -> Bool {
-    guard let endTime = session.endTime else { return false }
-    let calendar = Calendar.current
-    let startDay = calendar.startOfDay(for: session.startTime)
-    let endDay = calendar.startOfDay(for: endTime)
-    return startDay != endDay
-  }
-
-  private func sessionDurationForDate(_ session: BlockedProfileSession, date: Date) -> TimeInterval {
-    let calendar = Calendar.current
-    let dayStart = calendar.startOfDay(for: date)
-    guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return 0 }
-
-    let sessionStart = session.startTime
-    let sessionEnd = session.endTime ?? Date()
-    let overlapStart = max(sessionStart, dayStart)
-    let overlapEnd = min(sessionEnd, dayEnd)
-
-    return max(0, overlapEnd.timeIntervalSince(overlapStart))
   }
 
   private func dates() -> [Date] {
@@ -169,20 +156,90 @@ struct BlockedSessionsHabitTracker: View {
     }
   }
 
-  // MARK: - 4-Week View Handlers
+  // MARK: - Profile Activity Computation
 
-  private func handleDateTap(_ date: Date) {
+  private func computeProfileActivities(for date: Date) -> [DashboardProfileActivity] {
+    let calendar = Calendar.current
+    let dayStart = calendar.startOfDay(for: date)
+    guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return [] }
+
+    var activities: [DashboardProfileActivity] = []
+
+    for profile in profiles {
+      let profileSessions = profile.sessions.filter { session in
+        guard let endTime = session.endTime else { return false }
+        return session.startTime < dayEnd && endTime > dayStart
+      }
+
+      guard !profileSessions.isEmpty else { continue }
+
+      let totalTime = profileSessions.reduce(0.0) { total, session in
+        let sessionStart = session.startTime
+        let sessionEnd = session.endTime ?? Date()
+        let overlapStart = max(sessionStart, dayStart)
+        let overlapEnd = min(sessionEnd, dayEnd)
+        return total + max(0, overlapEnd.timeIntervalSince(overlapStart))
+      }
+
+      activities.append(
+        DashboardProfileActivity(
+          profile: profile,
+          totalTime: totalTime,
+          sessionCount: profileSessions.count
+        ))
+    }
+
+    return activities.sorted { $0.totalTime > $1.totalTime }
+  }
+
+  // MARK: - Date Selection Handlers
+
+  private func handleDateSelection(_ date: Date) {
     let isCurrentlySelected = selectedDate == date
 
     if isCurrentlySelected {
-      selectedDate = nil
-      selectedSessions = []
-      showingSessionDetails = false
+      // Deselect if tapping the same date
+      clearAllSelections()
     } else {
+      // Select new date - only update dashboard state, not chart selections
       selectedDate = date
-      selectedSessions = sessionsForDate(date)
-      showingSessionDetails = true
+      selectedDateProfiles = computeProfileActivities(for: date)
+      showingProfileActivity = !selectedDateProfiles.isEmpty
     }
+  }
+
+  private func handleWeeklyDateSelection(_ date: Date?) {
+    if let date = date {
+      selectedDate = date
+      selectedDateProfiles = computeProfileActivities(for: date)
+      showingProfileActivity = !selectedDateProfiles.isEmpty
+    } else {
+      // Chart was cleared - clear dashboard state too
+      selectedDate = nil
+      selectedDateProfiles = []
+      showingProfileActivity = false
+    }
+  }
+
+  private func handleMonthlyDateSelection(_ date: Date?) {
+    if let date = date {
+      selectedDate = date
+      selectedDateProfiles = computeProfileActivities(for: date)
+      showingProfileActivity = !selectedDateProfiles.isEmpty
+    } else {
+      // Chart was cleared - clear dashboard state too
+      selectedDate = nil
+      selectedDateProfiles = []
+      showingProfileActivity = false
+    }
+  }
+
+  private func clearAllSelections() {
+    selectedDate = nil
+    selectedWeekDay = nil
+    selectedMonthDay = nil
+    selectedDateProfiles = []
+    showingProfileActivity = false
   }
 
   // MARK: - Chart Content Views
@@ -193,9 +250,21 @@ struct BlockedSessionsHabitTracker: View {
     case .fourWeek:
       fourWeekChartView
     case .weekly:
-      WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
+      WeeklySessionChart(
+        viewModel: weeklyViewModel,
+        selectedDay: $selectedWeekDay,
+        onDateSelected: { date in
+          handleWeeklyDateSelection(date)
+        }
+      )
     case .monthly:
-      MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
+      MonthlySessionChart(
+        viewModel: monthlyViewModel,
+        selectedDay: $selectedMonthDay,
+        onDateSelected: { date in
+          handleMonthlyDateSelection(date)
+        }
+      )
     }
   }
 
@@ -209,10 +278,6 @@ struct BlockedSessionsHabitTracker: View {
         }
       }
       .frame(maxWidth: .infinity)
-
-      if showingSessionDetails, let date = selectedDate {
-        sessionDetailsView(for: date)
-      }
     }
     .padding(16)
   }
@@ -260,7 +325,7 @@ struct BlockedSessionsHabitTracker: View {
             )
         )
         .onTapGesture {
-          handleDateTap(date)
+          handleDateSelection(date)
         }
         .contentShape(Rectangle())
     }
@@ -275,69 +340,88 @@ struct BlockedSessionsHabitTracker: View {
     .frame(maxWidth: .infinity)
   }
 
-  private func sessionDetailsView(for date: Date) -> some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Text(formatDate(date))
-        .font(.subheadline)
-        .fontWeight(.medium)
+  // MARK: - Profile Activity View
 
-      if selectedSessions.isEmpty {
-        Text("No sessions on this day")
+  private var profileActivityView: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack {
+        if let date = selectedDate {
+          Text(formatDate(date))
+            .font(.subheadline)
+            .fontWeight(.medium)
+        }
+
+        Spacer()
+
+        Button {
+          clearAllSelections()
+        } label: {
+          Image(systemName: "arrow.counterclockwise")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+      }
+
+      if selectedDateProfiles.isEmpty {
+        Text("No profiles active on this day")
           .font(.caption)
           .foregroundColor(.secondary)
       } else {
-        sessionListView(for: date)
+        VStack(alignment: .leading, spacing: 8) {
+          ForEach(selectedDateProfiles) { activity in
+            profileActivityRow(for: activity)
+
+            if activity.id != selectedDateProfiles.last?.id {
+              Divider()
+            }
+          }
+        }
       }
     }
     .padding(.top, 8)
+    .padding(.horizontal, 16)
+    .padding(.bottom, 16)
     .transition(.move(edge: .bottom).combined(with: .opacity))
-    .animation(.easeInOut, value: showingSessionDetails)
+    .animation(.easeInOut, value: showingProfileActivity)
   }
 
-  private func sessionListView(for date: Date) -> some View {
-    VStack(alignment: .leading, spacing: 8) {
-      let displayedSessions = Array(selectedSessions.prefix(3))
-
-      ForEach(displayedSessions, id: \.id) { session in
-        sessionRowView(for: session, on: date)
-
-        if session != displayedSessions.last {
-          Divider()
-        }
-      }
-
-      if selectedSessions.count > 3 {
-        Text("+ \(selectedSessions.count - 3) more sessions")
-          .font(.caption)
-          .foregroundColor(.secondary)
-          .padding(.top, 4)
-      }
-    }
-  }
-
-  private func sessionRowView(for session: BlockedProfileSession, on date: Date) -> some View {
-    let dailyDuration = sessionDurationForDate(session, date: date)
-    let isMultiDay = isMultiDaySession(session)
-
-    return HStack {
-      VStack(alignment: .leading, spacing: 2) {
-        Text(session.blockedProfile.name)
-          .font(.subheadline)
-          .foregroundColor(.primary)
-
-        if isMultiDay {
-          Text("(spans multiple days)")
-            .font(.caption2)
-            .foregroundColor(.secondary)
-        }
-      }
+  private func profileActivityRow(for activity: DashboardProfileActivity) -> some View {
+    HStack(spacing: 12) {
+      // Profile name
+      Text(activity.profile.name)
+        .font(.subheadline)
+        .fontWeight(.medium)
+        .foregroundColor(.primary)
 
       Spacer()
 
-      Text(String(format: "%.1f hrs", dailyDuration / 3600))
+      // Time
+      Text(DateFormatters.formatDurationShort(activity.totalTime))
         .font(.subheadline)
         .fontWeight(.medium)
         .foregroundColor(.secondary)
+
+      // Insights button
+      Button {
+        onInsightsTapped(activity.profile)
+      } label: {
+        HStack(spacing: 4) {
+          Text("Insights")
+            .font(.caption)
+            .fontWeight(.medium)
+          Image(systemName: "chart.line.uptrend.xyaxis")
+            .font(.caption)
+        }
+        .foregroundStyle(themeManager.themeColor)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(
+          Capsule()
+            .fill(themeManager.themeColor.opacity(0.15))
+        )
+      }
+      .buttonStyle(.plain)
     }
     .padding(.vertical, 4)
   }
@@ -433,12 +517,18 @@ struct BlockedSessionsHabitTracker: View {
           RoundedRectangle(cornerRadius: 24)
             .fill(Color(.systemBackground))
 
-          if chartType == .fourWeek {
-            fourWeekChartView
-          } else {
-            VStack(alignment: .leading, spacing: 12) {
-              chartContent
-                .padding(16)
+          VStack(alignment: .leading, spacing: 0) {
+            if chartType == .fourWeek {
+              fourWeekChartView
+            } else {
+              VStack(alignment: .leading, spacing: 12) {
+                chartContent
+                  .padding(16)
+              }
+            }
+
+            if showingProfileActivity {
+              profileActivityView
             }
           }
         }
@@ -525,6 +615,10 @@ struct BlockedSessionsHabitTracker: View {
   let exampleSessions = [session1, session2, session3, session4, session5, session6, session7]
   let exampleProfiles = [profile1, profile2, profile3]
 
-  return BlockedSessionsHabitTracker(sessions: exampleSessions, profiles: exampleProfiles)
-    .environmentObject(ThemeManager.shared)
+  return BlockedSessionsHabitTracker(
+    sessions: exampleSessions,
+    profiles: exampleProfiles,
+    onInsightsTapped: { _ in }
+  )
+  .environmentObject(ThemeManager.shared)
 }
