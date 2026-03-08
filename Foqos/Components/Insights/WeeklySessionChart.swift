@@ -1,19 +1,12 @@
 import Charts
-import FamilyControls
-import SwiftData
 import SwiftUI
 
 struct WeeklySessionChart: View {
-  @StateObject private var viewModel: WeeklyProfileInsightsUtil
+  @ObservedObject var viewModel: WeeklyProfileInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
-  @Environment(\.colorScheme) private var colorScheme
-  @State private var selectedDay: WeeklyDayAggregate?
+  @Binding var selectedDay: WeeklyDayAggregate?
   @State private var selectedLabel: String?
   @State private var previousLabel: String?
-
-  init(profile: BlockedProfiles) {
-    _viewModel = StateObject(wrappedValue: WeeklyProfileInsightsUtil(profile: profile))
-  }
 
   private var chartView: some View {
     Chart {
@@ -59,7 +52,7 @@ struct WeeklySessionChart: View {
     }
   }
 
-  private func handleSelectionChange(oldValue: String?, newValue: String?) {
+  private func handleSelectionChange(newValue: String?) {
     if let label = newValue {
       selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
     } else {
@@ -69,110 +62,101 @@ struct WeeklySessionChart: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 20) {
-      // Header with big number
-      VStack(alignment: .leading, spacing: 8) {
-        if let selectedDay = selectedDay {
+    VStack(alignment: .leading, spacing: 10) {
+      if let selectedDay {
+        VStack(alignment: .leading, spacing: 2) {
           Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
-            .font(.title3)
+            .font(.caption)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
-          HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
-              .font(.system(size: 40, weight: .bold, design: .rounded))
-              .foregroundStyle(.primary)
-              .contentTransition(.numericText())
 
-            Text("total")
-              .font(.title3)
-              .fontWeight(.semibold)
-              .foregroundStyle(.secondary)
-          }
-        } else {
-          Text("Avg Focus Session")
-            .font(.title3)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-          HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(DateFormatters.formatDurationHoursSeconds(viewModel.weeklySummary.averageSessionDuration))
-              .font(.system(size: 40, weight: .bold, design: .rounded))
-              .foregroundStyle(.primary)
-              .contentTransition(.numericText())
-          }
+          Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+            .fontWeight(.bold)
+            .foregroundStyle(.primary)
+            .contentTransition(.numericText())
         }
-      }
-      .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedDay)
+        .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
+      } else {
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Avg Focus Session")
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
 
-      // Bar Chart
+          Text(
+            DateFormatters.formatDurationHoursSeconds(
+              viewModel.weeklySummary.averageSessionDuration)
+          )
+          .font(.system(size: 40, weight: .bold, design: .rounded))
+          .fontWeight(.bold)
+          .foregroundStyle(.primary)
+          .contentTransition(.numericText())
+        }
+        .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
+      }
+
       chartView
         .chartXSelection(value: $selectedLabel)
-        .onChange(of: selectedLabel) { oldValue, newValue in
-          handleSelectionChange(oldValue: oldValue, newValue: newValue)
+        .onChange(of: selectedLabel) { _, newValue in
+          handleSelectionChange(newValue: newValue)
         }
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) { old, new in
+        .onChange(of: viewModel.selectedDate) { _, _ in
+          selectedLabel = nil
+          selectedDay = nil
+          previousLabel = nil
+        }
+        .onChange(of: selectedDay) { _, newValue in
+          guard newValue == nil else { return }
+          selectedLabel = nil
+          previousLabel = nil
+        }
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) {
+          old, new in
           old == nil && new != nil
         }
         .sensoryFeedback(.selection, trigger: previousLabel) { old, new in
           guard let oldLabel = old, let newLabel = new else { return false }
           return oldLabel != newLabel
         }
-        .frame(height: 180)
+        .frame(maxWidth: .infinity)
+        .frame(height: 210)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
 #Preview {
   struct PreviewWrapper: View {
-    let container: ModelContainer
-    let profile: BlockedProfiles
+    @State private var selectedDay: WeeklyDayAggregate?
+    let viewModel: WeeklyProfileInsightsUtil
 
     init() {
-      do {
-        container = try ModelContainer(
-          for: BlockedProfiles.self,
-          BlockedProfileSession.self
-        )
-      } catch {
-        fatalError("Failed to create preview container: \(error)")
-      }
-
-      let context = container.mainContext
-      let profile = BlockedProfiles(
-        name: "Work Focus",
-        selectedActivity: FamilyActivitySelection()
-      )
-      context.insert(profile)
-
-      // Create sessions for the current week
+      let profile = BlockedProfiles(name: "Work Focus")
       let calendar = Calendar.current
       let today = Date()
-      let weekday = calendar.component(.weekday, from: today)
-      let daysToSubtract = weekday - 1
+      let weekStart = WeeklySessionAggregator.startOfWeek(for: today, calendar: calendar)
 
-      // Add sessions across different days
       for dayOffset in 0..<7 {
         let sessionsCount = [3, 5, 2, 4, 6, 1, 2][dayOffset]
-        let sessionDate = calendar.date(byAdding: .day, value: dayOffset - daysToSubtract, to: today)!
+        let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart)!
 
-        for _ in 0..<sessionsCount {
+        for sessionIndex in 0..<sessionsCount {
           let session = BlockedProfileSession(
-            tag: "Focus Session",
-            blockedProfile: profile
-          )
-          let duration = TimeInterval.random(in: 1800...7200)
-          session.startTime = calendar.date(byAdding: .second, value: -Int(duration), to: sessionDate)!
-          session.endTime = sessionDate
-          context.insert(session)
+            tag: "Focus Session \(sessionIndex + 1)", blockedProfile: profile)
+          let startTime = calendar.date(byAdding: .hour, value: 8 + sessionIndex, to: day)!
+          session.startTime = startTime
+          session.endTime = calendar.date(
+            byAdding: .minute, value: 45 + sessionIndex * 10, to: startTime)!
         }
       }
 
-      self.profile = profile
+      viewModel = WeeklyProfileInsightsUtil(profile: profile)
     }
 
     var body: some View {
-      WeeklySessionChart(profile: profile)
+      WeeklySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
         .environmentObject(ThemeManager.shared)
-        .modelContainer(container)
         .padding()
     }
   }

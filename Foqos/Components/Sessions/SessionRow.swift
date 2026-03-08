@@ -7,13 +7,13 @@ struct SessionRow: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(DateFormatters.formatSessionDate(session.startTime))
-        .font(.title3)
+            .font(.body)
         .fontWeight(.semibold)
         .foregroundStyle(.secondary)
 
       HStack(alignment: .firstTextBaseline, spacing: 8) {
         Text(DateFormatters.formatDurationHoursSeconds(session.duration))
-          .font(.system(size: 30, weight: .bold, design: .rounded))
+          .font(.system(size: 24, weight: .bold, design: .rounded))
           .foregroundStyle(.primary)
 
         Text("total")
