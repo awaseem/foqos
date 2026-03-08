@@ -378,4 +378,5 @@ struct BlockedSessionsHabitTracker: View {
   let exampleSessions = [session1, session2, session3, session4, session5, session6, session7]
 
   return BlockedSessionsHabitTracker(sessions: exampleSessions)
+        .environmentObject(ThemeManager.shared)
 }
