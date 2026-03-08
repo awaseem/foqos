@@ -94,7 +94,7 @@ struct ProfileInsightsView: View {
         }
 
         if filteredSessions.isEmpty {
-          emptyState
+          InsightsEmptyStateView(hasSelectedDay: selectedDay != nil)
         } else {
           Section(sessionsSectionTitle) {
             ForEach(filteredSessions) { session in
@@ -125,7 +125,7 @@ struct ProfileInsightsView: View {
           }
           .accessibilityLabel("Close")
         }
-        
+
         ToolbarItem(placement: .topBarTrailing) {
           Menu {
             Button {
@@ -135,21 +135,23 @@ struct ProfileInsightsView: View {
             } label: {
               Label("This Week", systemImage: selectedWeekFilter == .thisWeek ? "checkmark" : "")
             }
-            
+
             Button {
               selectedWeekFilter = .lastWeek
               selectedDay = nil
-              if let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date()) {
+              if let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date())
+              {
                 viewModel.setWeek(for: lastWeek)
               }
             } label: {
               Label("Last Week", systemImage: selectedWeekFilter == .lastWeek ? "checkmark" : "")
             }
-            
+
             Button {
               showingWeekPicker = true
             } label: {
-              Label("Select Date...", systemImage: selectedWeekFilter == .specific ? "checkmark" : "")
+              Label(
+                "Select Date...", systemImage: selectedWeekFilter == .specific ? "checkmark" : "")
             }
           } label: {
             HStack(spacing: 4) {
@@ -199,30 +201,6 @@ struct ProfileInsightsView: View {
     }
   }
 
-  private var emptyState: some View {
-    VStack(spacing: 10) {
-      Image(systemName: "chart.bar.xaxis")
-        .font(.system(size: 28))
-        .foregroundStyle(.secondary)
-
-      Text(selectedDay == nil ? "No sessions this week" : "No sessions on this day")
-        .font(.headline)
-        .foregroundStyle(.secondary)
-
-      Text(
-        selectedDay == nil
-          ? "Completed sessions from this week will appear here."
-          : "Try another day or clear the filter to see the full week."
-      )
-      .font(.subheadline)
-      .foregroundStyle(.secondary)
-      .multilineTextAlignment(.center)
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.vertical, 40)
-    .listRowBackground(Color.clear)
-  }
-
   private var weekFilterMenuTitle: String {
     switch selectedWeekFilter {
     case .thisWeek:
@@ -230,29 +208,9 @@ struct ProfileInsightsView: View {
     case .lastWeek:
       return "Last Week"
     case .specific:
-      return formatWeekRange(start: weekSummary.weekStartDate, end: weekSummary.weekEndDate)
+      return DateFormatters.formatWeekRange(
+        start: weekSummary.weekStartDate, end: weekSummary.weekEndDate)
     }
-  }
-
-  private func formatWeekRange(start: Date, end: Date) -> String {
-    let calendar = Calendar.current
-    let sameMonth = calendar.component(.month, from: start) == calendar.component(.month, from: end)
-    let sameYear = calendar.component(.year, from: start) == calendar.component(.year, from: end)
-
-    if sameMonth && sameYear {
-      let month = start.formatted(.dateTime.month(.abbreviated))
-      let startDay = calendar.component(.day, from: start)
-      let endDay = calendar.component(.day, from: end)
-      return "\(month) \(startDay) - \(endDay)"
-    }
-
-    if sameYear {
-      return start.formatted(.dateTime.month(.abbreviated).day()) + " - "
-        + end.formatted(.dateTime.month(.abbreviated).day().year())
-    }
-
-    return start.formatted(.dateTime.month(.abbreviated).day().year()) + " - "
-      + end.formatted(.dateTime.month(.abbreviated).day().year())
   }
 
   private func deleteSession(_ session: BlockedProfileSession) {
@@ -266,32 +224,6 @@ struct ProfileInsightsView: View {
     } catch {
       alertIdentifier = InsightsAlertIdentifier(
         id: .error, errorMessage: error.localizedDescription)
-    }
-  }
-}
-
-private struct InsightsWeekPickerView: View {
-  @Environment(\.dismiss) private var dismiss
-  @State private var draftDate: Date
-
-  let onApply: (Date) -> Void
-
-  init(selectedDate: Date, onApply: @escaping (Date) -> Void) {
-    _draftDate = State(initialValue: selectedDate)
-    self.onApply = onApply
-  }
-
-  var body: some View {
-    NavigationStack {
-      VStack(spacing: 0) {
-        DatePicker("", selection: $draftDate, displayedComponents: .date)
-          .datePickerStyle(.graphical)
-          .labelsHidden()
-      }
-      .onChange(of: draftDate) { _, newValue in
-        onApply(newValue)
-        dismiss()
-      }
     }
   }
 }

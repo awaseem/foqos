@@ -85,4 +85,25 @@ enum DateFormatters {
     formatter.timeStyle = .none
     return formatter.string(from: date)
   }
+
+  static func formatWeekRange(start: Date, end: Date) -> String {
+    let calendar = Calendar.current
+    let sameMonth = calendar.component(.month, from: start) == calendar.component(.month, from: end)
+    let sameYear = calendar.component(.year, from: start) == calendar.component(.year, from: end)
+
+    if sameMonth && sameYear {
+      let month = start.formatted(.dateTime.month(.abbreviated))
+      let startDay = calendar.component(.day, from: start)
+      let endDay = calendar.component(.day, from: end)
+      return "\(month) \(startDay) - \(endDay)"
+    }
+
+    if sameYear {
+      return start.formatted(.dateTime.month(.abbreviated).day()) + " - "
+        + end.formatted(.dateTime.month(.abbreviated).day().year())
+    }
+
+    return start.formatted(.dateTime.month(.abbreviated).day().year()) + " - "
+      + end.formatted(.dateTime.month(.abbreviated).day().year())
+  }
 }
