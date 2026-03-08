@@ -75,6 +75,7 @@ struct ProfileInsightsView: View {
   @State private var initialViewMode: InsightsViewMode?
   @State private var initialSelectedDate: Date?
   @State private var hasAppliedInitialState = false
+  private let profileName: String
 
   init(
     profile: BlockedProfiles,
@@ -85,6 +86,7 @@ struct ProfileInsightsView: View {
     _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: [profile]))
     _initialViewMode = State(wrappedValue: initialViewMode)
     _initialSelectedDate = State(wrappedValue: initialSelectedDate)
+    self.profileName = profile.name
   }
 
   private var weekSummary: WeeklySummary {
@@ -243,7 +245,7 @@ struct ProfileInsightsView: View {
           }
         }
       }
-      .navigationTitle("Insights")
+      .navigationTitle("\(profileName) Insights")
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button {
