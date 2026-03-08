@@ -22,12 +22,6 @@ private enum InsightsFilter: Equatable {
   case allSessions
 }
 
-private enum InsightsViewMode {
-  case week
-  case month
-  case allSessions
-}
-
 struct ProfileInsightsView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.modelContext) private var modelContext
@@ -78,9 +72,19 @@ struct ProfileInsightsView: View {
     }
   }
 
-  init(profile: BlockedProfiles) {
+  @State private var initialViewMode: InsightsViewMode?
+  @State private var initialSelectedDate: Date?
+  @State private var hasAppliedInitialState = false
+
+  init(
+    profile: BlockedProfiles,
+    initialViewMode: InsightsViewMode? = nil,
+    initialSelectedDate: Date? = nil
+  ) {
     _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: [profile]))
     _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: [profile]))
+    _initialViewMode = State(wrappedValue: initialViewMode)
+    _initialSelectedDate = State(wrappedValue: initialSelectedDate)
   }
 
   private var weekSummary: WeeklySummary {
@@ -398,6 +402,44 @@ struct ProfileInsightsView: View {
         Text(
           "Are you sure you want to delete all completed sessions? This action cannot be undone.")
       }
+    }
+    .task {
+      await applyInitialState()
+    }
+  }
+
+  private func applyInitialState() async {
+    guard !hasAppliedInitialState,
+          let viewMode = initialViewMode,
+          let date = initialSelectedDate else { return }
+
+    hasAppliedInitialState = true
+
+    switch viewMode {
+    case .week:
+      selectedFilter = .specificWeek
+      weeklyViewModel.setWeek(for: date)
+      // Wait a moment for the view model to update
+      try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+      // Find and select the matching day
+      if let matchingDay = weeklyViewModel.weeklySummary.days.first(where: {
+        Calendar.current.isDate($0.date, inSameDayAs: date)
+      }) {
+        selectedWeekDay = matchingDay
+      }
+    case .month:
+      selectedFilter = .specificMonth
+      monthlyViewModel.setMonth(for: date)
+      // Wait a moment for the view model to update
+      try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+      // Find and select the matching day
+      if let matchingDay = monthlyViewModel.monthlySummary.days.first(where: {
+        Calendar.current.isDate($0.date, inSameDayAs: date)
+      }) {
+        selectedMonthDay = matchingDay
+      }
+    case .allSessions:
+      selectedFilter = .allSessions
     }
   }
 

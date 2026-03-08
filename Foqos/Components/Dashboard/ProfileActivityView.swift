@@ -5,7 +5,8 @@ struct ProfileActivityView: View {
 
   let selectedDate: Date
   let activities: [DashboardProfileActivity]
-  let onInsightsTapped: (BlockedProfiles) -> Void
+  let viewMode: InsightsViewMode
+  let onInsightsTapped: (DashboardInsightsContext) -> Void
   let onClear: () -> Void
 
   var body: some View {
@@ -58,7 +59,12 @@ struct ProfileActivityView: View {
         .foregroundColor(.secondary)
 
       Button {
-        onInsightsTapped(activity.profile)
+        let context = DashboardInsightsContext(
+          profile: activity.profile,
+          viewMode: viewMode,
+          selectedDate: selectedDate
+        )
+        onInsightsTapped(context)
       } label: {
         HStack(spacing: 4) {
           Image(systemName: "chart.line.uptrend.xyaxis")
@@ -92,6 +98,7 @@ struct ProfileActivityView: View {
   return ProfileActivityView(
     selectedDate: Date(),
     activities: activities,
+    viewMode: .week,
     onInsightsTapped: { _ in },
     onClear: {}
   )

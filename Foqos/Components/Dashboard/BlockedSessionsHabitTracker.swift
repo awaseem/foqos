@@ -35,7 +35,7 @@ struct BlockedSessionsHabitTracker: View {
 
   let sessions: [BlockedProfileSession]
   let profiles: [BlockedProfiles]
-  let onInsightsTapped: (BlockedProfiles) -> Void
+  let onInsightsTapped: (DashboardInsightsContext) -> Void
 
   @State private var selectedDate: Date?
   @State private var selectedDateProfiles: [DashboardProfileActivity] = []
@@ -65,7 +65,7 @@ struct BlockedSessionsHabitTracker: View {
   init(
     sessions: [BlockedProfileSession],
     profiles: [BlockedProfiles],
-    onInsightsTapped: @escaping (BlockedProfiles) -> Void
+    onInsightsTapped: @escaping (DashboardInsightsContext) -> Void
   ) {
     self.sessions = sessions
     self.profiles = profiles
@@ -160,9 +160,19 @@ struct BlockedSessionsHabitTracker: View {
               .padding(chartType == .fourWeek ? 0 : 16)
 
             if !selectedDateProfiles.isEmpty, let date = selectedDate {
+              let viewMode: InsightsViewMode = {
+                switch chartType {
+                case .weekly, .fourWeek:
+                  return .week
+                case .monthly:
+                  return .month
+                }
+              }()
+              
               ProfileActivityView(
                 selectedDate: date,
                 activities: selectedDateProfiles,
+                viewMode: viewMode,
                 onInsightsTapped: onInsightsTapped,
                 onClear: clearAllSelections
               )
