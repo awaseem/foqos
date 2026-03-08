@@ -464,7 +464,7 @@ struct BlockedProfileView: View {
             }
 
             Button(action: { showingInsights = true }) {
-              Image(systemName: "eyeglasses")
+              Image(systemName: "chart.line.uptrend.xyaxis")
             }
             .accessibilityLabel("View Insights")
           }

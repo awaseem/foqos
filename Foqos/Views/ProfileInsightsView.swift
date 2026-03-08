@@ -240,8 +240,10 @@ struct ProfileInsightsView: View {
     let sameYear = calendar.component(.year, from: start) == calendar.component(.year, from: end)
 
     if sameMonth && sameYear {
-      return start.formatted(.dateTime.month(.abbreviated).day()) + " - "
-        + end.formatted(.dateTime.day().year())
+      let month = start.formatted(.dateTime.month(.abbreviated))
+      let startDay = calendar.component(.day, from: start)
+      let endDay = calendar.component(.day, from: end)
+      return "\(month) \(startDay) - \(endDay)"
     }
 
     if sameYear {
@@ -281,25 +283,14 @@ private struct InsightsWeekPickerView: View {
 
   var body: some View {
     NavigationStack {
-      VStack(spacing: 20) {
-        DatePicker("Week", selection: $draftDate, displayedComponents: .date)
+      VStack(spacing: 0) {
+        DatePicker("", selection: $draftDate, displayedComponents: .date)
           .datePickerStyle(.graphical)
-
-        Button("Show Week") {
-          onApply(draftDate)
-          dismiss()
-        }
-        .buttonStyle(.borderedProminent)
+          .labelsHidden()
       }
-      .padding(20)
-      .navigationTitle("Choose a Week")
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
-            onApply(draftDate)
-            dismiss()
-          }
-        }
+      .onChange(of: draftDate) { _, newValue in
+        onApply(newValue)
+        dismiss()
       }
     }
   }
