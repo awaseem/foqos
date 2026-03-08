@@ -3,9 +3,9 @@ import SwiftData
 import SwiftUI
 
 enum HabitChartType: String, CaseIterable {
-  case fourWeek = "4 Week"
-  case weekly = "Weekly"
-  case monthly = "Monthly"
+  case fourWeek = "4 Week Activity"
+  case weekly = "Weekly View"
+  case monthly = "Monthly View"
 
   var icon: String {
     switch self {
@@ -15,6 +15,17 @@ enum HabitChartType: String, CaseIterable {
       return "calendar.badge.clock"
     case .monthly:
       return "calendar"
+    }
+  }
+
+  var description: String {
+    switch self {
+    case .fourWeek:
+      return "View your last 28 days of focus time in a heatmap calendar"
+    case .weekly:
+      return "See your week-by-week focus patterns with bar charts"
+    case .monthly:
+      return "Track your monthly progress with a calendar grid"
     }
   }
 }
@@ -336,34 +347,60 @@ struct BlockedSessionsHabitTracker: View {
   private var configurationSheet: some View {
     NavigationStack {
       List {
+        Section("Visibility") {
+          Toggle("Show Chart", isOn: $showHabitTracker)
+            .tint(themeManager.themeColor)
+        }
+
         Section("Chart Type") {
           ForEach(HabitChartType.allCases, id: \.self) { type in
             Button {
               chartTypeRaw = type.rawValue
             } label: {
-              HStack {
-                Image(systemName: type.icon)
-                  .foregroundStyle(themeManager.themeColor)
-                  .frame(width: 24)
+              HStack(alignment: .top, spacing: 12) {
+                // Radio button indicator
+                ZStack {
+                  Circle()
+                    .stroke(chartType == type ? themeManager.themeColor : Color.gray.opacity(0.4), lineWidth: 2)
+                    .frame(width: 22, height: 22)
 
-                Text(type.rawValue)
-                  .foregroundStyle(.primary)
+                  if chartType == type {
+                    Circle()
+                      .fill(themeManager.themeColor)
+                      .frame(width: 12, height: 12)
+                  }
+                }
+                .padding(.top, 2)
+
+                // Icon and text content
+                VStack(alignment: .leading, spacing: 4) {
+                  HStack(spacing: 8) {
+                    Image(systemName: type.icon)
+                      .foregroundStyle(themeManager.themeColor)
+                      .font(.system(size: 16))
+
+                    Text(type.rawValue)
+                      .font(.system(size: 16, weight: .medium))
+                      .foregroundStyle(.primary)
+                  }
+
+                  Text(type.description)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
 
                 Spacer()
-
-                if chartType == type {
-                  Image(systemName: "checkmark")
-                    .foregroundStyle(themeManager.themeColor)
-                }
               }
+              .padding(.vertical, 4)
             }
+            .buttonStyle(.plain)
           }
         }
-
-        Section {
-          Toggle("Show Chart", isOn: $showHabitTracker)
-        }
+        .listSectionSeparator(.hidden)
       }
+      .listStyle(.plain)
       .navigationTitle("Configure")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -382,10 +419,10 @@ struct BlockedSessionsHabitTracker: View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(alignment: .center) {
         SectionTitle(
-          "Activity History",
-          buttonText: "Configure",
+          "Activity",
+          buttonText: "Manage",
           buttonAction: { showingConfiguration = true },
-          buttonIcon: "gear"
+          buttonIcon: "chart.line.uptrend.xyaxis"
         )
       }
 

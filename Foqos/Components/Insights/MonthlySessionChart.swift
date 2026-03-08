@@ -279,7 +279,7 @@ struct MonthlySessionChart: View {
       }
       .frame(
         height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7 + CGFloat(
-          weeksInMonth.count - 1) * 4)
+          weeksInMonth.count - 1))
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: dragDay) { old, new in
