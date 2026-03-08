@@ -3,6 +3,9 @@ import SwiftData
 import SwiftUI
 
 let AMZN_STORE_LINK = "https://amzn.to/4fbMuTM"
+let TEMU_STORE_LINK =
+  "https://www.temu.com/ca/nfc-sticker-with--blank-chip-operating-at-13-56mhz-is-a-rewritable-label-with-504--of-memory-compatible-with-nfc-enabled-smartphones-g-601102251435878.html"
+let ALIEXPRESS_STORE_LINK = "https://www.aliexpress.com/item/1005010075431327.html"
 
 struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
@@ -71,9 +74,12 @@ struct SettingsView: View {
               Circle()
                 .fill(requestAuthorizer.getAuthorizationStatus() == .approved ? .green : .red)
                 .frame(width: 8, height: 8)
-              Text(requestAuthorizer.getAuthorizationStatus() == .approved ? "Authorized" : "Not Authorized")
-                .foregroundStyle(.secondary)
-                .font(.subheadline)
+              Text(
+                requestAuthorizer.getAuthorizationStatus() == .approved
+                  ? "Authorized" : "Not Authorized"
+              )
+              .foregroundStyle(.secondary)
+              .font(.subheadline)
             }
           }
 
@@ -96,12 +102,19 @@ struct SettingsView: View {
                 .foregroundColor(.secondary)
             }
           }
-        }
-
-        Section("Help") {
-          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+          Link(destination: URL(string: TEMU_STORE_LINK)!) {
             HStack {
-              Text("Blocking Native Apps")
+              Text("Temu")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
+          Link(destination: URL(string: ALIEXPRESS_STORE_LINK)!) {
+            HStack {
+              Text("AliExpress")
                 .foregroundColor(.primary)
               Spacer()
               Image(systemName: "arrow.up.right.square")
@@ -111,20 +124,17 @@ struct SettingsView: View {
         }
 
         if !strategyManager.isBlocking {
-          Section("Troubleshooting") {
-            Button {
-              showResetBlockingStateAlert = true
-            } label: {
-              Text("Reset Blocking State")
-                .foregroundColor(themeManager.themeColor)
+          Section("Help") {
+            Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+              HStack {
+                Text("Blocking Native Apps")
+                  .foregroundColor(.primary)
+                Spacer()
+                Image(systemName: "arrow.up.right.square")
+                  .foregroundColor(.secondary)
+              }
             }
-          }
-        }
 
-        Section("Developer") {
-          Button {
-            showDebugView = true
-          } label: {
             HStack {
               Text("Debug Mode")
                 .foregroundColor(.primary)
@@ -132,6 +142,13 @@ struct SettingsView: View {
               Image(systemName: "chevron.right")
                 .foregroundColor(.secondary)
                 .font(.caption)
+            }
+
+            Button {
+              showResetBlockingStateAlert = true
+            } label: {
+              Text("Reset Blocking State")
+                .foregroundColor(themeManager.themeColor)
             }
           }
         }
@@ -146,12 +163,14 @@ struct SettingsView: View {
         }
       }
       .alert("Reset Blocking State", isPresented: $showResetBlockingStateAlert) {
-        Button("Cancel", role: .cancel) { }
+        Button("Cancel", role: .cancel) {}
         Button("Reset", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
-        Text("This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active.")
+        Text(
+          "This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active."
+        )
       }
       .sheet(isPresented: $showDebugView) {
         DebugView()

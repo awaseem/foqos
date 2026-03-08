@@ -193,6 +193,11 @@
 			path = FoqosShieldConfig;
 			sourceTree = "<group>";
 		};
+		80AA00012F00000100000001 /* foqosTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = foqosTests;
+			sourceTree = "<group>";
+		};
 		80FF38902D80DB540032BC5E /* FoqosWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -261,6 +266,7 @@
 			isa = PBXGroup;
 			children = (
 				801B20972CB363A10073E9E2 /* Foqos */,
+				80AA00012F00000100000001 /* foqosTests */,
 				80FF38902D80DB540032BC5E /* FoqosWidget */,
 				8017130C2DE6C78C00B77FE1 /* FoqosDeviceMonitor */,
 				808A3C4F2E4ACD18002A7812 /* FoqosShieldConfig */,
@@ -359,6 +365,9 @@
 			);
 			dependencies = (
 				801B20A82CB363A20073E9E2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				80AA00012F00000100000001 /* foqosTests */,
 			);
 			name = foqosTests;
 			packageProductDependencies = (

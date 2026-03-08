@@ -61,7 +61,7 @@ struct BlockedProfileCard: View {
               UIImpactFeedbackGenerator(style: .light).impactOccurred()
               onStatsTapped()
             }) {
-              Label("Stats for Nerds", systemImage: "eyeglasses")
+              Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
             }
 
             Divider()

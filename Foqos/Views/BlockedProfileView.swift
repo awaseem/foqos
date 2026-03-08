@@ -77,9 +77,6 @@ struct BlockedProfileView: View {
   // Sheet for insights modal
   @State private var showingInsights = false
 
-  // Sheet for sessions modal
-  @State private var showingSessions = false
-
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
 
@@ -444,12 +441,6 @@ struct BlockedProfileView: View {
                   Label("Duplicate Profile", systemImage: "square.on.square")
                 }
 
-                Button {
-                  showingSessions = true
-                } label: {
-                  Label("View Sessions", systemImage: "clock.arrow.circlepath")
-                }
-
                 Divider()
 
                 Button(role: .destructive) {
@@ -464,7 +455,7 @@ struct BlockedProfileView: View {
             }
 
             Button(action: { showingInsights = true }) {
-              Image(systemName: "eyeglasses")
+              Image(systemName: "chart.line.uptrend.xyaxis")
             }
             .accessibilityLabel("View Insights")
           }
@@ -524,11 +515,6 @@ struct BlockedProfileView: View {
       .sheet(isPresented: $showingInsights) {
         if let validProfile = profile {
           ProfileInsightsView(profile: validProfile)
-        }
-      }
-      .sheet(isPresented: $showingSessions) {
-        if let validProfile = profile {
-          BlockedProfileSessionsView(profile: validProfile)
         }
       }
       .background(
