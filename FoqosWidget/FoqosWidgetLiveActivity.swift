@@ -101,7 +101,7 @@ struct FoqosWidgetLiveActivity: Widget {
             )
             .font(.title)
             .fontWeight(.semibold)
-            .foregroundColor(.secondary)
+            .foregroundColor(.primary)
             .multilineTextAlignment(.trailing)
           }
         }
