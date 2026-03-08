@@ -254,9 +254,6 @@ struct MonthlySessionChart: View {
         .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
       }
 
-      // Legend
-      legendView()
-
       // Grid with drag support
       GeometryReader { geometry in
         LazyVStack(spacing: 4) {
@@ -286,6 +283,9 @@ struct MonthlySessionChart: View {
       .frame(
         height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7 + CGFloat(
           weeksInMonth.count - 1))
+
+      // Legend
+      legendView()
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: dragDay) { old, new in

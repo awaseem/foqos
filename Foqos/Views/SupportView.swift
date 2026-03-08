@@ -2,6 +2,8 @@ import SwiftUI
 
 let THREADS_URL = "https://www.threads.com/@softwarecuddler"
 let TWITTER_URL = "https://x.com/softwarecuddler"
+let REDDIT_URL = "https://www.reddit.com/user/waseema393/"
+let LINKEDIN_URL = "https://www.linkedin.com/in/aliw"
 let DONATE_URL = "https://buymeacoffee.com/softwarecuddler"  // You can replace this with your actual donation URL
 
 struct SupportView: View {
@@ -59,6 +61,19 @@ struct SupportView: View {
 
         Link(destination: URL(string: TWITTER_URL)!) {
           Image("Twitter")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 30, height: 30)
+        }
+        Link(destination: URL(string: REDDIT_URL)!) {
+          Image("Reddit")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 30, height: 30)
+        }
+
+        Link(destination: URL(string: LINKEDIN_URL)!) {
+          Image("Linkedin")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 30, height: 30)
