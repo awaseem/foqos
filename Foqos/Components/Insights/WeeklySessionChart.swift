@@ -5,7 +5,7 @@ struct WeeklySessionChart: View {
   @ObservedObject var viewModel: WeeklyProfileInsightsUtil
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: WeeklyDayAggregate?
-  @State private var selectedLabel: String?
+  @State private var dragLabel: String?
   @State private var previousLabel: String?
 
   private var chartView: some View {
@@ -16,7 +16,7 @@ struct WeeklySessionChart: View {
           y: .value("Duration", day.totalSessionTime)
         )
         .foregroundStyle(
-          selectedLabel == day.displayLabel
+          selectedDay?.displayLabel == day.displayLabel
             ? themeManager.themeColor.opacity(0.7)
             : themeManager.themeColor
         )
@@ -52,36 +52,51 @@ struct WeeklySessionChart: View {
     }
   }
 
-  private func handleSelectionChange(newValue: String?) {
-    if let label = newValue {
-      selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
-    } else {
-      selectedDay = nil
-    }
-    previousLabel = newValue
+  private func selectDay(_ label: String) {
+    selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
+  }
+
+  private func clearSelection() {
+    selectedDay = nil
+    dragLabel = nil
+    previousLabel = nil
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
-      if let selectedDay {
-        VStack(alignment: .leading, spacing: 2) {
-          Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-
-          HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
-              .font(.system(size: 40, weight: .bold, design: .rounded))
-              .fontWeight(.bold)
-              .foregroundStyle(.primary)
-              .contentTransition(.numericText())
-
-            Text("total")
-              .font(.title3)
+      if let selectedDay = selectedDay {
+        HStack {
+          VStack(alignment: .leading, spacing: 2) {
+            Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
+              .font(.caption)
               .fontWeight(.semibold)
               .foregroundStyle(.secondary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+              Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundStyle(.primary)
+                .contentTransition(.numericText())
+
+              Text("total")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+            }
           }
+
+          Spacer()
+
+          Button {
+            clearSelection()
+          } label: {
+            Image(systemName: "arrow.counterclockwise")
+              .font(.title3)
+              .foregroundStyle(.secondary)
+          }
+          .buttonStyle(.plain)
+          .padding(.trailing, 8)
         }
         .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
       } else {
@@ -104,21 +119,22 @@ struct WeeklySessionChart: View {
       }
 
       chartView
-        .chartXSelection(value: $selectedLabel)
-        .onChange(of: selectedLabel) { _, newValue in
-          handleSelectionChange(newValue: newValue)
+        .chartXSelection(value: $dragLabel)
+        .onChange(of: dragLabel) { oldValue, newValue in
+          // Track previous for haptic feedback
+          if let old = oldValue, let new = newValue, old != new {
+            previousLabel = old
+          }
+
+          // Update selection in real-time during drag
+          if let label = newValue {
+            selectDay(label)
+          }
         }
         .onChange(of: viewModel.selectedDate) { _, _ in
-          selectedLabel = nil
-          selectedDay = nil
-          previousLabel = nil
+          clearSelection()
         }
-        .onChange(of: selectedDay) { _, newValue in
-          guard newValue == nil else { return }
-          selectedLabel = nil
-          previousLabel = nil
-        }
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: selectedLabel) {
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: dragLabel) {
           old, new in
           old == nil && new != nil
         }
