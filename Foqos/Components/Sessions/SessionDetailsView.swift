@@ -12,15 +12,13 @@ struct SessionDetailsView: View {
         SessionInfoSection(session: session)
         TimingSection(session: session)
 
-        if session.breakStartTime != nil {
+        if session.breakStartTime != nil && session.breakEndTime != nil {
           BreakSection(session: session)
         }
 
-        if session.pauseStartTime != nil {
+        if session.pauseStartTime != nil && session.pauseEndTime != nil {
           PauseSection(session: session)
         }
-
-        StatusSection(session: session)
       }
       .navigationTitle("Session Details")
       .toolbar {
@@ -85,11 +83,11 @@ private struct BreakSection: View {
   let session: BlockedProfileSession
 
   var breakDuration: TimeInterval? {
-    guard let breakStartTime = session.breakStartTime else {
+    guard let breakStartTime = session.breakStartTime,
+          let breakEndTime = session.breakEndTime else {
       return nil
     }
-    let end = session.breakEndTime ?? Date()
-    return end.timeIntervalSince(breakStartTime)
+    return breakEndTime.timeIntervalSince(breakStartTime)
   }
 
   var body: some View {
@@ -106,9 +104,6 @@ private struct BreakSection: View {
           label: "Ended",
           value: DateFormatters.formatDate(breakEndTime)
         )
-      } else {
-        InfoRow(label: "Ended", value: "In Progress")
-          .foregroundStyle(.secondary)
       }
 
       if let breakDuration = breakDuration {
@@ -127,11 +122,11 @@ private struct PauseSection: View {
   let session: BlockedProfileSession
 
   var pauseDuration: TimeInterval? {
-    guard let pauseStartTime = session.pauseStartTime else {
+    guard let pauseStartTime = session.pauseStartTime,
+          let pauseEndTime = session.pauseEndTime else {
       return nil
     }
-    let end = session.pauseEndTime ?? Date()
-    return end.timeIntervalSince(pauseStartTime)
+    return pauseEndTime.timeIntervalSince(pauseStartTime)
   }
 
   var body: some View {
@@ -148,9 +143,6 @@ private struct PauseSection: View {
           label: "Ended",
           value: DateFormatters.formatDate(pauseEndTime)
         )
-      } else {
-        InfoRow(label: "Ended", value: "In Progress")
-          .foregroundStyle(.secondary)
       }
 
       if let pauseDuration = pauseDuration {
@@ -159,24 +151,6 @@ private struct PauseSection: View {
           value: DateFormatters.formatDurationShort(pauseDuration)
         )
       }
-    }
-  }
-}
-
-// MARK: - Status Section
-
-private struct StatusSection: View {
-  let session: BlockedProfileSession
-
-  var body: some View {
-    Section("Status") {
-      InfoRow(label: "Active", value: session.isActive ? "Yes" : "No")
-
-      if session.blockedProfile.enableBreaks {
-        InfoRow(label: "Break Active", value: session.isBreakActive ? "Yes" : "No")
-      }
-
-      InfoRow(label: "Pause Active", value: session.isPauseActive ? "Yes" : "No")
     }
   }
 }

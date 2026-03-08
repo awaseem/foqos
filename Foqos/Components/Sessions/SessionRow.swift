@@ -41,11 +41,11 @@ struct SessionRow: View {
 
 extension BlockedProfileSession {
   var breakDuration: TimeInterval? {
-    guard let breakStartTime = breakStartTime else {
+    guard let breakStartTime = breakStartTime,
+          let breakEndTime = breakEndTime else {
       return nil
     }
 
-    let end = breakEndTime ?? Date()
-    return end.timeIntervalSince(breakStartTime)
+    return breakEndTime.timeIntervalSince(breakStartTime)
   }
 }
