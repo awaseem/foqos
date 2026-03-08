@@ -71,4 +71,18 @@ enum DateFormatters {
   static func formatSelectedDayHeader(_ date: Date) -> String {
     return date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
   }
+
+  static func formatSessionDate(_ date: Date) -> String {
+    let calendar = Calendar.current
+    if calendar.isDateInToday(date) {
+      return "Today"
+    } else if calendar.isDateInYesterday(date) {
+      return "Yesterday"
+    }
+
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .none
+    return formatter.string(from: date)
+  }
 }
