@@ -61,18 +61,17 @@ struct ProfileActivityView: View {
         onInsightsTapped(activity.profile)
       } label: {
         HStack(spacing: 4) {
-          Text("Insights")
-            .font(.caption)
-            .fontWeight(.medium)
           Image(systemName: "chart.line.uptrend.xyaxis")
             .font(.caption)
+          Text("Open")
+            .font(.caption)
+            .fontWeight(.medium)
         }
-        .foregroundStyle(themeManager.themeColor)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 6)
         .background(
           Capsule()
-            .fill(themeManager.themeColor.opacity(0.15))
+            .fill(.tertiary)
         )
       }
       .buttonStyle(.plain)
@@ -87,7 +86,7 @@ struct ProfileActivityView: View {
 
   let activities = [
     DashboardProfileActivity(profile: profile1, totalTime: 7200, sessionCount: 2),
-    DashboardProfileActivity(profile: profile2, totalTime: 3600, sessionCount: 1)
+    DashboardProfileActivity(profile: profile2, totalTime: 3600, sessionCount: 1),
   ]
 
   return ProfileActivityView(
