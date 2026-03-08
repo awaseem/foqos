@@ -396,17 +396,19 @@ struct BlockedSessionsHabitTracker: View {
               .padding(.vertical, 4)
             }
             .buttonStyle(.plain)
+            .listRowSeparator(.hidden)
           }
         }
-        .listSectionSeparator(.hidden)
       }
-      .listStyle(.plain)
       .navigationTitle("Configure")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
+          Button {
             showingConfiguration = false
+          } label: {
+            Image(systemName: "checkmark")
+              .font(.system(size: 17, weight: .semibold))
           }
         }
       }
