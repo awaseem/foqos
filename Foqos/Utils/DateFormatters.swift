@@ -119,4 +119,16 @@ enum DateFormatters {
     return start.formatted(.dateTime.month(.abbreviated).year()) + " - "
       + end.formatted(.dateTime.month(.abbreviated).year())
   }
+
+  static func formatDashboardDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MMM d, yyyy"
+    return formatter.string(from: date)
+  }
+
+  static func formatDayNumber(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "d"
+    return formatter.string(from: date)
+  }
 }

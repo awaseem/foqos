@@ -1,0 +1,101 @@
+import SwiftUI
+
+struct ProfileActivityView: View {
+  @EnvironmentObject var themeManager: ThemeManager
+
+  let selectedDate: Date
+  let activities: [DashboardProfileActivity]
+  let onInsightsTapped: (BlockedProfiles) -> Void
+  let onClear: () -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack {
+        Text(DateFormatters.formatDashboardDate(selectedDate))
+          .font(.subheadline)
+          .fontWeight(.medium)
+
+        Spacer()
+
+        Button {
+          onClear()
+        } label: {
+          Image(systemName: "arrow.counterclockwise")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+      }
+
+      VStack(alignment: .leading, spacing: 8) {
+        ForEach(activities) { activity in
+          profileActivityRow(for: activity)
+
+          if activity.id != activities.last?.id {
+            Divider()
+          }
+        }
+      }
+    }
+    .padding(.top, 8)
+    .padding(.horizontal, 16)
+    .padding(.bottom, 16)
+    .transition(.move(edge: .bottom).combined(with: .opacity))
+  }
+
+  private func profileActivityRow(for activity: DashboardProfileActivity) -> some View {
+    HStack(spacing: 12) {
+      Text(activity.profile.name)
+        .font(.subheadline)
+        .fontWeight(.medium)
+        .foregroundColor(.primary)
+
+      Spacer()
+
+      Text(DateFormatters.formatDurationShort(activity.totalTime))
+        .font(.subheadline)
+        .fontWeight(.medium)
+        .foregroundColor(.secondary)
+
+      Button {
+        onInsightsTapped(activity.profile)
+      } label: {
+        HStack(spacing: 4) {
+          Text("Insights")
+            .font(.caption)
+            .fontWeight(.medium)
+          Image(systemName: "chart.line.uptrend.xyaxis")
+            .font(.caption)
+        }
+        .foregroundStyle(themeManager.themeColor)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(
+          Capsule()
+            .fill(themeManager.themeColor.opacity(0.15))
+        )
+      }
+      .buttonStyle(.plain)
+    }
+    .padding(.vertical, 4)
+  }
+}
+
+#Preview {
+  let profile1 = BlockedProfiles(name: "Deep Work")
+  let profile2 = BlockedProfiles(name: "Social Media Block")
+
+  let activities = [
+    DashboardProfileActivity(profile: profile1, totalTime: 7200, sessionCount: 2),
+    DashboardProfileActivity(profile: profile2, totalTime: 3600, sessionCount: 1)
+  ]
+
+  return ProfileActivityView(
+    selectedDate: Date(),
+    activities: activities,
+    onInsightsTapped: { _ in },
+    onClear: {}
+  )
+  .environmentObject(ThemeManager.shared)
+  .padding()
+}
