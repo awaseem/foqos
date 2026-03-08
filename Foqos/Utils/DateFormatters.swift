@@ -106,4 +106,17 @@ enum DateFormatters {
     return start.formatted(.dateTime.month(.abbreviated).day().year()) + " - "
       + end.formatted(.dateTime.month(.abbreviated).day().year())
   }
+
+  static func formatMonthRange(start: Date, end: Date) -> String {
+    let calendar = Calendar.current
+    let sameYear = calendar.component(.year, from: start) == calendar.component(.year, from: end)
+
+    if sameYear {
+      return start.formatted(.dateTime.month(.abbreviated)) + " - "
+        + end.formatted(.dateTime.month(.abbreviated))
+    }
+
+    return start.formatted(.dateTime.month(.abbreviated).year()) + " - "
+      + end.formatted(.dateTime.month(.abbreviated).year())
+  }
 }

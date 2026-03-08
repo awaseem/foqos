@@ -12,10 +12,18 @@ private struct InsightsAlertIdentifier: Identifiable {
   var errorMessage: String?
 }
 
-private enum InsightsWeekFilter: Equatable {
+private enum InsightsFilter: Equatable {
   case thisWeek
   case lastWeek
-  case specific
+  case thisMonth
+  case lastMonth
+  case specificWeek
+  case specificMonth
+}
+
+private enum InsightsViewMode {
+  case week
+  case month
 }
 
 struct ProfileInsightsView: View {
@@ -23,43 +31,111 @@ struct ProfileInsightsView: View {
   @Environment(\.modelContext) private var modelContext
   @EnvironmentObject private var themeManager: ThemeManager
 
-  @StateObject private var viewModel: WeeklyProfileInsightsUtil
-  @State private var selectedDay: WeeklyDayAggregate?
+  @StateObject private var weeklyViewModel: WeeklyProfileInsightsUtil
+  @StateObject private var monthlyViewModel: MonthlyProfileInsightsUtil
+  @State private var selectedWeekDay: WeeklyDayAggregate?
+  @State private var selectedMonthDay: MonthlyDayAggregate?
   @State private var selectedSession: BlockedProfileSession?
   @State private var alertIdentifier: InsightsAlertIdentifier?
   @State private var showingWeekPicker = false
-  @State private var selectedWeekFilter: InsightsWeekFilter = .thisWeek
+  @State private var showingMonthPicker = false
+  @State private var selectedFilter: InsightsFilter = .thisWeek
 
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse)
   private var allSessions: [BlockedProfileSession]
 
+  private var viewMode: InsightsViewMode {
+    switch selectedFilter {
+    case .thisWeek, .lastWeek, .specificWeek:
+      return .week
+    case .thisMonth, .lastMonth, .specificMonth:
+      return .month
+    }
+  }
+
+  private var selectedDay: Any? {
+    switch viewMode {
+    case .week:
+      return selectedWeekDay
+    case .month:
+      return selectedMonthDay
+    }
+  }
+
+  private var isSpecificFilter: Bool {
+    switch selectedFilter {
+    case .specificWeek, .specificMonth:
+      return true
+    default:
+      return false
+    }
+  }
+
   init(profile: BlockedProfiles) {
-    _viewModel = StateObject(wrappedValue: WeeklyProfileInsightsUtil(profile: profile))
+    _weeklyViewModel = StateObject(wrappedValue: WeeklyProfileInsightsUtil(profile: profile))
+    _monthlyViewModel = StateObject(wrappedValue: MonthlyProfileInsightsUtil(profile: profile))
   }
 
   private var weekSummary: WeeklySummary {
-    viewModel.weeklySummary
+    weeklyViewModel.weeklySummary
+  }
+
+  private var monthSummary: MonthlySummary {
+    monthlyViewModel.monthlySummary
   }
 
   private var weekSessions: [BlockedProfileSession] {
     allSessions.filter { session in
-      guard session.blockedProfile.id == viewModel.profile.id, let endTime = session.endTime else {
+      guard session.blockedProfile.id == weeklyViewModel.profile.id, let endTime = session.endTime
+      else {
         return false
       }
-
       return session.startTime < weekEndExclusive && endTime > weekStart
     }
   }
 
+  private var monthSessions: [BlockedProfileSession] {
+    allSessions.filter { session in
+      guard session.blockedProfile.id == monthlyViewModel.profile.id, let endTime = session.endTime
+      else {
+        return false
+      }
+      return session.startTime < monthEndExclusive && endTime > monthStart
+    }
+  }
+
   private var filteredSessions: [BlockedProfileSession] {
-    guard let selectedDay else {
+    switch viewMode {
+    case .week:
+      return filteredWeekSessions
+    case .month:
+      return filteredMonthSessions
+    }
+  }
+
+  private var filteredWeekSessions: [BlockedProfileSession] {
+    guard let selectedWeekDay else {
       return weekSessions
     }
 
-    let dayStart = Calendar.current.startOfDay(for: selectedDay.date)
+    let dayStart = Calendar.current.startOfDay(for: selectedWeekDay.date)
     let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
 
     return weekSessions.filter { session in
+      guard let endTime = session.endTime else { return false }
+      return session.startTime < dayEnd && endTime > dayStart
+    }
+  }
+
+  private var filteredMonthSessions: [BlockedProfileSession] {
+    guard let selectedMonthDay else {
+      return monthSessions
+    }
+
+    let dayStart = Calendar.current.startOfDay(for: selectedMonthDay.date)
+    let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
+
+    return monthSessions.filter { session in
       guard let endTime = session.endTime else { return false }
       return session.startTime < dayEnd && endTime > dayStart
     }
@@ -74,23 +150,47 @@ struct ProfileInsightsView: View {
       ?? weekSummary.weekEndDate
   }
 
-  private var sessionsSectionTitle: String {
-    if let selectedDay {
-      return "Sessions for \(DateFormatters.formatSelectedDayHeader(selectedDay.date))"
-    }
+  private var monthStart: Date {
+    monthSummary.monthStartDate
+  }
 
-    return "Sessions"
+  private var monthEndExclusive: Date {
+    Calendar.current.date(byAdding: .day, value: 1, to: monthSummary.monthEndDate)
+      ?? monthSummary.monthEndDate
+  }
+
+  private var sessionsSectionTitle: String {
+    switch viewMode {
+    case .week:
+      if let selectedWeekDay {
+        return "Sessions for \(DateFormatters.formatSelectedDayHeader(selectedWeekDay.date))"
+      }
+      return "Sessions"
+    case .month:
+      if let selectedMonthDay {
+        return "Sessions for \(DateFormatters.formatSelectedDayHeader(selectedMonthDay.date))"
+      }
+      return "Sessions"
+    }
   }
 
   var body: some View {
     NavigationStack {
       List {
         Section {
-          WeeklySessionChart(viewModel: viewModel, selectedDay: $selectedDay)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 8)
-            .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-            .listRowBackground(Color.clear)
+          if viewMode == .week {
+            WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 8)
+              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+              .listRowBackground(Color.clear)
+          } else {
+            MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 8)
+              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+              .listRowBackground(Color.clear)
+          }
         }
 
         if filteredSessions.isEmpty {
@@ -128,35 +228,66 @@ struct ProfileInsightsView: View {
 
         ToolbarItem(placement: .topBarTrailing) {
           Menu {
+            // Week options
             Button {
-              selectedWeekFilter = .thisWeek
-              selectedDay = nil
-              viewModel.setWeek(for: Date())
+              selectedFilter = .thisWeek
+              clearDaySelection()
+              weeklyViewModel.setWeek(for: Date())
             } label: {
-              Label("This Week", systemImage: selectedWeekFilter == .thisWeek ? "checkmark" : "")
+              Label("This Week", systemImage: selectedFilter == .thisWeek ? "checkmark" : "")
             }
 
             Button {
-              selectedWeekFilter = .lastWeek
-              selectedDay = nil
+              selectedFilter = .lastWeek
+              clearDaySelection()
               if let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: Date())
               {
-                viewModel.setWeek(for: lastWeek)
+                weeklyViewModel.setWeek(for: lastWeek)
               }
             } label: {
-              Label("Last Week", systemImage: selectedWeekFilter == .lastWeek ? "checkmark" : "")
+              Label("Last Week", systemImage: selectedFilter == .lastWeek ? "checkmark" : "")
+            }
+
+            Divider()
+
+            // Month options
+            Button {
+              selectedFilter = .thisMonth
+              clearDaySelection()
+              monthlyViewModel.setMonth(for: Date())
+            } label: {
+              Label("This Month", systemImage: selectedFilter == .thisMonth ? "checkmark" : "")
             }
 
             Button {
-              showingWeekPicker = true
+              selectedFilter = .lastMonth
+              clearDaySelection()
+              if let lastMonth = Calendar.current.date(byAdding: .month, value: -1, to: Date()) {
+                monthlyViewModel.setMonth(for: lastMonth)
+              }
+            } label: {
+              Label("Last Month", systemImage: selectedFilter == .lastMonth ? "checkmark" : "")
+            }
+
+            Divider()
+
+            // Specific date picker
+            Button {
+              if viewMode == .week {
+                showingWeekPicker = true
+              } else {
+                showingMonthPicker = true
+              }
             } label: {
               Label(
-                "Select Date...", systemImage: selectedWeekFilter == .specific ? "checkmark" : "")
+                viewMode == .week ? "Select Week..." : "Select Month...",
+                systemImage: isSpecificFilter ? "checkmark" : ""
+              )
             }
           } label: {
             HStack(spacing: 4) {
               Image(systemName: "calendar")
-              Text(weekFilterMenuTitle)
+              Text(filterMenuTitle)
                 .font(.subheadline.weight(.medium))
             }
             .foregroundStyle(.primary)
@@ -167,10 +298,18 @@ struct ProfileInsightsView: View {
         SessionDetailsView(session: session)
       }
       .sheet(isPresented: $showingWeekPicker) {
-        InsightsWeekPickerView(selectedDate: viewModel.selectedDate) { date in
-          selectedWeekFilter = .specific
-          viewModel.setWeek(for: date)
-          selectedDay = nil
+        InsightsWeekPickerView(selectedDate: weeklyViewModel.selectedDate) { date in
+          selectedFilter = .specificWeek
+          weeklyViewModel.setWeek(for: date)
+          clearDaySelection()
+        }
+        .presentationDetents([.medium])
+      }
+      .sheet(isPresented: $showingMonthPicker) {
+        InsightsMonthPickerView(selectedDate: monthlyViewModel.selectedDate) { date in
+          selectedFilter = .specificMonth
+          monthlyViewModel.setMonth(for: date)
+          clearDaySelection()
         }
         .presentationDetents([.medium])
       }
@@ -201,16 +340,28 @@ struct ProfileInsightsView: View {
     }
   }
 
-  private var weekFilterMenuTitle: String {
-    switch selectedWeekFilter {
+  private var filterMenuTitle: String {
+    switch selectedFilter {
     case .thisWeek:
       return "This Week"
     case .lastWeek:
       return "Last Week"
-    case .specific:
+    case .thisMonth:
+      return "This Month"
+    case .lastMonth:
+      return "Last Month"
+    case .specificWeek:
       return DateFormatters.formatWeekRange(
         start: weekSummary.weekStartDate, end: weekSummary.weekEndDate)
+    case .specificMonth:
+      return DateFormatters.formatMonthRange(
+        start: monthSummary.monthStartDate, end: monthSummary.monthEndDate)
     }
+  }
+
+  private func clearDaySelection() {
+    selectedWeekDay = nil
+    selectedMonthDay = nil
   }
 
   private func deleteSession(_ session: BlockedProfileSession) {

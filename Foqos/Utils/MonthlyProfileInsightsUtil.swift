@@ -2,12 +2,13 @@ import Foundation
 import SwiftUI
 
 struct MonthlyDayAggregate: Identifiable, Equatable {
-  let id = UUID()
   let dayOfMonth: Int
   let dayName: String
   let totalSessionTime: TimeInterval
   let sessionCount: Int
   let date: Date
+
+  var id: Date { date }
 
   var averageSessionDuration: TimeInterval {
     sessionCount > 0 ? totalSessionTime / Double(sessionCount) : 0

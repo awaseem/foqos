@@ -115,7 +115,7 @@ struct MonthlySessionChart: View {
     geometry: GeometryProxy
   ) -> some View {
     let hours = day.totalSessionTime / 3600
-    let isSelected = selectedDay?.id == day.id
+    let isSelected = selectedDay?.date == day.date
     let isPlaceholder = day.dayOfMonth == 0
 
     return Rectangle()
@@ -133,10 +133,7 @@ struct MonthlySessionChart: View {
       )
       .overlay(
         RoundedRectangle(cornerRadius: 4)
-          .stroke(
-            isSelected ? themeManager.themeColor : Color.clear,
-            lineWidth: 2
-          )
+          .stroke(isSelected ? Color.primary : Color.clear, lineWidth: 2)
       )
       .opacity(isPlaceholder ? 0 : 1)
       .contentShape(Rectangle())
@@ -189,7 +186,7 @@ struct MonthlySessionChart: View {
     let day = week[column]
     guard day.dayOfMonth != 0 else { return }
 
-    if dragDay?.id != day.id {
+    if dragDay?.date != day.date {
       previousDragDay = dragDay
       dragDay = day
       selectedDay = day
@@ -290,7 +287,7 @@ struct MonthlySessionChart: View {
     }
     .sensoryFeedback(.selection, trigger: previousDragDay) { old, new in
       guard let oldDay = old, let newDay = new else { return false }
-      return oldDay.id != newDay.id
+      return oldDay.date != newDay.date
     }
   }
 }
