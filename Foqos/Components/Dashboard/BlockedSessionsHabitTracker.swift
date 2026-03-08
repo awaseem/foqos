@@ -484,18 +484,8 @@ struct BlockedSessionsHabitTracker: View {
           }
         }
       }
-      .navigationTitle("Configure")
+      .navigationTitle("Dashboard Insights")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button {
-            showingConfiguration = false
-          } label: {
-            Image(systemName: "checkmark")
-              .font(.system(size: 17, weight: .semibold))
-          }
-        }
-      }
     }
   }
 
