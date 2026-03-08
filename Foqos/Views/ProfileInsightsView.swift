@@ -19,11 +19,13 @@ private enum InsightsFilter: Equatable {
   case lastMonth
   case specificWeek
   case specificMonth
+  case allSessions
 }
 
 private enum InsightsViewMode {
   case week
   case month
+  case allSessions
 }
 
 struct ProfileInsightsView: View {
@@ -39,6 +41,7 @@ struct ProfileInsightsView: View {
   @State private var alertIdentifier: InsightsAlertIdentifier?
   @State private var showingWeekPicker = false
   @State private var showingMonthPicker = false
+  @State private var showDeleteAllConfirmation = false
   @State private var selectedFilter: InsightsFilter = .thisWeek
 
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse)
@@ -50,6 +53,8 @@ struct ProfileInsightsView: View {
       return .week
     case .thisMonth, .lastMonth, .specificMonth:
       return .month
+    case .allSessions:
+      return .allSessions
     }
   }
 
@@ -59,6 +64,8 @@ struct ProfileInsightsView: View {
       return selectedWeekDay
     case .month:
       return selectedMonthDay
+    case .allSessions:
+      return nil
     }
   }
 
@@ -104,12 +111,20 @@ struct ProfileInsightsView: View {
     }
   }
 
+  private var allProfileSessions: [BlockedProfileSession] {
+    allSessions.filter { session in
+      session.blockedProfile.id == weeklyViewModel.profile.id && session.endTime != nil
+    }
+  }
+
   private var filteredSessions: [BlockedProfileSession] {
     switch viewMode {
     case .week:
       return filteredWeekSessions
     case .month:
       return filteredMonthSessions
+    case .allSessions:
+      return allProfileSessions
     }
   }
 
@@ -171,25 +186,29 @@ struct ProfileInsightsView: View {
         return "Sessions for \(DateFormatters.formatSelectedDayHeader(selectedMonthDay.date))"
       }
       return "Sessions"
+    case .allSessions:
+      return "All Sessions"
     }
   }
 
   var body: some View {
     NavigationStack {
       List {
-        Section {
-          if viewMode == .week {
-            WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding(.vertical, 8)
-              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-              .listRowBackground(Color.clear)
-          } else {
-            MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding(.vertical, 8)
-              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-              .listRowBackground(Color.clear)
+        if viewMode != .allSessions {
+          Section {
+            if viewMode == .week {
+              WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+                .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+                .listRowBackground(Color.clear)
+            } else {
+              MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+                .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+                .listRowBackground(Color.clear)
+            }
           }
         }
 
@@ -234,7 +253,10 @@ struct ProfileInsightsView: View {
               clearDaySelection()
               weeklyViewModel.setWeek(for: Date())
             } label: {
-              Label("This Week", systemImage: selectedFilter == .thisWeek ? "checkmark" : "")
+              Label(
+                "This Week",
+                systemImage: selectedFilter == .thisWeek
+                  ? "checkmark" : "calendar.day.timeline.left")
             }
 
             Button {
@@ -245,7 +267,10 @@ struct ProfileInsightsView: View {
                 weeklyViewModel.setWeek(for: lastWeek)
               }
             } label: {
-              Label("Last Week", systemImage: selectedFilter == .lastWeek ? "checkmark" : "")
+              Label(
+                "Last Week",
+                systemImage: selectedFilter == .lastWeek
+                  ? "checkmark" : "calendar.day.timeline.right")
             }
 
             Divider()
@@ -256,7 +281,8 @@ struct ProfileInsightsView: View {
               clearDaySelection()
               monthlyViewModel.setMonth(for: Date())
             } label: {
-              Label("This Month", systemImage: selectedFilter == .thisMonth ? "checkmark" : "")
+              Label(
+                "This Month", systemImage: selectedFilter == .thisMonth ? "checkmark" : "calendar")
             }
 
             Button {
@@ -266,7 +292,9 @@ struct ProfileInsightsView: View {
                 monthlyViewModel.setMonth(for: lastMonth)
               }
             } label: {
-              Label("Last Month", systemImage: selectedFilter == .lastMonth ? "checkmark" : "")
+              Label(
+                "Last Month", systemImage: selectedFilter == .lastMonth ? "checkmark" : "arrow.left"
+              )
             }
 
             Divider()
@@ -275,18 +303,37 @@ struct ProfileInsightsView: View {
             Button {
               if viewMode == .week {
                 showingWeekPicker = true
-              } else {
+              } else if viewMode == .month {
                 showingMonthPicker = true
               }
             } label: {
               Label(
                 viewMode == .week ? "Select Week..." : "Select Month...",
-                systemImage: isSpecificFilter ? "checkmark" : ""
+                systemImage: isSpecificFilter ? "checkmark" : "calendar.view.day"
               )
+            }
+
+            Divider()
+
+            // All sessions option
+            Button {
+              selectedFilter = .allSessions
+              clearDaySelection()
+            } label: {
+              Label(
+                "All Sessions",
+                systemImage: selectedFilter == .allSessions ? "checkmark" : "list.bullet")
+            }
+
+            // Delete all sessions
+            Button(role: .destructive) {
+              showDeleteAllConfirmation = true
+            } label: {
+              Label("Delete All Sessions", systemImage: "trash")
             }
           } label: {
             HStack(spacing: 4) {
-              Image(systemName: "calendar")
+              Image(systemName: filterMenuIcon)
               Text(filterMenuTitle)
                 .font(.subheadline.weight(.medium))
             }
@@ -337,6 +384,32 @@ struct ProfileInsightsView: View {
           )
         }
       }
+      .alert("Delete All Sessions", isPresented: $showDeleteAllConfirmation) {
+        Button("Cancel", role: .cancel) {}
+        Button("Delete All", role: .destructive) {
+          deleteAllSessions()
+        }
+      } message: {
+        Text(
+          "Are you sure you want to delete all completed sessions? This action cannot be undone.")
+      }
+    }
+  }
+
+  private var filterMenuIcon: String {
+    switch selectedFilter {
+    case .thisWeek:
+      return "calendar.day.timeline.left"
+    case .lastWeek:
+      return "calendar.day.timeline.right"
+    case .thisMonth:
+      return "calendar"
+    case .lastMonth:
+      return "arrow.left"
+    case .specificWeek, .specificMonth:
+      return "calendar.view.day"
+    case .allSessions:
+      return "list.bullet"
     }
   }
 
@@ -356,6 +429,8 @@ struct ProfileInsightsView: View {
     case .specificMonth:
       return DateFormatters.formatMonthRange(
         start: monthSummary.monthStartDate, end: monthSummary.monthEndDate)
+    case .allSessions:
+      return "All Sessions"
     }
   }
 
@@ -372,6 +447,19 @@ struct ProfileInsightsView: View {
       if selectedSession?.id == session.id {
         selectedSession = nil
       }
+    } catch {
+      alertIdentifier = InsightsAlertIdentifier(
+        id: .error, errorMessage: error.localizedDescription)
+    }
+  }
+
+  private func deleteAllSessions() {
+    for session in allProfileSessions {
+      modelContext.delete(session)
+    }
+    do {
+      try modelContext.save()
+      selectedSession = nil
     } catch {
       alertIdentifier = InsightsAlertIdentifier(
         id: .error, errorMessage: error.localizedDescription)
