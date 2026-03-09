@@ -123,27 +123,30 @@ struct SettingsView: View {
           }
         }
 
-        if !strategyManager.isBlocking {
-          Section("Help") {
-            Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
-              HStack {
-                Text("Blocking Native Apps")
-                  .foregroundColor(.primary)
-                Spacer()
-                Image(systemName: "arrow.up.right.square")
-                  .foregroundColor(.secondary)
-              }
-            }
-
+        Section("Help") {
+          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
             HStack {
-              Text("Debug Mode")
+              Text("Blocking Native Apps")
                 .foregroundColor(.primary)
               Spacer()
-              Image(systemName: "chevron.right")
+              Image(systemName: "arrow.up.right.square")
                 .foregroundColor(.secondary)
-                .font(.caption)
             }
+          }
 
+          HStack {
+            Text("Debug Mode")
+              .foregroundColor(.primary)
+            Spacer()
+            Image(systemName: "chevron.right")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
+          .onTapGesture {
+            showDebugView = true
+          }
+
+          if !strategyManager.isBlocking {
             Button {
               showResetBlockingStateAlert = true
             } label: {
