@@ -210,7 +210,7 @@ When reporting issues, please include:
 - Expected vs actual behavior
 - Screenshots if applicable
 - **Debug output** (needed for diagnosing issues):
-  1. Open Settings → Developer → Debug Mode
+  1. Open Settings → Help → Debug Mode
   2. Tap the copy button on the right-hand side
   3. Paste the output in your issue report
 
