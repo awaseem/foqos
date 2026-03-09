@@ -9,6 +9,8 @@ struct DebugView: View {
 
   @EnvironmentObject var strategyManager: StrategyManager
 
+  @Query(sort: \BlockedProfiles.order) private var allProfiles: [BlockedProfiles]
+
   @State private var activeProfile: BlockedProfiles?
   @State private var showCopyConfirmation = false
 
@@ -20,60 +22,58 @@ struct DebugView: View {
     NavigationView {
       ScrollView {
         VStack(alignment: .leading, spacing: 20) {
-          if let session = strategyManager.activeSession,
-            let profile = activeProfile
-          {
-            // Active Profile Section
-            DebugSection(title: "Active Profile") {
-              ProfileDebugCard(profile: profile)
-            }
+          // Strategy Manager Section (always shown)
+          DebugSection(title: "Strategy Manager") {
+            StrategyManagerDebugCard(strategyManager: strategyManager)
+          }
 
-            // Active Session Section
+          // Active Session Section (if available)
+          if let session = strategyManager.activeSession {
             DebugSection(title: "Active Session") {
               SessionDebugCard(session: session)
             }
+          }
 
-            // Schedule Section
-            if let schedule = profile.schedule {
-              DebugSection(title: "Schedule") {
-                ScheduleDebugCard(schedule: schedule)
+          // Device Activities Section (always shown)
+          DebugSection(title: "Device Activities (\(deviceActivities.count))") {
+            DeviceActivitiesDebugCard(
+              activities: deviceActivities,
+              profileId: activeProfile?.id
+            )
+          }
+
+          // All Profiles Section
+          if !allProfiles.isEmpty {
+            DebugSection(title: "All Profiles (\(allProfiles.count))") {
+              VStack(alignment: .leading, spacing: 16) {
+                ForEach(allProfiles) { profile in
+                  VStack(alignment: .leading, spacing: 8) {
+                    Text(profile.name)
+                      .font(.headline)
+                    
+                    ProfileDebugCard(profile: profile)
+                    
+                    if let schedule = profile.schedule {
+                      ScheduleDebugCard(schedule: schedule)
+                    }
+                    
+                    DebugSection(title: "Selected Activity") {
+                      SelectedActivityDebugCard(selection: profile.selectedActivity)
+                    }
+                    
+                    if let domains = profile.domains, !domains.isEmpty {
+                      DebugSection(title: "Domains (\(domains.count))") {
+                        DomainsDebugCard(domains: domains)
+                      }
+                    }
+                  }
+                  .padding(.vertical, 8)
+                  
+                  if profile.id != allProfiles.last?.id {
+                    Divider()
+                  }
+                }
               }
-            }
-
-            // Strategy Manager Section
-            DebugSection(title: "Strategy Manager") {
-              StrategyManagerDebugCard(strategyManager: strategyManager)
-            }
-
-            // Device Activities Section
-            DebugSection(title: "Device Activities (\(deviceActivities.count))") {
-              DeviceActivitiesDebugCard(
-                activities: deviceActivities,
-                profileId: profile.id
-              )
-            }
-
-            // Selected Apps & Categories
-            DebugSection(title: "Selected Activity") {
-              SelectedActivityDebugCard(selection: profile.selectedActivity)
-            }
-
-            // Domains Section
-            if let domains = profile.domains, !domains.isEmpty {
-              DebugSection(title: "Domains (\(domains.count))") {
-                DomainsDebugCard(domains: domains)
-              }
-            }
-
-          } else {
-            DebugEmptyState()
-
-            // Still show Device Activities even without active profile
-            DebugSection(title: "Device Activities (\(deviceActivities.count))") {
-              DeviceActivitiesDebugCard(
-                activities: deviceActivities,
-                profileId: nil
-              )
             }
           }
         }
@@ -88,13 +88,11 @@ struct DebugView: View {
           .accessibilityLabel("Cancel")
         }
 
-        if activeProfile != nil {
-          ToolbarItem(placement: .topBarTrailing) {
-            Button(action: { copyToMarkdown() }) {
-              Image(systemName: "doc.on.doc")
-            }
-            .accessibilityLabel("Copy as Markdown")
+        ToolbarItem(placement: .topBarTrailing) {
+          Button(action: { copyToMarkdown() }) {
+            Image(systemName: "doc.on.doc")
           }
+          .accessibilityLabel("Copy as Markdown")
         }
       }
       .onAppear {
@@ -118,104 +116,42 @@ struct DebugView: View {
   }
 
   private func copyToMarkdown() {
-    guard let profile = activeProfile,
-      let session = strategyManager.activeSession
-    else { return }
-
     var markdown = "# Debug Information\n\n"
 
-    // Active Profile Section
-    markdown += "## Active Profile\n\n"
-    markdown += "- **Name:** \(profile.name)\n"
-    markdown += "- **ID:** \(profile.id.uuidString)\n"
-    markdown += "- **Created:** \(DateFormatters.formatDate(profile.createdAt))\n"
-    markdown += "- **Updated:** \(DateFormatters.formatDate(profile.updatedAt))\n"
-    markdown += "- **Order:** \(profile.order)\n"
-
-    if let strategyId = profile.blockingStrategyId {
-      markdown += "- **Blocking Strategy ID:** \(strategyId)\n"
-    }
-
-    markdown += "- **Allow Mode:** \(profile.enableAllowMode ? "Yes" : "No")\n"
-    markdown += "- **Allow Mode Domains:** \(profile.enableAllowModeDomains ? "Yes" : "No")\n"
-    markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"
-    markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
-    markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
-    markdown += "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
-
-    if let reminderTime = profile.reminderTimeInSeconds {
-      markdown += "- **Reminder Time:** \(reminderTime / 60) minutes\n"
-    }
-
-    if let customMessage = profile.customReminderMessage, !customMessage.isEmpty {
-      markdown += "- **Custom Reminder Message:** \(customMessage)\n"
-    }
-
-    if let nfcTagId = profile.physicalUnblockNFCTagId {
-      markdown += "- **Physical Unlock NFC Tag ID:** \(nfcTagId)\n"
-    }
-
-    if let qrCodeId = profile.physicalUnblockQRCodeId {
-      markdown += "- **Physical Unlock QR Code ID:** \(qrCodeId)\n"
-    }
-
-    markdown += "- **Total Sessions:** \(profile.sessions.count)\n"
-
-    markdown += "\n"
-
-    // Active Session Section
-    markdown += "## Active Session\n\n"
-    markdown += "- **Session ID:** \(session.id)\n"
-    markdown += "- **Tag:** \(session.tag)\n"
-    markdown += "- **Is Active:** \(session.isActive ? "Yes" : "No")\n"
-    markdown += "- **Started At:** \(DateFormatters.formatDate(session.startTime))\n"
-
-    if let endTime = session.endTime {
-      markdown += "- **Ended At:** \(DateFormatters.formatDate(endTime))\n"
-    }
-
-    markdown += "- **Break Available:** \(session.isBreakAvailable ? "Yes" : "No")\n"
-    markdown += "- **Break Active:** \(session.isBreakActive ? "Yes" : "No")\n"
-
-    if let breakStartTime = session.breakStartTime {
-      markdown += "- **Break Started At:** \(DateFormatters.formatDate(breakStartTime))\n"
-    }
-
-    if let breakEndTime = session.breakEndTime {
-      markdown += "- **Break Ended At:** \(DateFormatters.formatDate(breakEndTime))\n"
-    }
-
-    markdown += "- **Force Started:** \(session.forceStarted ? "Yes" : "No")\n"
-    markdown += "- **Duration:** \(DateFormatters.formatDuration(session.duration))\n"
-
-    markdown += "\n"
-
-    // Schedule Section
-    if let schedule = profile.schedule {
-      markdown += "## Schedule\n\n"
-
-      if schedule.days.isEmpty {
-        markdown += "- **Days:** All days\n"
-      } else {
-        let dayNames = schedule.days.sorted(by: { $0.rawValue < $1.rawValue }).map { $0.name }
-          .joined(separator: ", ")
-        markdown += "- **Days:** \(dayNames)\n"
-      }
-
-      markdown +=
-        "- **Start Time:** \(String(format: "%02d:%02d", schedule.startHour, schedule.startMinute))\n"
-      markdown +=
-        "- **End Time:** \(String(format: "%02d:%02d", schedule.endHour, schedule.endMinute))\n"
-      markdown += "- **Updated At:** \(DateFormatters.formatDate(schedule.updatedAt))\n\n"
-    }
-
-    // Strategy Manager Section
+    // Strategy Manager Section (always shown)
     markdown += "## Strategy Manager\n\n"
     markdown += "- **Has Active Session:** \(strategyManager.activeSession != nil ? "Yes" : "No")\n"
     markdown += "- **Elapsed Time:** \(Int(strategyManager.elapsedTime)) seconds\n"
     markdown += "- **Timer Active:** \(strategyManager.timer != nil ? "Yes" : "No")\n\n"
 
-    // Device Activities Section
+    // Active Session Section (if available)
+    if let session = strategyManager.activeSession {
+      markdown += "## Active Session\n\n"
+      markdown += "- **Session ID:** \(session.id)\n"
+      markdown += "- **Tag:** \(session.tag)\n"
+      markdown += "- **Is Active:** \(session.isActive ? "Yes" : "No")\n"
+      markdown += "- **Started At:** \(DateFormatters.formatDate(session.startTime))\n"
+
+      if let endTime = session.endTime {
+        markdown += "- **Ended At:** \(DateFormatters.formatDate(endTime))\n"
+      }
+
+      markdown += "- **Break Available:** \(session.isBreakAvailable ? "Yes" : "No")\n"
+      markdown += "- **Break Active:** \(session.isBreakActive ? "Yes" : "No")\n"
+
+      if let breakStartTime = session.breakStartTime {
+        markdown += "- **Break Started At:** \(DateFormatters.formatDate(breakStartTime))\n"
+      }
+
+      if let breakEndTime = session.breakEndTime {
+        markdown += "- **Break Ended At:** \(DateFormatters.formatDate(breakEndTime))\n"
+      }
+
+      markdown += "- **Force Started:** \(session.forceStarted ? "Yes" : "No")\n"
+      markdown += "- **Duration:** \(DateFormatters.formatDuration(session.duration))\n\n"
+    }
+
+    // Device Activities Section (always shown)
     markdown += "## Device Activities (\(deviceActivities.count))\n\n"
     if deviceActivities.isEmpty {
       markdown += "No device activities scheduled.\n\n"
@@ -224,25 +160,89 @@ struct DebugView: View {
         markdown += "### Activity \(index + 1)\n"
         markdown += "- **Name:** \(activity.rawValue)\n"
         markdown += "- **Type:** \(activityType(for: activity))\n"
-        markdown +=
-          "- **Matches Profile:** \(isActivityForProfile(activity, profileId: profile.id) ? "Yes" : "No")\n"
+        if let profileId = activeProfile?.id {
+          markdown +=
+            "- **Matches Active Profile:** \(isActivityForProfile(activity, profileId: profileId) ? "Yes" : "No")\n"
+        }
         markdown += "\n"
       }
     }
 
-    // Selected Activity Section
-    markdown += "## Selected Activity\n\n"
-    markdown += "- **Applications:** \(profile.selectedActivity.applicationTokens.count)\n"
-    markdown += "- **Categories:** \(profile.selectedActivity.categoryTokens.count)\n"
-    markdown += "- **Web Domains:** \(profile.selectedActivity.webDomainTokens.count)\n\n"
+    // All Profiles Section
+    if !allProfiles.isEmpty {
+      markdown += "## All Profiles (\(allProfiles.count))\n\n"
 
-    // Domains Section
-    if let domains = profile.domains, !domains.isEmpty {
-      markdown += "## Domains (\(domains.count))\n\n"
-      for domain in domains {
-        markdown += "- \(domain)\n"
+      for (index, profile) in allProfiles.enumerated() {
+        markdown += "### Profile \(index + 1): \(profile.name)\n\n"
+        markdown += "- **ID:** \(profile.id.uuidString)\n"
+        markdown += "- **Created:** \(DateFormatters.formatDate(profile.createdAt))\n"
+        markdown += "- **Updated:** \(DateFormatters.formatDate(profile.updatedAt))\n"
+        markdown += "- **Order:** \(profile.order)\n"
+
+        if let strategyId = profile.blockingStrategyId {
+          markdown += "- **Blocking Strategy ID:** \(strategyId)\n"
+        }
+
+        markdown += "- **Allow Mode:** \(profile.enableAllowMode ? "Yes" : "No")\n"
+        markdown += "- **Allow Mode Domains:** \(profile.enableAllowModeDomains ? "Yes" : "No")\n"
+        markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"
+        markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
+        markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
+        markdown += "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
+
+        if let reminderTime = profile.reminderTimeInSeconds {
+          markdown += "- **Reminder Time:** \(reminderTime / 60) minutes\n"
+        }
+
+        if let customMessage = profile.customReminderMessage, !customMessage.isEmpty {
+          markdown += "- **Custom Reminder Message:** \(customMessage)\n"
+        }
+
+        if let nfcTagId = profile.physicalUnblockNFCTagId {
+          markdown += "- **Physical Unlock NFC Tag ID:** \(nfcTagId)\n"
+        }
+
+        if let qrCodeId = profile.physicalUnblockQRCodeId {
+          markdown += "- **Physical Unlock QR Code ID:** \(qrCodeId)\n"
+        }
+
+        markdown += "- **Total Sessions:** \(profile.sessions.count)\n"
+
+        // Schedule Section
+        if let schedule = profile.schedule {
+          markdown += "\n**Schedule:**\n\n"
+
+          if schedule.days.isEmpty {
+            markdown += "- **Days:** All days\n"
+          } else {
+            let dayNames = schedule.days.sorted(by: { $0.rawValue < $1.rawValue }).map { $0.name }
+              .joined(separator: ", ")
+            markdown += "- **Days:** \(dayNames)\n"
+          }
+
+          markdown +=
+            "- **Start Time:** \(String(format: "%02d:%02d", schedule.startHour, schedule.startMinute))\n"
+          markdown +=
+            "- **End Time:** \(String(format: "%02d:%02d", schedule.endHour, schedule.endMinute))\n"
+          markdown += "- **Updated At:** \(DateFormatters.formatDate(schedule.updatedAt))\n"
+        }
+
+        // Selected Activity Section
+        markdown += "\n**Selected Activity:**\n\n"
+        markdown += "- **Applications:** \(profile.selectedActivity.applicationTokens.count)\n"
+        markdown += "- **Categories:** \(profile.selectedActivity.categoryTokens.count)\n"
+        markdown += "- **Web Domains:** \(profile.selectedActivity.webDomainTokens.count)\n"
+
+        // Domains Section
+        if let domains = profile.domains, !domains.isEmpty {
+          markdown += "\n**Domains (\(domains.count)):**\n\n"
+          for domain in domains {
+            markdown += "- \(domain)\n"
+          }
+        }
+
+        markdown += "\n"
       }
-      markdown += "\n"
     }
 
     // Copy to clipboard
@@ -288,4 +288,5 @@ struct DebugView: View {
 #Preview {
   DebugView()
     .environmentObject(StrategyManager.shared)
+    .modelContainer(for: [BlockedProfiles.self, BlockedProfileSession.self], inMemory: true)
 }
