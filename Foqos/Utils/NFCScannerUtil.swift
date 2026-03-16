@@ -76,6 +76,8 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
       switch tag {
       case .iso15693(let tag):
         self.readISO15693Tag(tag, session: session)
+      case .iso7816(let tag):
+        self.readISO7816Tag(tag, session: session)
       case .miFare(let tag):
         self.readMiFareTag(tag, session: session)
       default:
@@ -158,6 +160,15 @@ extension NFCScannerUtil: NFCTagReaderSessionDelegate {
         session: session
       )
     }
+  }
+
+  private func readISO7816Tag(_ tag: NFCISO7816Tag, session: NFCTagReaderSession) {
+    let tagId = tag.identifier.hexEncodedString()
+    self.handleTagData(
+      id: tagId,
+      url: nil,
+      session: session
+    )
   }
 
   private func handleTagData(id: String, url: String?, session: NFCTagReaderSession) {
