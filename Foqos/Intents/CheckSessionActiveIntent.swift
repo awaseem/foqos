@@ -24,8 +24,8 @@ struct CheckSessionActiveIntent: AppIntent {
     // Load the active session (this syncs scheduled sessions)
     strategyManager.loadActiveSession(context: modelContext)
 
-    // Check if there's any active session using the isBlocking property
-    let isActive = strategyManager.isBlocking
+    // Check if there's an active blocking session that is NOT on a break
+    let isActive = strategyManager.isBlocking && !strategyManager.isBreakActive
 
     let dialogMessage =
       isActive
