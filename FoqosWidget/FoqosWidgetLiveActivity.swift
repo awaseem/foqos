@@ -5,6 +5,7 @@ import WidgetKit
 struct FoqosWidgetAttributes: ActivityAttributes {
   public struct ContentState: Codable, Hashable {
     var startTime: Date
+    var expectedEndTime: Date?
     var isBreakActive: Bool = false
     var breakStartTime: Date?
     var breakEndTime: Date?
@@ -35,6 +36,16 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 
       // Break is not yet ended, don't count it
       return 0
+    }
+
+    var countdownRange: ClosedRange<Date>? {
+      guard let expectedEndTime else {
+        return nil
+      }
+
+      let now = Date.now
+      let displayEndTime = max(now, expectedEndTime)
+      return now...displayEndTime
     }
   }
 
@@ -72,37 +83,25 @@ struct FoqosWidgetLiveActivity: Widget {
         // Right side - Timer or break/pause indicator
         VStack(alignment: .trailing, spacing: 4) {
           if context.state.isPauseActive {
-            HStack(spacing: 6) {
-              Image(systemName: "pause.circle.fill")
-                .font(.title2)
-                .foregroundColor(.yellow)
-              Text("Paused")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.yellow)
-            }
-          } else if context.state.isBreakActive {
-            HStack(spacing: 6) {
-              Image(systemName: "cup.and.heat.waves.fill")
-                .font(.title2)
-                .foregroundColor(.orange)
-              Text("On a Break")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.orange)
-            }
-          } else {
-            Text(
-              Date(
-                timeIntervalSinceNow: context.state
-                  .getTimeIntervalSinceNow()
-              ),
-              style: .timer
+            statusView(
+              label: "Paused",
+              systemImage: "pause.circle.fill",
+              color: .yellow,
+              countdownRange: context.state.countdownRange,
+              timerFont: .title,
+              alignment: .trailing
             )
-            .font(.title)
-            .fontWeight(.semibold)
-            .foregroundColor(.primary)
-            .multilineTextAlignment(.trailing)
+          } else if context.state.isBreakActive {
+            statusView(
+              label: "On a Break",
+              systemImage: "cup.and.heat.waves.fill",
+              color: .orange,
+              countdownRange: context.state.countdownRange,
+              timerFont: .title,
+              alignment: .trailing
+            )
+          } else {
+            timerText(for: context.state, font: .title, alignment: .trailing)
           }
         }
       }
@@ -127,36 +126,25 @@ struct FoqosWidgetLiveActivity: Widget {
               .multilineTextAlignment(.center)
 
             if context.state.isPauseActive {
-              VStack(spacing: 2) {
-                Image(systemName: "pause.circle.fill")
-                  .font(.title2)
-                  .foregroundColor(.yellow)
-                Text("Paused")
-                  .font(.subheadline)
-                  .fontWeight(.semibold)
-                  .foregroundColor(.yellow)
-              }
-            } else if context.state.isBreakActive {
-              VStack(spacing: 2) {
-                Image(systemName: "cup.and.heat.waves.fill")
-                  .font(.title2)
-                  .foregroundColor(.orange)
-                Text("On a Break")
-                  .font(.subheadline)
-                  .fontWeight(.semibold)
-                  .foregroundColor(.orange)
-              }
-            } else {
-              Text(
-                Date(
-                  timeIntervalSinceNow: context.state
-                    .getTimeIntervalSinceNow()
-                ),
-                style: .timer
+              statusView(
+                label: "Paused",
+                systemImage: "pause.circle.fill",
+                color: .yellow,
+                countdownRange: context.state.countdownRange,
+                timerFont: .title2,
+                alignment: .center
               )
-              .font(.title2)
-              .fontWeight(.semibold)
-              .multilineTextAlignment(.center)
+            } else if context.state.isBreakActive {
+              statusView(
+                label: "On a Break",
+                systemImage: "cup.and.heat.waves.fill",
+                color: .orange,
+                countdownRange: context.state.countdownRange,
+                timerFont: .title2,
+                alignment: .center
+              )
+            } else {
+              timerText(for: context.state, font: .title2, alignment: .center)
             }
           }
           .padding(.horizontal, 16)
@@ -182,6 +170,60 @@ struct FoqosWidgetLiveActivity: Widget {
       .keylineTint(Color.purple)
     }
   }
+
+  @ViewBuilder
+  private func timerText(
+    for state: FoqosWidgetAttributes.ContentState,
+    font: Font,
+    alignment: TextAlignment
+  ) -> some View {
+    if let countdownRange = state.countdownRange {
+      Text(timerInterval: countdownRange, countsDown: true)
+        .font(font)
+        .fontWeight(.semibold)
+        .foregroundColor(.primary)
+        .multilineTextAlignment(alignment)
+    } else {
+      Text(
+        Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
+        style: .timer
+      )
+      .font(font)
+      .fontWeight(.semibold)
+      .foregroundColor(.primary)
+      .multilineTextAlignment(alignment)
+    }
+  }
+
+  @ViewBuilder
+  private func statusView(
+    label: String,
+    systemImage: String,
+    color: Color,
+    countdownRange: ClosedRange<Date>?,
+    timerFont: Font,
+    alignment: TextAlignment
+  ) -> some View {
+    VStack(alignment: alignment == .trailing ? .trailing : .center, spacing: 4) {
+      HStack(spacing: 6) {
+        Image(systemName: systemImage)
+          .font(.title2)
+          .foregroundColor(color)
+        Text(label)
+          .font(.subheadline)
+          .fontWeight(.semibold)
+          .foregroundColor(color)
+      }
+
+      if let countdownRange {
+        Text(timerInterval: countdownRange, countsDown: true)
+          .font(timerFont)
+          .fontWeight(.semibold)
+          .foregroundColor(.primary)
+          .multilineTextAlignment(alignment)
+      }
+    }
+  }
 }
 
 extension FoqosWidgetAttributes {
@@ -197,6 +239,7 @@ extension FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes
       .ContentState(
         startTime: Date(timeInterval: 60, since: Date.now),
+        expectedEndTime: Date(timeIntervalSinceNow: 25 * 60),
         isBreakActive: false,
         breakStartTime: nil,
         breakEndTime: nil,
@@ -209,6 +252,7 @@ extension FoqosWidgetAttributes.ContentState {
   fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
       startTime: Date(timeInterval: 60, since: Date.now),
+      expectedEndTime: Date(timeIntervalSinceNow: 2 * 60 * 60),
       isBreakActive: false,
       breakStartTime: nil,
       breakEndTime: nil,
@@ -221,6 +265,7 @@ extension FoqosWidgetAttributes.ContentState {
   fileprivate static var breakActive: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
       startTime: Date(timeInterval: 60, since: Date.now),
+      expectedEndTime: Date(timeIntervalSinceNow: 5 * 60),
       isBreakActive: true,
       breakStartTime: Date.now,
       breakEndTime: nil,
@@ -233,6 +278,7 @@ extension FoqosWidgetAttributes.ContentState {
   fileprivate static var pauseActive: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
       startTime: Date(timeInterval: 60, since: Date.now),
+      expectedEndTime: Date(timeIntervalSinceNow: 10 * 60),
       isBreakActive: false,
       breakStartTime: nil,
       breakEndTime: nil,
