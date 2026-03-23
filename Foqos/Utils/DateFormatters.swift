@@ -61,11 +61,12 @@ enum DateFormatters {
   }
 
   static func formatDurationHoursSeconds(_ interval: TimeInterval) -> String {
-    guard interval > 0 else { return "0h 0s" }
+    guard interval > 0 else { return "0h 0m 0s" }
     let totalSeconds = Int(interval)
     let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
     let seconds = totalSeconds % 60
-    return "\(hours)h \(seconds)s"
+    return "\(hours)h \(minutes)m \(seconds)s"
   }
 
   static func formatSelectedDayHeader(_ date: Date) -> String {
