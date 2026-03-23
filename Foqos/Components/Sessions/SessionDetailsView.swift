@@ -71,7 +71,7 @@ private struct TimingSection: View {
 
       InfoRow(
         label: "Duration",
-        value: DateFormatters.formatDurationHoursSeconds(session.duration)
+        value: DateFormatters.formatDurationHoursMinutes(session.duration)
       )
     }
   }

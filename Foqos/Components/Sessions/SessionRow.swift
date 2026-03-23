@@ -12,7 +12,7 @@ struct SessionRow: View {
         .foregroundStyle(.secondary)
 
       HStack(alignment: .firstTextBaseline, spacing: 8) {
-        Text(DateFormatters.formatDurationHoursSeconds(session.duration))
+        Text(DateFormatters.formatDurationHoursMinutes(session.duration))
           .font(.system(size: 24, weight: .bold, design: .rounded))
           .foregroundStyle(.primary)
 

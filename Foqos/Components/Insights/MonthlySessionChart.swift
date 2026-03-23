@@ -211,7 +211,7 @@ struct MonthlySessionChart: View {
               .foregroundStyle(.secondary)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-              Text(DateFormatters.formatDurationHoursSeconds(selectedDay.totalSessionTime))
+              Text(DateFormatters.formatDurationHoursMinutes(selectedDay.totalSessionTime))
                 .font(.system(size: 40, weight: .bold, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundStyle(.primary)
@@ -245,7 +245,7 @@ struct MonthlySessionChart: View {
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
 
-          Text(DateFormatters.formatDurationHoursSeconds(monthlySummary.averageSessionDuration))
+          Text(DateFormatters.formatDurationHoursMinutes(monthlySummary.averageSessionDuration))
             .font(.system(size: 40, weight: .bold, design: .rounded))
             .fontWeight(.bold)
             .foregroundStyle(.primary)
