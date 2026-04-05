@@ -7,26 +7,12 @@ struct ProfileActivityView: View {
   let activities: [DashboardProfileActivity]
   let viewMode: InsightsViewMode
   let onInsightsTapped: (DashboardInsightsContext) -> Void
-  let onClear: () -> Void
 
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
-      HStack {
-        Text(DateFormatters.formatDashboardDate(selectedDate))
-          .font(.subheadline)
-          .fontWeight(.medium)
-
-        Spacer()
-
-        Button {
-          onClear()
-        } label: {
-          Image(systemName: "arrow.counterclockwise")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-        }
-        .buttonStyle(.plain)
-      }
+      Text(DateFormatters.formatDashboardDate(selectedDate))
+        .font(.subheadline)
+        .fontWeight(.medium)
 
       VStack(alignment: .leading, spacing: 8) {
         ForEach(activities) { activity in
@@ -69,7 +55,7 @@ struct ProfileActivityView: View {
         HStack(spacing: 4) {
           Image(systemName: "chart.line.uptrend.xyaxis")
             .font(.caption)
-          Text("Open")
+          Text("View")
             .font(.caption)
             .fontWeight(.medium)
         }
@@ -99,8 +85,7 @@ struct ProfileActivityView: View {
     selectedDate: Date(),
     activities: activities,
     viewMode: .week,
-    onInsightsTapped: { _ in },
-    onClear: {}
+    onInsightsTapped: { _ in }
   )
   .environmentObject(ThemeManager.shared)
   .padding()

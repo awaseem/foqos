@@ -23,7 +23,10 @@ struct ChartConfigurationSheet: View {
               HStack(alignment: .top, spacing: 12) {
                 ZStack {
                   Circle()
-                    .stroke(chartType == type ? themeManager.themeColor : Color.gray.opacity(0.4), lineWidth: 2)
+                    .stroke(
+                      chartType == type ? themeManager.themeColor : Color.gray.opacity(0.4),
+                      lineWidth: 2
+                    )
                     .frame(width: 22, height: 22)
 
                   if chartType == type {
@@ -61,7 +64,7 @@ struct ChartConfigurationSheet: View {
           }
         }
       }
-      .navigationTitle("Configure")
+      .navigationTitle("Manage chart")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
@@ -69,7 +72,6 @@ struct ChartConfigurationSheet: View {
             onDismiss()
           } label: {
             Image(systemName: "checkmark")
-              .font(.system(size: 17, weight: .semibold))
           }
         }
       }
