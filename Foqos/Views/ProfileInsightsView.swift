@@ -233,9 +233,7 @@ struct ProfileInsightsView: View {
           }
         }
 
-        if filteredSessions.isEmpty {
-          InsightsEmptyStateView(hasSelectedDay: selectedDay != nil)
-        } else {
+        if !filteredSessions.isEmpty {
           Section(sessionsSectionTitle) {
             ForEach(filteredSessions) { session in
               Button {
