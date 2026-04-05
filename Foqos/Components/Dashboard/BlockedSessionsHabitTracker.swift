@@ -173,8 +173,7 @@ struct BlockedSessionsHabitTracker: View {
                 selectedDate: date,
                 activities: selectedDateProfiles,
                 viewMode: viewMode,
-                onInsightsTapped: onInsightsTapped,
-                onClear: clearAllSelections
+                onInsightsTapped: onInsightsTapped
               )
             }
           }

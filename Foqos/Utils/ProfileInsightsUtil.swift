@@ -4,10 +4,10 @@ import SwiftUI
 struct ProfileInsightsMetrics {
   let totalCompletedSessions: Int
   let totalFocusTime: TimeInterval
+  let totalBreakTime: TimeInterval
   let averageSessionDuration: TimeInterval?
   let longestSessionDuration: TimeInterval?
   let shortestSessionDuration: TimeInterval?
-  // Break metrics
   let totalBreaksTaken: Int
   let averageBreakDuration: TimeInterval?
   let sessionsWithBreaks: Int
@@ -120,12 +120,14 @@ class ProfileInsightsUtil: ObservableObject {
     let longest = durations.max()
     let shortest = durations.min()
     let totalBreaksTaken = sessionsWithBreaks
+    let totalBreakTime = breakDurations.reduce(0, +)
     let avgBreak =
       breakDurations.isEmpty ? nil : (breakDurations.reduce(0, +) / Double(breakDurations.count))
 
     return ProfileInsightsMetrics(
       totalCompletedSessions: count,
       totalFocusTime: total,
+      totalBreakTime: totalBreakTime,
       averageSessionDuration: average,
       longestSessionDuration: longest,
       shortestSessionDuration: shortest,
