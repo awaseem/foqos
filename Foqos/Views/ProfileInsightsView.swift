@@ -29,6 +29,7 @@ struct ProfileInsightsView: View {
 
   @StateObject private var weeklyViewModel: WeeklyInsightsUtil
   @StateObject private var monthlyViewModel: MonthlyInsightsUtil
+  @StateObject private var profileInsightsViewModel: ProfileInsightsUtil
   @State private var selectedWeekDay: WeeklyDayAggregate?
   @State private var selectedMonthDay: MonthlyDayAggregate?
   @State private var selectedSession: BlockedProfileSession?
@@ -84,6 +85,7 @@ struct ProfileInsightsView: View {
   ) {
     _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: [profile]))
     _monthlyViewModel = StateObject(wrappedValue: MonthlyInsightsUtil(profiles: [profile]))
+    _profileInsightsViewModel = StateObject(wrappedValue: ProfileInsightsUtil(profile: profile))
     _initialViewMode = State(wrappedValue: initialViewMode)
     _initialSelectedDate = State(wrappedValue: initialSelectedDate)
     self.profileName = profile.name
@@ -97,11 +99,15 @@ struct ProfileInsightsView: View {
     monthlyViewModel.monthlySummary
   }
 
+  private var profileId: UUID {
+    weeklyViewModel.profiles.first?.id ?? UUID()
+  }
+
   private var weekSessions: [BlockedProfileSession] {
     allSessions.filter { session in
       guard let profileId = weeklyViewModel.profiles.first?.id,
-            session.blockedProfile.id == profileId,
-            let endTime = session.endTime
+        session.blockedProfile.id == profileId,
+        let endTime = session.endTime
       else {
         return false
       }
@@ -112,8 +118,8 @@ struct ProfileInsightsView: View {
   private var monthSessions: [BlockedProfileSession] {
     allSessions.filter { session in
       guard let profileId = monthlyViewModel.profiles.first?.id,
-            session.blockedProfile.id == profileId,
-            let endTime = session.endTime
+        session.blockedProfile.id == profileId,
+        let endTime = session.endTime
       else {
         return false
       }
@@ -208,17 +214,21 @@ struct ProfileInsightsView: View {
         if viewMode != .allSessions {
           Section {
             if viewMode == .week {
-              WeeklySessionChart(viewModel: weeklyViewModel, selectedDay: $selectedWeekDay, onDateSelected: nil)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 8)
-                .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-                .listRowBackground(Color.clear)
+              WeeklySessionChart(
+                viewModel: weeklyViewModel, selectedDay: $selectedWeekDay, onDateSelected: nil
+              )
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 8)
+              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+              .listRowBackground(Color.clear)
             } else {
-              MonthlySessionChart(viewModel: monthlyViewModel, selectedDay: $selectedMonthDay, onDateSelected: nil)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 8)
-                .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-                .listRowBackground(Color.clear)
+              MonthlySessionChart(
+                viewModel: monthlyViewModel, selectedDay: $selectedMonthDay, onDateSelected: nil
+              )
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 8)
+              .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
+              .listRowBackground(Color.clear)
             }
           }
         }
@@ -242,6 +252,30 @@ struct ProfileInsightsView: View {
                 }
               }
             }
+          }
+        }
+
+        if selectedDay == nil {
+          Section("Summary") {
+            InsightsSummaryRow(
+              icon: "clock.fill",
+              label: "Total Focus Time",
+              value: DateFormatters.formatDurationHoursMinutes(
+                profileInsightsViewModel.metrics.totalFocusTime)
+            )
+
+            InsightsSummaryRow(
+              icon: "cup.and.saucer.fill",
+              label: "Total Break Time",
+              value: DateFormatters.formatDurationHoursMinutes(
+                profileInsightsViewModel.metrics.totalBreakTime)
+            )
+
+            InsightsSummaryRow(
+              icon: "tag.fill",
+              label: "Profile ID",
+              value: String(profileId.uuidString.prefix(8)) + "..."
+            )
           }
         }
       }
@@ -412,8 +446,9 @@ struct ProfileInsightsView: View {
 
   private func applyInitialState() async {
     guard !hasAppliedInitialState,
-          let viewMode = initialViewMode,
-          let date = initialSelectedDate else { return }
+      let viewMode = initialViewMode,
+      let date = initialSelectedDate
+    else { return }
 
     hasAppliedInitialState = true
 
@@ -422,7 +457,7 @@ struct ProfileInsightsView: View {
       selectedFilter = .specificWeek
       weeklyViewModel.setWeek(for: date)
       // Wait a moment for the view model to update
-      try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+      try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1 seconds
       // Find and select the matching day
       if let matchingDay = weeklyViewModel.weeklySummary.days.first(where: {
         Calendar.current.isDate($0.date, inSameDayAs: date)
@@ -433,7 +468,7 @@ struct ProfileInsightsView: View {
       selectedFilter = .specificMonth
       monthlyViewModel.setMonth(for: date)
       // Wait a moment for the view model to update
-      try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+      try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1 seconds
       // Find and select the matching day
       if let matchingDay = monthlyViewModel.monthlySummary.days.first(where: {
         Calendar.current.isDate($0.date, inSameDayAs: date)
