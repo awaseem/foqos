@@ -24,8 +24,15 @@ class BlockedProfiles {
   var enableAllowModeDomains: Bool = false
   var enableSafariBlocking: Bool = true
 
+  @available(*, deprecated, message: "Use physicalUnblockItems instead - supports multiple NFC/QR codes")
   var physicalUnblockNFCTagId: String?
+
+  @available(*, deprecated, message: "Use physicalUnblockItems instead - supports multiple NFC/QR codes")
   var physicalUnblockQRCodeId: String?
+
+  /// Array of physical unblock items (NFC tags and QR codes) that can unblock this profile
+  /// Supports multiple NFC tags and/or QR codes per profile
+  var physicalUnblockItems: [PhysicalUnblockItem]?
 
   var domains: [String]? = nil
 
@@ -46,6 +53,18 @@ class BlockedProfiles {
   var scheduleIsOutOfSync: Bool {
     return self.schedule?.isActive == true
       && DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self) == nil
+  }
+
+  // MARK: - Physical Unblock Helpers
+
+  /// Checks if a specific NFC tag or QR code can unblock this profile
+  /// - Parameters:
+  ///   - codeValue: The NFC tag ID or QR code value to check
+  ///   - type: The type of code (NFC or QR)
+  /// - Returns: True if the code is in the allowed list, false otherwise
+  func canUnblock(withCode codeValue: String, type: PhysicalUnblockItem.PhysicalUnblockType) -> Bool {
+    guard let items = physicalUnblockItems else { return false }
+    return items.contains { $0.codeValue == codeValue && $0.type == type }
   }
 
   init(
@@ -312,6 +331,7 @@ class BlockedProfiles {
       domains: profile.domains,
       physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
       physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
+      physicalUnblockItems: profile.physicalUnblockItems,
       schedule: profile.schedule,
       disableBackgroundStops: profile.disableBackgroundStops,
       enableEmergencyUnblock: profile.enableEmergencyUnblock

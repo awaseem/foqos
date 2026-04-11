@@ -113,6 +113,7 @@
 		801C99CE2E9C9B9D000E07CD /* Exceptions for "Foqos" folder in "FoqosWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
 				Utils/AppBlockerUtil.swift,
@@ -129,6 +130,7 @@
 		804415942DE7E94B0000CAE4 /* Exceptions for "Foqos" folder in "FoqosDeviceMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
 				Models/Timers/BreakTimerActivity.swift,

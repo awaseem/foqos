@@ -10,14 +10,20 @@ import BackgroundTasks
 import SwiftData
 import SwiftUI
 
-private let container: ModelContainer = {
+@MainActor private let container: ModelContainer = {
   do {
-    return try ModelContainer(
+    let container = try ModelContainer(
       for: BlockedProfileSession.self,
       BlockedProfiles.self
     )
+    // Temporary backfill for users upgrading from the legacy NFC/QR fields.
+    // Remove this in the next app version once the installed base has migrated.
+    try PhysicalUnblockMigrationHelper.migrateOldPhysicalUnblockFields(
+      in: container.mainContext
+    )
+    return container
   } catch {
-    fatalError("Couldn’t create ModelContainer: \(error)")
+    fatalError("Couldn't create ModelContainer: \(error)")
   }
 }()
 
