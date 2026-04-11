@@ -69,8 +69,8 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
       let tagId = tag.url ?? tag.id
 
       // Check strict mode - if physical unblock is set, it must match
-      if let physicalUnblockNFCTagId = session.blockedProfile.physicalUnblockNFCTagId,
-        physicalUnblockNFCTagId != tagId
+      if session.blockedProfile.hasPhysicalUnblockItem(ofType: .nfc)
+        && !session.blockedProfile.canUnblock(withCode: tagId, type: .nfc)
       {
         self.onErrorMessage?(
           "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"

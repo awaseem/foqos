@@ -66,9 +66,8 @@ class QRCodeBlockingStrategy: BlockingStrategy {
         let tag = result.string
 
         // Validate the scanned QR code for unblocking
-        if let physicalUnblockQRCodeId = session.blockedProfile.physicalUnblockQRCodeId {
-          // Physical unblock QR code is set - only this specific code can unblock
-          if physicalUnblockQRCodeId != tag {
+        if session.blockedProfile.hasPhysicalUnblockItem(ofType: .qrCode) {
+          if !session.blockedProfile.canUnblock(withCode: tag, type: .qrCode) {
             self.onErrorMessage?(
               "This QR code is not allowed to unblock this profile. Physical unblock setting is on for this profile"
             )

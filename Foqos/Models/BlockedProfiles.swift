@@ -24,8 +24,19 @@ class BlockedProfiles {
   var enableAllowModeDomains: Bool = false
   var enableSafariBlocking: Bool = true
 
+  @available(
+    *, deprecated, message: "Use physicalUnblockItems instead - supports multiple NFC/QR codes"
+  )
   var physicalUnblockNFCTagId: String?
+
+  @available(
+    *, deprecated, message: "Use physicalUnblockItems instead - supports multiple NFC/QR codes"
+  )
   var physicalUnblockQRCodeId: String?
+
+  /// Array of physical unblock items (NFC tags and QR codes) that can unblock this profile
+  /// Supports multiple NFC tags and/or QR codes per profile
+  var physicalUnblockItems: [PhysicalUnblockItem]?
 
   var domains: [String]? = nil
 
@@ -48,6 +59,24 @@ class BlockedProfiles {
       && DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self) == nil
   }
 
+  // MARK: - Physical Unblock Helpers
+
+  /// Checks if a specific NFC tag or QR code can unblock this profile
+  /// - Parameters:
+  ///   - codeValue: The NFC tag ID or QR code value to check
+  ///   - type: The type of code (NFC or QR)
+  /// - Returns: True if the code is in the allowed list, false otherwise
+  func canUnblock(withCode codeValue: String, type: PhysicalUnblockItem.PhysicalUnblockType) -> Bool
+  {
+    guard let items = physicalUnblockItems else { return false }
+    return items.contains { $0.codeValue == codeValue && $0.type == type }
+  }
+
+  func hasPhysicalUnblockItem(ofType type: PhysicalUnblockItem.PhysicalUnblockType) -> Bool {
+    guard let items = physicalUnblockItems else { return false }
+    return items.contains { $0.type == type }
+  }
+
   init(
     id: UUID = UUID(),
     name: String,
@@ -67,8 +96,7 @@ class BlockedProfiles {
     enableSafariBlocking: Bool = true,
     order: Int = 0,
     domains: [String]? = nil,
-    physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil,
+    physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
     enableEmergencyUnblock: Bool = true
@@ -94,8 +122,7 @@ class BlockedProfiles {
     self.enableSafariBlocking = enableSafariBlocking
     self.domains = domains
 
-    self.physicalUnblockNFCTagId = physicalUnblockNFCTagId
-    self.physicalUnblockQRCodeId = physicalUnblockQRCodeId
+    self.physicalUnblockItems = PhysicalUnblockItem.normalizedItems(physicalUnblockItems)
     self.schedule = schedule
 
     self.disableBackgroundStops = disableBackgroundStops
@@ -162,8 +189,7 @@ class BlockedProfiles {
     enableSafariBlocking: Bool? = nil,
     order: Int? = nil,
     domains: [String]? = nil,
-    physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil,
+    physicalUnblockItems: [PhysicalUnblockItem]?? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool? = nil,
     enableEmergencyUnblock: Bool? = nil
@@ -243,9 +269,9 @@ class BlockedProfiles {
       profile.enableEmergencyUnblock = newEnableEmergencyUnblock
     }
 
-    // Values can be nil when removed
-    profile.physicalUnblockNFCTagId = physicalUnblockNFCTagId
-    profile.physicalUnblockQRCodeId = physicalUnblockQRCodeId
+    if let physicalUnblockItems {
+      profile.physicalUnblockItems = PhysicalUnblockItem.normalizedItems(physicalUnblockItems)
+    }
 
     profile.reminderTimeInSeconds = reminderTime
     profile.customReminderMessage = customReminderMessage
@@ -310,8 +336,9 @@ class BlockedProfiles {
       enableAllowModeDomains: profile.enableAllowModeDomains,
       enableSafariBlocking: profile.enableSafariBlocking,
       domains: profile.domains,
-      physicalUnblockNFCTagId: profile.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: profile.physicalUnblockQRCodeId,
+      physicalUnblockNFCTagId: nil,
+      physicalUnblockQRCodeId: nil,
+      physicalUnblockItems: profile.physicalUnblockItems,
       schedule: profile.schedule,
       disableBackgroundStops: profile.disableBackgroundStops,
       enableEmergencyUnblock: profile.enableEmergencyUnblock
@@ -364,8 +391,7 @@ class BlockedProfiles {
     enableAllowModeDomains: Bool = false,
     enableSafariBlocking: Bool = true,
     domains: [String]? = nil,
-    physicalUnblockNFCTagId: String? = nil,
-    physicalUnblockQRCodeId: String? = nil,
+    physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
     enableEmergencyUnblock: Bool = true
@@ -388,8 +414,7 @@ class BlockedProfiles {
       enableSafariBlocking: enableSafariBlocking,
       order: profileOrder,
       domains: domains,
-      physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+      physicalUnblockItems: physicalUnblockItems,
       disableBackgroundStops: disableBackgroundStops,
       enableEmergencyUnblock: enableEmergencyUnblock
     )
@@ -428,8 +453,7 @@ class BlockedProfiles {
       enableSafariBlocking: source.enableSafariBlocking,
       order: nextOrder,
       domains: source.domains,
-      physicalUnblockNFCTagId: source.physicalUnblockNFCTagId,
-      physicalUnblockQRCodeId: source.physicalUnblockQRCodeId,
+      physicalUnblockItems: source.physicalUnblockItems,
       schedule: source.schedule,
       enableEmergencyUnblock: source.enableEmergencyUnblock
     )

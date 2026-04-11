@@ -35,8 +35,14 @@ enum SharedData {
     var enableSafariBlocking: Bool
 
     var domains: [String]?
-    var physicalUnblockNFCTagId: String?
-    var physicalUnblockQRCodeId: String?
+
+    @available(*, deprecated, message: "Use physicalUnblockItems instead")
+    var physicalUnblockNFCTagId: String? = nil
+
+    @available(*, deprecated, message: "Use physicalUnblockItems instead")
+    var physicalUnblockQRCodeId: String? = nil
+
+    var physicalUnblockItems: [PhysicalUnblockItem]? = nil
 
     var schedule: BlockedProfileSchedule?
 

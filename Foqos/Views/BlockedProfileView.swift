@@ -41,8 +41,7 @@ struct BlockedProfileView: View {
   @State private var enableEmergencyUnblock: Bool = true
   @State private var domains: [String] = []
 
-  @State private var physicalUnblockNFCTagId: String?
-  @State private var physicalUnblockQRCodeId: String?
+  @State private var physicalUnblockItems: [PhysicalUnblockItem] = []
 
   @State private var schedule: BlockedProfileSchedule
 
@@ -67,9 +66,6 @@ struct BlockedProfileView: View {
   // NFC write URL storage for overwrite warning
   @State private var pendingNFCWriteURL: String?
 
-  // Sheet for physical unblock
-  @State private var showingPhysicalUnblockView = false
-
   // Alert for cloning
   @State private var showingClonePrompt = false
   @State private var cloneName: String = ""
@@ -79,8 +75,6 @@ struct BlockedProfileView: View {
 
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
-
-  private let physicalReader: PhysicalReader = PhysicalReader()
 
   private var isEditing: Bool {
     profile != nil
@@ -135,11 +129,8 @@ struct BlockedProfileView: View {
     _domains = State(
       initialValue: profile?.domains ?? []
     )
-    _physicalUnblockNFCTagId = State(
-      initialValue: profile?.physicalUnblockNFCTagId ?? nil
-    )
-    _physicalUnblockQRCodeId = State(
-      initialValue: profile?.physicalUnblockQRCodeId ?? nil
+    _physicalUnblockItems = State(
+      initialValue: profile?.physicalUnblockItems ?? []
     )
     _schedule = State(
       initialValue: profile?.schedule
@@ -261,19 +252,8 @@ struct BlockedProfileView: View {
 
         Section("Strict Unlocks") {
           BlockedProfilePhysicalUnblockSelector(
-            nfcTagId: physicalUnblockNFCTagId,
-            qrCodeId: physicalUnblockQRCodeId,
-            disabled: isBlocking,
-            onSetNFC: {
-              physicalReader.readNFCTag(
-                onSuccess: { physicalUnblockNFCTagId = $0 },
-              )
-            },
-            onSetQRCode: {
-              showingPhysicalUnblockView = true
-            },
-            onUnsetNFC: { physicalUnblockNFCTagId = nil },
-            onUnsetQRCode: { physicalUnblockQRCodeId = nil }
+            physicalUnblockItems: $physicalUnblockItems,
+            disabled: isBlocking
           )
         }
 
@@ -541,22 +521,6 @@ struct BlockedProfileView: View {
           }
         )
       )
-      .sheet(isPresented: $showingPhysicalUnblockView) {
-        BlockingStrategyActionView(
-          customView: physicalReader.readQRCode(
-            onSuccess: {
-              showingPhysicalUnblockView = false
-              physicalUnblockQRCodeId = $0
-            },
-            onFailure: { _ in
-              showingPhysicalUnblockView = false
-              showError(
-                message: "Failed to read QR code, please try again or use a different QR code."
-              )
-            }
-          )
-        )
-      }
       .alert(item: $alertIdentifier) { alert in
         switch alert.id {
         case .error:
@@ -610,7 +574,7 @@ struct BlockedProfileView: View {
       let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
 
       // Check if a physical unblock NFC tag is already set
-      if profileToWrite.physicalUnblockNFCTagId != nil {
+      if profileToWrite.hasPhysicalUnblockItem(ofType: .nfc) {
         pendingNFCWriteURL = url
         alertIdentifier = AlertIdentifier(id: .overwriteNFCWarning)
       } else {
@@ -627,6 +591,8 @@ struct BlockedProfileView: View {
       // Calculate reminder time in seconds or nil if disabled
       let reminderTimeSeconds: UInt32? =
         enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
+      let physicalUnblockItemsToSave: [PhysicalUnblockItem]? =
+        physicalUnblockItems.isEmpty ? nil : physicalUnblockItems
 
       if let existingProfile = profile {
         // Update existing profile
@@ -646,8 +612,7 @@ struct BlockedProfileView: View {
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,
           domains: domains,
-          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-          physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+          physicalUnblockItems: .some(physicalUnblockItemsToSave),
           schedule: schedule,
           disableBackgroundStops: disableBackgroundStops,
           enableEmergencyUnblock: enableEmergencyUnblock
@@ -672,8 +637,7 @@ struct BlockedProfileView: View {
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,
           domains: domains,
-          physicalUnblockNFCTagId: physicalUnblockNFCTagId,
-          physicalUnblockQRCodeId: physicalUnblockQRCodeId,
+          physicalUnblockItems: physicalUnblockItemsToSave,
           schedule: schedule,
           disableBackgroundStops: disableBackgroundStops,
           enableEmergencyUnblock: enableEmergencyUnblock
