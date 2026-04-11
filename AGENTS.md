@@ -4,39 +4,28 @@ This file provides guidelines for agentic coding assistants working on the Foqos
 
 ## Build & Test Commands
 
+This project includes a `Makefile` with common development tasks. Run `make help` to see all available commands.
+
 ### Building
 ```bash
-# Open in Xcode
-open foqos.xcodeproj
-
 # Build from command line
-xcodebuild -project foqos.xcodeproj -scheme foqos -configuration Debug build
+make build
+
+# Clean build artifacts
+make clean
 ```
 
 ### Running Tests
-This project currently does not have unit tests. When adding tests, use:
-```bash
-# Run all tests
-xcodebuild test -project foqos.xcodeproj -scheme foqos -destination 'platform=iOS Simulator,name=iPhone 15'
-
-# Run a single test class
-xcodebuild test -project foqos.xcodeproj -scheme foqos -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:foqosTests/ClassName
-```
+This project currently does not have unit tests.
 
 ### Code Formatting
 The project uses swift-format to maintain consistent code style. Run format commands before committing:
 ```bash
-# Format all Swift files
-swift-format .
+# Check formatting
+make lint
 
-# Format specific files or directories
-swift-format Foqos/Views/
-
-# Check formatting without making changes
-swift-format --dry-run .
-
-# Format in recursive mode
-swift-format --recursive .
+# Run both lint and build
+make check
 ```
 
 ## Code Style Guidelines

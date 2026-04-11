@@ -97,6 +97,27 @@ Enhance your Foqos setup with a 3D printable brick or keychain, compatible with 
 
 ### Building the Project
 
+This project includes a `Makefile` with common development tasks:
+
+```bash
+# Build the project
+make build
+
+# Check code formatting
+make lint
+
+# Run both lint and build
+make check
+
+# Clean build artifacts
+make clean
+
+# Show all available commands
+make help
+```
+
+Or open directly in Xcode:
+
 ```bash
 git clone https://github.com/awaseem/foqos.git
 cd foqos
