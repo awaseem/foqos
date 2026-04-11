@@ -37,12 +37,12 @@ enum SharedData {
     var domains: [String]?
 
     @available(*, deprecated, message: "Use physicalUnblockItems instead")
-    var physicalUnblockNFCTagId: String?
+    var physicalUnblockNFCTagId: String? = nil
 
     @available(*, deprecated, message: "Use physicalUnblockItems instead")
-    var physicalUnblockQRCodeId: String?
+    var physicalUnblockQRCodeId: String? = nil
 
-    var physicalUnblockItems: [PhysicalUnblockItem]?
+    var physicalUnblockItems: [PhysicalUnblockItem]? = nil
 
     var schedule: BlockedProfileSchedule?
 

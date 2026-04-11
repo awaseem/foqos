@@ -25,29 +25,13 @@ class PhysicalUnblockMigrationHelper {
         continue
       }
 
-      var items: [PhysicalUnblockItem] = []
-
-      if let nfcId = profile.physicalUnblockNFCTagId, !nfcId.isEmpty {
-        items.append(
-          PhysicalUnblockItem(
-            name: "NFC Tag",
-            type: .nfc,
-            codeValue: nfcId
-          )
+      guard
+        let items = PhysicalUnblockItem.resolvedItems(
+          physicalUnblockItems: nil,
+          legacyNFCTagId: profile.physicalUnblockNFCTagId,
+          legacyQRCodeId: profile.physicalUnblockQRCodeId
         )
-      }
-
-      if let qrId = profile.physicalUnblockQRCodeId, !qrId.isEmpty {
-        items.append(
-          PhysicalUnblockItem(
-            name: "QR Code",
-            type: .qrCode,
-            codeValue: qrId
-          )
-        )
-      }
-
-      guard !items.isEmpty else { continue }
+      else { continue }
 
       profile.physicalUnblockItems = items
       updatedProfiles.append(profile)

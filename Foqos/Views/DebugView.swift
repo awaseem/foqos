@@ -50,17 +50,17 @@ struct DebugView: View {
                   VStack(alignment: .leading, spacing: 8) {
                     Text(profile.name)
                       .font(.headline)
-                    
+
                     ProfileDebugCard(profile: profile)
-                    
+
                     if let schedule = profile.schedule {
                       ScheduleDebugCard(schedule: schedule)
                     }
-                    
+
                     DebugSection(title: "Selected Activity") {
                       SelectedActivityDebugCard(selection: profile.selectedActivity)
                     }
-                    
+
                     if let domains = profile.domains, !domains.isEmpty {
                       DebugSection(title: "Domains (\(domains.count))") {
                         DomainsDebugCard(domains: domains)
@@ -68,7 +68,7 @@ struct DebugView: View {
                     }
                   }
                   .padding(.vertical, 8)
-                  
+
                   if profile.id != allProfiles.last?.id {
                     Divider()
                   }
@@ -188,7 +188,8 @@ struct DebugView: View {
         markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"
         markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
         markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
-        markdown += "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
+        markdown +=
+          "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
 
         if let reminderTime = profile.reminderTimeInSeconds {
           markdown += "- **Reminder Time:** \(reminderTime / 60) minutes\n"
@@ -198,12 +199,12 @@ struct DebugView: View {
           markdown += "- **Custom Reminder Message:** \(customMessage)\n"
         }
 
-        if let nfcTagId = profile.physicalUnblockNFCTagId {
-          markdown += "- **Physical Unlock NFC Tag ID:** \(nfcTagId)\n"
-        }
+        if let physicalUnblockItems = profile.physicalUnblockItems, !physicalUnblockItems.isEmpty {
+          markdown += "- **Physical Unlock Items:** \(physicalUnblockItems.count)\n"
 
-        if let qrCodeId = profile.physicalUnblockQRCodeId {
-          markdown += "- **Physical Unlock QR Code ID:** \(qrCodeId)\n"
+          for item in physicalUnblockItems {
+            markdown += "  - \(item.type.displayName): \(item.name)\n"
+          }
         }
 
         markdown += "- **Total Sessions:** \(profile.sessions.count)\n"

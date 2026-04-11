@@ -186,8 +186,7 @@ struct ProfileWidgetEntryView: View {
     if profile.enableAllowMode { count += 1 }
     if profile.enableAllowModeDomains { count += 1 }
     if profile.reminderTimeInSeconds != nil { count += 1 }
-    if profile.physicalUnblockNFCTagId != nil { count += 1 }
-    if profile.physicalUnblockQRCodeId != nil { count += 1 }
+    if profile.physicalUnblockItems?.isEmpty == false { count += 1 }
     if profile.schedule != nil { count += 1 }
     if profile.disableBackgroundStops == true { count += 1 }
     return count
@@ -224,8 +223,6 @@ struct ProfileWidgetEntryView: View {
       enableAllowModeDomains: true,
       enableSafariBlocking: true,
       domains: ["facebook.com", "twitter.com", "instagram.com"],
-      physicalUnblockNFCTagId: nil,
-      physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),
@@ -267,8 +264,6 @@ struct ProfileWidgetEntryView: View {
       enableAllowModeDomains: true,
       enableSafariBlocking: true,
       domains: ["youtube.com", "reddit.com"],
-      physicalUnblockNFCTagId: nil,
-      physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),
@@ -310,8 +305,6 @@ struct ProfileWidgetEntryView: View {
       enableAllowModeDomains: false,
       enableSafariBlocking: true,
       domains: ["tiktok.com", "instagram.com", "snapchat.com"],
-      physicalUnblockNFCTagId: nil,
-      physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),
@@ -355,8 +348,6 @@ struct ProfileWidgetEntryView: View {
       enableAllowModeDomains: false,
       enableSafariBlocking: true,
       domains: ["facebook.com", "twitter.com"],
-      physicalUnblockNFCTagId: nil,
-      physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),
@@ -411,8 +402,6 @@ struct ProfileWidgetEntryView: View {
       enableAllowModeDomains: false,
       enableSafariBlocking: true,
       domains: ["linkedin.com", "slack.com"],
-      physicalUnblockNFCTagId: nil,
-      physicalUnblockQRCodeId: nil,
       schedule: nil,
       disableBackgroundStops: nil
     ),

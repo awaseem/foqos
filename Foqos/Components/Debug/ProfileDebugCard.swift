@@ -53,8 +53,13 @@ struct ProfileDebugCard: View {
 
       // Physical Unlock
       Group {
-        DebugRow(label: "NFC Tag ID", value: profile.physicalUnblockNFCTagId ?? "nil")
-        DebugRow(label: "QR Code ID", value: profile.physicalUnblockQRCodeId ?? "nil")
+        let physicalUnblockItems = profile.physicalUnblockItems ?? []
+
+        DebugRow(label: "Physical Unlock Count", value: "\(physicalUnblockItems.count)")
+
+        ForEach(physicalUnblockItems) { item in
+          DebugRow(label: item.type.displayName, value: item.name)
+        }
       }
 
       Divider()
@@ -97,7 +102,9 @@ struct ProfileDebugCard: View {
     enableBreaks: false,
     enableStrictMode: true,
     order: 1,
-    physicalUnblockNFCTagId: "ABC123DEF456"
+    physicalUnblockItems: [
+      PhysicalUnblockItem(name: "Desk Tag", type: .nfc, codeValue: "ABC123DEF456")
+    ]
   )
 
   return ProfileDebugCard(profile: profile)

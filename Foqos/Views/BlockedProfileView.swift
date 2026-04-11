@@ -130,11 +130,7 @@ struct BlockedProfileView: View {
       initialValue: profile?.domains ?? []
     )
     _physicalUnblockItems = State(
-      initialValue: BlockedProfiles.resolvedPhysicalUnblockItems(
-        physicalUnblockItems: profile?.physicalUnblockItems,
-        physicalUnblockNFCTagId: profile?.physicalUnblockNFCTagId,
-        physicalUnblockQRCodeId: profile?.physicalUnblockQRCodeId
-      ) ?? []
+      initialValue: profile?.physicalUnblockItems ?? []
     )
     _schedule = State(
       initialValue: profile?.schedule
