@@ -21,19 +21,25 @@ class PhysicalUnblockMigrationHelper {
       let hasLegacyNFC = !(profile.physicalUnblockNFCTagId?.isEmpty ?? true)
       let hasLegacyQRCode = !(profile.physicalUnblockQRCodeId?.isEmpty ?? true)
 
-      if profile.physicalUnblockItems != nil || (!hasLegacyNFC && !hasLegacyQRCode) {
+      if !hasLegacyNFC && !hasLegacyQRCode {
         continue
       }
 
-      guard
-        let items = PhysicalUnblockItem.resolvedItems(
-          physicalUnblockItems: nil,
-          legacyNFCTagId: profile.physicalUnblockNFCTagId,
-          legacyQRCodeId: profile.physicalUnblockQRCodeId
-        )
-      else { continue }
+      if profile.physicalUnblockItems == nil {
+        guard
+          let items = PhysicalUnblockItem.resolvedItems(
+            physicalUnblockItems: nil,
+            legacyNFCTagId: profile.physicalUnblockNFCTagId,
+            legacyQRCodeId: profile.physicalUnblockQRCodeId
+          )
+        else { continue }
 
-      profile.physicalUnblockItems = items
+        profile.physicalUnblockItems = items
+      }
+
+      // Clear legacy values after backfill so deleted items are not recreated on next launch.
+      profile.physicalUnblockNFCTagId = nil
+      profile.physicalUnblockQRCodeId = nil
       updatedProfiles.append(profile)
     }
 
