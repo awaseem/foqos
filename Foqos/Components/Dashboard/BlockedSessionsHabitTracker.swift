@@ -81,14 +81,16 @@ struct BlockedSessionsHabitTracker: View {
       clearAllSelections()
     } else {
       selectedDate = date
-      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(for: date, profiles: profiles)
+      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(
+        for: date, profiles: profiles)
     }
   }
 
   private func handleWeeklyDateSelection(_ date: Date?) {
     if let date = date {
       selectedDate = date
-      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(for: date, profiles: profiles)
+      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(
+        for: date, profiles: profiles)
     } else {
       clearDashboardState()
     }
@@ -97,7 +99,8 @@ struct BlockedSessionsHabitTracker: View {
   private func handleMonthlyDateSelection(_ date: Date?) {
     if let date = date {
       selectedDate = date
-      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(for: date, profiles: profiles)
+      selectedDateProfiles = DashboardActivityUtil.computeProfileActivities(
+        for: date, profiles: profiles)
     } else {
       clearDashboardState()
     }
@@ -168,7 +171,7 @@ struct BlockedSessionsHabitTracker: View {
                   return .month
                 }
               }()
-              
+
               ProfileActivityView(
                 selectedDate: date,
                 activities: selectedDateProfiles,
@@ -201,7 +204,8 @@ struct BlockedSessionsHabitTracker: View {
 
 #Preview {
   let profile1 = BlockedProfiles(name: "Deep Work", selectedActivity: FamilyActivitySelection())
-  let profile2 = BlockedProfiles(name: "Social Media Block", selectedActivity: FamilyActivitySelection())
+  let profile2 = BlockedProfiles(
+    name: "Social Media Block", selectedActivity: FamilyActivitySelection())
   let profile3 = BlockedProfiles(name: "Gaming Focus", selectedActivity: FamilyActivitySelection())
 
   let calendar = Calendar.current

@@ -24,6 +24,9 @@ The project uses swift-format to maintain consistent code style. Run format comm
 # Check formatting
 make lint
 
+# Fix formatting issues
+make lint-fix
+
 # Run both lint and build
 make check
 ```

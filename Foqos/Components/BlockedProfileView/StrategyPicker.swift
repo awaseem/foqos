@@ -125,7 +125,7 @@ struct StrategyPicker: View {
       .navigationBarTitleDisplayMode(.inline)
       .searchable(text: $searchText, prompt: "Search strategies")
       .toolbar {
-          ToolbarItem(placement: .topBarLeading) {
+        ToolbarItem(placement: .topBarLeading) {
           Menu {
             ForEach(StrategyFilter.allCases) { filter in
               Button {

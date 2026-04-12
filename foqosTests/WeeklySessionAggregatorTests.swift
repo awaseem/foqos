@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import foqos
 
 final class WeeklySessionAggregatorTests: XCTestCase {
@@ -24,7 +25,8 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       )
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations[1], 4 * 3600, accuracy: 0.1)
     XCTAssertEqual(result.dailySessionCounts[1], 1)
@@ -41,7 +43,8 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       )
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations[1], 3600, accuracy: 0.1)
     XCTAssertEqual(result.dailyDurations[2], 2 * 3600, accuracy: 0.1)
@@ -59,7 +62,8 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       )
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations[0], 2 * 3600, accuracy: 0.1)
     XCTAssertEqual(result.dailySessionCounts[0], 1)
@@ -76,7 +80,8 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       )
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations[6], 3600, accuracy: 0.1)
     XCTAssertEqual(result.dailySessionCounts[6], 1)
@@ -93,7 +98,8 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       )
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations[1], 2 * 3600, accuracy: 0.1)
     XCTAssertEqual(result.dailyDurations[2], 24 * 3600, accuracy: 0.1)
@@ -111,10 +117,11 @@ final class WeeklySessionAggregatorTests: XCTestCase {
       WeeklySessionInterval(
         startTime: date(2024, 3, 10, 10),
         endTime: date(2024, 3, 10, 12)
-      )
+      ),
     ]
 
-    let result = WeeklySessionAggregator.aggregate(sessions: sessions, weekStart: weekStart, calendar: calendar)
+    let result = WeeklySessionAggregator.aggregate(
+      sessions: sessions, weekStart: weekStart, calendar: calendar)
 
     XCTAssertEqual(result.dailyDurations.reduce(0, +), 0, accuracy: 0.1)
     XCTAssertEqual(result.dailySessionCounts.reduce(0, +), 0)
@@ -132,13 +139,14 @@ final class WeeklySessionAggregatorTests: XCTestCase {
   }
 
   private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 0) -> Date {
-    calendar.date(from: DateComponents(
-      calendar: calendar,
-      timeZone: calendar.timeZone,
-      year: year,
-      month: month,
-      day: day,
-      hour: hour
-    ))!
+    calendar.date(
+      from: DateComponents(
+        calendar: calendar,
+        timeZone: calendar.timeZone,
+        year: year,
+        month: month,
+        day: day,
+        hour: hour
+      ))!
   }
 }

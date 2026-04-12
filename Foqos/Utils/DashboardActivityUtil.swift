@@ -18,7 +18,9 @@ final class DashboardActivityUtil {
     return totalSeconds / 3600
   }
 
-  static func sessionsForDate(_ date: Date, sessions: [BlockedProfileSession]) -> [BlockedProfileSession] {
+  static func sessionsForDate(_ date: Date, sessions: [BlockedProfileSession])
+    -> [BlockedProfileSession]
+  {
     let calendar = Calendar.current
     let dayStart = calendar.startOfDay(for: date)
     guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return [] }
@@ -30,7 +32,9 @@ final class DashboardActivityUtil {
     }.sorted { $0.duration > $1.duration }
   }
 
-  static func computeProfileActivities(for date: Date, profiles: [BlockedProfiles]) -> [DashboardProfileActivity] {
+  static func computeProfileActivities(for date: Date, profiles: [BlockedProfiles])
+    -> [DashboardProfileActivity]
+  {
     let calendar = Calendar.current
     let dayStart = calendar.startOfDay(for: date)
     guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return [] }

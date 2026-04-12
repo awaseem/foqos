@@ -84,7 +84,8 @@ private struct BreakSection: View {
 
   var breakDuration: TimeInterval? {
     guard let breakStartTime = session.breakStartTime,
-          let breakEndTime = session.breakEndTime else {
+      let breakEndTime = session.breakEndTime
+    else {
       return nil
     }
     return breakEndTime.timeIntervalSince(breakStartTime)
@@ -123,7 +124,8 @@ private struct PauseSection: View {
 
   var pauseDuration: TimeInterval? {
     guard let pauseStartTime = session.pauseStartTime,
-          let pauseEndTime = session.pauseEndTime else {
+      let pauseEndTime = session.pauseEndTime
+    else {
       return nil
     }
     return pauseEndTime.timeIntervalSince(pauseStartTime)

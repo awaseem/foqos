@@ -281,8 +281,9 @@ struct MonthlySessionChart: View {
         )
       }
       .frame(
-        height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7 + CGFloat(
-          weeksInMonth.count - 1))
+        height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7
+          + CGFloat(
+            weeksInMonth.count - 1))
 
       // Legend
       legendView()

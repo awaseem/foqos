@@ -124,16 +124,6 @@ struct SettingsView: View {
         }
 
         Section("Help") {
-          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
-            HStack {
-              Text("Blocking Native Apps")
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "arrow.up.right.square")
-                .foregroundColor(.secondary)
-            }
-          }
-
           HStack {
             Text("Debug Mode")
               .foregroundColor(.primary)
@@ -144,6 +134,16 @@ struct SettingsView: View {
           }
           .onTapGesture {
             showDebugView = true
+          }
+
+          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+            HStack {
+              Text("Blocking Native Apps")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
           }
 
           if !strategyManager.isBlocking {
