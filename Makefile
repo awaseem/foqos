@@ -7,7 +7,7 @@
 PROJECT := foqos.xcodeproj
 SCHEME := foqos
 CONFIGURATION := Debug
-DESTINATION := platform=iOS Simulator,name=Any iOS Simulator Device
+DESTINATION := generic/platform=iOS Simulator
 
 help: ## Show this help message
 	@echo "Available commands:"
