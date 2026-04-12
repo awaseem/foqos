@@ -95,10 +95,12 @@ struct PermissionsIntroScreen: View {
           HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
               .foregroundColor(.orange)
-            Text("Still here? You need to set a passcode on your phone for Screen Time to work properly.")
-              .font(.system(size: 14, weight: .medium))
-              .foregroundColor(.orange)
-              .multilineTextAlignment(.center)
+            Text(
+              "Still here? You need to set a passcode on your phone for Screen Time to work properly."
+            )
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(.orange)
+            .multilineTextAlignment(.center)
           }
           .padding(.horizontal, 16)
           .padding(.vertical, 12)

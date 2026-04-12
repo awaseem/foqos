@@ -7,7 +7,7 @@ struct SessionRow: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(DateFormatters.formatSessionDate(session.startTime))
-            .font(.body)
+        .font(.body)
         .fontWeight(.semibold)
         .foregroundStyle(.secondary)
 
@@ -42,7 +42,8 @@ struct SessionRow: View {
 extension BlockedProfileSession {
   var breakDuration: TimeInterval? {
     guard let breakStartTime = breakStartTime,
-          let breakEndTime = breakEndTime else {
+      let breakEndTime = breakEndTime
+    else {
       return nil
     }
 

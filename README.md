@@ -106,6 +106,9 @@ make build
 # Check code formatting
 make lint
 
+# Fix formatting issues
+make lint-fix
+
 # Run both lint and build
 make check
 

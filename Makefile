@@ -22,6 +22,9 @@ clean: ## Clean build artifacts
 lint: ## Check Swift formatting
 	swift-format lint --recursive .
 
+lint-fix: ## Fix Swift formatting issues
+	swift-format format --recursive --in-place .
+
 check: ## Run lint and build
 	$(MAKE) lint
 	$(MAKE) build

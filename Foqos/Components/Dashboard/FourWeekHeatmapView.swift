@@ -115,12 +115,12 @@ struct FourWeekHeatmapView: View {
 #Preview {
   struct PreviewWrapper: View {
     let profile = BlockedProfiles(name: "Work Focus", selectedActivity: FamilyActivitySelection())
-    
+
     var sessions: [BlockedProfileSession] {
       let calendar = Calendar.current
       let today = Date()
       var result: [BlockedProfileSession] = []
-      
+
       for dayOffset in 0..<28 {
         let date = calendar.date(byAdding: .day, value: -dayOffset, to: today)!
         if dayOffset % 3 == 0 {
@@ -132,7 +132,7 @@ struct FourWeekHeatmapView: View {
       }
       return result
     }
-    
+
     var body: some View {
       FourWeekHeatmapView(
         sessions: sessions,
@@ -143,6 +143,6 @@ struct FourWeekHeatmapView: View {
       .padding()
     }
   }
-  
+
   return PreviewWrapper()
 }
