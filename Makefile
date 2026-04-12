@@ -7,14 +7,14 @@
 PROJECT := foqos.xcodeproj
 SCHEME := foqos
 CONFIGURATION := Debug
-DESTINATION := platform=iOS Simulator,name=iPhone 15
+DESTINATION := platform=iOS Simulator,name=Any iOS Simulator Device
 
 help: ## Show this help message
 	@echo "Available commands:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 build: ## Build the project
-	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIGURATION) build
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIGURATION) -destination '$(DESTINATION)' build
 
 clean: ## Clean build artifacts
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) clean
