@@ -182,7 +182,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
       } label: {
         Image(systemName: "ellipsis.circle")
           .font(.title3)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(themeManager.themeColor)
       }
       .disabled(disabled)
     }
