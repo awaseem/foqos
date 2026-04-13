@@ -32,7 +32,7 @@ struct ProfileWidgetEntryView: View {
     return activeSession.blockedProfileId.uuidString != selectedProfileId
   }
 
-private var quickLaunchEnabled: Bool {
+  private var quickLaunchEnabled: Bool {
     return entry.useProfileURL == true
   }
 
