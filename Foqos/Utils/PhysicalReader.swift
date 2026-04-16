@@ -10,8 +10,7 @@ class PhysicalReader {
     onFailure: @escaping (String) -> Void = { _ in }
   ) {
     nfcScanner.onTagScanned = { result in
-      let tagId = result.url ?? result.id
-      onSuccess(tagId)
+      onSuccess(result.id)
     }
     nfcScanner.onError = onFailure
 
