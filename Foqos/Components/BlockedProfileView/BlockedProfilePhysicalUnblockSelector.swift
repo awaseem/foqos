@@ -229,9 +229,6 @@ struct BlockedProfilePhysicalUnblockSelector: View {
     physicalReader.readNFCTag(
       onSuccess: { codeValue in
         addItem(codeValue: codeValue, type: .nfc)
-      },
-      onFailure: { error in
-        showError(error)
       }
     )
   }
