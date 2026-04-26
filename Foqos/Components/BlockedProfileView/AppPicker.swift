@@ -23,22 +23,8 @@ struct AppPicker: View {
 
   private var detailedMessage: String {
     return allowMode
-      ? "⚠️ Apple enforces a 50 app limit. In Allow mode, when you select a category (like 'Social Networking'), EVERY individual app in that category counts separately toward the 50 app limit. This means selecting just a few categories can quickly exceed the limit."
-      : "Apple enforces a 50 app limit. In Block mode, each category counts as only 1 item regardless of how many apps it contains. Individual apps also count as 1 item each."
-  }
-
-  private var shouldShowWarning: Bool {
-    return FamilyActivityUtil.shouldShowAllowModeWarning(selection, allowMode: allowMode)
-  }
-
-  private var warningMessage: String {
-    return
-      "You have selected categories in Allow mode. This will expand to individual apps and may exceed the 50 app limit. Consider selecting individual apps instead of categories, or switch to Block mode where categories count as just 1 item each."
-  }
-
-  private var knownIssuesMessage: String {
-    return
-      "Apple's app picker may occasionally crash. We apologize for the inconvenience and are waiting for an official fix."
+      ? "Apple enforces a 50 app limit. In Allow mode, each app within a selected category counts separately."
+      : "Apple enforces a 50 app limit. In Block mode, categories count as 1 item each."
   }
 
   private var isOverLimit: Bool {
@@ -103,38 +89,9 @@ struct AppPicker: View {
                   Text("Apple's 50 App Limit")
                     .font(.caption)
                     .bold()
-                    .foregroundColor(allowMode ? .orange : .secondary)
-
-                  Text(detailedMessage)
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
-
-                if shouldShowWarning {
-                  VStack(alignment: .leading, spacing: 6) {
-                    Text("⚠️ Important")
-                      .font(.caption)
-                      .bold()
-                      .foregroundColor(.orange)
-
-                    Text(warningMessage)
-                      .font(.caption)
-                      .foregroundColor(.orange)
-                      .fixedSize(horizontal: false, vertical: true)
-                  }
-                  .padding(12)
-                  .background(Color.orange.opacity(0.15))
-                  .cornerRadius(8)
-                }
-
-                VStack(alignment: .leading, spacing: 6) {
-                  Text("Known Issues")
-                    .font(.caption)
-                    .bold()
                     .foregroundColor(.secondary)
 
-                  Text(knownIssuesMessage)
+                  Text(detailedMessage)
                     .font(.caption)
                     .foregroundColor(.primary)
                     .fixedSize(horizontal: false, vertical: true)
