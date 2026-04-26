@@ -20,6 +20,10 @@ class ThemeManager: ObservableObject {
     ("Neon Grape", Color(hex: "#b026ff")),
     ("Slate Stone", Color(hex: "#708090")),
     ("Warm Sandstone", Color(hex: "#c4a77d")),
+    ("Midnight Navy", Color(hex: "#191970")),
+    ("Cherry Bomb", Color(hex: "#de3163")),
+    ("Turquoise Wave", Color(hex: "#40e0d0")),
+    ("Golden Hour", Color(hex: "#ffb347")),
   ]
 
   private static let defaultColorName = "Grimace Purple"
