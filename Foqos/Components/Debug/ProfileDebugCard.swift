@@ -30,6 +30,10 @@ struct ProfileDebugCard: View {
           value: "\(profile.enableAllowModeDomains)"
         )
         DebugRow(
+          label: "Enable Adult Content Blocking",
+          value: "\(profile.enableAdultContentBlocking)"
+        )
+        DebugRow(
           label: "Disable Background Stops",
           value: "\(profile.disableBackgroundStops)"
         )

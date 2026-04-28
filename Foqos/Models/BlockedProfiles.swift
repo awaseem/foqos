@@ -23,6 +23,7 @@ class BlockedProfiles {
   var enableAllowMode: Bool = false
   var enableAllowModeDomains: Bool = false
   var enableSafariBlocking: Bool = true
+  var enableAdultContentBlocking: Bool = false
 
   @available(
     *, deprecated, message: "Use physicalUnblockItems instead - supports multiple NFC/QR codes"
@@ -94,6 +95,7 @@ class BlockedProfiles {
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
     enableSafariBlocking: Bool = true,
+    enableAdultContentBlocking: Bool = false,
     order: Int = 0,
     domains: [String]? = nil,
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
@@ -120,6 +122,7 @@ class BlockedProfiles {
     self.enableAllowMode = enableAllowMode
     self.enableAllowModeDomains = enableAllowModeDomains
     self.enableSafariBlocking = enableSafariBlocking
+    self.enableAdultContentBlocking = enableAdultContentBlocking
     self.domains = domains
 
     self.physicalUnblockItems = PhysicalUnblockItem.normalizedItems(physicalUnblockItems)
@@ -187,6 +190,7 @@ class BlockedProfiles {
     enableAllowMode: Bool? = nil,
     enableAllowModeDomains: Bool? = nil,
     enableSafariBlocking: Bool? = nil,
+    enableAdultContentBlocking: Bool? = nil,
     order: Int? = nil,
     domains: [String]? = nil,
     physicalUnblockItems: [PhysicalUnblockItem]?? = nil,
@@ -247,6 +251,10 @@ class BlockedProfiles {
 
     if let newEnableSafariBlocking = enableSafariBlocking {
       profile.enableSafariBlocking = newEnableSafariBlocking
+    }
+
+    if let newEnableAdultContentBlocking = enableAdultContentBlocking {
+      profile.enableAdultContentBlocking = newEnableAdultContentBlocking
     }
 
     if let newOrder = order {
@@ -335,6 +343,7 @@ class BlockedProfiles {
       enableAllowMode: profile.enableAllowMode,
       enableAllowModeDomains: profile.enableAllowModeDomains,
       enableSafariBlocking: profile.enableSafariBlocking,
+      enableAdultContentBlocking: profile.enableAdultContentBlocking,
       domains: profile.domains,
       physicalUnblockNFCTagId: nil,
       physicalUnblockQRCodeId: nil,
@@ -390,6 +399,7 @@ class BlockedProfiles {
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
     enableSafariBlocking: Bool = true,
+    enableAdultContentBlocking: Bool = false,
     domains: [String]? = nil,
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
@@ -412,6 +422,7 @@ class BlockedProfiles {
       enableAllowMode: enableAllowMode,
       enableAllowModeDomains: enableAllowModeDomains,
       enableSafariBlocking: enableSafariBlocking,
+      enableAdultContentBlocking: enableAdultContentBlocking,
       order: profileOrder,
       domains: domains,
       physicalUnblockItems: physicalUnblockItems,
@@ -451,6 +462,7 @@ class BlockedProfiles {
       enableAllowMode: source.enableAllowMode,
       enableAllowModeDomains: source.enableAllowModeDomains,
       enableSafariBlocking: source.enableSafariBlocking,
+      enableAdultContentBlocking: source.enableAdultContentBlocking,
       order: nextOrder,
       domains: source.domains,
       physicalUnblockItems: source.physicalUnblockItems,
