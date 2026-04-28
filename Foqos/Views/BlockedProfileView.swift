@@ -37,6 +37,7 @@ struct BlockedProfileView: View {
   @State private var enableAllowMode: Bool = false
   @State private var enableAllowModeDomain: Bool = false
   @State private var enableSafariBlocking: Bool = true
+  @State private var enableAdultContentBlocking: Bool = false
   @State private var disableBackgroundStops: Bool = false
   @State private var enableEmergencyUnblock: Bool = true
   @State private var domains: [String] = []
@@ -110,6 +111,9 @@ struct BlockedProfileView: View {
     )
     _enableSafariBlocking = State(
       initialValue: profile?.enableSafariBlocking ?? true
+    )
+    _enableAdultContentBlocking = State(
+      initialValue: profile?.enableAdultContentBlocking ?? false
     )
     _enableReminder = State(
       initialValue: profile?.reminderTimeInSeconds != nil
@@ -246,6 +250,14 @@ struct BlockedProfileView: View {
             description:
               "Pick domains to allow and block everything else. This will erase any other selection you've made.",
             isOn: $enableAllowModeDomain,
+            isDisabled: isBlocking
+          )
+
+          CustomToggle(
+            title: "Block Adult Websites",
+            description:
+              "Use Apple's adult-content filter during sessions. You can still add extra domains to block.",
+            isOn: $enableAdultContentBlocking,
             isDisabled: isBlocking
           )
         }
@@ -388,6 +400,16 @@ struct BlockedProfileView: View {
         selectedActivity = FamilyActivitySelection(
           includeEntireCategory: newValue
         )
+      }
+      .onChange(of: enableAllowModeDomain) { _, newValue in
+        if newValue {
+          enableAdultContentBlocking = false
+        }
+      }
+      .onChange(of: enableAdultContentBlocking) { _, newValue in
+        if newValue {
+          enableAllowModeDomain = false
+        }
       }
       .navigationTitle(isEditing ? "Profile Details" : "New Profile")
       .toolbar {
@@ -611,6 +633,7 @@ struct BlockedProfileView: View {
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,
+          enableAdultContentBlocking: enableAdultContentBlocking,
           domains: domains,
           physicalUnblockItems: .some(physicalUnblockItemsToSave),
           schedule: schedule,
@@ -636,6 +659,7 @@ struct BlockedProfileView: View {
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,
+          enableAdultContentBlocking: enableAdultContentBlocking,
           domains: domains,
           physicalUnblockItems: physicalUnblockItemsToSave,
           schedule: schedule,

@@ -14,6 +14,7 @@ class AppBlockerUtil {
     let allowOnlyDomains = profile.enableAllowModeDomains
     let strict = profile.enableStrictMode
     let enableSafariBlocking = profile.enableSafariBlocking
+    let enableAdultContentBlocking = profile.enableAdultContentBlocking == true
     let domains = getWebDomains(from: profile)
 
     let applicationTokens = selection.applicationTokens
@@ -40,8 +41,12 @@ class AppBlockerUtil {
 
     if allowOnlyDomains {
       store.webContent.blockedByFilter = .all(except: domains)
-    } else {
+    } else if enableAdultContentBlocking {
+      store.webContent.blockedByFilter = .auto(domains)
+    } else if !domains.isEmpty {
       store.webContent.blockedByFilter = .specific(domains)
+    } else {
+      store.webContent.blockedByFilter = nil
     }
 
     store.application.denyAppRemoval = strict
