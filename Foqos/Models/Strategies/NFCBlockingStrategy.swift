@@ -32,12 +32,11 @@ class NFCBlockingStrategy: BlockingStrategy {
     nfcScanner.onTagScanned = { tag in
       self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
-      let tag = tag.url ?? tag.id
       let activeSession =
         BlockedProfileSession
         .createSession(
           in: context,
-          withTag: tag,
+          withTag: tag.id,
           withProfile: profile,
           forceStart: forceStart ?? false
         )
@@ -54,16 +53,16 @@ class NFCBlockingStrategy: BlockingStrategy {
     session: BlockedProfileSession
   ) -> (any View)? {
     nfcScanner.onTagScanned = { tag in
-      let tag = tag.url ?? tag.id
+      let tagId = tag.id
 
       if session.blockedProfile.hasPhysicalUnblockItem(ofType: .nfc) {
-        if !session.blockedProfile.canUnblock(withCode: tag, type: .nfc) {
+        if !session.blockedProfile.canUnblock(withCode: tagId, type: .nfc) {
           self.onErrorMessage?(
             "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"
           )
           return
         }
-      } else if !session.forceStarted && session.tag != tag {
+      } else if !session.forceStarted && session.tag != tagId {
         // No physical unblock tag - must use original session tag (unless force started)
         self.onErrorMessage?(
           "You must scan the original tag to stop focus"

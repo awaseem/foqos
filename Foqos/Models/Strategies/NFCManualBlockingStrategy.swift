@@ -51,10 +51,10 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     session: BlockedProfileSession
   ) -> (any View)? {
     nfcScanner.onTagScanned = { tag in
-      let tag = tag.url ?? tag.id
+      let tagId = tag.id
 
       if session.blockedProfile.hasPhysicalUnblockItem(ofType: .nfc)
-        && !session.blockedProfile.canUnblock(withCode: tag, type: .nfc)
+        && !session.blockedProfile.canUnblock(withCode: tagId, type: .nfc)
       {
         self.onErrorMessage?(
           "This NFC tag is not allowed to unblock this profile. Physical unblock setting is on for this profile"

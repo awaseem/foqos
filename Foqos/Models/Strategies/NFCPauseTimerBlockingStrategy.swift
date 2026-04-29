@@ -66,7 +66,7 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
     let isPauseActive = session.isPauseActive
 
     nfcScanner.onTagScanned = { tag in
-      let tagId = tag.url ?? tag.id
+      let tagId = tag.id
 
       // Check strict mode - if physical unblock is set, it must match
       if session.blockedProfile.hasPhysicalUnblockItem(ofType: .nfc)
