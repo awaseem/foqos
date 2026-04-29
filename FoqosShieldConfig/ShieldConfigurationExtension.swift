@@ -15,6 +15,9 @@ import UIKit
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application) -> ShieldConfiguration {
+    if let pauseShield = pauseModeConfiguration(for: application) {
+      return pauseShield
+    }
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -22,6 +25,9 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    if let pauseShield = pauseModeConfiguration(for: application) {
+      return pauseShield
+    }
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -35,6 +41,68 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   {
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
+
+  // MARK: – Pause Mode Shield
+
+  /// Returns a pause-mode `ShieldConfiguration` if the active session uses `PauseBlockingStrategy`,
+  /// or `nil` if the normal blocking shield should be shown instead.
+  private func pauseModeConfiguration(for application: Application) -> ShieldConfiguration? {
+    guard let profileId = SharedData.pauseModeActiveProfileId else { return nil }
+
+    // bundleIdentifier is the stable, unique key per app.
+    // If nil (rare edge case), fall through to the normal shield.
+    guard let bundleId = application.bundleIdentifier else { return nil }
+
+    let brandColor = UIColor(ThemeManager.shared.themeColor)
+    let appName = application.localizedDisplayName ?? "App"
+
+    // Already unlocked this session — ManagedSettings was updated by ShieldAction,
+    // but show the normal shield as a defensive fallback if it appears again.
+    if SharedData.pauseUnlockedApps.contains(bundleId) {
+      return nil
+    }
+
+    // Read configured delay from the profile's strategyData
+    let delaySeconds: Int = {
+      guard let snap = SharedData.snapshot(for: profileId),
+        let data = snap.strategyData
+      else { return 5 }
+      return StrategyPauseDelayData.toStrategyPauseDelayData(from: data).delaySeconds
+    }()
+
+    // Start per-app timer on first appearance
+    if SharedData.pauseTimer(for: bundleId) == nil {
+      SharedData.startPauseTimer(for: bundleId)
+    }
+
+    let elapsed = SharedData.elapsedPauseTime(for: bundleId)
+    // Use ceil so we never show "Open (in 0s)" while ShieldAction would still reject the tap
+    let remaining = max(0, Int(ceil(Double(delaySeconds) - elapsed)))
+
+    // Schedule exactly one reload for when this app's countdown expires.
+    // Multiple asyncAfters across different apps are fine — system coalesces reloadConfiguration calls.
+    if remaining > 0 {
+      DispatchQueue.main.asyncAfter(deadline: .now() + Double(remaining) + 0.1) {
+        ShieldConfigurationDataSource().reloadConfiguration()
+      }
+    }
+
+    let buttonText = remaining > 0 ? "Open (in \(remaining)s)" : "Open"
+
+    return ShieldConfiguration(
+      backgroundBlurStyle: .dark,
+      backgroundColor: brandColor,
+      icon: makeEmojiIcon("⏳", size: 96),
+      title: ShieldConfiguration.Label(text: "Why am I checking?", color: .white),
+      subtitle: ShieldConfiguration.Label(
+        text: appName, color: UIColor.white.withAlphaComponent(0.88)),
+      primaryButtonLabel: ShieldConfiguration.Label(text: buttonText, color: .black),
+      primaryButtonBackgroundColor: .white,
+      secondaryButtonLabel: nil
+    )
+  }
+
+  // MARK: – Standard Blocking Shield
 
   private func createCustomShieldConfiguration(for type: BlockedContentType, title: String)
     -> ShieldConfiguration
