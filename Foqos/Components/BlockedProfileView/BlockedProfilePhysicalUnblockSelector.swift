@@ -234,7 +234,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
   }
 
   private func addItem(codeValue: String, type: PhysicalUnblockItem.PhysicalUnblockType) {
-    let normalizedCodeValue = codeValue.trimmingCharacters(in: .whitespacesAndNewlines)
+    let normalizedCodeValue = PhysicalUnblockItem.normalizedCodeValue(codeValue, type: type)
 
     guard !normalizedCodeValue.isEmpty else {
       showError("The scanned code was empty.")

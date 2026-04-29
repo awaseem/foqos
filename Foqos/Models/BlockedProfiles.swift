@@ -70,7 +70,14 @@ class BlockedProfiles {
   func canUnblock(withCode codeValue: String, type: PhysicalUnblockItem.PhysicalUnblockType) -> Bool
   {
     guard let items = physicalUnblockItems else { return false }
-    return items.contains { $0.codeValue == codeValue && $0.type == type }
+    let normalizedCodeValue = PhysicalUnblockItem.normalizedCodeValue(codeValue, type: type)
+
+    return items.contains {
+      let itemCodeValue = PhysicalUnblockItem.normalizedCodeValue($0.codeValue, type: $0.type)
+
+      return $0.type == type
+        && itemCodeValue == normalizedCodeValue
+    }
   }
 
   func hasPhysicalUnblockItem(ofType type: PhysicalUnblockItem.PhysicalUnblockType) -> Bool {

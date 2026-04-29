@@ -71,18 +71,42 @@ struct PhysicalUnblockItem: Codable, Hashable, Identifiable, Sendable {
 
     let normalizedItems = items.compactMap { item -> PhysicalUnblockItem? in
       let trimmedName = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
-      let trimmedCodeValue = item.codeValue.trimmingCharacters(in: .whitespacesAndNewlines)
+      let normalizedCodeValue = normalizedCodeValue(item.codeValue, type: item.type)
 
-      guard !trimmedCodeValue.isEmpty else { return nil }
+      guard !normalizedCodeValue.isEmpty else { return nil }
 
       return PhysicalUnblockItem(
         id: item.id,
         name: trimmedName.isEmpty ? item.type.displayName : trimmedName,
         type: item.type,
-        codeValue: trimmedCodeValue
+        codeValue: normalizedCodeValue
       )
     }
 
     return normalizedItems.isEmpty ? nil : normalizedItems
+  }
+
+  static func normalizedCodeValue(
+    _ codeValue: String,
+    type: PhysicalUnblockType
+  ) -> String {
+    let trimmedCodeValue = codeValue.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    guard type == .qrCode,
+      var components = URLComponents(string: trimmedCodeValue),
+      components.scheme != nil,
+      components.host != nil
+    else {
+      return trimmedCodeValue
+    }
+
+    components.scheme = components.scheme?.lowercased()
+    components.host = components.host?.lowercased()
+
+    if components.path == "/" && components.query == nil && components.fragment == nil {
+      components.path = ""
+    }
+
+    return components.string ?? trimmedCodeValue
   }
 }
