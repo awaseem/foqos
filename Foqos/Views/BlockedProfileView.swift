@@ -32,6 +32,7 @@ struct BlockedProfileView: View {
   @State private var enableBreaks: Bool = false
   @State private var breakTimeInMinutes: Int = 15
   @State private var enableStrictMode: Bool = false
+  @State private var enableBlockAppInstallation: Bool = false
   @State private var reminderTimeInMinutes: Int = 15
   @State private var customReminderMessage: String
   @State private var enableAllowMode: Bool = false
@@ -102,6 +103,9 @@ struct BlockedProfileView: View {
     )
     _enableStrictMode = State(
       initialValue: profile?.enableStrictMode ?? false
+    )
+    _enableBlockAppInstallation = State(
+      initialValue: profile?.enableBlockAppInstallation ?? false
     )
     _enableAllowMode = State(
       initialValue: profile?.enableAllowMode ?? false
@@ -303,6 +307,14 @@ struct BlockedProfileView: View {
             description:
               "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
             isOn: $enableStrictMode,
+            isDisabled: isBlocking
+          )
+
+          CustomToggle(
+            title: "Prevent App Installation",
+            description:
+              "Block installing new apps, including via Spotlight search and the App Store.",
+            isOn: $enableBlockAppInstallation,
             isDisabled: isBlocking
           )
 
@@ -630,6 +642,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           breakTimeInMinutes: breakTimeInMinutes,
           enableStrictMode: enableStrictMode,
+          enableBlockAppInstallation: enableBlockAppInstallation,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,
@@ -656,6 +669,7 @@ struct BlockedProfileView: View {
           enableBreaks: enableBreaks,
           breakTimeInMinutes: breakTimeInMinutes,
           enableStrictMode: enableStrictMode,
+          enableBlockAppInstallation: enableBlockAppInstallation,
           enableAllowMode: enableAllowMode,
           enableAllowModeDomains: enableAllowModeDomain,
           enableSafariBlocking: enableSafariBlocking,

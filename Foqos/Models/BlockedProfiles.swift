@@ -20,6 +20,7 @@ class BlockedProfiles {
   var enableBreaks: Bool = false
   var breakTimeInMinutes: Int = 15
   var enableStrictMode: Bool = false
+  var enableBlockAppInstallation: Bool = false
   var enableAllowMode: Bool = false
   var enableAllowModeDomains: Bool = false
   var enableSafariBlocking: Bool = true
@@ -99,6 +100,7 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     breakTimeInMinutes: Int = 15,
     enableStrictMode: Bool = false,
+    enableBlockAppInstallation: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
     enableSafariBlocking: Bool = true,
@@ -126,6 +128,7 @@ class BlockedProfiles {
     self.enableBreaks = enableBreaks
     self.breakTimeInMinutes = breakTimeInMinutes
     self.enableStrictMode = enableStrictMode
+    self.enableBlockAppInstallation = enableBlockAppInstallation
     self.enableAllowMode = enableAllowMode
     self.enableAllowModeDomains = enableAllowModeDomains
     self.enableSafariBlocking = enableSafariBlocking
@@ -194,6 +197,7 @@ class BlockedProfiles {
     enableBreaks: Bool? = nil,
     breakTimeInMinutes: Int? = nil,
     enableStrictMode: Bool? = nil,
+    enableBlockAppInstallation: Bool? = nil,
     enableAllowMode: Bool? = nil,
     enableAllowModeDomains: Bool? = nil,
     enableSafariBlocking: Bool? = nil,
@@ -246,6 +250,10 @@ class BlockedProfiles {
 
     if let newEnableStrictMode = enableStrictMode {
       profile.enableStrictMode = newEnableStrictMode
+    }
+
+    if let newEnableBlockAppInstallation = enableBlockAppInstallation {
+      profile.enableBlockAppInstallation = newEnableBlockAppInstallation
     }
 
     if let newEnableAllowMode = enableAllowMode {
@@ -347,6 +355,7 @@ class BlockedProfiles {
       enableBreaks: profile.enableBreaks,
       breakTimeInMinutes: profile.breakTimeInMinutes,
       enableStrictMode: profile.enableStrictMode,
+      enableBlockAppInstallation: profile.enableBlockAppInstallation,
       enableAllowMode: profile.enableAllowMode,
       enableAllowModeDomains: profile.enableAllowModeDomains,
       enableSafariBlocking: profile.enableSafariBlocking,
@@ -403,6 +412,7 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     breakTimeInMinutes: Int = 15,
     enableStrictMode: Bool = false,
+    enableBlockAppInstallation: Bool = false,
     enableAllowMode: Bool = false,
     enableAllowModeDomains: Bool = false,
     enableSafariBlocking: Bool = true,
@@ -426,6 +436,7 @@ class BlockedProfiles {
       enableBreaks: enableBreaks,
       breakTimeInMinutes: breakTimeInMinutes,
       enableStrictMode: enableStrictMode,
+      enableBlockAppInstallation: enableBlockAppInstallation,
       enableAllowMode: enableAllowMode,
       enableAllowModeDomains: enableAllowModeDomains,
       enableSafariBlocking: enableSafariBlocking,
@@ -466,6 +477,7 @@ class BlockedProfiles {
       enableBreaks: source.enableBreaks,
       breakTimeInMinutes: source.breakTimeInMinutes,
       enableStrictMode: source.enableStrictMode,
+      enableBlockAppInstallation: source.enableBlockAppInstallation,
       enableAllowMode: source.enableAllowMode,
       enableAllowModeDomains: source.enableAllowModeDomains,
       enableSafariBlocking: source.enableSafariBlocking,

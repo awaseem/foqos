@@ -30,6 +30,7 @@ enum SharedData {
     var enableBreaks: Bool
     var breakTimeInMinutes: Int = 15
     var enableStrictMode: Bool
+    var enableBlockAppInstallation: Bool = false
     var enableAllowMode: Bool
     var enableAllowModeDomains: Bool
     var enableSafariBlocking: Bool

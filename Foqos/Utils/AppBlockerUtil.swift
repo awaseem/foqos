@@ -50,6 +50,7 @@ class AppBlockerUtil {
     }
 
     store.application.denyAppRemoval = strict
+    store.application.denyAppInstallation = profile.enableBlockAppInstallation
   }
 
   func deactivateRestrictions() {
@@ -61,6 +62,7 @@ class AppBlockerUtil {
     store.shield.webDomainCategories = nil
 
     store.application.denyAppRemoval = false
+    store.application.denyAppInstallation = false
 
     store.webContent.blockedByFilter = nil
 
@@ -76,6 +78,7 @@ class AppBlockerUtil {
     store.shield.webDomainCategories = nil
 
     store.webContent.blockedByFilter = nil
+    store.application.denyAppInstallation = false
 
     if !profile.enableStrictMode {
       store.application.denyAppRemoval = false
