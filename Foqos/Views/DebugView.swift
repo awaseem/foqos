@@ -191,6 +191,8 @@ struct DebugView: View {
         markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
         markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
         markdown +=
+          "- **Prevent App Installation:** \(profile.enableBlockAppInstallation ? "Enabled" : "Disabled")\n"
+        markdown +=
           "- **Disable Background Stops:** \(profile.disableBackgroundStops ? "Yes" : "No")\n"
 
         if let reminderTime = profile.reminderTimeInSeconds {
