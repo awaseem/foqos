@@ -1,4 +1,4 @@
-.PHONY: build clean lint check help
+.PHONY: build clean lint lint-fix test test-all check help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -8,6 +8,8 @@ PROJECT := foqos.xcodeproj
 SCHEME := foqos
 CONFIGURATION := Debug
 DESTINATION := generic/platform=iOS Simulator
+TEST_DESTINATION ?= platform=iOS Simulator,name=iPhone 17,OS=latest
+UNIT_TEST_TARGET ?= foqosTests
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -24,6 +26,12 @@ lint: ## Check Swift formatting
 
 lint-fix: ## Fix Swift formatting issues
 	swift-format format --recursive --in-place .
+
+test: ## Run unit tests
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIGURATION) -destination '$(TEST_DESTINATION)' test -only-testing:$(UNIT_TEST_TARGET)
+
+test-all: ## Run all tests, including UI tests
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIGURATION) -destination '$(TEST_DESTINATION)' test
 
 check: ## Run lint and build
 	$(MAKE) lint

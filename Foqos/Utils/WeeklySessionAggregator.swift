@@ -50,8 +50,6 @@ enum WeeklySessionAggregator {
   }
 
   static func startOfWeek(for date: Date, calendar: Calendar = .current) -> Date {
-    var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-    components.weekday = 1
-    return calendar.date(from: components)!
+    calendar.dateInterval(of: .weekOfYear, for: date)!.start
   }
 }
