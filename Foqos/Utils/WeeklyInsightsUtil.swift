@@ -100,18 +100,18 @@ class WeeklyInsightsUtil: ObservableObject {
     )
 
     var dayAggregates: [WeeklyDayAggregate] = []
-    let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
     for dayOffset in 0..<7 {
       guard let currentDay = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) else {
         continue
       }
       let dayNumber = calendar.component(.day, from: currentDay)
+      let dayName = currentDay.formatted(.dateTime.weekday(.abbreviated))
       dayAggregates.append(
         WeeklyDayAggregate(
-          dayOfWeek: dayOffset + 1,
-          dayName: dayNames[dayOffset],
-          displayLabel: "\(dayNames[dayOffset]) \(dayNumber)",
+          dayOfWeek: calendar.component(.weekday, from: currentDay),
+          dayName: dayName,
+          displayLabel: "\(dayName) \(dayNumber)",
           totalSessionTime: aggregation.dailyDurations[dayOffset],
           sessionCount: aggregation.dailySessionCounts[dayOffset],
           date: currentDay

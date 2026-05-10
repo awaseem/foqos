@@ -9,6 +9,7 @@ final class WeeklySessionAggregatorTests: XCTestCase {
     super.setUp()
     calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    calendar.firstWeekday = 1
   }
 
   override func tearDown() {
@@ -129,13 +130,24 @@ final class WeeklySessionAggregatorTests: XCTestCase {
     XCTAssertEqual(result.overlappingSessionCount, 0)
   }
 
-  func testStartOfWeekReturnsSunday() {
+  func testStartOfWeekReturnsSundayForSundayFirstCalendar() {
     let result = WeeklySessionAggregator.startOfWeek(
       for: date(2024, 3, 6, 15),
       calendar: calendar
     )
 
     XCTAssertEqual(result, date(2024, 3, 3))
+  }
+
+  func testStartOfWeekReturnsMondayForMondayFirstCalendar() {
+    calendar.firstWeekday = 2
+
+    let result = WeeklySessionAggregator.startOfWeek(
+      for: date(2026, 5, 6, 15),
+      calendar: calendar
+    )
+
+    XCTAssertEqual(result, date(2026, 5, 4))
   }
 
   private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 0) -> Date {
