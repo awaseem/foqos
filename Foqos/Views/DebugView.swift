@@ -260,6 +260,10 @@ struct DebugView: View {
 
     if rawValue.hasPrefix(BreakTimerActivity.id) {
       return "Break Timer"
+    } else if rawValue.hasPrefix(PauseTimerActivity.id) {
+      return "Pause Timer"
+    } else if rawValue.hasPrefix(StrategyTimerActivity.id) {
+      return "Strategy Timer"
     } else if rawValue.hasPrefix(ScheduleTimerActivity.id) {
       return "Schedule Timer"
     } else {
@@ -277,6 +281,16 @@ struct DebugView: View {
 
     // Check if it's a break timer activity for this profile
     if rawValue.hasPrefix(BreakTimerActivity.id) {
+      return rawValue.hasSuffix(profileIdString)
+    }
+
+    // Check if it's a pause timer activity for this profile
+    if rawValue.hasPrefix(PauseTimerActivity.id) {
+      return rawValue.hasSuffix(profileIdString)
+    }
+
+    // Check if it's a strategy timer activity for this profile
+    if rawValue.hasPrefix(StrategyTimerActivity.id) {
       return rawValue.hasSuffix(profileIdString)
     }
 
