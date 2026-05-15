@@ -75,6 +75,8 @@ struct BlockedProfileView: View {
   // Sheet for insights modal
   @State private var showingInsights = false
 
+  @State private var pauseDelaySeconds: Int = 5
+
   @State private var selectedActivity = FamilyActivitySelection()
   @State private var selectedStrategy: BlockingStrategy? = nil
 
@@ -158,6 +160,11 @@ struct BlockedProfileView: View {
           StrategyManager
           .getStrategyFromId(id: profileStrategyId)
       )
+      // Load pause delay setting when editing a Pause Mode profile
+      if profileStrategyId == PauseBlockingStrategy.id, let data = profile?.strategyData {
+        _pauseDelaySeconds = State(
+          initialValue: StrategyPauseDelayData.toStrategyPauseDelayData(from: data).delaySeconds)
+      }
     } else {
       _selectedStrategy = State(initialValue: NFCBlockingStrategy())
     }
@@ -298,6 +305,24 @@ struct BlockedProfileView: View {
               Text("30 minutes").tag(30)
             }
             .disabled(isBlocking)
+          }
+        }
+
+        if selectedStrategy?.getIdentifier() == PauseBlockingStrategy.id {
+          Section {
+            Picker("Delay Before Opening", selection: $pauseDelaySeconds) {
+              Text("5 seconds").tag(5)
+              Text("10 seconds").tag(10)
+              Text("30 seconds").tag(30)
+              Text("60 seconds").tag(60)
+            }
+            .disabled(isBlocking)
+          } header: {
+            Text("Pause Mode")
+          } footer: {
+            Text(
+              "When you tap a blocked app, you'll need to wait this many seconds before the app unlocks."
+            )
           }
         }
 
@@ -628,6 +653,15 @@ struct BlockedProfileView: View {
       let physicalUnblockItemsToSave: [PhysicalUnblockItem]? =
         physicalUnblockItems.isEmpty ? nil : physicalUnblockItems
 
+      // Encode strategy-specific data for strategies that require it
+      let strategyDataToSave: Data? = {
+        if selectedStrategy?.getIdentifier() == PauseBlockingStrategy.id {
+          return StrategyPauseDelayData.toData(
+            from: StrategyPauseDelayData(delaySeconds: pauseDelaySeconds))
+        }
+        return nil
+      }()
+
       if let existingProfile = profile {
         // Update existing profile
         let updatedProfile = try BlockedProfiles.updateProfile(
@@ -636,6 +670,7 @@ struct BlockedProfileView: View {
           name: name,
           selection: selectedActivity,
           blockingStrategyId: selectedStrategy?.getIdentifier(),
+          strategyData: strategyDataToSave,
           enableLiveActivity: enableLiveActivity,
           reminderTime: reminderTimeSeconds,
           customReminderMessage: customReminderMessage,
@@ -663,6 +698,7 @@ struct BlockedProfileView: View {
           selection: selectedActivity,
           blockingStrategyId: selectedStrategy?
             .getIdentifier() ?? NFCBlockingStrategy.id,
+          strategyData: strategyDataToSave,
           enableLiveActivity: enableLiveActivity,
           reminderTimeInSeconds: reminderTimeSeconds,
           customReminderMessage: customReminderMessage,

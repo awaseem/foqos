@@ -11,6 +11,8 @@ enum SharedData {
     case profileSnapshots
     case activeScheduleSession
     case completedScheduleSessions
+    case pauseModeActiveProfileId
+    case pauseUnlockedApps
   }
 
   // MARK: – Serializable snapshot of a profile (no sessions)
@@ -159,6 +161,55 @@ enum SharedData {
 
   static func flushActiveSession() {
     activeSharedSession = nil
+  }
+
+  // MARK: – Pause mode state (used by ShieldConfigurationExtension & ShieldActionExtension)
+
+  /// The profile ID currently running a PauseBlockingStrategy session.
+  /// Set when the session starts, cleared when it stops.
+  static var pauseModeActiveProfileId: String? {
+    get { suite.string(forKey: Key.pauseModeActiveProfileId.rawValue) }
+    set { suite.set(newValue, forKey: Key.pauseModeActiveProfileId.rawValue) }
+  }
+
+  /// Bundle IDs of apps that have already been unlocked in the current session.
+  static var pauseUnlockedApps: Set<String> {
+    get { Set(suite.stringArray(forKey: Key.pauseUnlockedApps.rawValue) ?? []) }
+    set { suite.set(Array(newValue), forKey: Key.pauseUnlockedApps.rawValue) }
+  }
+
+  static func clearUnlockedApps() {
+    pauseUnlockedApps = []
+  }
+
+  // MARK: Per-app pause timers (individual UserDefaults keys — cheap r/w, no JSON overhead)
+
+  private static func pauseTimerKey(for bundleId: String) -> String {
+    "pauseTimer_\(bundleId)"
+  }
+
+  static func pauseTimer(for bundleId: String) -> Date? {
+    guard let t = suite.object(forKey: pauseTimerKey(for: bundleId)) as? Double else { return nil }
+    return Date(timeIntervalSince1970: t)
+  }
+
+  static func startPauseTimer(for bundleId: String) {
+    suite.set(Date().timeIntervalSince1970, forKey: pauseTimerKey(for: bundleId))
+  }
+
+  static func clearPauseTimer(for bundleId: String) {
+    suite.removeObject(forKey: pauseTimerKey(for: bundleId))
+  }
+
+  static func clearAllPauseTimers() {
+    suite.dictionaryRepresentation().keys
+      .filter { $0.hasPrefix("pauseTimer_") }
+      .forEach { suite.removeObject(forKey: $0) }
+  }
+
+  static func elapsedPauseTime(for bundleId: String) -> TimeInterval {
+    guard let t = suite.object(forKey: pauseTimerKey(for: bundleId)) as? Double else { return 0 }
+    return Date().timeIntervalSince1970 - t
   }
 
   static func getCompletedSessionsForSchedular() -> [SessionSnapshot] {
