@@ -19,33 +19,13 @@ struct BlockedProfileView: View {
   @Environment(\.modelContext) private var modelContext
   @Environment(\.dismiss) private var dismiss
 
-  @EnvironmentObject private var themeManager: ThemeManager
   @EnvironmentObject private var nfcWriter: NFCWriter
   @EnvironmentObject private var strategyManager: StrategyManager
 
   // If profile is nil, we're creating a new profile
   var profile: BlockedProfiles?
 
-  @State private var name: String = ""
-  @State private var enableLiveActivity: Bool = false
-  @State private var enableReminder: Bool = false
-  @State private var enableBreaks: Bool = false
-  @State private var breakTimeInMinutes: Int = 15
-  @State private var enableStrictMode: Bool = false
-  @State private var enableBlockAppInstallation: Bool = false
-  @State private var reminderTimeInMinutes: Int = 15
-  @State private var customReminderMessage: String
-  @State private var enableAllowMode: Bool = false
-  @State private var enableAllowModeDomain: Bool = false
-  @State private var enableSafariBlocking: Bool = true
-  @State private var enableAdultContentBlocking: Bool = false
-  @State private var disableBackgroundStops: Bool = false
-  @State private var enableEmergencyUnblock: Bool = true
-  @State private var domains: [String] = []
-
-  @State private var physicalUnblockItems: [PhysicalUnblockItem] = []
-
-  @State private var schedule: BlockedProfileSchedule
+  @StateObject private var draft: BlockedProfileDraft
 
   // QR code generator
   @State private var showingGeneratedQRCode = false
@@ -75,9 +55,6 @@ struct BlockedProfileView: View {
   // Sheet for insights modal
   @State private var showingInsights = false
 
-  @State private var selectedActivity = FamilyActivitySelection()
-  @State private var selectedStrategy: BlockingStrategy? = nil
-
   private var isEditing: Bool {
     profile != nil
   }
@@ -88,79 +65,7 @@ struct BlockedProfileView: View {
 
   init(profile: BlockedProfiles? = nil) {
     self.profile = profile
-    _name = State(initialValue: profile?.name ?? "")
-    _selectedActivity = State(
-      initialValue: profile?.selectedActivity ?? FamilyActivitySelection()
-    )
-    _enableLiveActivity = State(
-      initialValue: profile?.enableLiveActivity ?? false
-    )
-    _enableBreaks = State(
-      initialValue: profile?.enableBreaks ?? false
-    )
-    _breakTimeInMinutes = State(
-      initialValue: profile?.breakTimeInMinutes ?? 15
-    )
-    _enableStrictMode = State(
-      initialValue: profile?.enableStrictMode ?? false
-    )
-    _enableBlockAppInstallation = State(
-      initialValue: profile?.enableBlockAppInstallation ?? false
-    )
-    _enableAllowMode = State(
-      initialValue: profile?.enableAllowMode ?? false
-    )
-    _enableAllowModeDomain = State(
-      initialValue: profile?.enableAllowModeDomains ?? false
-    )
-    _enableSafariBlocking = State(
-      initialValue: profile?.enableSafariBlocking ?? true
-    )
-    _enableAdultContentBlocking = State(
-      initialValue: profile?.enableAdultContentBlocking ?? false
-    )
-    _enableReminder = State(
-      initialValue: profile?.reminderTimeInSeconds != nil
-    )
-    _disableBackgroundStops = State(
-      initialValue: profile?.disableBackgroundStops ?? false
-    )
-    _enableEmergencyUnblock = State(
-      initialValue: profile?.enableEmergencyUnblock ?? true
-    )
-    _reminderTimeInMinutes = State(
-      initialValue: Int(profile?.reminderTimeInSeconds ?? 900) / 60
-    )
-    _customReminderMessage = State(
-      initialValue: profile?.customReminderMessage ?? ""
-    )
-    _domains = State(
-      initialValue: profile?.domains ?? []
-    )
-    _physicalUnblockItems = State(
-      initialValue: profile?.physicalUnblockItems ?? []
-    )
-    _schedule = State(
-      initialValue: profile?.schedule
-        ?? BlockedProfileSchedule(
-          days: [],
-          startHour: 9,
-          startMinute: 0,
-          endHour: 17,
-          endMinute: 0,
-          updatedAt: Date()
-        )
-    )
-
-    if let profileStrategyId = profile?.blockingStrategyId {
-      _selectedStrategy = State(
-        initialValue:
-          StrategyManager
-          .getStrategyFromId(id: profileStrategyId)
-      )
-    } else {
-      _selectedStrategy = State(initialValue: NFCBlockingStrategy())
-    }
+    _draft = StateObject(wrappedValue: BlockedProfileDraft(profile: profile))
   }
 
   var body: some View {
@@ -188,240 +93,44 @@ struct BlockedProfileView: View {
           }
         }
 
-        Section("Name") {
-          TextField("Profile Name", text: $name)
-            .textContentType(.none)
-        }
+        BlockedProfileNameSection(draft: draft, disabled: false)
 
-        Section("Blocking Strategy") {
-          Button(action: { showingStrategyPicker = true }) {
-            HStack {
-              Text("Set Strategy")
-                .foregroundStyle(themeManager.themeColor)
-              Spacer()
-              Image(systemName: "chevron.right")
-                .foregroundStyle(.gray)
-            }
-          }
-          .disabled(isBlocking)
-
-          if let selectedStrategy {
-            StrategyRow(
-              strategy: selectedStrategy,
-              isSelected: false,
-              onTap: {},
-              accessoryStyle: .none
-            )
-            .allowsHitTesting(false)
-          }
-        }
-
-        Section((enableAllowMode ? "Allowed" : "Blocked") + " Apps") {
-          BlockedProfileAppSelector(
-            selection: selectedActivity,
-            buttonAction: { showingActivityPicker = true },
-            allowMode: enableAllowMode,
-            disabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Apps Allow Mode",
-            description:
-              "Pick apps to allow and block everything else. This will erase any other selection you've made.",
-            isOn: $enableAllowMode,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Block Safari",
-            description:
-              "Block Safari websites that are selected in the app selector above. When disabled, Safari will remain unrestricted regardless of the websites you pick.",
-            isOn: $enableSafariBlocking,
-            isDisabled: isBlocking
-          )
-        }
-
-        Section((enableAllowModeDomain ? "Allowed" : "Blocked") + " Domains") {
-          BlockedProfileDomainSelector(
-            domains: domains,
-            buttonAction: { showingDomainPicker = true },
-            allowMode: enableAllowModeDomain,
-            disabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Domain Allow Mode",
-            description:
-              "Pick domains to allow and block everything else. This will erase any other selection you've made.",
-            isOn: $enableAllowModeDomain,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Block Adult Websites",
-            description:
-              "Use Apple's adult-content filter during sessions. You can still add extra domains to block.",
-            isOn: $enableAdultContentBlocking,
-            isDisabled: isBlocking
-          )
-        }
-
-        Section("Strict Unlocks") {
-          BlockedProfilePhysicalUnblockSelector(
-            physicalUnblockItems: $physicalUnblockItems,
-            disabled: isBlocking
-          )
-        }
-
-        Section("Schedule") {
-          BlockedProfileScheduleSelector(
-            schedule: schedule,
-            buttonAction: { showingSchedulePicker = true },
-            disabled: isBlocking
-          )
-        }
-
-        Section("Breaks") {
-          CustomToggle(
-            title: "Allow Timed Breaks",
-            description:
-              "Take a single break during your session. The break will automatically end after the selected duration.",
-            isOn: $enableBreaks,
-            isDisabled: isBlocking
-          )
-
-          if enableBreaks {
-            Picker("Break Duration", selection: $breakTimeInMinutes) {
-              Text("5 minutes").tag(5)
-              Text("10 minutes").tag(10)
-              Text("15 minutes").tag(15)
-              Text("30 minutes").tag(30)
-            }
-            .disabled(isBlocking)
-          }
-        }
-
-        Section("Safeguards") {
-          CustomToggle(
-            title: "Strict",
-            description:
-              "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
-            isOn: $enableStrictMode,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Prevent App Installation",
-            description:
-              "Block installing new apps, including via Spotlight search and the App Store.",
-            isOn: $enableBlockAppInstallation,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Disable Background Stops",
-            description:
-              "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from NFC tags or QR codes.",
-            isOn: $disableBackgroundStops,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Allow Emergency Unblock",
-            description:
-              "Enable the emergency unblock feature for this profile. When disabled, you won't be able to use emergency unblocks during active sessions.",
-            isOn: $enableEmergencyUnblock,
-            isDisabled: isBlocking
-          )
-        }
-
-        Section("Notifications") {
-          CustomToggle(
-            title: "Live Activity",
-            description:
-              "Shows a live activity on your lock screen with some inspirational quote",
-            isOn: $enableLiveActivity,
-            isDisabled: isBlocking
-          )
-
-          CustomToggle(
-            title: "Reminder",
-            description:
-              "Sends a reminder to start this profile when its ended",
-            isOn: $enableReminder,
-            isDisabled: isBlocking
-          )
-          if enableReminder {
-            HStack {
-              Text("Reminder time")
-              Spacer()
-              TextField(
-                "",
-                value: $reminderTimeInMinutes,
-                format: .number
-              )
-              .keyboardType(.numberPad)
-              .multilineTextAlignment(.trailing)
-              .frame(width: 50)
-              .disabled(isBlocking)
-              .font(.subheadline)
-              .foregroundColor(.secondary)
-
-              Text("minutes")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            }.listRowSeparator(.visible)
-            VStack(alignment: .leading) {
-              Text("Reminder message")
-              TextField(
-                "Reminder message",
-                text: $customReminderMessage,
-                prompt: Text(strategyManager.defaultReminderMessage(forProfile: profile)),
-                axis: .vertical
-              )
-              .foregroundColor(.secondary)
-              .lineLimit(...3)
-              .onChange(of: customReminderMessage) { _, newValue in
-                if newValue.count > 178 {
-                  customReminderMessage = String(newValue.prefix(178))
-                }
-              }
-              .disabled(isBlocking)
-            }
-          }
-
-          if !isBlocking {
-            Button {
-              if let url = URL(
-                string: UIApplication.openSettingsURLString
-              ) {
-                UIApplication.shared.open(url)
-              }
-            } label: {
-              Text("Go to settings to disable globally")
-                .foregroundStyle(themeManager.themeColor)
-                .font(.caption)
-            }
-          }
-        }
-
-      }
-      .onChange(of: enableAllowMode) {
-        _,
-        newValue in
-        selectedActivity = FamilyActivitySelection(
-          includeEntireCategory: newValue
+        BlockedProfileStrategySection(
+          draft: draft,
+          showingStrategyPicker: $showingStrategyPicker,
+          disabled: isBlocking
         )
-      }
-      .onChange(of: enableAllowModeDomain) { _, newValue in
-        if newValue {
-          enableAdultContentBlocking = false
-        }
-      }
-      .onChange(of: enableAdultContentBlocking) { _, newValue in
-        if newValue {
-          enableAllowModeDomain = false
-        }
+
+        BlockedProfileAppsSection(
+          draft: draft,
+          showingActivityPicker: $showingActivityPicker,
+          disabled: isBlocking
+        )
+
+        BlockedProfileDomainsSection(
+          draft: draft,
+          showingDomainPicker: $showingDomainPicker,
+          disabled: isBlocking
+        )
+
+        BlockedProfileStrictUnlocksSection(draft: draft, disabled: isBlocking)
+
+        BlockedProfileScheduleSection(
+          draft: draft,
+          showingSchedulePicker: $showingSchedulePicker,
+          disabled: isBlocking
+        )
+
+        BlockedProfileBreaksSection(draft: draft, disabled: isBlocking)
+
+        BlockedProfileSafeguardsSection(draft: draft, disabled: isBlocking)
+
+        BlockedProfileNotificationsSection(
+          draft: draft,
+          profile: profile,
+          disabled: isBlocking
+        )
+
       }
       .navigationTitle(isEditing ? "Profile Details" : "New Profile")
       .toolbar {
@@ -484,35 +193,35 @@ struct BlockedProfileView: View {
             Button(action: { saveProfile() }) {
               Image(systemName: "checkmark")
             }
-            .disabled(name.isEmpty)
+            .disabled(!draft.isValid)
             .accessibilityLabel(isEditing ? "Update" : "Create")
           }
         }
       }
       .sheet(isPresented: $showingActivityPicker) {
         AppPicker(
-          selection: $selectedActivity,
+          selection: $draft.selectedActivity,
           isPresented: $showingActivityPicker,
-          allowMode: enableAllowMode
+          allowMode: draft.enableAllowMode
         )
       }
       .sheet(isPresented: $showingDomainPicker) {
         DomainPicker(
-          domains: $domains,
+          domains: $draft.domains,
           isPresented: $showingDomainPicker,
-          allowMode: enableAllowModeDomain
+          allowMode: draft.enableAllowModeDomain
         )
       }
       .sheet(isPresented: $showingSchedulePicker) {
         SchedulePicker(
-          schedule: $schedule,
+          schedule: $draft.schedule,
           isPresented: $showingSchedulePicker
         )
       }
       .sheet(isPresented: $showingStrategyPicker) {
         StrategyPicker(
           strategies: StrategyManager.availableStrategies.filter { !$0.hidden },
-          selectedStrategy: $selectedStrategy,
+          selectedStrategy: $draft.selectedStrategy,
           isPresented: $showingStrategyPicker
         )
       }
@@ -619,72 +328,7 @@ struct BlockedProfileView: View {
 
   private func saveProfile() {
     do {
-      // Update schedule date
-      schedule.updatedAt = Date()
-
-      // Calculate reminder time in seconds or nil if disabled
-      let reminderTimeSeconds: UInt32? =
-        enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
-      let physicalUnblockItemsToSave: [PhysicalUnblockItem]? =
-        physicalUnblockItems.isEmpty ? nil : physicalUnblockItems
-
-      if let existingProfile = profile {
-        // Update existing profile
-        let updatedProfile = try BlockedProfiles.updateProfile(
-          existingProfile,
-          in: modelContext,
-          name: name,
-          selection: selectedActivity,
-          blockingStrategyId: selectedStrategy?.getIdentifier(),
-          enableLiveActivity: enableLiveActivity,
-          reminderTime: reminderTimeSeconds,
-          customReminderMessage: customReminderMessage,
-          enableBreaks: enableBreaks,
-          breakTimeInMinutes: breakTimeInMinutes,
-          enableStrictMode: enableStrictMode,
-          enableBlockAppInstallation: enableBlockAppInstallation,
-          enableAllowMode: enableAllowMode,
-          enableAllowModeDomains: enableAllowModeDomain,
-          enableSafariBlocking: enableSafariBlocking,
-          enableAdultContentBlocking: enableAdultContentBlocking,
-          domains: domains,
-          physicalUnblockItems: .some(physicalUnblockItemsToSave),
-          schedule: schedule,
-          disableBackgroundStops: disableBackgroundStops,
-          enableEmergencyUnblock: enableEmergencyUnblock
-        )
-
-        // Schedule restrictions
-        DeviceActivityCenterUtil.scheduleTimerActivity(for: updatedProfile)
-      } else {
-        let newProfile = try BlockedProfiles.createProfile(
-          in: modelContext,
-          name: name,
-          selection: selectedActivity,
-          blockingStrategyId: selectedStrategy?
-            .getIdentifier() ?? NFCBlockingStrategy.id,
-          enableLiveActivity: enableLiveActivity,
-          reminderTimeInSeconds: reminderTimeSeconds,
-          customReminderMessage: customReminderMessage,
-          enableBreaks: enableBreaks,
-          breakTimeInMinutes: breakTimeInMinutes,
-          enableStrictMode: enableStrictMode,
-          enableBlockAppInstallation: enableBlockAppInstallation,
-          enableAllowMode: enableAllowMode,
-          enableAllowModeDomains: enableAllowModeDomain,
-          enableSafariBlocking: enableSafariBlocking,
-          enableAdultContentBlocking: enableAdultContentBlocking,
-          domains: domains,
-          physicalUnblockItems: physicalUnblockItemsToSave,
-          schedule: schedule,
-          disableBackgroundStops: disableBackgroundStops,
-          enableEmergencyUnblock: enableEmergencyUnblock
-        )
-
-        // Schedule restrictions
-        DeviceActivityCenterUtil.scheduleTimerActivity(for: newProfile)
-      }
-
+      _ = try draft.save(existingProfile: profile, in: modelContext)
       dismiss()
     } catch {
       alertIdentifier = AlertIdentifier(id: .error, errorMessage: error.localizedDescription)
