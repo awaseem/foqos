@@ -148,7 +148,6 @@ struct GuidedBlockedProfileCreationView: View {
           Button(action: handleBackAction) {
             Label("Back", systemImage: "chevron.left")
           }
-          .foregroundStyle(themeManager.themeColor)
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -156,7 +155,6 @@ struct GuidedBlockedProfileCreationView: View {
             Image(systemName: "xmark")
           }
           .accessibilityLabel("Cancel")
-          .foregroundStyle(themeManager.themeColor)
         }
       }
       .sheet(isPresented: $showingActivityPicker) {
@@ -202,7 +200,7 @@ struct GuidedBlockedProfileCreationView: View {
         .font(.caption)
         .fontWeight(.semibold)
         .foregroundStyle(.primary)
-  
+
       Text(currentStep.introTitle)
         .font(.largeTitle)
         .fontWeight(.bold)
@@ -276,18 +274,13 @@ struct GuidedBlockedProfileCreationView: View {
   }
 
   private var stepControls: some View {
-    Button(action: handlePrimaryAction) {
-      Text(isLastStep ? "Create Profile" : "Next")
-        .font(.headline)
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 50)
-        .background(
-          RoundedRectangle(cornerRadius: 12)
-            .fill(canContinue ? themeManager.themeColor : Color.gray.opacity(0.45))
-        )
+    ActionButton(
+      title: isLastStep ? "Create Profile" : "Next",
+      backgroundColor: themeManager.themeColor,
+      isDisabled: !canContinue
+    ) {
+      handlePrimaryAction()
     }
-    .disabled(!canContinue)
     .padding(.horizontal, 20)
     .padding(.top, 12)
     .padding(.bottom, 16)
