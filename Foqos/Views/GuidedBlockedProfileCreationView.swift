@@ -133,13 +133,13 @@ struct GuidedBlockedProfileCreationView: View {
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
-        stepIntroHeader
+        ScrollView {
+          stepIntroHeader
 
-        Spacer()
-
-        Form {
           stepContent
         }
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemGroupedBackground))
 
         stepControls
       }
@@ -200,6 +200,7 @@ struct GuidedBlockedProfileCreationView: View {
         .font(.caption)
         .fontWeight(.semibold)
         .foregroundStyle(.primary)
+        .padding(.leading, 1)
 
       Text(currentStep.introTitle)
         .font(.largeTitle)
@@ -213,64 +214,118 @@ struct GuidedBlockedProfileCreationView: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.horizontal, 20)
-    .padding(.top, 18)
-    .padding(.bottom, 14)
-    .background(Color(.systemGroupedBackground))
+    .padding(.top, 20)
+    .padding(.bottom, 28)
   }
 
   @ViewBuilder
   private var stepContent: some View {
     switch currentStep {
     case .name:
-      BlockedProfileNameSection(draft: draft, disabled: false)
+      guidedCard(title: "Name") {
+        BlockedProfileNameFields(draft: draft, disabled: false)
+      }
 
     case .strategy:
-      BlockedProfileStrategySection(
-        draft: draft,
-        showingStrategyPicker: $showingStrategyPicker,
-        disabled: false
-      )
+      guidedCard(title: "Blocking Strategy") {
+        BlockedProfileStrategyFields(
+          draft: draft,
+          showingStrategyPicker: $showingStrategyPicker,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .apps:
-      BlockedProfileAppsSection(
-        draft: draft,
-        showingActivityPicker: $showingActivityPicker,
-        disabled: false
-      )
+      guidedCard(title: (draft.enableAllowMode ? "Allowed" : "Blocked") + " Apps") {
+        BlockedProfileAppsFields(
+          draft: draft,
+          showingActivityPicker: $showingActivityPicker,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .domains:
-      BlockedProfileDomainsSection(
-        draft: draft,
-        showingDomainPicker: $showingDomainPicker,
-        disabled: false
-      )
+      guidedCard(title: (draft.enableAllowModeDomain ? "Allowed" : "Blocked") + " Domains") {
+        BlockedProfileDomainsFields(
+          draft: draft,
+          showingDomainPicker: $showingDomainPicker,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .strictUnlocks:
-      BlockedProfileStrictUnlocksSection(draft: draft, disabled: false)
+      guidedCard(title: "Strict Unlocks") {
+        BlockedProfileStrictUnlocksFields(draft: draft, disabled: false)
+      }
 
     case .schedule:
-      BlockedProfileScheduleSection(
-        draft: draft,
-        showingSchedulePicker: $showingSchedulePicker,
-        disabled: false
-      )
+      guidedCard(title: "Schedule") {
+        BlockedProfileScheduleFields(
+          draft: draft,
+          showingSchedulePicker: $showingSchedulePicker,
+          disabled: false
+        )
+      }
 
     case .breaks:
-      BlockedProfileBreaksSection(draft: draft, disabled: false)
+      guidedCard(title: "Breaks") {
+        BlockedProfileBreaksFields(
+          draft: draft,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .safeguards:
-      BlockedProfileSafeguardsSection(draft: draft, disabled: false)
+      guidedCard(title: "Safeguards") {
+        BlockedProfileSafeguardsFields(
+          draft: draft,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .notifications:
-      BlockedProfileNotificationsSection(
-        draft: draft,
-        profile: nil,
-        disabled: false
-      )
+      guidedCard(title: "Notifications") {
+        BlockedProfileNotificationsFields(
+          draft: draft,
+          profile: nil,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
 
     case .review:
-      GuidedProfileReviewSection(draft: draft)
+      guidedCard(title: "Summary") {
+        GuidedProfileReviewContent(draft: draft)
+      }
     }
+  }
+
+  private func guidedCard<Content: View>(
+    title: String,
+    @ViewBuilder content: () -> Content
+  ) -> some View {
+    VStack(alignment: .leading, spacing: 14) {
+      Text(title)
+        .font(.headline)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 20)
+
+      VStack(alignment: .leading, spacing: 16) {
+        content()
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 20)
+      .padding(.vertical, 18)
+      .background(Color(.secondarySystemGroupedBackground))
+      .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+    .padding(.horizontal, 20)
+    .padding(.bottom, 28)
   }
 
   private var stepControls: some View {
@@ -326,11 +381,11 @@ struct GuidedBlockedProfileCreationView: View {
   }
 }
 
-private struct GuidedProfileReviewSection: View {
+private struct GuidedProfileReviewContent: View {
   @ObservedObject var draft: BlockedProfileDraft
 
   var body: some View {
-    Section("Summary") {
+    VStack(alignment: .leading, spacing: 12) {
       LabeledContent("Name", value: draft.name)
       LabeledContent("Strategy", value: draft.selectedStrategy?.name ?? "NFC")
       LabeledContent("Apps", value: FamilyActivityUtil.getCountDisplayText(draft.selectedActivity))
