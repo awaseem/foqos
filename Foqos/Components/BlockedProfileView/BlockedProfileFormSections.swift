@@ -14,11 +14,16 @@ private struct ProfileFieldDivider: View {
 struct BlockedProfileNameFields: View {
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool
+  var showsFieldLabels: Bool = true
 
   var body: some View {
-    TextField("Profile Name", text: $draft.name)
-      .textContentType(.none)
-      .disabled(disabled)
+    TextField(
+      showsFieldLabels ? "Profile Name" : "",
+      text: $draft.name,
+      prompt: Text("Profile Name")
+    )
+    .textContentType(.none)
+    .disabled(disabled)
   }
 }
 
@@ -257,6 +262,7 @@ struct BlockedProfileBreaksFields: View {
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool
   var showsSeparators: Bool = false
+  var showsFieldLabels: Bool = true
 
   var body: some View {
     CustomToggle(
@@ -270,14 +276,18 @@ struct BlockedProfileBreaksFields: View {
     if draft.enableBreaks {
       ProfileFieldDivider(isVisible: showsSeparators)
 
-      Picker("Break Duration", selection: $draft.breakTimeInMinutes) {
-        Text("5 minutes").tag(5)
-        Text("10 minutes").tag(10)
-        Text("15 minutes").tag(15)
-        Text("30 minutes").tag(30)
-      }
-      .disabled(disabled)
+      breakDurationPicker
     }
+  }
+
+  private var breakDurationPicker: some View {
+    Picker("Break Duration", selection: $draft.breakTimeInMinutes) {
+      Text("5 minutes").tag(5)
+      Text("10 minutes").tag(10)
+      Text("15 minutes").tag(15)
+      Text("30 minutes").tag(30)
+    }
+    .disabled(disabled)
   }
 }
 
@@ -357,6 +367,7 @@ struct BlockedProfileNotificationsFields: View {
   var profile: BlockedProfiles?
   var disabled: Bool
   var showsSeparators: Bool = false
+  var showsFieldLabels: Bool = true
 
   var body: some View {
     CustomToggle(

@@ -223,7 +223,11 @@ struct GuidedBlockedProfileCreationView: View {
     switch currentStep {
     case .name:
       guidedCard(title: "Name") {
-        BlockedProfileNameFields(draft: draft, disabled: false)
+        BlockedProfileNameFields(
+          draft: draft,
+          disabled: false,
+          showsFieldLabels: false
+        )
       }
 
     case .strategy:
@@ -275,7 +279,8 @@ struct GuidedBlockedProfileCreationView: View {
         BlockedProfileBreaksFields(
           draft: draft,
           disabled: false,
-          showsSeparators: true
+          showsSeparators: true,
+          showsFieldLabels: false
         )
       }
 
@@ -294,7 +299,8 @@ struct GuidedBlockedProfileCreationView: View {
           draft: draft,
           profile: nil,
           disabled: false,
-          showsSeparators: true
+          showsSeparators: true,
+          showsFieldLabels: false
         )
       }
 
@@ -310,11 +316,6 @@ struct GuidedBlockedProfileCreationView: View {
     @ViewBuilder content: () -> Content
   ) -> some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text(title)
-        .font(.headline)
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 20)
-
       VStack(alignment: .leading, spacing: 16) {
         content()
       }
