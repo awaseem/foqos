@@ -81,7 +81,7 @@ struct BlockedProfileListView: View {
         }
       }
       .sheet(isPresented: $showingCreateProfile) {
-        BlockedProfileView()
+        ProfileCreationFlowView()
       }
       .sheet(item: $profileToEdit) { profile in
         BlockedProfileView(profile: profile)
