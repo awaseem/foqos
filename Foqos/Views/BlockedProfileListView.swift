@@ -25,6 +25,12 @@ struct BlockedProfileListView: View {
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
   ]) private var profiles: [BlockedProfiles]
 
+  @Query(
+    filter: #Predicate<BlockedProfileSession> { $0.endTime == nil },
+    sort: \BlockedProfileSession.startTime,
+    order: .reverse
+  ) private var activeSessions: [BlockedProfileSession]
+
   @State private var profileCreationDestination: ProfileCreationDestination?
   @State private var showingDataExport = false
 
@@ -44,7 +50,7 @@ struct BlockedProfileListView: View {
         } else {
           List {
             ForEach(profiles) { profile in
-              ProfileRow(profile: profile)
+              ProfileRow(profile: profile, isActive: profile.id == activeSessionProfileId)
                 .contentShape(Rectangle())
                 .onTapGesture {
                   if editMode == .inactive {
@@ -131,6 +137,10 @@ struct BlockedProfileListView: View {
         )
       }
     }
+  }
+
+  private var activeSessionProfileId: UUID? {
+    activeSessions.first?.blockedProfile.id
   }
 
   private func deleteProfiles(at offsets: IndexSet) {

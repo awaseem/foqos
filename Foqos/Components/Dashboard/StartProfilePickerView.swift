@@ -158,72 +158,14 @@ private struct StartProfilePickerRow: View {
   let isActive: Bool
   let onTap: () -> Void
 
-  private var selectedItemsCount: Int {
-    FamilyActivityUtil.countSelectedActivities(
-      profile.selectedActivity,
-      allowMode: profile.enableAllowMode
-    )
-  }
-
-  private var domainsCount: Int {
-    profile.domains?.count ?? 0
-  }
-
-  private var strategyIcon: String {
-    guard let strategyId = profile.blockingStrategyId else {
-      return "questionmark.circle.fill"
-    }
-    return StrategyManager.getStrategyFromId(id: strategyId).iconType
-  }
-
-  private var strategyName: String {
-    guard let strategyId = profile.blockingStrategyId else {
-      return "No strategy"
-    }
-    return StrategyManager.getStrategyFromId(id: strategyId).name
-  }
-
   var body: some View {
     Button(action: onTap) {
-      HStack(spacing: 12) {
-        Image(systemName: strategyIcon)
-          .font(.system(size: 16, weight: .semibold))
-          .foregroundStyle(themeManager.themeColor)
-          .frame(width: 36, height: 36)
-          .background(
-            Circle()
-              .fill(themeManager.themeColor.opacity(0.14))
-          )
-
-        VStack(alignment: .leading, spacing: 6) {
-          HStack(spacing: 6) {
-            Text(profile.name)
-              .font(.headline)
-              .foregroundStyle(.primary)
-              .lineLimit(1)
-
-            if isActive {
-              Text("Active")
-                .font(.caption2)
-                .fontWeight(.semibold)
-                .foregroundStyle(themeManager.themeColor)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(
-                  Capsule()
-                    .fill(themeManager.themeColor.opacity(0.12))
-                )
-            }
-          }
-
-          Text("\(strategyName) | \(selectedItemsCount) items | \(domainsCount) sites")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-        }
-
-        Spacer(minLength: 8)
-
+      ProfileSummaryRow(
+        profile: profile,
+        isActive: isActive,
+        metadata: .appsAndDomains,
+        showsStatusLine: true
+      ) {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
           .font(.system(size: 22, weight: .semibold))
           .foregroundStyle(isSelected ? themeManager.themeColor : .secondary.opacity(0.5))
