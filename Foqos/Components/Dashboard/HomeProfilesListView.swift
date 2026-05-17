@@ -18,7 +18,7 @@ struct HomeProfilesListView: View {
         "Profiles",
         buttonText: "Manage",
         buttonAction: onManageTapped,
-        buttonIcon: "slider.horizontal.3"
+        buttonIcon: "brain.head.profile"
       )
 
       VStack(spacing: 0) {
@@ -177,7 +177,7 @@ private struct HomeProfileRow: View {
     } label: {
       Image(systemName: "ellipsis")
         .font(.system(size: 16, weight: .semibold))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.gray)
         .frame(width: 32, height: 44)
         .contentShape(Rectangle())
     }
