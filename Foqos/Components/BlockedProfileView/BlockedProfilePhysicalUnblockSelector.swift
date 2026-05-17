@@ -43,6 +43,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           description:
             "Set one or more QR/Barcode codes that can only unblock this profile when active",
           systemImage: "qrcode.viewfinder",
+          assetImage: "QRStickerLogo",
           items: qrItems,
           emptyButtonTitle: "Set",
           addButtonTitle: "Add Code",

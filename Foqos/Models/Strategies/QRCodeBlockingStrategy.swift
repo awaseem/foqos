@@ -8,6 +8,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
   var name: String = "QR Codes"
   var description: String = "Start by scanning a QR code, then scan the same code to stop."
   var iconType: String = "qrcode.viewfinder"
+  var iconAssetName: String? = "QRStickerLogo"
   var color: Color = .pink
 
   var usesQRCode: Bool = true
