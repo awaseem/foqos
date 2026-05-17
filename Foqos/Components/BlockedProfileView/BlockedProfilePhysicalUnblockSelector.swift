@@ -31,6 +31,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           title: "NFC Tags",
           description: "Set one or more NFC tags that can only unblock this profile when active",
           systemImage: "wave.3.right.circle.fill",
+          assetImage: "NFCStickerLogo",
           items: nfcItems,
           emptyButtonTitle: "Set",
           addButtonTitle: "Add Tag",
@@ -95,6 +96,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
     title: String,
     description: String,
     systemImage: String,
+    assetImage: String? = nil,
     items: [PhysicalUnblockItem],
     emptyButtonTitle: String,
     addButtonTitle: String,
@@ -102,9 +104,16 @@ struct BlockedProfilePhysicalUnblockSelector: View {
   ) -> some View {
     VStack(spacing: 16) {
       VStack(spacing: 10) {
-        Image(systemName: systemImage)
-          .font(.title2)
-          .foregroundColor(.gray)
+        if let assetImage = assetImage {
+          Image(assetImage)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 28, height: 28)
+        } else {
+          Image(systemName: systemImage)
+            .font(.title2)
+            .foregroundColor(.gray)
+        }
 
         HStack(spacing: 6) {
           Text(title)

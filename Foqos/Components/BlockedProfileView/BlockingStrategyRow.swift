@@ -34,12 +34,16 @@ struct StrategyRow: View {
     Button(action: onTap) {
       VStack(alignment: .leading, spacing: 8) {
         HStack(alignment: .center, spacing: 8) {
-          Image(systemName: strategy.iconType)
+          BlockingStrategyIconImage(strategy: strategy)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(width: 24, height: 24)
-            .background(.secondary.opacity(0.12))
-            .clipShape(Circle())
+            .background {
+              if strategy.iconAssetName == nil {
+                Circle()
+                  .fill(.secondary.opacity(0.12))
+              }
+            }
 
           Text(strategy.name)
             .font(.headline)

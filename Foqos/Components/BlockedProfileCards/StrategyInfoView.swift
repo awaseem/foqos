@@ -11,12 +11,9 @@ struct StrategyInfoView: View {
     return StrategyManager.getStrategyFromId(id: strategyId).name
   }
 
-  // Get blocking strategy icon
-  private var blockingStrategyIcon: String {
-    guard let strategyId = strategyId else {
-      return "questionmark.circle.fill"
-    }
-    return StrategyManager.getStrategyFromId(id: strategyId).iconType
+  private var blockingStrategy: BlockingStrategy? {
+    guard let strategyId = strategyId else { return nil }
+    return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
   // Get blocking strategy color
@@ -29,16 +26,16 @@ struct StrategyInfoView: View {
 
   var body: some View {
     HStack {
-      Image(systemName: blockingStrategyIcon)
+      BlockingStrategyIconImage(strategy: blockingStrategy)
         .foregroundColor(themeManager.themeColor)
         .font(.system(size: 13))
         .frame(width: 28, height: 28)
-        .background(
-          Circle()
-            .fill(
-              themeManager.themeColor.opacity(0.15)
-            )
-        )
+        .background {
+          if blockingStrategy?.iconAssetName == nil {
+            Circle()
+              .fill(themeManager.themeColor.opacity(0.15))
+          }
+        }
 
       VStack(alignment: .leading, spacing: 2) {
         Text(blockingStrategyName)

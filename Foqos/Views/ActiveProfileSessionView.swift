@@ -45,11 +45,11 @@ struct ActiveProfileSessionView: View {
     return StrategyManager.getStrategyFromId(id: strategyId).name
   }
 
-  private var strategyIconName: String {
+  private var blockingStrategy: BlockingStrategy? {
     guard let strategyId = profile.blockingStrategyId else {
-      return "questionmark.circle.fill"
+      return nil
     }
-    return StrategyManager.getStrategyFromId(id: strategyId).iconType
+    return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
   var body: some View {
@@ -157,7 +157,7 @@ struct ActiveProfileSessionView: View {
   private var timerSection: some View {
     VStack(spacing: 14) {
       HStack(spacing: 8) {
-        Image(systemName: strategyIconName)
+        BlockingStrategyIconImage(strategy: blockingStrategy)
           .font(.system(size: 14, weight: .semibold))
           .foregroundStyle(.primary)
 

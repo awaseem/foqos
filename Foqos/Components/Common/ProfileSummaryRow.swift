@@ -78,11 +78,11 @@ struct ProfileSummaryContent: View {
   let showsStatusLine: Bool
   let layout: ProfileSummaryLayout
 
-  private var strategyIconName: String {
+  private var blockingStrategy: BlockingStrategy? {
     guard let strategyId = profile.blockingStrategyId else {
-      return "questionmark.circle.fill"
+      return nil
     }
-    return StrategyManager.getStrategyFromId(id: strategyId).iconType
+    return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
   private var iconSize: CGFloat {
@@ -123,7 +123,7 @@ struct ProfileSummaryContent: View {
 
   var body: some View {
     HStack(spacing: layout == .dashboard ? 12 : 10) {
-      Image(systemName: strategyIconName)
+      BlockingStrategyIconImage(strategy: blockingStrategy)
         .font(.system(size: iconFontSize, weight: .semibold))
         .foregroundStyle(.secondary)
         .frame(width: iconSize, height: iconSize)
