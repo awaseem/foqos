@@ -18,7 +18,11 @@ struct HomeProfileLauncher: View {
   private let inactiveButtonHeight: CGFloat = 56
   private let activeButtonHeight: CGFloat = 74
   private let activeButtonCornerRadius: CGFloat = 24
-  private let activeButtonBlobScale: CGFloat = 3.8
+  private let activeButtonBlobScale: CGFloat = 2.6
+  private let activeButtonBlobCount = 9
+  private let activeButtonBlobSizeRange: ClosedRange<CGFloat> = 0.18...0.34
+  private let activeButtonBlobWidthRange: ClosedRange<CGFloat> = 1.45...2.65
+  private let activeButtonBlobHeightRange: ClosedRange<CGFloat> = 0.65...1.15
 
   var body: some View {
     Group {
@@ -120,7 +124,11 @@ struct HomeProfileLauncher: View {
       isActive: true,
       customColor: themeManager.themeColor,
       cornerRadius: activeButtonCornerRadius,
-      activeBlobScale: activeButtonBlobScale
+      activeBlobScale: activeButtonBlobScale,
+      activeBlobCount: activeButtonBlobCount,
+      activeBlobSizeRange: activeButtonBlobSizeRange,
+      activeBlobWidthRange: activeButtonBlobWidthRange,
+      activeBlobHeightRange: activeButtonBlobHeightRange
     )
     .frame(height: activeButtonHeight)
     .clipShape(RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous))
