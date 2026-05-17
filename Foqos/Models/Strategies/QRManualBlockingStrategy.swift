@@ -8,6 +8,7 @@ class QRManualBlockingStrategy: BlockingStrategy {
   var name: String = "QR + Manual"
   var description: String = "Start in the app, then scan any QR code to stop."
   var iconType: String = "bolt.square"
+  var iconAssetName: String? = "Manual+QRSticker"
   var color: Color = .pink
 
   var usesQRCode: Bool = true
