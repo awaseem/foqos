@@ -38,6 +38,20 @@ struct ActiveProfileSessionView: View {
     return FocusMessages.messages[focusMessageIndex]
   }
 
+  private var strategyName: String {
+    guard let strategyId = profile.blockingStrategyId else {
+      return "No Strategy"
+    }
+    return StrategyManager.getStrategyFromId(id: strategyId).name
+  }
+
+  private var strategyIconName: String {
+    guard let strategyId = profile.blockingStrategyId else {
+      return "questionmark.circle.fill"
+    }
+    return StrategyManager.getStrategyFromId(id: strategyId).iconType
+  }
+
   var body: some View {
     ZStack {
       background
@@ -152,6 +166,17 @@ struct ActiveProfileSessionView: View {
 
   private var timerSection: some View {
     VStack(spacing: 14) {
+      HStack(spacing: 8) {
+        Image(systemName: strategyIconName)
+          .font(.system(size: 14, weight: .semibold))
+          .foregroundStyle(.primary)
+
+        Text(strategyName)
+          .font(.subheadline)
+          .fontWeight(.semibold)
+          .foregroundStyle(.secondary)
+      }
+
       Text(DateFormatters.formatDurationClock(elapsedTime))
         .font(.system(size: 58, weight: .bold, design: .monospaced))
         .lineLimit(1)
