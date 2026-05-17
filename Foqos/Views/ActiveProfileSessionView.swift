@@ -85,22 +85,12 @@ struct ActiveProfileSessionView: View {
 
   private var background: some View {
     ZStack {
-      CardBackground(
-        isActive: true,
-        customColor: themeManager.themeColor,
-        cornerRadius: 0,
-        activeBlobScale: 6,
-        activeBlobCount: 12,
-        activeBlobSizeRange: 0.18...0.38,
-        activeBlobWidthRange: 1.25...2.6,
-        activeBlobHeightRange: 0.7...1.4
-      )
-      .ignoresSafeArea()
+      ActiveSessionGradientBackground(baseColor: themeManager.themeColor)
 
       LinearGradient(
         colors: [
-          Color(.systemBackground).opacity(0.18),
-          Color(.systemBackground).opacity(0.72),
+          Color(.systemBackground).opacity(0.02),
+          Color(.systemBackground).opacity(0.34),
         ],
         startPoint: .top,
         endPoint: .bottom
@@ -242,6 +232,147 @@ struct ActiveProfileSessionView: View {
   private static func initialFocusMessageIndex() -> Int {
     guard !FocusMessages.messages.isEmpty else { return 0 }
     return Int.random(in: 0..<FocusMessages.messages.count)
+  }
+}
+
+private struct ActiveSessionGradientBackground: View {
+  let baseColor: Color
+
+  var body: some View {
+    TimelineView(.animation) { timeline in
+      let t = timeline.date.timeIntervalSinceReferenceDate
+
+      ZStack {
+        LinearGradient(
+          colors: [
+            shiftedColor(hue: -0.08, saturation: 1.22, brightness: 0.95),
+            shiftedColor(hue: 0.02, saturation: 1.1, brightness: 0.82),
+            shiftedColor(hue: 0.10, saturation: 1.18, brightness: 0.64),
+          ],
+          startPoint: UnitPoint(
+            x: 0.18 + 0.18 * normalizedSin(t * 0.08),
+            y: 0.02
+          ),
+          endPoint: UnitPoint(
+            x: 0.88,
+            y: 0.92 - 0.16 * normalizedCos(t * 0.07)
+          )
+        )
+
+        animatedBlob(
+          t: t,
+          hue: 0.09,
+          saturation: 1.35,
+          brightness: 1.1,
+          opacity: 0.48,
+          width: 0.86,
+          height: 0.42,
+          x: 0.18 + 0.18 * normalizedCos(t * 0.12),
+          y: 0.62 + 0.08 * normalizedSin(t * 0.10),
+          blur: 34
+        )
+
+        animatedBlob(
+          t: t,
+          hue: -0.12,
+          saturation: 1.18,
+          brightness: 0.92,
+          opacity: 0.42,
+          width: 0.72,
+          height: 0.50,
+          x: 0.84 - 0.20 * normalizedSin(t * 0.09),
+          y: 0.72 + 0.10 * normalizedCos(t * 0.11),
+          blur: 42
+        )
+
+        animatedBlob(
+          t: t,
+          hue: 0.16,
+          saturation: 1.28,
+          brightness: 0.78,
+          opacity: 0.38,
+          width: 0.98,
+          height: 0.46,
+          x: 0.52 + 0.16 * normalizedSin(t * 0.07),
+          y: 0.92 - 0.10 * normalizedCos(t * 0.13),
+          blur: 46
+        )
+
+        Rectangle()
+          .fill(Color.black.opacity(0.10))
+      }
+      .ignoresSafeArea()
+    }
+  }
+
+  private func animatedBlob(
+    t: TimeInterval,
+    hue: Double,
+    saturation: Double,
+    brightness: Double,
+    opacity: Double,
+    width: CGFloat,
+    height: CGFloat,
+    x: CGFloat,
+    y: CGFloat,
+    blur: CGFloat
+  ) -> some View {
+    GeometryReader { geometry in
+      Ellipse()
+        .fill(
+          RadialGradient(
+            colors: [
+              shiftedColor(hue: hue, saturation: saturation, brightness: brightness).opacity(
+                opacity),
+              .clear,
+            ],
+            center: .center,
+            startRadius: 0,
+            endRadius: min(geometry.size.width, geometry.size.height) * 0.42
+          )
+        )
+        .frame(
+          width: geometry.size.width * width,
+          height: geometry.size.height * height
+        )
+        .position(
+          x: geometry.size.width * x,
+          y: geometry.size.height * y
+        )
+        .blur(radius: blur)
+        .scaleEffect(0.94 + 0.10 * normalizedSin(t * 0.18 + Double(width)))
+        .blendMode(.plusLighter)
+    }
+  }
+
+  private func shiftedColor(hue: Double, saturation: Double, brightness: Double) -> Color {
+    let ui = UIColor(baseColor)
+    var h: CGFloat = 0
+    var s: CGFloat = 0
+    var b: CGFloat = 0
+    var a: CGFloat = 0
+
+    if ui.getHue(&h, saturation: &s, brightness: &b, alpha: &a) {
+      let shiftedHue = (h + CGFloat(hue)).truncatingRemainder(dividingBy: 1)
+      return Color(
+        UIColor(
+          hue: shiftedHue < 0 ? shiftedHue + 1 : shiftedHue,
+          saturation: min(1, max(0, s * CGFloat(saturation))),
+          brightness: min(1, max(0, b * CGFloat(brightness))),
+          alpha: a
+        )
+      )
+    }
+
+    return baseColor
+  }
+
+  private func normalizedSin(_ value: Double) -> CGFloat {
+    CGFloat((sin(value) + 1) / 2)
+  }
+
+  private func normalizedCos(_ value: Double) -> CGFloat {
+    CGFloat((cos(value) + 1) / 2)
   }
 }
 
