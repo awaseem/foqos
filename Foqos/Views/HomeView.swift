@@ -171,15 +171,16 @@ struct HomeView: View {
       loadApp()
     }
     .safeAreaInset(edge: .bottom) {
-      HomeProfileLauncher(
-        isStartEnabled: !profiles.isEmpty,
-        onManageTapped: {
-          isProfileListPresent = true
-        },
-        onStartTapped: {
-          showStartProfilePicker = true
-        }
-      )
+      if !profiles.isEmpty {
+        HomeProfileLauncher(
+          onManageTapped: {
+            isProfileListPresent = true
+          },
+          onStartTapped: {
+            showStartProfilePicker = true
+          }
+        )
+      }
     }
     .sheet(
       isPresented: $isProfileListPresent,
