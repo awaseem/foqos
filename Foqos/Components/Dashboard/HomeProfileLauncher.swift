@@ -5,20 +5,43 @@ struct HomeProfileLauncher: View {
   @EnvironmentObject private var themeManager: ThemeManager
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+  let activeProfile: BlockedProfiles?
+  let elapsedTime: TimeInterval
   let onManageTapped: () -> Void
   let onStartTapped: () -> Void
+  var onActiveTapped: () -> Void = {}
 
   @State private var isShimmering = false
 
   private let shimmerAnimationDuration = 1.15
   private let shimmerRepeatDelay = 2.5
+  private let inactiveButtonHeight: CGFloat = 56
+  private let activeButtonHeight: CGFloat = 74
+  private let activeButtonCornerRadius: CGFloat = 24
+  private let activeButtonBlobScale: CGFloat = 3.8
 
   var body: some View {
+    Group {
+      if let activeProfile {
+        activeProfileButton(activeProfile)
+      } else {
+        inactiveLauncherButtons
+      }
+    }
+    .padding(.horizontal, 16)
+    .padding(.top, 8)
+    .onAppear {
+      guard !reduceMotion else { return }
+      isShimmering = true
+    }
+  }
+
+  private var inactiveLauncherButtons: some View {
     HStack(spacing: 12) {
       Button(action: manageTapped) {
         Image(systemName: "person.2")
           .font(.system(size: 18, weight: .semibold))
-          .frame(width: 56, height: 56)
+          .frame(width: inactiveButtonHeight, height: inactiveButtonHeight)
           .background(
             Capsule()
               .fill(.thinMaterial)
@@ -43,7 +66,7 @@ struct HomeProfileLauncher: View {
             .fontWeight(.semibold)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 56)
+        .frame(height: inactiveButtonHeight)
         .background(startButtonBackground)
         .shadow(
           color: themeManager.themeColor.opacity(0.24),
@@ -57,12 +80,56 @@ struct HomeProfileLauncher: View {
       .foregroundStyle(.white)
       .accessibilityLabel("Start Profile")
     }
-    .padding(.horizontal, 16)
-    .padding(.top, 8)
-    .onAppear {
-      guard !reduceMotion else { return }
-      isShimmering = true
+  }
+
+  private func activeProfileButton(_ profile: BlockedProfiles) -> some View {
+    Button(action: activeTapped) {
+      HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
+          Text("Active")
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+
+          Text(profile.name)
+            .font(.headline)
+            .fontWeight(.semibold)
+            .lineLimit(1)
+        }
+
+        Spacer(minLength: 12)
+
+        Text(DateFormatters.formatDurationClock(elapsedTime))
+          .font(.system(size: 20, weight: .bold, design: .monospaced))
+          .contentTransition(.numericText())
+          .animation(.default, value: elapsedTime)
+      }
+      .padding(.horizontal, 20)
+      .frame(maxWidth: .infinity)
+      .frame(height: activeButtonHeight)
+      .background(activeButtonBackground)
+      .contentShape(RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous))
     }
+    .buttonStyle(LauncherButtonStyle())
+    .foregroundStyle(.primary)
+    .accessibilityLabel("Active Profile \(profile.name)")
+  }
+
+  private var activeButtonBackground: some View {
+    CardBackground(
+      isActive: true,
+      customColor: themeManager.themeColor,
+      cornerRadius: activeButtonCornerRadius,
+      activeBlobScale: activeButtonBlobScale
+    )
+    .frame(height: activeButtonHeight)
+    .clipShape(RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous))
+    .shadow(
+      color: themeManager.themeColor.opacity(0.18),
+      radius: 14,
+      x: 0,
+      y: 8
+    )
   }
 
   private var startButtonBackground: some View {
@@ -118,6 +185,11 @@ struct HomeProfileLauncher: View {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     onStartTapped()
   }
+
+  private func activeTapped() {
+    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    onActiveTapped()
+  }
 }
 
 private struct LauncherButtonStyle: ButtonStyle {
@@ -135,6 +207,8 @@ private struct LauncherButtonStyle: ButtonStyle {
   VStack {
     Spacer()
     HomeProfileLauncher(
+      activeProfile: nil,
+      elapsedTime: 0,
       onManageTapped: {},
       onStartTapped: {}
     )

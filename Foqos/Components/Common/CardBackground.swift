@@ -5,6 +5,8 @@ struct CardBackground: View {
 
   var isActive: Bool = false
   var customColor: Color? = nil
+  var cornerRadius: CGFloat = 24
+  var activeBlobScale: CGFloat = 1
 
   // Metaball blob specs (randomized once for organic motion)
   @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 5)
@@ -21,7 +23,7 @@ struct CardBackground: View {
   }
 
   var body: some View {
-    RoundedRectangle(cornerRadius: 24)
+    RoundedRectangle(cornerRadius: cornerRadius)
       .fill(Color(UIColor.systemBackground))
       .overlay(
         GeometryReader { geometry in
@@ -34,7 +36,8 @@ struct CardBackground: View {
                   baseColor: cardColor,
                   blobs: blobs,
                   t: t,
-                  size: geometry.size
+                  size: geometry.size,
+                  blobScale: activeBlobScale
                 )
               }
               .allowsHitTesting(false)
@@ -47,14 +50,14 @@ struct CardBackground: View {
         }
       )
       .overlay(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: cornerRadius)
           .stroke(Color.gray.opacity(0.3), lineWidth: 1)
       )
       .background(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: cornerRadius)
           .fill(.ultraThinMaterial.opacity(0.7))
       )
-      .clipShape(RoundedRectangle(cornerRadius: 24))
+      .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     // TimelineView drives animation; no imperative animation triggers needed
   }
 
@@ -69,6 +72,7 @@ struct CardBackground: View {
     let blobs: [BlobSpec]
     let t: TimeInterval
     let size: CGSize
+    let blobScale: CGFloat
 
     var body: some View {
       ZStack {
@@ -76,11 +80,11 @@ struct CardBackground: View {
         // We keep the same gooey metaball mask so it feels as delightful as the original lava lamp.
         Rectangle()
           .fill(fillGradient)
-          .mask(MetaballMaskView(blobs: blobs, t: t))
+          .mask(MetaballMaskView(blobs: blobs, t: t, blobScale: blobScale))
           .opacity(0.82)
 
-        AuroraOverlays(baseColor: baseColor, t: t, size: size)
-          .mask(MetaballMaskView(blobs: blobs, t: t))
+        AuroraOverlays(baseColor: baseColor, t: t, size: size, blobScale: blobScale)
+          .mask(MetaballMaskView(blobs: blobs, t: t, blobScale: blobScale))
           .blendMode(.plusLighter)
           .opacity(0.95)
       }
@@ -111,9 +115,10 @@ struct CardBackground: View {
     let baseColor: Color
     let t: TimeInterval
     let size: CGSize
+    let blobScale: CGFloat
 
     var body: some View {
-      let r = min(size.width, size.height)
+      let r = min(size.width, size.height) * blobScale
       let p1 = CGPoint(
         x: size.width * (0.35 + 0.18 * CGFloat(Foundation.cos(t * 0.22))),
         y: size.height * (0.35 + 0.22 * CGFloat(Foundation.sin(t * 0.18 + 1.1)))
@@ -242,8 +247,8 @@ struct CardBackground: View {
       return CGPoint(x: x, y: y)
     }
 
-    func size(at t: TimeInterval, in size: CGSize) -> CGSize {
-      let base = min(size.width, size.height) * baseSizeFactor
+    func size(at t: TimeInterval, in size: CGSize, scale: CGFloat) -> CGSize {
+      let base = min(size.width, size.height) * baseSizeFactor * scale
       let pulse = 1.0 + sizeJitter * CGFloat(sin(t * speed * 0.6 + (phaseX + phaseY) * 0.5))
       let w = base * pulse
       return CGSize(width: w, height: w)
@@ -276,6 +281,7 @@ struct CardBackground: View {
   private struct MetaballMaskView: View {
     let blobs: [BlobSpec]
     let t: TimeInterval
+    let blobScale: CGFloat
 
     var body: some View {
       Canvas { context, size in
@@ -285,7 +291,7 @@ struct CardBackground: View {
         context.drawLayer { layer in
           for blob in blobs {
             let p = blob.position(at: t, in: size)
-            let s = blob.size(at: t, in: size)
+            let s = blob.size(at: t, in: size, scale: blobScale)
             let rect = CGRect(
               x: p.x - s.width / 2, y: p.y - s.height / 2, width: s.width,
               height: s.height)

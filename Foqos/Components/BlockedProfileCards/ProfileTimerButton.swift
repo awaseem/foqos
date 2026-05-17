@@ -39,7 +39,7 @@ struct ProfileTimerButton: View {
         if isActive, let elapsedTimeVal = elapsedTime {
           // Timer
           HStack(spacing: 8) {
-            Text(timeString(from: elapsedTimeVal))
+            Text(DateFormatters.formatDurationClock(elapsedTimeVal))
               .foregroundColor(.primary)
               .font(.system(size: 16, weight: .semibold))
               .contentTransition(.numericText())
@@ -97,14 +97,6 @@ struct ProfileTimerButton: View {
         }
       }
     }
-  }
-
-  // Format TimeInterval to HH:MM:SS
-  private func timeString(from timeInterval: TimeInterval) -> String {
-    let hours = Int(timeInterval) / 3600
-    let minutes = Int(timeInterval) / 60 % 60
-    let seconds = Int(timeInterval) % 60
-    return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
   }
 }
 

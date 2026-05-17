@@ -173,6 +173,8 @@ struct HomeView: View {
     .safeAreaInset(edge: .bottom) {
       if !profiles.isEmpty {
         HomeProfileLauncher(
+          activeProfile: isBlocking ? strategyManager.activeSession?.blockedProfile : nil,
+          elapsedTime: strategyManager.elapsedTime,
           onManageTapped: {
             isProfileListPresent = true
           },
