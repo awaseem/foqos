@@ -128,8 +128,7 @@ private struct HomeProfileRow: View {
 
       actionMenu
     }
-    .padding(.horizontal, 16)
-    .padding(.vertical, 21)
+    .padding(16)
   }
 
   private var strategyIcon: some View {
