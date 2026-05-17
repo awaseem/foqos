@@ -8,6 +8,7 @@ struct StartProfilePickerView: View {
   let profiles: [BlockedProfiles]
   let isBlocking: Bool
   let activeSessionProfileId: UUID?
+  let startingProfileId: UUID?
   let onGoTapped: (BlockedProfiles) -> Void
 
   @State private var selectedProfileId: UUID?
@@ -16,13 +17,16 @@ struct StartProfilePickerView: View {
     profiles: [BlockedProfiles],
     isBlocking: Bool,
     activeSessionProfileId: UUID?,
+    startingProfileId: UUID? = nil,
     onGoTapped: @escaping (BlockedProfiles) -> Void
   ) {
     self.profiles = profiles
     self.isBlocking = isBlocking
     self.activeSessionProfileId = activeSessionProfileId
+    self.startingProfileId = startingProfileId
     self.onGoTapped = onGoTapped
-    _selectedProfileId = State(initialValue: profiles.first?.id)
+    _selectedProfileId = State(
+      initialValue: profiles.first(where: { $0.id == startingProfileId })?.id ?? profiles.first?.id)
   }
 
   private var selectedProfile: BlockedProfiles? {
@@ -82,6 +86,11 @@ struct StartProfilePickerView: View {
       .onChange(of: profiles) { _, newProfiles in
         if selectedProfile == nil {
           selectedProfileId = newProfiles.first?.id
+        }
+      }
+      .onChange(of: startingProfileId) { _, newValue in
+        if let newValue, profiles.contains(where: { $0.id == newValue }) {
+          selectedProfileId = newValue
         }
       }
     }

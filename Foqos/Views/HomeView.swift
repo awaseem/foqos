@@ -1,4 +1,3 @@
-import FamilyControls
 import SwiftData
 import SwiftUI
 
@@ -40,9 +39,6 @@ struct HomeView: View {
   // Settings View
   @State private var showSettingsView = false
 
-  // Emergency View
-  @State private var showEmergencyView = false
-
   // Active session view
   @State private var showActiveProfileSessionView = false
 
@@ -50,8 +46,6 @@ struct HomeView: View {
   @State private var navigateToProfileId: UUID? = nil
 
   // Activity sessions
-  @Query(sort: \BlockedProfileSession.startTime, order: .reverse) private
-    var sessions: [BlockedProfileSession]
   @Query(
     filter: #Predicate<BlockedProfileSession> { $0.endTime != nil },
     sort: \BlockedProfileSession.endTime,
@@ -136,17 +130,16 @@ struct HomeView: View {
           )
           .padding(.horizontal, 16)
 
-          BlockedProfileCarousel(
+          HomeProfilesListView(
             profiles: profiles,
             isBlocking: isBlocking,
-            isBreakAvailable: isBreakAvailable,
-            isBreakActive: isBreakActive,
-            isPauseActive: isPauseActive,
             activeSessionProfileId: activeSessionProfileId,
             elapsedTime: strategyManager.elapsedTime,
-            startingProfileId: navigateToProfileId,
+            onManageTapped: {
+              isProfileListPresent = true
+            },
             onStartTapped: { profile in
-              strategyButtonPress(profile)
+              startProfile(profile)
             },
             onStopTapped: { profile in
               strategyButtonPress(profile)
@@ -157,16 +150,11 @@ struct HomeView: View {
             onStatsTapped: { profile in
               profileToShowStats = profile
             },
-            onBreakTapped: { _ in
-              strategyManager.toggleBreak(context: context)
-            },
-            onManageTapped: {
-              isProfileListPresent = true
-            },
-            onEmergencyTapped: {
-              showEmergencyView = true
-            },
+            onActiveTapped: {
+              showActiveProfileSessionView = true
+            }
           )
+          .padding(.horizontal, 16)
         }
       }
     }
@@ -190,6 +178,7 @@ struct HomeView: View {
         )
       }
     }
+    .padding(.top, 1)
     .sheet(
       isPresented: $isProfileListPresent,
     ) {
@@ -211,6 +200,7 @@ struct HomeView: View {
     .onChange(of: navigationManager.navigateToProfileId) { _, newValue in
       if let profileId = newValue {
         navigateToProfileId = UUID(uuidString: profileId)
+        showStartProfilePicker = true
         navigationManager.clearNavigation()
       }
     }
@@ -268,11 +258,11 @@ struct HomeView: View {
         )
       }
     }
-    .sheet(item: $profileToEdit) { profile in
-      BlockedProfileView(profile: profile)
-    }
     .sheet(item: $profileToShowStats) { profile in
       ProfileInsightsView(profile: profile)
+    }
+    .sheet(item: $profileToEdit) { profile in
+      BlockedProfileView(profile: profile)
     }
     .sheet(item: $dashboardInsightsContext) { context in
       ProfileInsightsView(
@@ -291,6 +281,7 @@ struct HomeView: View {
         profiles: profiles,
         isBlocking: isBlocking,
         activeSessionProfileId: activeSessionProfileId,
+        startingProfileId: navigateToProfileId,
         onGoTapped: { profile in
           startProfile(profile)
         }
@@ -308,10 +299,6 @@ struct HomeView: View {
     }
     .sheet(isPresented: $showSettingsView) {
       SettingsView()
-    }
-    .sheet(isPresented: $showEmergencyView) {
-      EmergencyView()
-        .presentationDetents([.height(350)])
     }
     .alert(alertTitle, isPresented: $showingAlert) {
       Button("OK", role: .cancel) { dismissAlert() }
