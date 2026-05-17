@@ -23,6 +23,7 @@ struct HomeView: View {
 
   // New profile view
   @State private var showNewProfileView = false
+  @State private var showStartProfilePicker = false
 
   // Edit profile
   @State private var profileToEdit: BlockedProfiles? = nil
@@ -169,7 +170,17 @@ struct HomeView: View {
     .refreshable {
       loadApp()
     }
-    .padding(.top, 1)
+    .safeAreaInset(edge: .bottom) {
+      HomeProfileLauncher(
+        isStartEnabled: !profiles.isEmpty,
+        onManageTapped: {
+          isProfileListPresent = true
+        },
+        onStartTapped: {
+          showStartProfilePicker = true
+        }
+      )
+    }
     .sheet(
       isPresented: $isProfileListPresent,
     ) {
@@ -244,6 +255,17 @@ struct HomeView: View {
     ) {
       BlockedProfileView(profile: nil)
     }
+    .sheet(isPresented: $showStartProfilePicker) {
+      StartProfilePickerView(
+        profiles: profiles,
+        isBlocking: isBlocking,
+        activeSessionProfileId: activeSessionProfileId,
+        onGoTapped: { profile in
+          startProfile(profile)
+        }
+      )
+      .presentationDetents([.medium, .large])
+    }
     .sheet(isPresented: $strategyManager.showCustomStrategyView) {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
@@ -277,6 +299,15 @@ struct HomeView: View {
       .toggleBlocking(context: context, activeProfile: profile)
 
     ratingManager.incrementLaunchCount()
+  }
+
+  private func startProfile(_ profile: BlockedProfiles) {
+    guard !isBlocking else {
+      showErrorAlert(message: "Stop the active profile before starting another one.")
+      return
+    }
+
+    strategyButtonPress(profile)
   }
 
   private func loadApp() {
