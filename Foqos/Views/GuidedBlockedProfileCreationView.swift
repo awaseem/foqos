@@ -115,6 +115,7 @@ struct GuidedBlockedProfileCreationView: View {
   @State private var showingSchedulePicker = false
   @State private var showingStrategyPicker = false
   @State private var alertIdentifier: AlertIdentifier?
+  @State private var navigationDirection: CGFloat = 1
 
   private let steps = GuidedProfileStep.allCases
 
@@ -134,6 +135,23 @@ struct GuidedBlockedProfileCreationView: View {
     return currentStep != .name || draft.isValid
   }
 
+  private var stepAnimation: Animation {
+    .spring(response: 0.28, dampingFraction: 0.84, blendDuration: 0.04)
+  }
+
+  private var stepTransition: AnyTransition {
+    let insertionEdge: Edge = navigationDirection > 0 ? .bottom : .top
+    let removalEdge: Edge = navigationDirection > 0 ? .top : .bottom
+
+    return .asymmetric(
+      insertion: .move(edge: insertionEdge)
+        .combined(with: .opacity)
+        .combined(with: .scale(scale: 0.985, anchor: .top)),
+      removal: .move(edge: removalEdge)
+        .combined(with: .opacity)
+    )
+  }
+
   init(onBackFromFirst: (() -> Void)? = nil) {
     self.onBackFromFirst = onBackFromFirst
   }
@@ -142,10 +160,17 @@ struct GuidedBlockedProfileCreationView: View {
     NavigationStack {
       VStack(spacing: 0) {
         ScrollView {
-          stepIntroHeader
+          VStack(alignment: .leading, spacing: 0) {
+            stepIntroHeader
+              .id("header-\(currentStep.id)")
+              .transition(stepTransition)
 
-          stepContent
+            stepContent
+              .id("content-\(currentStep.id)")
+              .transition(stepTransition)
+          }
         }
+        .animation(stepAnimation, value: currentStep)
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
 
@@ -209,16 +234,20 @@ struct GuidedBlockedProfileCreationView: View {
         .fontWeight(.semibold)
         .foregroundStyle(.primary)
         .padding(.leading, 1)
+        .contentTransition(.numericText())
+        .animation(.easeInOut(duration: 0.16), value: currentStepIndex)
 
       Text(currentStep.introTitle)
         .font(.largeTitle)
         .fontWeight(.bold)
         .foregroundStyle(.primary)
+        .contentTransition(.interpolate)
 
       Text(currentStep.introDescription)
         .font(.body)
         .foregroundStyle(.secondary)
         .lineSpacing(3)
+        .contentTransition(.interpolate)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.horizontal, 20)
@@ -369,14 +398,16 @@ struct GuidedBlockedProfileCreationView: View {
 
   private func goNext() {
     guard currentStepIndex < steps.count - 1 else { return }
-    withAnimation(.easeInOut(duration: 0.2)) {
+    navigationDirection = 1
+    withAnimation(stepAnimation) {
       currentStep = steps[currentStepIndex + 1]
     }
   }
 
   private func goBack() {
     guard currentStepIndex > 0 else { return }
-    withAnimation(.easeInOut(duration: 0.2)) {
+    navigationDirection = -1
+    withAnimation(stepAnimation) {
       currentStep = steps[currentStepIndex - 1]
     }
   }
