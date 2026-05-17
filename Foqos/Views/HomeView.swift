@@ -43,6 +43,9 @@ struct HomeView: View {
   // Emergency View
   @State private var showEmergencyView = false
 
+  // Active session view
+  @State private var showActiveProfileSessionView = false
+
   // Navigate to profile
   @State private var navigateToProfileId: UUID? = nil
 
@@ -180,6 +183,9 @@ struct HomeView: View {
           },
           onStartTapped: {
             showStartProfilePicker = true
+          },
+          onActiveTapped: {
+            showActiveProfileSessionView = true
           }
         )
       }
@@ -227,6 +233,11 @@ struct HomeView: View {
         unloadApp()
       }
     }
+    .onChange(of: isBlocking) { _, newValue in
+      if !newValue {
+        showActiveProfileSessionView = false
+      }
+    }
     .onReceive(strategyManager.$errorMessage) { errorMessage in
       if let message = errorMessage {
         showErrorAlert(message: message)
@@ -239,6 +250,23 @@ struct HomeView: View {
       IntroView {
         requestAuthorizer.requestAuthorization()
       }.interactiveDismissDisabled()
+    }
+    .fullScreenCover(isPresented: $showActiveProfileSessionView) {
+      if let activeProfile = strategyManager.activeSession?.blockedProfile {
+        ActiveProfileSessionView(
+          profile: activeProfile,
+          elapsedTime: strategyManager.elapsedTime,
+          isBreakAvailable: isBreakAvailable,
+          isBreakActive: isBreakActive,
+          isPauseActive: isPauseActive,
+          onBreakTapped: {
+            strategyManager.toggleBreak(context: context)
+          },
+          onStopTapped: {
+            strategyButtonPress(activeProfile)
+          }
+        )
+      }
     }
     .sheet(item: $profileToEdit) { profile in
       BlockedProfileView(profile: profile)
