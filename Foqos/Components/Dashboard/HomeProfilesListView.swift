@@ -112,11 +112,13 @@ private struct HomeProfileRow: View {
 
             HomeProfileStatusLine(profile: profile)
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .layoutPriority(1)
 
-          Spacer(minLength: 10)
+          Spacer(minLength: 12)
 
-          HomeProfileUsageMiniBarChart(seed: profile.id.uuidString)
-            .frame(width: 82, height: 40)
+          HomeProfileUsageMiniBarChart(profile: profile)
+            .frame(width: 118, height: 62)
         }
       }
       .buttonStyle(.plain)
@@ -127,7 +129,7 @@ private struct HomeProfileRow: View {
       actionMenu
     }
     .padding(.horizontal, 16)
-    .padding(.vertical, 17)
+    .padding(.vertical, 21)
   }
 
   private var strategyIcon: some View {
@@ -303,32 +305,68 @@ private struct HomeProfileCompactIndicators: View {
 private struct HomeProfileUsageMiniBarChart: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
-  let seed: String
+  let profile: BlockedProfiles
 
-  private var values: [CGFloat] {
-    let scalars = seed.unicodeScalars.map { Int($0.value) }
+  private var weekStart: Date {
+    WeeklySessionAggregator.startOfWeek(for: Date())
+  }
 
-    return (0..<7).map { index in
-      let rawValue = scalars.enumerated().reduce(0) { partialResult, item in
-        partialResult + (item.offset + index + 1) * item.element
+  private var aggregation: WeeklySessionAggregation {
+    let intervals = profile.sessions.compactMap { session -> WeeklySessionInterval? in
+      guard let endTime = session.endTime else { return nil }
+      return WeeklySessionInterval(startTime: session.startTime, endTime: endTime)
+    }
+
+    return WeeklySessionAggregator.aggregate(
+      sessions: intervals,
+      weekStart: weekStart
+    )
+  }
+
+  private var values: [TimeInterval] {
+    aggregation.dailyDurations
+  }
+
+  private var maxValue: TimeInterval {
+    max(values.max() ?? 0, 1)
+  }
+
+  private var dayLabels: [String] {
+    let calendar = Calendar.current
+
+    return (0..<7).map { dayOffset in
+      guard let date = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) else {
+        return ""
       }
 
-      return CGFloat((rawValue % 58) + 22) / 100
+      return String(date.formatted(.dateTime.weekday(.narrow)).prefix(1))
     }
   }
 
   var body: some View {
-    HStack(alignment: .bottom, spacing: 4) {
-      ForEach(Array(values.enumerated()), id: \.offset) { _, value in
-        RoundedRectangle(cornerRadius: 2, style: .continuous)
-          .fill(themeManager.themeColor)
-          .opacity(0.28 + (value * 0.72))
-          .frame(maxWidth: .infinity)
-          .frame(height: max(6, value * 32))
+    VStack(spacing: 3) {
+      HStack(alignment: .bottom, spacing: 4) {
+        ForEach(Array(values.enumerated()), id: \.offset) { _, value in
+          let normalizedValue = CGFloat(value / maxValue)
+
+          RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(themeManager.themeColor)
+            .opacity(value > 0 ? 0.36 + (normalizedValue * 0.64) : 0.14)
+            .frame(maxWidth: .infinity)
+            .frame(height: value > 0 ? max(5, normalizedValue * 25) : 3)
+        }
+      }
+      .frame(height: 45, alignment: .bottom)
+
+      HStack(spacing: 4) {
+        ForEach(Array(dayLabels.enumerated()), id: \.offset) { _, label in
+          Text(label)
+            .font(.system(size: 6, weight: .semibold))
+            .foregroundStyle(.secondary.opacity(0.7))
+            .frame(maxWidth: .infinity)
+        }
       }
     }
-    .padding(.horizontal, 8)
-    .padding(.vertical, 6)
     .accessibilityHidden(true)
   }
 }
