@@ -7,7 +7,6 @@ struct HomeProfileLauncher: View {
 
   let activeProfile: BlockedProfiles?
   let elapsedTime: TimeInterval
-  let onManageTapped: () -> Void
   let onStartTapped: () -> Void
   var onActiveTapped: () -> Void = {}
 
@@ -15,7 +14,7 @@ struct HomeProfileLauncher: View {
 
   private let shimmerAnimationDuration = 1.15
   private let shimmerRepeatDelay = 2.5
-  private let inactiveButtonHeight: CGFloat = 56
+  private let inactiveButtonHeight: CGFloat = 64
   private let activeButtonHeight: CGFloat = 74
   private let activeButtonCornerRadius: CGFloat = 24
   private let activeButtonBlobScale: CGFloat = 2.6
@@ -41,49 +40,29 @@ struct HomeProfileLauncher: View {
   }
 
   private var inactiveLauncherButtons: some View {
-    HStack(spacing: 12) {
-      Button(action: manageTapped) {
-        Image(systemName: "person.2")
-          .font(.system(size: 18, weight: .semibold))
-          .frame(width: inactiveButtonHeight, height: inactiveButtonHeight)
-          .background(
-            Capsule()
-              .fill(.thinMaterial)
-              .overlay(
-                Capsule()
-                  .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-              )
-          )
-          .contentShape(Capsule())
-      }
-      .buttonStyle(LauncherButtonStyle())
-      .foregroundStyle(.primary)
-      .accessibilityLabel("Manage Profiles")
+    Button(action: startTapped) {
+      HStack(spacing: 10) {
+        Image(systemName: "play.fill")
+          .font(.system(size: 18, weight: .bold))
 
-      Button(action: startTapped) {
-        HStack(spacing: 8) {
-          Image(systemName: "play.fill")
-            .font(.system(size: 16, weight: .bold))
-
-          Text("Start")
-            .font(.headline)
-            .fontWeight(.semibold)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: inactiveButtonHeight)
-        .background(startButtonBackground)
-        .shadow(
-          color: themeManager.themeColor.opacity(0.24),
-          radius: 12,
-          x: 0,
-          y: 6
-        )
-        .contentShape(Capsule())
+        Text("Start")
+          .font(.title3)
+          .fontWeight(.semibold)
       }
-      .buttonStyle(LauncherButtonStyle())
-      .foregroundStyle(.white)
-      .accessibilityLabel("Start Profile")
+      .frame(maxWidth: .infinity)
+      .frame(height: inactiveButtonHeight)
+      .background(startButtonBackground)
+      .shadow(
+        color: themeManager.themeColor.opacity(0.24),
+        radius: 12,
+        x: 0,
+        y: 6
+      )
+      .contentShape(Capsule())
     }
+    .buttonStyle(LauncherButtonStyle())
+    .foregroundStyle(.white)
+    .accessibilityLabel("Start Profile")
   }
 
   private func activeProfileButton(_ profile: BlockedProfiles) -> some View {
@@ -184,11 +163,6 @@ struct HomeProfileLauncher: View {
       }
   }
 
-  private func manageTapped() {
-    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    onManageTapped()
-  }
-
   private func startTapped() {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     onStartTapped()
@@ -217,7 +191,6 @@ private struct LauncherButtonStyle: ButtonStyle {
     HomeProfileLauncher(
       activeProfile: nil,
       elapsedTime: 0,
-      onManageTapped: {},
       onStartTapped: {}
     )
   }

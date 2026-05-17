@@ -166,9 +166,6 @@ struct HomeView: View {
         HomeProfileLauncher(
           activeProfile: isBlocking ? strategyManager.activeSession?.blockedProfile : nil,
           elapsedTime: strategyManager.elapsedTime,
-          onManageTapped: {
-            isProfileListPresent = true
-          },
           onStartTapped: {
             showStartProfilePicker = true
           },
