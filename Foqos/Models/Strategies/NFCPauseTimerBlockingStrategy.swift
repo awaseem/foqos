@@ -8,6 +8,7 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
   var description: String =
     "Set a pause duration, scan once to pause, and scan again to fully stop."
   var iconType: String = "pause.circle"
+  var iconAssetName: String? = "NFCPauseSticker"
   var color: Color = .orange
 
   var usesNFC: Bool = true
