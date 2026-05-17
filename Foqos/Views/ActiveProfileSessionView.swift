@@ -199,23 +199,23 @@ struct ActiveProfileSessionView: View {
       }
 
       HStack(spacing: 12) {
+        if profile.enableEmergencyUnblock {
+          ActiveSessionActionButton(
+            title: "Emergency",
+            iconName: "exclamationmark.triangle.fill",
+            role: .destructive,
+            action: {
+              showEmergencyView = true
+            }
+          )
+        }
+
         if showStopButton {
           ActiveSessionActionButton(
             title: stopButtonTitle,
             iconName: "stop.fill",
             role: .standard,
             action: onStopTapped
-          )
-        }
-
-        if profile.enableEmergencyUnblock {
-          ActiveSessionActionButton(
-            title: "Emergency",
-            iconName: "exclamationmark.triangle.fill",
-            role: .warning,
-            action: {
-              showEmergencyView = true
-            }
           )
         }
       }
@@ -379,6 +379,7 @@ private struct ActiveSessionGradientBackground: View {
 private enum ActiveSessionActionRole {
   case standard
   case warning
+  case destructive
 }
 
 private struct ActiveSessionActionButton: View {
@@ -391,7 +392,14 @@ private struct ActiveSessionActionButton: View {
   @State private var isPressed = false
 
   private var foregroundColor: Color {
-    role == .warning ? .orange : .primary
+    switch role {
+    case .standard:
+      return .primary
+    case .warning:
+      return .orange
+    case .destructive:
+      return .red
+    }
   }
 
   var body: some View {
