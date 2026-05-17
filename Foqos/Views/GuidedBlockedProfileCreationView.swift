@@ -10,7 +10,8 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
   case strictUnlocks
   case schedule
   case breaks
-  case safeguards
+  case strictSafeguards
+  case sessionSafeguards
   case notifications
   case review
 
@@ -32,8 +33,10 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
       return "Schedule"
     case .breaks:
       return "Breaks"
-    case .safeguards:
-      return "Safeguards"
+    case .strictSafeguards:
+      return "Strict"
+    case .sessionSafeguards:
+      return "Session"
     case .notifications:
       return "Notifications"
     case .review:
@@ -57,8 +60,10 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
       return "Add a schedule"
     case .breaks:
       return "Allow breaks"
-    case .safeguards:
-      return "Choose safeguards"
+    case .strictSafeguards:
+      return "Choose strict safeguards"
+    case .sessionSafeguards:
+      return "Choose session controls"
     case .notifications:
       return "Set notifications"
     case .review:
@@ -82,8 +87,11 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
       return "Schedules can start this profile automatically on selected days."
     case .breaks:
       return "Timed breaks let you pause once during a session without ending the profile."
-    case .safeguards:
-      return "These settings make it harder to work around active restrictions."
+    case .strictSafeguards:
+      return "These settings make it harder to work around restrictions by changing installed apps."
+    case .sessionSafeguards:
+      return
+        "Control how active sessions can be stopped and whether emergency unblocks are allowed."
     case .notifications:
       return "Live Activities and reminders can help you keep sessions visible."
     case .review:
@@ -284,9 +292,18 @@ struct GuidedBlockedProfileCreationView: View {
         )
       }
 
-    case .safeguards:
-      guidedCard(title: "Safeguards") {
-        BlockedProfileSafeguardsFields(
+    case .strictSafeguards:
+      guidedCard(title: "Strict Safeguards") {
+        BlockedProfileStrictSafeguardsFields(
+          draft: draft,
+          disabled: false,
+          showsSeparators: true
+        )
+      }
+
+    case .sessionSafeguards:
+      guidedCard(title: "Session Safeguards") {
+        BlockedProfileSessionSafeguardsFields(
           draft: draft,
           disabled: false,
           showsSeparators: true
@@ -386,16 +403,48 @@ private struct GuidedProfileReviewContent: View {
   @ObservedObject var draft: BlockedProfileDraft
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      LabeledContent("Name", value: draft.name)
-      LabeledContent("Strategy", value: draft.selectedStrategy?.name ?? "NFC")
-      LabeledContent("Apps", value: FamilyActivityUtil.getCountDisplayText(draft.selectedActivity))
-      LabeledContent("Domains", value: domainSummary)
-      LabeledContent("Schedule", value: scheduleSummary)
-      LabeledContent("Breaks", value: breaksSummary)
-      LabeledContent("Safeguards", value: safeguardsSummary)
-      LabeledContent("Notifications", value: notificationsSummary)
+    VStack(spacing: 0) {
+      reviewRow(title: "Name", value: draft.name)
+      reviewDivider
+      reviewRow(title: "Strategy", value: draft.selectedStrategy?.name ?? "NFC")
+      reviewDivider
+      reviewRow(
+        title: "Apps", value: FamilyActivityUtil.getCountDisplayText(draft.selectedActivity))
+      reviewDivider
+      reviewRow(title: "Domains", value: domainSummary)
+      reviewDivider
+      reviewRow(title: "Schedule", value: scheduleSummary)
+      reviewDivider
+      reviewRow(title: "Breaks", value: breaksSummary)
+      reviewDivider
+      reviewRow(title: "Safeguards", value: safeguardsSummary)
+      reviewDivider
+      reviewRow(title: "Notifications", value: notificationsSummary)
     }
+  }
+
+  private func reviewRow(title: String, value: String) -> some View {
+    HStack(alignment: .firstTextBaseline, spacing: 16) {
+      Text(title)
+        .font(.body)
+        .fontWeight(.medium)
+        .foregroundStyle(.primary)
+        .frame(width: 118, alignment: .leading)
+
+      Text(value)
+        .font(.body)
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.trailing)
+        .lineLimit(2)
+        .minimumScaleFactor(0.85)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+    .padding(.vertical, 12)
+  }
+
+  private var reviewDivider: some View {
+    Divider()
+      .padding(.leading, 118)
   }
 
   private var domainSummary: String {

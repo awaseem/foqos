@@ -308,6 +308,28 @@ struct BlockedProfileSafeguardsFields: View {
   var showsSeparators: Bool = false
 
   var body: some View {
+    BlockedProfileStrictSafeguardsFields(
+      draft: draft,
+      disabled: disabled,
+      showsSeparators: showsSeparators
+    )
+
+    ProfileFieldDivider(isVisible: showsSeparators)
+
+    BlockedProfileSessionSafeguardsFields(
+      draft: draft,
+      disabled: disabled,
+      showsSeparators: showsSeparators
+    )
+  }
+}
+
+struct BlockedProfileStrictSafeguardsFields: View {
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+  var showsSeparators: Bool = false
+
+  var body: some View {
     CustomToggle(
       title: "Strict",
       description:
@@ -325,9 +347,15 @@ struct BlockedProfileSafeguardsFields: View {
       isOn: $draft.enableBlockAppInstallation,
       isDisabled: disabled
     )
+  }
+}
 
-    ProfileFieldDivider(isVisible: showsSeparators)
+struct BlockedProfileSessionSafeguardsFields: View {
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+  var showsSeparators: Bool = false
 
+  var body: some View {
     CustomToggle(
       title: "Disable Background Stops",
       description:
@@ -355,6 +383,28 @@ struct BlockedProfileSafeguardsSection: View {
   var body: some View {
     Section("Safeguards") {
       BlockedProfileSafeguardsFields(draft: draft, disabled: disabled)
+    }
+  }
+}
+
+struct BlockedProfileStrictSafeguardsSection: View {
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+
+  var body: some View {
+    Section("Strict Safeguards") {
+      BlockedProfileStrictSafeguardsFields(draft: draft, disabled: disabled)
+    }
+  }
+}
+
+struct BlockedProfileSessionSafeguardsSection: View {
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+
+  var body: some View {
+    Section("Session Safeguards") {
+      BlockedProfileSessionSafeguardsFields(draft: draft, disabled: disabled)
     }
   }
 }
