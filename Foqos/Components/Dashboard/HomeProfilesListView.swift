@@ -109,6 +109,8 @@ private struct HomeProfileRow: View {
             }
 
             HomeProfileMetadataLine(profile: profile)
+
+            HomeProfileStatusLine(profile: profile)
           }
 
           Spacer(minLength: 10)
@@ -147,6 +149,15 @@ private struct HomeProfileRow: View {
 
   private var actionMenu: some View {
     Menu {
+
+      Button(action: onStatsTapped) {
+        Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
+      }
+
+      Button(action: onEditTapped) {
+        Label("Edit", systemImage: "pencil")
+      }
+
       if isActive {
         Button(action: onActiveTapped) {
           Label("Active Session", systemImage: "timer")
@@ -161,14 +172,6 @@ private struct HomeProfileRow: View {
           Label("Start", systemImage: "play.fill")
         }
         .disabled(!canStart)
-      }
-
-      Button(action: onStatsTapped) {
-        Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
-      }
-
-      Button(action: onEditTapped) {
-        Label("Edit", systemImage: "pencil")
       }
     } label: {
       Image(systemName: "ellipsis")
@@ -217,6 +220,83 @@ private struct HomeProfileMetadataLine: View {
 
   private func countLabel(_ count: Int, singular: String, plural: String) -> String {
     "\(count) \(count == 1 ? singular : plural)"
+  }
+}
+
+private struct HomeProfileStatusLine: View {
+  let profile: BlockedProfiles
+
+  var body: some View {
+    if let schedule = profile.schedule, schedule.isActive {
+      HomeProfileNextScheduleLine(schedule: schedule)
+    } else {
+      HomeProfileCompactIndicators(
+        enableLiveActivity: profile.enableLiveActivity,
+        hasReminders: profile.reminderTimeInSeconds != nil,
+        enableBreaks: profile.enableBreaks,
+        enableStrictMode: profile.enableStrictMode
+      )
+    }
+  }
+}
+
+private struct HomeProfileNextScheduleLine: View {
+  let schedule: BlockedProfileSchedule
+
+  var body: some View {
+    if let message = schedule.nextStartMessage(includePrefix: false) {
+      Text(message)
+        .font(.caption2)
+        .lineLimit(1)
+        .minimumScaleFactor(0.82)
+        .foregroundStyle(.secondary)
+    }
+  }
+}
+
+private struct HomeProfileCompactIndicators: View {
+  let enableLiveActivity: Bool
+  let hasReminders: Bool
+  let enableBreaks: Bool
+  let enableStrictMode: Bool
+
+  private var indicators: [String] {
+    var values: [String] = []
+
+    if enableBreaks {
+      values.append("Breaks")
+    }
+    if enableStrictMode {
+      values.append("Strict")
+    }
+    if enableLiveActivity {
+      values.append("Live Activity")
+    }
+    if hasReminders {
+      values.append("Reminders")
+    }
+
+    return values
+  }
+
+  var body: some View {
+    if !indicators.isEmpty {
+      HStack(spacing: 12) {
+        ForEach(Array(indicators.prefix(3)), id: \.self) { label in
+          HStack(spacing: 5) {
+            Circle()
+              .fill(Color.primary.opacity(0.85))
+              .frame(width: 5, height: 5)
+
+            Text(label)
+              .font(.caption2)
+              .foregroundColor(.secondary)
+              .lineLimit(1)
+          }
+        }
+      }
+      .minimumScaleFactor(0.78)
+    }
   }
 }
 

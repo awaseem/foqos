@@ -49,68 +49,18 @@ struct SchedulePicker: View {
     return "Schedule must be at least 1 hour long."
   }
 
-  private var nextScheduleStart: Date? {
-    guard !selectedDays.isEmpty else { return nil }
-
-    let calendar = Calendar.current
-    let now = Date()
-    let bufferTime = now.addingTimeInterval(15 * 60)  // 15 minute buffer
-
-    // Get the start time components
-    let startHour24 = hour12To24(startDisplayHour, isPM: startIsPM)
-
-    // Try to find the next occurrence within the next 7 days
-    for daysAhead in 0..<7 {
-      guard let candidateDate = calendar.date(byAdding: .day, value: daysAhead, to: bufferTime)
-      else {
-        continue
-      }
-
-      // Check if this day is in our selected days
-      let candidateWeekdayRaw = calendar.component(.weekday, from: candidateDate)
-      guard let candidateWeekday = Weekday(rawValue: candidateWeekdayRaw),
-        selectedDays.contains(candidateWeekday)
-      else {
-        continue
-      }
-
-      // Create the actual start time for this candidate day
-      guard
-        let scheduleStartTime = calendar.date(
-          bySettingHour: startHour24,
-          minute: startMinute,
-          second: 0,
-          of: candidateDate
-        )
-      else {
-        continue
-      }
-
-      // If this schedule start time is after our buffer time, we found it
-      if scheduleStartTime >= bufferTime {
-        return scheduleStartTime
-      }
-    }
-
-    return nil
+  private var draftSchedule: BlockedProfileSchedule {
+    BlockedProfileSchedule(
+      days: selectedDays,
+      startHour: hour12To24(startDisplayHour, isPM: startIsPM),
+      startMinute: startMinute,
+      endHour: hour12To24(endDisplayHour, isPM: endIsPM),
+      endMinute: endMinute
+    )
   }
 
   private var nextStartMessage: String? {
-    guard let nextStart = nextScheduleStart else { return nil }
-
-    let calendar = Calendar.current
-    let formatter = DateFormatter()
-
-    // Check if it's today or within this week for better formatting
-    if calendar.isDateInToday(nextStart) {
-      formatter.dateFormat = "'Today at' h:mm a"
-    } else if calendar.isDateInTomorrow(nextStart) {
-      formatter.dateFormat = "'Tomorrow at' h:mm a"
-    } else {
-      formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
-    }
-
-    return "Next start: \(formatter.string(from: nextStart))"
+    draftSchedule.nextStartMessage()
   }
 
   var body: some View {

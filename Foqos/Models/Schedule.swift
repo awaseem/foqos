@@ -78,6 +78,68 @@ struct BlockedProfileSchedule: Codable, Equatable {
     return now.timeIntervalSince(updatedAt) > 15 * 60
   }
 
+  func nextStartDate(
+    now: Date = Date(),
+    calendar: Calendar = .current,
+    bufferMinutes: Int = 15
+  ) -> Date? {
+    guard isActive else { return nil }
+
+    let bufferTime = now.addingTimeInterval(TimeInterval(bufferMinutes * 60))
+
+    for daysAhead in 0..<7 {
+      guard let candidateDate = calendar.date(byAdding: .day, value: daysAhead, to: bufferTime)
+      else {
+        continue
+      }
+
+      let candidateWeekdayRaw = calendar.component(.weekday, from: candidateDate)
+      guard let candidateWeekday = Weekday(rawValue: candidateWeekdayRaw),
+        days.contains(candidateWeekday)
+      else {
+        continue
+      }
+
+      guard
+        let scheduleStartTime = calendar.date(
+          bySettingHour: startHour,
+          minute: startMinute,
+          second: 0,
+          of: candidateDate
+        )
+      else {
+        continue
+      }
+
+      if scheduleStartTime >= bufferTime {
+        return scheduleStartTime
+      }
+    }
+
+    return nil
+  }
+
+  func nextStartMessage(
+    now: Date = Date(),
+    calendar: Calendar = .current,
+    includePrefix: Bool = true
+  ) -> String? {
+    guard let nextStart = nextStartDate(now: now, calendar: calendar) else { return nil }
+
+    let formatter = DateFormatter()
+
+    if calendar.isDateInToday(nextStart) {
+      formatter.dateFormat = "'Today at' h:mm a"
+    } else if calendar.isDateInTomorrow(nextStart) {
+      formatter.dateFormat = "'Tomorrow at' h:mm a"
+    } else {
+      formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
+    }
+
+    let message = formatter.string(from: nextStart)
+    return includePrefix ? "Next start: \(message)" : message
+  }
+
   private func formattedTimeString(hour24: Int, minute: Int) -> String {
     var hour = hour24 % 12
     if hour == 0 { hour = 12 }
