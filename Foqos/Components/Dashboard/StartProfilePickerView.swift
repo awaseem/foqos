@@ -80,16 +80,8 @@ struct StartProfilePickerView: View {
 
         goButton
       }
-      .background(Color(.systemGroupedBackground))
-      .navigationTitle("Start Profile")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarLeading) {
-          Button(action: { dismiss() }) {
-            Image(systemName: "xmark")
-          }
-        }
-      }
+      .padding(.top, 30)
+
       .onChange(of: profiles) { _, newProfiles in
         if selectedProfile == nil {
           withAnimation(.spring(response: 0.28, dampingFraction: 0.74)) {
