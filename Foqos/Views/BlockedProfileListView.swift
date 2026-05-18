@@ -118,7 +118,7 @@ struct BlockedProfileListView: View {
             Button {
               profileCreationDestination = .advanced
             } label: {
-              Label("Advanced Form", systemImage: "slider.horizontal.3")
+              Label("Full Profile Editor", systemImage: "slider.horizontal.3")
             }
           } label: {
             Image(systemName: "plus")
