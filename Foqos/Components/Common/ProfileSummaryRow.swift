@@ -88,7 +88,7 @@ struct ProfileSummaryContent: View {
   private var iconSize: CGFloat {
     switch layout {
     case .dashboard:
-      return 30
+      return 34
     case .compact:
       return 26
     }
