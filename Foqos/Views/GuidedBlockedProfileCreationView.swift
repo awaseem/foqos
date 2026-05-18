@@ -51,9 +51,9 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .strategy:
       return "Choose how it starts and stops"
     case .apps:
-      return "Choose apps"
+      return "Choose apps and how to block them"
     case .domains:
-      return "Choose websites"
+      return "Choose domains and how to block them"
     case .strictUnlocks:
       return "Set unlock rules"
     case .schedule:
@@ -76,24 +76,24 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .name:
       return "Profiles group the apps, websites, schedules, and rules you want to use together."
     case .strategy:
-      return "Pick the blocking method that fits this profile. You can change it later."
+      return "Pick the blocking method that fits this profile. You can can even mix and match how you want to start and how to stop."
     case .apps:
       return "Select the apps or categories this profile should restrict or allow."
     case .domains:
       return "Add specific domains and decide whether Safari website blocking applies."
     case .strictUnlocks:
-      return "Optional physical unlock methods can make stopping a session more intentional."
+      return "Some strategies let any NFC or QR/Barcode to unblock profiles (ex: Manual + NFC, Manual + QR). Enabling strict unlocks requires a specific NFC tag or QR/Barcode to unblock. You can have many tags or QR/Barcodes."
     case .schedule:
       return "Schedules can start this profile automatically on selected days."
     case .breaks:
       return "Timed breaks let you pause once during a session without ending the profile."
     case .strictSafeguards:
-      return "These settings make it harder to work around restrictions by changing installed apps."
+      return "These settings make it harder to work around restrictions by removing/installing apps."
     case .sessionSafeguards:
       return
         "Control how active sessions can be stopped and whether emergency unblocks are allowed."
     case .notifications:
-      return "Live Activities and reminders can help you keep sessions visible."
+      return "Live Activities and reminders can help you manage your session."
     case .review:
       return "Create the profile now, or go back to adjust any section."
     }
