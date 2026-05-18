@@ -39,9 +39,9 @@ struct BlockedProfilePhysicalUnblockSelector: View {
         )
 
         physicalUnblockColumn(
-          title: "QR/Barcode Code",
+          title: "QR/Barcode",
           description:
-            "Set one or more QR/Barcode codes that can only unblock this profile when active",
+            "Set one or more QR/Barcodes that can only unblock this profile when active",
           systemImage: "qrcode.viewfinder",
           assetImage: "QRStickerLogo",
           items: qrItems,
@@ -109,7 +109,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           Image(assetImage)
             .resizable()
             .scaledToFit()
-            .frame(width: 28, height: 28)
+            .frame(width: 34, height: 34)
         } else {
           Image(systemName: systemImage)
             .font(.title2)
