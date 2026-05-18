@@ -79,17 +79,25 @@ private struct HomeProfileRow: View {
 
   var body: some View {
     HStack(spacing: 12) {
-      Button(action: rowTapped) {
-        ProfileSummaryRow(
+      Button(action: onEditTapped) {
+        ProfileSummaryContent(
           profile: profile,
           isActive: false,
           metadata: .appsAndDomains,
           showsStatusLine: true,
+          layout: .dashboard,
           statusMode: .scheduleOnly
-        ) {
-          ProfileUsageMiniBarChart(profile: profile)
-            .frame(width: 118, height: 62)
-        }
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel("Edit \(profile.name)")
+
+      Button(action: onStatsTapped) {
+        ProfileUsageMiniBarChart(profile: profile)
+          .frame(width: 118, height: 62)
+          .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
       .accessibilityLabel("Show \(profile.name) insights")
@@ -129,9 +137,5 @@ private struct HomeProfileRow: View {
         .contentShape(Rectangle())
     }
     .accessibilityLabel("More actions for \(profile.name)")
-  }
-
-  private func rowTapped() {
-    onStatsTapped()
   }
 }
