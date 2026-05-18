@@ -16,7 +16,7 @@ struct SupportView: View {
 
   var body: some View {
     // Thank you stamp image and header
-    VStack(alignment: .center, spacing: 30) {
+    VStack(alignment: .center, spacing: 24) {
       Spacer()
 
       Image("ThankYouStamp")
@@ -35,19 +35,35 @@ struct SupportView: View {
         }
         .padding(.bottom, 20)
 
-      Text(
-        "Thank you for your support! I created Foqos because I believe everyone deserves tools to live with more focus and intention. Your support, whether through reviews, shares, or donations helps keep this dream alive and accessible to everyone who needs it"
-      )
-      .font(.body)
-      .multilineTextAlignment(.center)
+      VStack {
+        Text("Thank you for being here ♥")
+          .fontWeight(.bold)
+      }
+      .font(.callout)
+      .foregroundColor(.secondary)
+      .fadeInSlide(delay: 0.3)
+
+      VStack(alignment: .leading, spacing: 16) {
+        Text(
+          "Foqos started as a small attempt to make focus feel easier and more intentional. Every person who uses it, shares it, reviews it, or supports it helps keep that idea alive."
+        )
+
+        Text(
+          "If this has helped you, consider leaving a review, telling a friend, or making a small donation."
+        )
+
+        Text(
+          "If you ever want to reach out with kind words, feedback, or your story, please do. Those messages mean a lot to me and help me keep going."
+        )
+      }
+      .font(.callout)
       .foregroundColor(.secondary)
       .fadeInSlide(delay: 0.3)
 
       Text(
         "Questions? Reach out to me."
       )
-      .font(.body)
-      .multilineTextAlignment(.center)
+      .font(.callout)
       .foregroundColor(.secondary)
       .fadeInSlide(delay: 0.4)
 
@@ -56,27 +72,27 @@ struct SupportView: View {
           Image("Threads")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
+            .frame(width: 24, height: 24)
         }
 
         Link(destination: URL(string: TWITTER_URL)!) {
           Image("Twitter")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
+            .frame(width: 24, height: 24)
         }
         Link(destination: URL(string: REDDIT_URL)!) {
           Image("Reddit")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
+            .frame(width: 24, height: 24)
         }
 
         Link(destination: URL(string: LINKEDIN_URL)!) {
           Image("Linkedin")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
+            .frame(width: 24, height: 24)
         }
       }
       .fadeInSlide(delay: 0.5)
