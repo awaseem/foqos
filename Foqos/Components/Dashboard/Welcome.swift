@@ -31,22 +31,22 @@ struct Welcome: View {
           .fontWeight(.bold)
           .foregroundColor(.primary)
 
-        Text("Let's get you started by creating your first profile. You can customize it as much or as little as you'd like.")
-          .font(.subheadline)
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-          .fixedSize(horizontal: false, vertical: true)
-          .padding(.horizontal, 8)
+        Text(
+          "Let's get you started by creating your first profile. You can customize it as much or as little as you'd like."
+        )
+        .font(.subheadline)
+        .foregroundColor(.secondary)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 8)
 
-        Button(action: onGuidedTap) {
-          Label("Guided Setup", systemImage: "list.bullet.clipboard")
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-        }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.capsule)
-        .tint(themeManager.themeColor)
+        ShimmerLauncherButton(
+          title: "Create Profile",
+          iconName: "brain.head.profile",
+          height: 56,
+          accessibilityLabel: "Start guided profile setup",
+          action: onGuidedTap
+        )
         .padding(.top, 6)
 
         Button(action: onAdvancedTap) {
