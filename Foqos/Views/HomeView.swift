@@ -307,7 +307,7 @@ struct HomeView: View {
       )
       .presentationDetents([.medium, .large])
     }
-    .sheet(isPresented: $strategyManager.showCustomStrategyView) {
+    .sheet(isPresented: strategyActionSheetBinding) {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
@@ -336,6 +336,19 @@ struct HomeView: View {
       .toggleBlocking(context: context, activeProfile: profile)
 
     ratingManager.incrementLaunchCount()
+  }
+
+  private var strategyActionSheetBinding: Binding<Bool> {
+    Binding(
+      get: {
+        strategyManager.showCustomStrategyView && !showActiveProfileSessionView
+      },
+      set: { isPresented in
+        if !isPresented {
+          strategyManager.showCustomStrategyView = false
+        }
+      }
+    )
   }
 
   private func startProfile(_ profile: BlockedProfiles) {

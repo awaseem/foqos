@@ -3,6 +3,7 @@ import UIKit
 
 struct ActiveProfileSessionView: View {
   @Environment(\.dismiss) private var dismiss
+  @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
 
   let profile: BlockedProfiles
@@ -77,6 +78,12 @@ struct ActiveProfileSessionView: View {
     }
     .sheet(isPresented: $showProfileInsights) {
       ProfileInsightsView(profile: profile)
+    }
+    .sheet(isPresented: $strategyManager.showCustomStrategyView) {
+      BlockingStrategyActionView(
+        customView: strategyManager.customStrategyView
+      )
+      .presentationDetents([.medium])
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
@@ -475,5 +482,6 @@ private struct ActiveSessionPressStyle: ButtonStyle {
     onBreakTapped: {},
     onStopTapped: {}
   )
+  .environmentObject(StrategyManager())
   .environmentObject(ThemeManager.shared)
 }
