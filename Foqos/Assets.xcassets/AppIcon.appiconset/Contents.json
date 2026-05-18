@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon~ios-marketing.png",
+      "filename" : "foqos-icon-iOS-Default-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "AppIcon~ios-marketing 1.png",
+      "filename" : "foqos-icon-iOS-Dark-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "AppIcon~ios-marketing 2.png",
+      "filename" : "foqos-icon-iOS-TintedLight-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
