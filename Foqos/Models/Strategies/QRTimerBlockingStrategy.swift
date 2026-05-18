@@ -4,9 +4,10 @@ import SwiftUI
 class QRTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "QRTimerBlockingStrategy"
 
-  var name: String = "QR + Timer"
-  var description: String = "Set a focus duration, then scan any QR code to stop early."
-  var iconType: String = "bolt.badge.clock"
+  var name: String = "QR/Barcode + Timer"
+  var description: String =
+    "Choose how long blocking should last. To stop early, scan any QR code or barcode. Use Strict Unlocks if you want only selected codes to work."
+  var iconAssetName: String = "QR+TimerSticker"
   var color: Color = .mint
 
   var usesQRCode: Bool = true

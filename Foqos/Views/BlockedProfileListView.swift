@@ -2,6 +2,20 @@ import FamilyControls
 import SwiftData
 import SwiftUI
 
+private enum ProfileCreationDestination: Identifiable {
+  case guided
+  case advanced
+
+  var id: String {
+    switch self {
+    case .guided:
+      return "guided"
+    case .advanced:
+      return "advanced"
+    }
+  }
+}
+
 struct BlockedProfileListView: View {
   @Environment(\.modelContext) private var context
   @Environment(\.dismiss) private var dismiss
@@ -11,7 +25,13 @@ struct BlockedProfileListView: View {
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
   ]) private var profiles: [BlockedProfiles]
 
-  @State private var showingCreateProfile = false
+  @Query(
+    filter: #Predicate<BlockedProfileSession> { $0.endTime == nil },
+    sort: \BlockedProfileSession.startTime,
+    order: .reverse
+  ) private var activeSessions: [BlockedProfileSession]
+
+  @State private var profileCreationDestination: ProfileCreationDestination?
   @State private var showingDataExport = false
 
   @State private var profileToEdit: BlockedProfiles?
@@ -22,15 +42,28 @@ struct BlockedProfileListView: View {
     NavigationStack {
       Group {
         if profiles.isEmpty {
-          EmptyView(
-            iconName: "person.crop.circle.badge.plus",
-            headingText:
-              "Group and switch between sets of blocked restrictions with customizable profiles"
-          )
+          ScrollView {
+            VStack {
+              Spacer(minLength: 70)
+
+              Welcome(
+                onGuidedTap: {
+                  profileCreationDestination = .guided
+                },
+                onAdvancedTap: {
+                  profileCreationDestination = .advanced
+                }
+              )
+
+              Spacer(minLength: 70)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
+          }
         } else {
           List {
             ForEach(profiles) { profile in
-              ProfileRow(profile: profile)
+              ProfileRow(profile: profile, isActive: profile.id == activeSessionProfileId)
                 .contentShape(Rectangle())
                 .onTapGesture {
                   if editMode == .inactive {
@@ -75,13 +108,30 @@ struct BlockedProfileListView: View {
               Image(systemName: "ellipsis.circle")
             }
           }
-          Button(action: { showingCreateProfile = true }) {
+          Menu {
+            Button {
+              profileCreationDestination = .guided
+            } label: {
+              Label("Guided Setup", systemImage: "list.bullet.clipboard")
+            }
+
+            Button {
+              profileCreationDestination = .advanced
+            } label: {
+              Label("Full Profile Editor", systemImage: "slider.horizontal.3")
+            }
+          } label: {
             Image(systemName: "plus")
           }
         }
       }
-      .sheet(isPresented: $showingCreateProfile) {
-        BlockedProfileView()
+      .sheet(item: $profileCreationDestination) { destination in
+        switch destination {
+        case .guided:
+          GuidedBlockedProfileCreationView()
+        case .advanced:
+          BlockedProfileView()
+        }
       }
       .sheet(item: $profileToEdit) { profile in
         BlockedProfileView(profile: profile)
@@ -100,6 +150,10 @@ struct BlockedProfileListView: View {
         )
       }
     }
+  }
+
+  private var activeSessionProfileId: UUID? {
+    activeSessions.first?.blockedProfile.id
   }
 
   private func deleteProfiles(at offsets: IndexSet) {

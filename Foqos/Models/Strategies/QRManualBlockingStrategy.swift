@@ -5,9 +5,10 @@ import SwiftUI
 class QRManualBlockingStrategy: BlockingStrategy {
   static var id: String = "QRManualBlockingStrategy"
 
-  var name: String = "QR + Manual"
-  var description: String = "Start in the app, then scan any QR code to stop."
-  var iconType: String = "bolt.square"
+  var name: String = "QR/Barcode + Manual"
+  var description: String =
+    "Start in the app. To stop, scan any QR code or barcode. Use Strict Unlocks if you want only selected codes to work."
+  var iconAssetName: String = "Manual+QRSticker"
   var color: Color = .pink
 
   var usesQRCode: Bool = true

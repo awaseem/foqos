@@ -22,6 +22,14 @@ enum DateFormatters {
     }
   }
 
+  static func formatDurationClock(_ interval: TimeInterval) -> String {
+    let totalSeconds = max(0, Int(interval))
+    let hours = totalSeconds / 3600
+    let minutes = totalSeconds / 60 % 60
+    let seconds = totalSeconds % 60
+    return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+  }
+
   static func formatMinutes(_ durationInMinutes: Int) -> String {
     if durationInMinutes <= 60 {
       return "\(durationInMinutes) min"

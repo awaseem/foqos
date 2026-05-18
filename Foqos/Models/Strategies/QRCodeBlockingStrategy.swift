@@ -5,9 +5,9 @@ import SwiftUI
 class QRCodeBlockingStrategy: BlockingStrategy {
   static var id: String = "QRCodeBlockingStrategy"
 
-  var name: String = "QR Codes"
-  var description: String = "Start by scanning a QR code, then scan the same code to stop."
-  var iconType: String = "qrcode.viewfinder"
+  var name: String = "QR Code/Barcode"
+  var description: String = "Start by scanning a QR code or barcode. To stop, scan the same code again."
+  var iconAssetName: String = "QRStickerLogo"
   var color: Color = .pink
 
   var usesQRCode: Bool = true

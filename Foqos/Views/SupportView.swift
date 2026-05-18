@@ -16,13 +16,14 @@ struct SupportView: View {
 
   var body: some View {
     // Thank you stamp image and header
-    VStack(alignment: .center, spacing: 30) {
+    VStack(alignment: .leading, spacing: 24) {
       Spacer()
 
       Image("ThankYouStamp")
         .resizable()
         .aspectRatio(contentMode: .fit)
-        .frame(width: 300, height: 300)
+        .frame(width: 200, height: 200)
+        .frame(maxWidth: .infinity, alignment: .center)
         .scaleEffect(stampScale)
         .rotationEffect(.degrees(stampRotation))
         .opacity(stampOpacity)
@@ -33,53 +34,73 @@ struct SupportView: View {
             stampOpacity = 1
           }
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, 30)
 
-      Text(
-        "Thank you for your support! I created Foqos because I believe everyone deserves tools to live with more focus and intention. Your support, whether through reviews, shares, or donations helps keep this dream alive and accessible to everyone who needs it"
-      )
-      .font(.body)
-      .multilineTextAlignment(.center)
+      Text("Thank you for being here ♥")
+        .fontWeight(.bold)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.callout)
+        .foregroundColor(.secondary)
+        .fadeInSlide(delay: 0.3)
+
+      VStack(alignment: .leading, spacing: 16) {
+        Text(
+          "Foqos started as a small attempt to make focus feel easier and more intentional. Every person who uses it, shares it, reviews it, or supports it helps keep that idea alive."
+        )
+
+        Text(
+          "If this has helped you, consider leaving a review, telling a friend, or making a small donation."
+        )
+
+        Text(
+          "If you ever want to reach out with kind words, feedback, or your story, please do. Those messages mean a lot and help me keep going."
+        )
+      }
+      .font(.callout)
+      .multilineTextAlignment(.leading)
       .foregroundColor(.secondary)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.3)
 
-      Text(
-        "Questions? Reach out to me."
-      )
-      .font(.body)
-      .multilineTextAlignment(.center)
-      .foregroundColor(.secondary)
-      .fadeInSlide(delay: 0.4)
+      VStack(alignment: .leading, spacing: 18) {
+        Text(
+          "Questions? Reach out to me."
+        )
+        .font(.callout)
+        .multilineTextAlignment(.leading)
+        .foregroundColor(.secondary)
 
-      HStack(alignment: .center, spacing: 20) {
-        Link(destination: URL(string: THREADS_URL)!) {
-          Image("Threads")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
-        }
+        HStack(alignment: .center, spacing: 20) {
+          Link(destination: URL(string: THREADS_URL)!) {
+            Image("Threads")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
 
-        Link(destination: URL(string: TWITTER_URL)!) {
-          Image("Twitter")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
-        }
-        Link(destination: URL(string: REDDIT_URL)!) {
-          Image("Reddit")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
-        }
+          Link(destination: URL(string: TWITTER_URL)!) {
+            Image("Twitter")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
+          Link(destination: URL(string: REDDIT_URL)!) {
+            Image("Reddit")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
 
-        Link(destination: URL(string: LINKEDIN_URL)!) {
-          Image("Linkedin")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 30, height: 30)
+          Link(destination: URL(string: LINKEDIN_URL)!) {
+            Image("Linkedin")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
         }
       }
-      .fadeInSlide(delay: 0.5)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .fadeInSlide(delay: 0.4)
 
       Spacer()
 

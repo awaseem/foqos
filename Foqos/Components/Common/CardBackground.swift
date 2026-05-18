@@ -3,26 +3,63 @@ import SwiftUI
 struct CardBackground: View {
   @EnvironmentObject var themeManager: ThemeManager
 
-  var isActive: Bool = false
-  var customColor: Color? = nil
+  var isActive: Bool
+  var customColor: Color?
+  var backgroundColor: Color?
+  var cornerRadius: CGFloat
+  var activeBlobScale: CGFloat
 
   // Metaball blob specs (randomized once for organic motion)
-  @State private var blobs: [BlobSpec] = Self.makeBlobs(count: 5)
+  @State private var blobs: [BlobSpec]
+
+  init(
+    isActive: Bool = false,
+    customColor: Color? = nil,
+    backgroundColor: Color? = nil,
+    cornerRadius: CGFloat = 24,
+    activeBlobScale: CGFloat = 1,
+    activeBlobCount: Int = 5,
+    activeBlobSizeRange: ClosedRange<CGFloat> = 0.30...0.55,
+    activeBlobWidthRange: ClosedRange<CGFloat> = 1.0...1.0,
+    activeBlobHeightRange: ClosedRange<CGFloat> = 1.0...1.0
+  ) {
+    self.isActive = isActive
+    self.customColor = customColor
+    self.backgroundColor = backgroundColor
+    self.cornerRadius = cornerRadius
+    self.activeBlobScale = activeBlobScale
+    _blobs = State(
+      initialValue: Self.makeBlobs(
+        count: activeBlobCount,
+        sizeRange: activeBlobSizeRange,
+        widthRange: activeBlobWidthRange,
+        heightRange: activeBlobHeightRange
+      )
+    )
+  }
 
   // No position calculations needed for the simplified design
 
   // Select a color based on custom color or active state
   private var cardColor: Color {
+    if let customColor {
+      return customColor
+    }
+
     if isActive {
       return themeManager.themeColor.opacity(0.5)
     }
 
-    return customColor ?? .blue
+    return .blue
+  }
+
+  private var cardBackgroundColor: Color {
+    backgroundColor ?? Color(UIColor.systemBackground)
   }
 
   var body: some View {
-    RoundedRectangle(cornerRadius: 24)
-      .fill(Color(UIColor.systemBackground))
+    RoundedRectangle(cornerRadius: cornerRadius)
+      .fill(cardBackgroundColor)
       .overlay(
         GeometryReader { geometry in
           ZStack {
@@ -34,7 +71,8 @@ struct CardBackground: View {
                   baseColor: cardColor,
                   blobs: blobs,
                   t: t,
-                  size: geometry.size
+                  size: geometry.size,
+                  blobScale: activeBlobScale
                 )
               }
               .allowsHitTesting(false)
@@ -47,14 +85,14 @@ struct CardBackground: View {
         }
       )
       .overlay(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: cornerRadius)
           .stroke(Color.gray.opacity(0.3), lineWidth: 1)
       )
       .background(
-        RoundedRectangle(cornerRadius: 24)
+        RoundedRectangle(cornerRadius: cornerRadius)
           .fill(.ultraThinMaterial.opacity(0.7))
       )
-      .clipShape(RoundedRectangle(cornerRadius: 24))
+      .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     // TimelineView drives animation; no imperative animation triggers needed
   }
 
@@ -69,6 +107,7 @@ struct CardBackground: View {
     let blobs: [BlobSpec]
     let t: TimeInterval
     let size: CGSize
+    let blobScale: CGFloat
 
     var body: some View {
       ZStack {
@@ -76,11 +115,11 @@ struct CardBackground: View {
         // We keep the same gooey metaball mask so it feels as delightful as the original lava lamp.
         Rectangle()
           .fill(fillGradient)
-          .mask(MetaballMaskView(blobs: blobs, t: t))
+          .mask(MetaballMaskView(blobs: blobs, t: t, blobScale: blobScale))
           .opacity(0.82)
 
-        AuroraOverlays(baseColor: baseColor, t: t, size: size)
-          .mask(MetaballMaskView(blobs: blobs, t: t))
+        AuroraOverlays(baseColor: baseColor, t: t, size: size, blobScale: blobScale)
+          .mask(MetaballMaskView(blobs: blobs, t: t, blobScale: blobScale))
           .blendMode(.plusLighter)
           .opacity(0.95)
       }
@@ -111,9 +150,10 @@ struct CardBackground: View {
     let baseColor: Color
     let t: TimeInterval
     let size: CGSize
+    let blobScale: CGFloat
 
     var body: some View {
-      let r = min(size.width, size.height)
+      let r = min(size.width, size.height) * blobScale
       let p1 = CGPoint(
         x: size.width * (0.35 + 0.18 * CGFloat(Foundation.cos(t * 0.22))),
         y: size.height * (0.35 + 0.22 * CGFloat(Foundation.sin(t * 0.18 + 1.1)))
@@ -230,6 +270,8 @@ struct CardBackground: View {
     let yAmplitudeFactor: CGFloat
     let phaseX: Double
     let phaseY: Double
+    let widthScale: CGFloat
+    let heightScale: CGFloat
 
     func position(at t: TimeInterval, in size: CGSize) -> CGPoint {
       let cx = size.width * 0.5
@@ -242,24 +284,33 @@ struct CardBackground: View {
       return CGPoint(x: x, y: y)
     }
 
-    func size(at t: TimeInterval, in size: CGSize) -> CGSize {
-      let base = min(size.width, size.height) * baseSizeFactor
+    func size(at t: TimeInterval, in size: CGSize, scale: CGFloat) -> CGSize {
+      let base = min(size.width, size.height) * baseSizeFactor * scale
       let pulse = 1.0 + sizeJitter * CGFloat(sin(t * speed * 0.6 + (phaseX + phaseY) * 0.5))
-      let w = base * pulse
-      return CGSize(width: w, height: w)
+      return CGSize(
+        width: base * pulse * widthScale,
+        height: base * pulse * heightScale
+      )
     }
   }
 
-  private static func makeBlobs(count: Int) -> [BlobSpec] {
+  private static func makeBlobs(
+    count: Int,
+    sizeRange: ClosedRange<CGFloat>,
+    widthRange: ClosedRange<CGFloat>,
+    heightRange: ClosedRange<CGFloat>
+  ) -> [BlobSpec] {
     var generator = SystemRandomNumberGenerator()
     return (0..<max(3, count)).map { _ in
       let speed = Double.random(in: 0.18...0.32, using: &generator)
-      let baseSize = CGFloat.random(in: 0.30...0.55, using: &generator)
+      let baseSize = CGFloat.random(in: sizeRange, using: &generator)
       let jitter = CGFloat.random(in: 0.04...0.10, using: &generator)
       let xAmp = CGFloat.random(in: 0.75...1.15, using: &generator)
       let yAmp = CGFloat.random(in: 0.75...1.15, using: &generator)
       let phaseX = Double.random(in: 0...(2 * .pi), using: &generator)
       let phaseY = Double.random(in: 0...(2 * .pi), using: &generator)
+      let widthScale = CGFloat.random(in: widthRange, using: &generator)
+      let heightScale = CGFloat.random(in: heightRange, using: &generator)
       return BlobSpec(
         speed: speed,
         baseSizeFactor: baseSize,
@@ -267,7 +318,9 @@ struct CardBackground: View {
         xAmplitudeFactor: xAmp,
         yAmplitudeFactor: yAmp,
         phaseX: phaseX,
-        phaseY: phaseY
+        phaseY: phaseY,
+        widthScale: widthScale,
+        heightScale: heightScale
       )
     }
   }
@@ -276,6 +329,7 @@ struct CardBackground: View {
   private struct MetaballMaskView: View {
     let blobs: [BlobSpec]
     let t: TimeInterval
+    let blobScale: CGFloat
 
     var body: some View {
       Canvas { context, size in
@@ -285,7 +339,7 @@ struct CardBackground: View {
         context.drawLayer { layer in
           for blob in blobs {
             let p = blob.position(at: t, in: size)
-            let s = blob.size(at: t, in: size)
+            let s = blob.size(at: t, in: size, scale: blobScale)
             let rect = CGRect(
               x: p.x - s.width / 2, y: p.y - s.height / 2, width: s.width,
               height: s.height)

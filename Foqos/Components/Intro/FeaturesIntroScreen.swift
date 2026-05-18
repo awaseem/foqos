@@ -1,24 +1,26 @@
 import SwiftUI
 
 struct FeaturesIntroScreen: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   @State private var selectedFeature: Int = 0
   @State private var showContent: Bool = false
 
   let features = [
     Feature(
-      imageName: "NFCLogo",
+      imageName: "NFCStickerLogo",
       title: "NFC Tags",
       description:
         "Tap your phone on an NFC tag to instantly start or stop a focus session. You can buy them on Amazon for a few dollars."
     ),
     Feature(
-      imageName: "QRCodeLogo",
+      imageName: "QRStickerLogo",
       title: "QR Codes",
       description:
         "Scan a QR code to control your focus sessions. Place codes around your space to create intentional focus triggers. You can even use barcodes."
     ),
     Feature(
-      imageName: "ScheduleIcon",
+      imageName: "TimerSticker",
       title: "Smart Schedules",
       description:
         "Set up automatic focus sessions based on your routine. Create schedules for work, study, personal time, and more."
@@ -57,9 +59,9 @@ struct FeaturesIntroScreen: View {
               Image(features[index].imageName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 60, height: 60)
+                .frame(width: 64, height: 64)
                 .opacity(selectedFeature == index ? 1.0 : 0.4)
-                .scaleEffect(selectedFeature == index ? 1.2 : 1.0)
+                .scaleEffect(selectedFeature == index ? 1.12 : 1.0)
             }
           }
         }
@@ -72,7 +74,8 @@ struct FeaturesIntroScreen: View {
           Image(features[selectedFeature].imageName)
             .resizable()
             .scaledToFit()
-            .frame(width: 100, height: 100)
+            .frame(width: 124, height: 124)
+            .shadow(color: themeManager.themeColor.opacity(0.2), radius: 12, y: 6)
             .transition(.scale.combined(with: .opacity))
             .id("icon-\(selectedFeature)")
 
@@ -130,4 +133,5 @@ struct Feature: Identifiable {
 #Preview {
   FeaturesIntroScreen()
     .background(Color(.systemBackground))
+    .environmentObject(ThemeManager.shared)
 }

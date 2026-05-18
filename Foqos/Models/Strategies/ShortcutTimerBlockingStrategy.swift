@@ -6,7 +6,7 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
 
   var name: String = "Timer"
   var description: String = "Runs from a Shortcut and ends automatically when the timer finishes."
-  var iconType: String = "alarm.waves.left.and.right"
+  var iconAssetName: String = "NFC+TimerSticker"
   var color: Color = .mint
 
   var hasTimer: Bool = true

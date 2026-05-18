@@ -14,4 +14,5 @@ struct IntroView: View {
   IntroView {
     print("Request authorization tapped")
   }
+  .environmentObject(ThemeManager.shared)
 }

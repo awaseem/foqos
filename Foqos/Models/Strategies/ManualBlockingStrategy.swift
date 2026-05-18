@@ -5,8 +5,8 @@ class ManualBlockingStrategy: BlockingStrategy {
   static var id: String = "ManualBlockingStrategy"
 
   var name: String = "Manual"
-  var description: String = "Start and stop sessions directly in the app."
-  var iconType: String = "button.horizontal.top.press.fill"
+  var description: String = "Start and stop in the app. You do not need to scan anything."
+  var iconAssetName: String = "ManualLogoSticker"
   var color: Color = .blue
 
   var startsManually: Bool = true

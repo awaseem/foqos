@@ -9,6 +9,7 @@ struct RoundedButton: View {
   let font: Font
   let fontWeight: Font.Weight
   let iconName: String?
+  let imageName: String?
 
   init(
     _ text: String,
@@ -17,7 +18,8 @@ struct RoundedButton: View {
     textColor: Color = .gray,
     font: Font = .subheadline,
     fontWeight: Font.Weight = .medium,
-    iconName: String? = nil
+    iconName: String? = nil,
+    imageName: String? = nil
   ) {
     self.text = text
     self.action = action
@@ -26,6 +28,7 @@ struct RoundedButton: View {
     self.font = font
     self.fontWeight = fontWeight
     self.iconName = iconName
+    self.imageName = imageName
   }
 
   var body: some View {
@@ -40,6 +43,14 @@ struct RoundedButton: View {
           Image(systemName: iconName)
             .font(font)
             .fontWeight(fontWeight)
+        }
+
+        if let imageName = imageName {
+          Image(imageName)
+            .resizable()
+            .renderingMode(.original)
+            .scaledToFit()
+            .frame(width: 18, height: 18)
         }
 
         if !text.isEmpty {

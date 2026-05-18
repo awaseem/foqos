@@ -11,7 +11,7 @@ protocol BlockingStrategy {
   static var id: String { get }
   var name: String { get }
   var description: String { get }
-  var iconType: String { get }
+  var iconAssetName: String { get }
   var color: Color { get }
 
   var usesNFC: Bool { get }
@@ -106,5 +106,15 @@ extension BlockingStrategy {
     }
 
     return tags
+  }
+}
+
+struct BlockingStrategyIconImage: View {
+  let strategy: BlockingStrategy?
+
+  var body: some View {
+    Image(strategy?.iconAssetName ?? "FoqosStickerLogo")
+      .resizable()
+      .scaledToFit()
   }
 }
