@@ -97,4 +97,5 @@ struct AnimatedIntroContainer: View {
       print("Request authorization")
     }
   )
+  .environmentObject(ThemeManager.shared)
 }

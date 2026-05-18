@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PermissionsIntroScreen: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   let showPasscodeMessage: Bool
 
   @State private var showContent: Bool = false
@@ -35,8 +37,8 @@ struct PermissionsIntroScreen: View {
             .stroke(
               LinearGradient(
                 gradient: Gradient(colors: [
-                  Color.accentColor.opacity(0.3),
-                  Color.accentColor.opacity(0.1),
+                  themeManager.themeColor.opacity(0.3),
+                  themeManager.themeColor.opacity(0.1),
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -55,11 +57,12 @@ struct PermissionsIntroScreen: View {
         }
 
         // Shield icon
-        Image("ShieldIcon")
+        Image("ShieldSticker")
           .resizable()
           .scaledToFit()
           .frame(width: 200, height: 200)
           .scaleEffect(shieldScale)
+          .shadow(color: themeManager.themeColor.opacity(0.22), radius: 16, y: 8)
           .opacity(showContent ? 1 : 0)
       }
       .frame(height: 360)
@@ -70,7 +73,7 @@ struct PermissionsIntroScreen: View {
       VStack(spacing: 16) {
         (Text("Foqos is 100% open source, ")
           + Text("read the code yourself")
-          .foregroundColor(.accentColor)
+          .foregroundColor(themeManager.themeColor)
           + Text(
             " if you're skeptical. We don't care who you are, we just want you to live with focus and intention."
           ))
@@ -138,4 +141,5 @@ struct PermissionsIntroScreen: View {
 #Preview {
   PermissionsIntroScreen(showPasscodeMessage: false)
     .background(Color(.systemBackground))
+    .environmentObject(ThemeManager.shared)
 }

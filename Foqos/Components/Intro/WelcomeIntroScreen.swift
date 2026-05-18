@@ -1,8 +1,10 @@
 import SwiftUI
 
-let ORBIT_OFFSET: CGFloat = 145
+private let orbitOffset: CGFloat = 154
 
 struct WelcomeIntroScreen: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   @State private var logoScale: CGFloat = 0.5
   @State private var showContent: Bool = false
   @State private var showIcons: Bool = false
@@ -27,50 +29,55 @@ struct WelcomeIntroScreen: View {
 
       Spacer()
 
-      // Logo container with orbiting icons
+      // Logo container with orbiting stickers
       ZStack {
-        // Orbiting NFC Logo (0 degrees)
-        Image("NFCLogo")
+        // Orbiting NFC sticker (0 degrees)
+        Image("NFCStickerLogo")
           .resizable()
           .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .frame(width: 52, height: 52)
+          .shadow(color: themeManager.themeColor.opacity(0.18), radius: 8, y: 4)
+          .offset(x: orbitOffset)
           .rotationEffect(.degrees(orbitRotation))
           .opacity(showIcons ? 1 : 0)
 
-        // Orbiting Barcode Icon (90 degrees)
-        Image("BarcodeIcon")
+        // Orbiting QR sticker (90 degrees)
+        Image("QRStickerLogo")
           .resizable()
           .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .frame(width: 52, height: 52)
+          .shadow(color: themeManager.themeColor.opacity(0.18), radius: 8, y: 4)
+          .offset(x: orbitOffset)
           .rotationEffect(.degrees(orbitRotation + 90))
           .opacity(showIcons ? 1 : 0)
 
-        // Orbiting QR Code Logo (180 degrees)
-        Image("QRCodeLogo")
+        // Orbiting barcode sticker (180 degrees)
+        Image("BarcodeSticker")
           .resizable()
           .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .frame(width: 52, height: 52)
+          .shadow(color: themeManager.themeColor.opacity(0.18), radius: 8, y: 4)
+          .offset(x: orbitOffset)
           .rotationEffect(.degrees(orbitRotation + 180))
           .opacity(showIcons ? 1 : 0)
 
-        // Orbiting Schedule Icon (270 degrees)
-        Image("ScheduleIcon")
+        // Orbiting timer sticker (270 degrees)
+        Image("TimerSticker")
           .resizable()
           .scaledToFit()
-          .frame(width: 50, height: 50)
-          .offset(x: ORBIT_OFFSET)  // Orbit radius
+          .frame(width: 52, height: 52)
+          .shadow(color: themeManager.themeColor.opacity(0.18), radius: 8, y: 4)
+          .offset(x: orbitOffset)
           .rotationEffect(.degrees(orbitRotation + 270))
           .opacity(showIcons ? 1 : 0)
 
-        // 3D Logo (center/sun)
-        Image("3DFoqosLogo")
+        // Foqos sticker logo (center/sun)
+        Image("FoqosStickerLogo")
           .resizable()
           .scaledToFit()
-          .frame(width: 200, height: 200)
+          .frame(width: 210, height: 210)
           .scaleEffect(logoScale)
+          .shadow(color: themeManager.themeColor.opacity(0.22), radius: 18, y: 10)
           .opacity(showContent ? 1 : 0)
       }
       .frame(height: 360)
@@ -119,4 +126,5 @@ struct WelcomeIntroScreen: View {
 #Preview {
   WelcomeIntroScreen()
     .background(Color(.systemBackground))
+    .environmentObject(ThemeManager.shared)
 }

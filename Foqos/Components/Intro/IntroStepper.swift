@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct IntroStepper: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   let currentStep: Int
   let totalSteps: Int
   let onNext: () -> Void
@@ -65,7 +67,10 @@ struct IntroStepper: View {
             RoundedRectangle(cornerRadius: 12)
               .fill(
                 LinearGradient(
-                  gradient: Gradient(colors: [Color.purple, Color.purple.opacity(0.8)]),
+                  gradient: Gradient(colors: [
+                    themeManager.themeColor,
+                    themeManager.themeColor.opacity(0.82),
+                  ]),
                   startPoint: .topLeading,
                   endPoint: .bottomTrailing
                 )
@@ -90,7 +95,7 @@ struct IntroStepper: View {
       ForEach(0..<totalSteps, id: \.self) { index in
         Circle()
           .fill(
-            index == currentStep ? Color.primary : Color.gray.opacity(0.3)
+            index == currentStep ? themeManager.themeColor : Color.gray.opacity(0.3)
           )
           .frame(width: index == currentStep ? 10 : 8, height: index == currentStep ? 10 : 8)
           .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentStep)
@@ -114,4 +119,5 @@ struct IntroStepper: View {
     )
   }
   .background(Color(.systemBackground))
+  .environmentObject(ThemeManager.shared)
 }
