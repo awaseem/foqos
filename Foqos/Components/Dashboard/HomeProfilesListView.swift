@@ -10,7 +10,6 @@ struct HomeProfilesListView: View {
   let onStopTapped: (BlockedProfiles) -> Void
   let onEditTapped: (BlockedProfiles) -> Void
   let onStatsTapped: (BlockedProfiles) -> Void
-  let onActiveTapped: () -> Void
 
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
@@ -39,8 +38,7 @@ struct HomeProfilesListView: View {
             },
             onStatsTapped: {
               onStatsTapped(profile)
-            },
-            onActiveTapped: onActiveTapped
+            }
           )
 
           if index < profiles.count - 1 {
@@ -70,7 +68,6 @@ private struct HomeProfileRow: View {
   let onStopTapped: () -> Void
   let onEditTapped: () -> Void
   let onStatsTapped: () -> Void
-  let onActiveTapped: () -> Void
 
   private var canStart: Bool {
     !isBlocking
@@ -85,7 +82,7 @@ private struct HomeProfileRow: View {
       Button(action: rowTapped) {
         ProfileSummaryRow(
           profile: profile,
-          isActive: isActive,
+          isActive: false,
           metadata: .appsAndDomains,
           showsStatusLine: true,
           statusMode: .scheduleOnly
@@ -95,9 +92,7 @@ private struct HomeProfileRow: View {
         }
       }
       .buttonStyle(.plain)
-      .accessibilityLabel(
-        isActive ? "Open active profile \(profile.name)" : "Show \(profile.name) insights"
-      )
+      .accessibilityLabel("Show \(profile.name) insights")
 
       actionMenu
     }
@@ -116,10 +111,6 @@ private struct HomeProfileRow: View {
       }
 
       if isActive {
-        Button(action: onActiveTapped) {
-          Label("Active Session", systemImage: "timer")
-        }
-
         Button(action: onStopTapped) {
           Label(canStop ? "Stop" : "Stop Locked", systemImage: canStop ? "stop.fill" : "lock.fill")
         }
@@ -141,10 +132,6 @@ private struct HomeProfileRow: View {
   }
 
   private func rowTapped() {
-    if isActive {
-      onActiveTapped()
-    } else {
-      onStatsTapped()
-    }
+    onStatsTapped()
   }
 }

@@ -150,9 +150,6 @@ struct HomeView: View {
             },
             onStatsTapped: { profile in
               profileToShowStats = profile
-            },
-            onActiveTapped: {
-              showActiveProfileSessionView = true
             }
           )
           .padding(.horizontal, 16)

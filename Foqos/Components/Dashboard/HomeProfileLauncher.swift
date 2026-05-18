@@ -10,7 +10,7 @@ struct HomeProfileLauncher: View {
   var onActiveTapped: () -> Void = {}
 
   private let inactiveButtonHeight: CGFloat = 64
-  private let activeButtonHeight: CGFloat = 74
+  private let activeButtonHeight: CGFloat = 88
   private let activeButtonCornerRadius: CGFloat = 24
   private let activeButtonBlobScale: CGFloat = 2.6
   private let activeButtonBlobCount = 9
@@ -41,25 +41,14 @@ struct HomeProfileLauncher: View {
 
   private func activeProfileButton(_ profile: BlockedProfiles) -> some View {
     Button(action: activeTapped) {
-      HStack(spacing: 12) {
-        VStack(alignment: .leading, spacing: 4) {
-          Text("Active")
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-
-          Text(profile.name)
-            .font(.headline)
-            .fontWeight(.semibold)
-            .lineLimit(1)
-        }
-
-        Spacer(minLength: 12)
-
-        Text(DateFormatters.formatDurationClock(elapsedTime))
-          .font(.system(size: 20, weight: .bold, design: .monospaced))
-          .contentTransition(.numericText())
-          .animation(.default, value: elapsedTime)
+      ProfileSummaryRow(
+        profile: profile,
+        isActive: true,
+        metadata: .appsAndDomains,
+        showsStatusLine: true,
+        layout: .compact
+      ) {
+        activeElapsedTime
       }
       .padding(.horizontal, 20)
       .frame(maxWidth: .infinity)
@@ -70,6 +59,15 @@ struct HomeProfileLauncher: View {
     .buttonStyle(LauncherButtonStyle())
     .foregroundStyle(.primary)
     .accessibilityLabel("Active Profile \(profile.name)")
+  }
+
+  private var activeElapsedTime: some View {
+    Text(DateFormatters.formatDurationClock(elapsedTime))
+      .font(.system(size: 20, weight: .bold, design: .monospaced))
+      .lineLimit(1)
+      .minimumScaleFactor(0.72)
+      .contentTransition(.numericText())
+      .animation(.default, value: elapsedTime)
   }
 
   private var activeButtonBackground: some View {
@@ -104,12 +102,32 @@ struct HomeProfileLauncher: View {
   }
 }
 
-#Preview {
+#Preview("Inactive") {
   VStack {
     Spacer()
     HomeProfileLauncher(
       activeProfile: nil,
       elapsedTime: 0,
+      onStartTapped: {}
+    )
+  }
+  .background(Color(.systemGroupedBackground))
+  .environmentObject(ThemeManager.shared)
+}
+
+#Preview("Active") {
+  VStack {
+    Spacer()
+    HomeProfileLauncher(
+      activeProfile: BlockedProfiles(
+        name: "Work Focus",
+        blockingStrategyId: ManualBlockingStrategy.id,
+        enableLiveActivity: true,
+        reminderTimeInSeconds: 3600,
+        enableBreaks: true,
+        domains: ["example.com", "social.example"]
+      ),
+      elapsedTime: 3665,
       onStartTapped: {}
     )
   }
