@@ -37,7 +37,7 @@ struct StrategyRow: View {
           BlockingStrategyIconImage(strategy: strategy)
             .font(.subheadline)
             .foregroundStyle(.secondary)
-            .frame(width: 24, height: 24)
+            .frame(width: 36, height: 36)
 
           Text(strategy.name)
             .font(.headline)

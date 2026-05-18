@@ -34,26 +34,15 @@ struct StrategyDetailsSheet: View {
 
         Spacer(minLength: 12)
 
-        Button(action: onSelect) {
-          HStack {
-            Spacer()
-
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "checkmark")
-            Text(isSelected ? "Selected" : "Use this strategy")
-              .fontWeight(.semibold)
-
-            Spacer()
-          }
-          .padding(.vertical, 14)
-          .foregroundStyle(.white)
-          .background(isSelected ? Color.secondary : themeManager.themeColor)
-          .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .disabled(isSelected)
+        ActionButton(
+          title: isSelected ? "Selected" : "Use this strategy",
+          backgroundColor: themeManager.themeColor,
+          isDisabled: isSelected,
+          action: onSelect
+        )
       }
       .padding()
-      .navigationTitle("Strategy Details")
+      .navigationTitle("Details")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
