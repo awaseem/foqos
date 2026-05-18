@@ -16,13 +16,14 @@ struct SupportView: View {
 
   var body: some View {
     // Thank you stamp image and header
-    VStack(alignment: .center, spacing: 24) {
+    VStack(alignment: .leading, spacing: 24) {
       Spacer()
 
       Image("ThankYouStamp")
         .resizable()
         .aspectRatio(contentMode: .fit)
         .frame(width: 200, height: 200)
+        .frame(maxWidth: .infinity, alignment: .center)
         .scaleEffect(stampScale)
         .rotationEffect(.degrees(stampRotation))
         .opacity(stampOpacity)
@@ -35,13 +36,12 @@ struct SupportView: View {
         }
         .padding(.bottom, 20)
 
-      VStack {
-        Text("Thank you for being here ♥")
-          .fontWeight(.bold)
-      }
-      .font(.callout)
-      .foregroundColor(.secondary)
-      .fadeInSlide(delay: 0.3)
+      Text("Thank you for being here ♥")
+        .fontWeight(.bold)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.callout)
+        .foregroundColor(.secondary)
+        .fadeInSlide(delay: 0.3)
 
       VStack(alignment: .leading, spacing: 16) {
         Text(
@@ -57,14 +57,18 @@ struct SupportView: View {
         )
       }
       .font(.callout)
+      .multilineTextAlignment(.leading)
       .foregroundColor(.secondary)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.3)
 
       Text(
         "Questions? Reach out to me."
       )
       .font(.callout)
+      .multilineTextAlignment(.leading)
       .foregroundColor(.secondary)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.4)
 
       HStack(alignment: .center, spacing: 20) {
@@ -95,6 +99,7 @@ struct SupportView: View {
             .frame(width: 24, height: 24)
         }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.5)
 
       Spacer()
