@@ -3,7 +3,6 @@ import UIKit
 
 struct StartProfilePickerView: View {
   @Environment(\.dismiss) private var dismiss
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @EnvironmentObject private var themeManager: ThemeManager
 
   let profiles: [BlockedProfiles]
@@ -13,10 +12,6 @@ struct StartProfilePickerView: View {
   let onGoTapped: (BlockedProfiles) -> Void
 
   @State private var selectedProfileId: UUID?
-  @State private var isShimmering = false
-
-  private let shimmerAnimationDuration = 1.15
-  private let shimmerRepeatDelay = 2.5
 
   init(
     profiles: [BlockedProfiles],
@@ -96,10 +91,6 @@ struct StartProfilePickerView: View {
           }
         }
       }
-      .onAppear {
-        guard !reduceMotion else { return }
-        isShimmering = true
-      }
     }
   }
 
@@ -124,61 +115,17 @@ struct StartProfilePickerView: View {
 
   private var goButton: some View {
     VStack(spacing: 8) {
-      Button(action: goTapped) {
-        HStack(spacing: 8) {
-          Image(systemName: "arrow.right.circle.fill")
-          Text("Go")
-        }
-        .font(.headline)
-        .fontWeight(.semibold)
-        .frame(maxWidth: .infinity)
-        .frame(height: 52)
-        .background(goButtonBackground)
-      }
-      .buttonStyle(GoButtonStyle())
-      .foregroundStyle(.white)
-      .disabled(!canGo)
+      ShimmerLauncherButton(
+        title: "Go",
+        height: 64,
+        isEnabled: canGo,
+        accessibilityLabel: "Start selected profile",
+        action: goTapped
+      )
     }
     .padding(.horizontal, 16)
     .padding(.top, 10)
     .padding(.bottom, 16)
-  }
-
-  private var goButtonBackground: some View {
-    Capsule()
-      .fill(themeManager.themeColor)
-      .opacity(canGo ? 1 : 0.45)
-      .overlay {
-        if canGo && !reduceMotion {
-          GeometryReader { geometry in
-            LinearGradient(
-              colors: [
-                .clear,
-                .white.opacity(0.12),
-                .white.opacity(0.38),
-                .white.opacity(0.12),
-                .clear,
-              ],
-              startPoint: .top,
-              endPoint: .bottom
-            )
-            .frame(width: geometry.size.width * 0.34, height: geometry.size.height * 2.2)
-            .rotationEffect(.degrees(18))
-            .offset(
-              x: isShimmering ? geometry.size.width * 1.15 : -geometry.size.width * 0.55,
-              y: -geometry.size.height * 0.55
-            )
-            .animation(
-              .linear(duration: shimmerAnimationDuration)
-                .delay(shimmerRepeatDelay)
-                .repeatForever(autoreverses: false),
-              value: isShimmering
-            )
-          }
-          .clipShape(Capsule())
-          .blendMode(.screen)
-        }
-      }
   }
 
   private func goTapped() {
@@ -186,17 +133,6 @@ struct StartProfilePickerView: View {
     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     onGoTapped(selectedProfile)
     dismiss()
-  }
-}
-
-private struct GoButtonStyle: ButtonStyle {
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .scaleEffect(configuration.isPressed ? 0.95 : 1)
-      .animation(
-        .spring(response: 0.22, dampingFraction: 0.72),
-        value: configuration.isPressed
-      )
   }
 }
 

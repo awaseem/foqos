@@ -3,17 +3,12 @@ import UIKit
 
 struct HomeProfileLauncher: View {
   @EnvironmentObject private var themeManager: ThemeManager
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   let activeProfile: BlockedProfiles?
   let elapsedTime: TimeInterval
   let onStartTapped: () -> Void
   var onActiveTapped: () -> Void = {}
 
-  @State private var isShimmering = false
-
-  private let shimmerAnimationDuration = 1.15
-  private let shimmerRepeatDelay = 2.5
   private let inactiveButtonHeight: CGFloat = 64
   private let activeButtonHeight: CGFloat = 74
   private let activeButtonCornerRadius: CGFloat = 24
@@ -33,36 +28,15 @@ struct HomeProfileLauncher: View {
     }
     .padding(.horizontal, 16)
     .padding(.top, 8)
-    .onAppear {
-      guard !reduceMotion else { return }
-      isShimmering = true
-    }
   }
 
   private var inactiveLauncherButtons: some View {
-    Button(action: startTapped) {
-      HStack(spacing: 10) {
-        Image(systemName: "play.fill")
-          .font(.system(size: 18, weight: .bold))
-
-        Text("Start")
-          .font(.title3)
-          .fontWeight(.semibold)
-      }
-      .frame(maxWidth: .infinity)
-      .frame(height: inactiveButtonHeight)
-      .background(startButtonBackground)
-      .shadow(
-        color: themeManager.themeColor.opacity(0.24),
-        radius: 12,
-        x: 0,
-        y: 6
-      )
-      .contentShape(Capsule())
-    }
-    .buttonStyle(LauncherButtonStyle())
-    .foregroundStyle(.white)
-    .accessibilityLabel("Start Profile")
+    ShimmerLauncherButton(
+      title: "Start",
+      height: inactiveButtonHeight,
+      accessibilityLabel: "Start Profile",
+      action: startTapped
+    )
   }
 
   private func activeProfileButton(_ profile: BlockedProfiles) -> some View {
@@ -119,50 +93,6 @@ struct HomeProfileLauncher: View {
     )
   }
 
-  private var startButtonBackground: some View {
-    Capsule()
-      .fill(themeManager.themeColor.opacity(0.72))
-      .background(
-        Capsule()
-          .fill(.ultraThinMaterial)
-      )
-      .overlay(
-        Capsule()
-          .strokeBorder(.white.opacity(0.24), lineWidth: 1)
-      )
-      .overlay {
-        if !reduceMotion {
-          GeometryReader { geometry in
-            LinearGradient(
-              colors: [
-                .clear,
-                .white.opacity(0.12),
-                .white.opacity(0.38),
-                .white.opacity(0.12),
-                .clear,
-              ],
-              startPoint: .top,
-              endPoint: .bottom
-            )
-            .frame(width: geometry.size.width * 0.34, height: geometry.size.height * 2.2)
-            .rotationEffect(.degrees(18))
-            .offset(
-              x: isShimmering ? geometry.size.width * 1.15 : -geometry.size.width * 0.55,
-              y: -geometry.size.height * 0.55
-            )
-            .animation(
-              .linear(duration: shimmerAnimationDuration)
-                .delay(shimmerRepeatDelay)
-                .repeatForever(autoreverses: false),
-              value: isShimmering
-            )
-          }
-          .clipShape(Capsule())
-          .blendMode(.screen)
-        }
-      }
-  }
-
   private func startTapped() {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     onStartTapped()
@@ -171,17 +101,6 @@ struct HomeProfileLauncher: View {
   private func activeTapped() {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     onActiveTapped()
-  }
-}
-
-private struct LauncherButtonStyle: ButtonStyle {
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .scaleEffect(configuration.isPressed ? 0.94 : 1)
-      .animation(
-        .spring(response: 0.22, dampingFraction: 0.72),
-        value: configuration.isPressed
-      )
   }
 }
 
