@@ -5,7 +5,8 @@ class NFCManualBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCManualBlockingStrategy"
 
   var name: String = "NFC + Manual"
-  var description: String = "Start in the app, then scan any NFC tag to stop."
+  var description: String =
+    "Start in the app. To stop, scan any NFC tag. Use Strict Unlocks if you want only selected tags to work."
   var iconAssetName: String = "Manual+NFCSticker"
   var color: Color = .yellow
 

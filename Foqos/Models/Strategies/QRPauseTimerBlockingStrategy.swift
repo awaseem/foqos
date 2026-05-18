@@ -5,9 +5,9 @@ import SwiftUI
 class QRPauseTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "QRPauseTimerBlockingStrategy"
 
-  var name: String = "QR + Pause Timer"
+  var name: String = "QR/Barcode + Pause Timer"
   var description: String =
-    "Set a pause duration, scan once to pause, and scan again to fully stop."
+    "Choose how long a pause should last. Scan a QR code or barcode once to pause. Scan it again during the pause to fully stop."
   var iconAssetName: String = "QRPauseSticker"
   var color: Color = .indigo
 

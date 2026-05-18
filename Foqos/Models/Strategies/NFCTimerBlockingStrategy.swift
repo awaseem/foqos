@@ -5,7 +5,8 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCTimerBlockingStrategy"
 
   var name: String = "NFC + Timer"
-  var description: String = "Set a focus duration, then scan any NFC tag to stop early."
+  var description: String =
+    "Choose how long blocking should last. To stop early, scan any NFC tag. Use Strict Unlocks if you want only selected tags to work."
   var iconAssetName: String = "NFC+TimerSticker"
   var color: Color = .mint
 
