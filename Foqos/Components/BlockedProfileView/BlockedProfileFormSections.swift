@@ -262,7 +262,6 @@ struct BlockedProfileBreaksFields: View {
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool
   var showsSeparators: Bool = false
-  var showsFieldLabels: Bool = true
 
   var body: some View {
     CustomToggle(
@@ -299,28 +298,6 @@ struct BlockedProfileBreaksSection: View {
     Section("Breaks") {
       BlockedProfileBreaksFields(draft: draft, disabled: disabled)
     }
-  }
-}
-
-struct BlockedProfileSafeguardsFields: View {
-  @ObservedObject var draft: BlockedProfileDraft
-  var disabled: Bool
-  var showsSeparators: Bool = false
-
-  var body: some View {
-    BlockedProfileStrictSafeguardsFields(
-      draft: draft,
-      disabled: disabled,
-      showsSeparators: showsSeparators
-    )
-
-    ProfileFieldDivider(isVisible: showsSeparators)
-
-    BlockedProfileSessionSafeguardsFields(
-      draft: draft,
-      disabled: disabled,
-      showsSeparators: showsSeparators
-    )
   }
 }
 
@@ -376,17 +353,6 @@ struct BlockedProfileSessionSafeguardsFields: View {
   }
 }
 
-struct BlockedProfileSafeguardsSection: View {
-  @ObservedObject var draft: BlockedProfileDraft
-  var disabled: Bool
-
-  var body: some View {
-    Section("Safeguards") {
-      BlockedProfileSafeguardsFields(draft: draft, disabled: disabled)
-    }
-  }
-}
-
 struct BlockedProfileStrictSafeguardsSection: View {
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool
@@ -417,7 +383,6 @@ struct BlockedProfileNotificationsFields: View {
   var profile: BlockedProfiles?
   var disabled: Bool
   var showsSeparators: Bool = false
-  var showsFieldLabels: Bool = true
 
   var body: some View {
     CustomToggle(

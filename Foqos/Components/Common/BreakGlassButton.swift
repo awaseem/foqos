@@ -261,10 +261,6 @@ private struct SeededRandomNumberGenerator: RandomNumberGenerator {
   }
 }
 
-// MARK: - Convenience wrapper using existing GlassButton styling
-
-// Removed convenience initializer that referenced GlassButton to avoid cross-file lint failures.
-
 // MARK: - Haptics helpers
 private func triggerImpactHaptic() {
   #if canImport(UIKit)
