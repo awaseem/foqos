@@ -53,7 +53,7 @@ struct SupportView: View {
         )
 
         Text(
-          "If you ever want to reach out with kind words, feedback, or your story, please do. Those messages mean a lot to me and help me keep going."
+          "If you ever want to reach out with kind words, feedback, or your story, please do. Those messages mean a lot and help me keep going."
         )
       }
       .font(.callout)
@@ -62,45 +62,45 @@ struct SupportView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.3)
 
-      Text(
-        "Questions? Reach out to me."
-      )
-      .font(.callout)
-      .multilineTextAlignment(.leading)
-      .foregroundColor(.secondary)
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .fadeInSlide(delay: 0.4)
+      VStack(alignment: .leading, spacing: 16) {
+        Text(
+          "Questions? Reach out to me."
+        )
+        .font(.callout)
+        .multilineTextAlignment(.leading)
+        .foregroundColor(.secondary)
 
-      HStack(alignment: .center, spacing: 20) {
-        Link(destination: URL(string: THREADS_URL)!) {
-          Image("Threads")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 24, height: 24)
-        }
+        HStack(alignment: .center, spacing: 20) {
+          Link(destination: URL(string: THREADS_URL)!) {
+            Image("Threads")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
 
-        Link(destination: URL(string: TWITTER_URL)!) {
-          Image("Twitter")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 24, height: 24)
-        }
-        Link(destination: URL(string: REDDIT_URL)!) {
-          Image("Reddit")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 24, height: 24)
-        }
+          Link(destination: URL(string: TWITTER_URL)!) {
+            Image("Twitter")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
+          Link(destination: URL(string: REDDIT_URL)!) {
+            Image("Reddit")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
 
-        Link(destination: URL(string: LINKEDIN_URL)!) {
-          Image("Linkedin")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 24, height: 24)
+          Link(destination: URL(string: LINKEDIN_URL)!) {
+            Image("Linkedin")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 24, height: 24)
+          }
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .fadeInSlide(delay: 0.5)
+      .fadeInSlide(delay: 0.4)
 
       Spacer()
 
