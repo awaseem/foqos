@@ -17,12 +17,6 @@ struct StrategyDetailsSheet: View {
           .font(.system(size: 50))
           .foregroundStyle(strategy.color)
           .frame(width: 104, height: 104)
-          .background {
-            if strategy.iconAssetName == nil {
-              Circle()
-                .fill(strategy.color.opacity(0.14))
-            }
-          }
 
         VStack(spacing: 10) {
           Text(strategy.name)

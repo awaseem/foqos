@@ -15,12 +15,6 @@ struct StrategyPickerCard: View {
             .font(.system(size: 28))
             .foregroundStyle(strategy.color)
             .frame(width: 54, height: 54)
-            .background {
-              if strategy.iconAssetName == nil {
-                Circle()
-                  .fill(strategy.color.opacity(0.14))
-              }
-            }
 
           if isSelected {
             Image(systemName: "checkmark.circle.fill")

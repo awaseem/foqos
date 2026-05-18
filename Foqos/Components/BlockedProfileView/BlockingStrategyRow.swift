@@ -38,12 +38,6 @@ struct StrategyRow: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(width: 24, height: 24)
-            .background {
-              if strategy.iconAssetName == nil {
-                Circle()
-                  .fill(.secondary.opacity(0.12))
-              }
-            }
 
           Text(strategy.name)
             .font(.headline)

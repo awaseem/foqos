@@ -30,12 +30,6 @@ struct StrategyInfoView: View {
         .foregroundColor(themeManager.themeColor)
         .font(.system(size: 13))
         .frame(width: 28, height: 28)
-        .background {
-          if blockingStrategy?.iconAssetName == nil {
-            Circle()
-              .fill(themeManager.themeColor.opacity(0.15))
-          }
-        }
 
       VStack(alignment: .leading, spacing: 2) {
         Text(blockingStrategyName)

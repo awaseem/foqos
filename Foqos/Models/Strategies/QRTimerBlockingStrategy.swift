@@ -6,8 +6,7 @@ class QRTimerBlockingStrategy: BlockingStrategy {
 
   var name: String = "QR + Timer"
   var description: String = "Set a focus duration, then scan any QR code to stop early."
-  var iconType: String = "bolt.badge.clock"
-  var iconAssetName: String? = "QR+TimerSticker"
+  var iconAssetName: String = "QR+TimerSticker"
   var color: Color = .mint
 
   var usesQRCode: Bool = true

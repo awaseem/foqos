@@ -11,8 +11,7 @@ protocol BlockingStrategy {
   static var id: String { get }
   var name: String { get }
   var description: String { get }
-  var iconType: String { get }
-  var iconAssetName: String? { get }
+  var iconAssetName: String { get }
   var color: Color { get }
 
   var usesNFC: Bool { get }
@@ -71,8 +70,6 @@ enum BlockingStrategyTag: String, Hashable {
 }
 
 extension BlockingStrategy {
-  var iconAssetName: String? { nil }
-
   var usesNFC: Bool { false }
   var usesQRCode: Bool { false }
   var hasTimer: Bool { false }
@@ -114,15 +111,10 @@ extension BlockingStrategy {
 
 struct BlockingStrategyIconImage: View {
   let strategy: BlockingStrategy?
-  var fallbackSystemName: String = "questionmark.circle.fill"
 
   var body: some View {
-    if let iconAssetName = strategy?.iconAssetName {
-      Image(iconAssetName)
-        .resizable()
-        .scaledToFit()
-    } else {
-      Image(systemName: strategy?.iconType ?? fallbackSystemName)
-    }
+    Image(strategy?.iconAssetName ?? "FoqosStickerLogo")
+      .resizable()
+      .scaledToFit()
   }
 }
