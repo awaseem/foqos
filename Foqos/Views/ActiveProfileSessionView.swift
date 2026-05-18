@@ -160,6 +160,8 @@ struct ActiveProfileSessionView: View {
         BlockingStrategyIconImage(strategy: blockingStrategy)
           .font(.system(size: 14, weight: .semibold))
           .foregroundStyle(.primary)
+          .frame(width: 34, height: 34)
+          .accessibilityHidden(true)
 
         Text(strategyName)
           .font(.subheadline)
