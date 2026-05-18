@@ -23,6 +23,7 @@ struct HomeView: View {
 
   // New profile view
   @State private var showNewProfileView = false
+  @State private var showGuidedProfileCreationView = false
   @State private var showStartProfilePicker = false
 
   // Edit profile
@@ -115,9 +116,14 @@ struct HomeView: View {
         .padding(.horizontal, 16)
 
         if profiles.isEmpty {
-          Welcome(onTap: {
-            showNewProfileView = true
-          })
+          Welcome(
+            onGuidedTap: {
+              showGuidedProfileCreationView = true
+            },
+            onAdvancedTap: {
+              showNewProfileView = true
+            }
+          )
           .padding(.horizontal, 16)
         }
 
@@ -282,6 +288,11 @@ struct HomeView: View {
       isPresented: $showNewProfileView,
     ) {
       BlockedProfileView(profile: nil)
+    }
+    .sheet(
+      isPresented: $showGuidedProfileCreationView,
+    ) {
+      GuidedBlockedProfileCreationView()
     }
     .sheet(isPresented: $showStartProfilePicker) {
       StartProfilePickerView(

@@ -42,11 +42,24 @@ struct BlockedProfileListView: View {
     NavigationStack {
       Group {
         if profiles.isEmpty {
-          EmptyView(
-            iconName: "person.crop.circle.badge.plus",
-            headingText:
-              "Group and switch between sets of blocked restrictions with customizable profiles"
-          )
+          ScrollView {
+            VStack {
+              Spacer(minLength: 70)
+
+              Welcome(
+                onGuidedTap: {
+                  profileCreationDestination = .guided
+                },
+                onAdvancedTap: {
+                  profileCreationDestination = .advanced
+                }
+              )
+
+              Spacer(minLength: 70)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
+          }
         } else {
           List {
             ForEach(profiles) { profile in
