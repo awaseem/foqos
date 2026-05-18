@@ -9,14 +9,16 @@ struct HomeAlertsView: View {
       VStack(alignment: .leading, spacing: 10) {
         SectionTitle("Alerts")
 
-        VStack(spacing: 8) {
-          ForEach(alerts) { alert in
-            Button {
-              onAlertTapped(alert)
-            } label: {
-              HomeAlertCard(alert: alert)
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 12) {
+            ForEach(alerts) { alert in
+              Button {
+                onAlertTapped(alert)
+              } label: {
+                HomeAlertCard(alert: alert)
+              }
+              .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
           }
         }
       }
@@ -25,46 +27,38 @@ struct HomeAlertsView: View {
 }
 
 private struct HomeAlertCard: View {
-  @EnvironmentObject var themeManager: ThemeManager
-
   let alert: HomeAlert
 
   var body: some View {
-    HStack(spacing: 12) {
-      Image(systemName: alert.iconName)
-        .font(.system(size: 16, weight: .semibold))
-        .foregroundStyle(.red)
-        .frame(width: 32, height: 32)
+    VStack(alignment: .leading, spacing: 0) {
+      HStack {
+        Image(systemName: alert.iconName)
+          .font(.system(size: 30, weight: .semibold))
+          .foregroundStyle(.white)
+          .frame(width: 38, height: 38, alignment: .leading)
 
-      VStack(alignment: .leading, spacing: 2) {
-        Text(alert.title)
-          .font(.subheadline)
-          .fontWeight(.semibold)
-          .foregroundStyle(.primary)
-
-        Text(alert.message)
-          .font(.caption)
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
+        Spacer(minLength: 0)
       }
 
       Spacer(minLength: 8)
 
-      Image(systemName: "chevron.right")
-        .font(.caption)
-        .foregroundStyle(.tertiary)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(alert.title)
+          .font(.headline)
+          .fontWeight(.bold)
+          .foregroundStyle(.white)
+          .lineLimit(2)
+          .minimumScaleFactor(0.82)
+      }
     }
-    .padding(.horizontal, 14)
-    .padding(.vertical, 12)
-    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(18)
+    .frame(width: 148, height: 148, alignment: .leading)
     .background(
-      Color(.systemBackground),
-      in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+      Color.red.opacity(0.8),
+      in: RoundedRectangle(cornerRadius: 28, style: .continuous)
     )
-    .overlay(
-      RoundedRectangle(cornerRadius: 16, style: .continuous)
-        .strokeBorder(themeManager.themeColor.opacity(0.16), lineWidth: 1)
-    )
+    .accessibilityLabel(alert.title)
+    .accessibilityHint(alert.message)
   }
 }
 
