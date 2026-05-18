@@ -34,7 +34,7 @@ struct SupportView: View {
             stampOpacity = 1
           }
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, 30)
 
       Text("Thank you for being here ♥")
         .fontWeight(.bold)
@@ -62,7 +62,7 @@ struct SupportView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .fadeInSlide(delay: 0.3)
 
-      VStack(alignment: .leading, spacing: 16) {
+      VStack(alignment: .leading, spacing: 18) {
         Text(
           "Questions? Reach out to me."
         )
