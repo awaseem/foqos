@@ -22,7 +22,7 @@ struct SupportView: View {
       Image("ThankYouStamp")
         .resizable()
         .aspectRatio(contentMode: .fit)
-        .frame(width: 300, height: 300)
+        .frame(width: 200, height: 200)
         .scaleEffect(stampScale)
         .rotationEffect(.degrees(stampRotation))
         .opacity(stampOpacity)
