@@ -9,6 +9,7 @@ struct HomeView: View {
 
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
   @EnvironmentObject var strategyManager: StrategyManager
+  @EnvironmentObject var alertsManager: AlertsManager
   @EnvironmentObject var navigationManager: NavigationManager
   @EnvironmentObject var ratingManager: RatingManager
 
@@ -105,10 +106,10 @@ struct HomeView: View {
         .padding(.trailing, 16)
         .padding(.top, 16)
 
-        AuthorizationCallout(
-          authorizationStatus: requestAuthorizer.getAuthorizationStatus(),
-          onAuthorizationHandler: {
-            requestAuthorizer.requestAuthorization()
+        HomeAlertsView(
+          alerts: alertsManager.alerts,
+          onAlertTapped: { alert in
+            presentAlert(alert)
           }
         )
         .padding(.horizontal, 16)
@@ -204,18 +205,20 @@ struct HomeView: View {
     .onChange(of: requestAuthorizer.isAuthorized) { _, newValue in
       if newValue {
         showIntroScreen = false
-      } else {
-        showIntroScreen = true
       }
+      refreshAlerts()
     }
     .onChange(of: profiles) { oldValue, newValue in
       if !newValue.isEmpty {
         loadApp()
       }
+      refreshAlerts()
     }
     .onChange(of: scenePhase) { oldPhase, newPhase in
       if newPhase == .active {
+        requestAuthorizer.refreshAuthorizationStatus()
         loadApp()
+        refreshAlerts()
       } else if newPhase == .background {
         unloadApp()
       }
@@ -232,6 +235,16 @@ struct HomeView: View {
     }
     .onAppear {
       onAppearApp()
+    }
+    .sheet(item: $alertsManager.selectedAlert) { alert in
+      HomeAlertDetailView(
+        alert: alert,
+        disabledReason: disabledReason(for: alert),
+        onPrimaryAction: {
+          runAlertPrimaryAction(for: alert)
+        }
+      )
+      .presentationDetents([.medium])
     }
     .fullScreenCover(isPresented: $showIntroScreen) {
       IntroView {
@@ -330,8 +343,42 @@ struct HomeView: View {
   }
 
   private func onAppearApp() {
+    requestAuthorizer.refreshAuthorizationStatus()
     strategyManager.loadActiveSession(context: context)
     strategyManager.cleanUpGhostSchedules(context: context)
+    refreshAlerts()
+  }
+
+  private func refreshAlerts() {
+    alertsManager.refreshAlerts(
+      profiles: profiles,
+      authorizationStatus: requestAuthorizer.getAuthorizationStatus()
+    )
+  }
+
+  private func presentAlert(_ alert: HomeAlert) {
+    alertsManager.present(alert)
+  }
+
+  private func disabledReason(for alert: HomeAlert) -> String? {
+    return alertsManager.disabledReason(
+      for: alert,
+      profiles: profiles,
+      isBlocking: isBlocking
+    )
+  }
+
+  private func runAlertPrimaryAction(for alert: HomeAlert) {
+    alertsManager.runPrimaryAction(
+      for: alert,
+      profiles: profiles,
+      isBlocking: isBlocking,
+      requestAuthorizer: requestAuthorizer,
+      onScheduleRepaired: {
+        loadApp()
+        refreshAlerts()
+      }
+    )
   }
 
   private func unloadApp() {
@@ -353,6 +400,7 @@ struct HomeView: View {
   HomeView()
     .environmentObject(RequestAuthorizer())
     .environmentObject(TipManager())
+    .environmentObject(AlertsManager())
     .environmentObject(NavigationManager())
     .environmentObject(StrategyManager())
     .defaultAppStorage(UserDefaults(suiteName: "preview")!)

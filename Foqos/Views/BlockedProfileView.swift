@@ -87,12 +87,6 @@ struct BlockedProfileView: View {
           }
         }
 
-        if profile?.scheduleIsOutOfSync == true {
-          Section {
-            ScheduleWarningPrompt(onApply: { saveProfile() }, disabled: isBlocking)
-          }
-        }
-
         BlockedProfileNameSection(draft: draft, disabled: false)
 
         BlockedProfileStrategySection(

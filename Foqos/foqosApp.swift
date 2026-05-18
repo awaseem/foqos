@@ -39,6 +39,7 @@ struct foqosApp: App {
   @StateObject private var startegyManager = StrategyManager.shared
   @StateObject private var liveActivityManager = LiveActivityManager.shared
   @StateObject private var themeManager = ThemeManager.shared
+  @StateObject private var alertsManager = AlertsManager.shared
 
   init() {
     TimersUtil.registerBackgroundTasks()
@@ -69,6 +70,7 @@ struct foqosApp: App {
         }
         .environmentObject(requestAuthorizer)
         .environmentObject(donationManager)
+        .environmentObject(alertsManager)
         .environmentObject(startegyManager)
         .environmentObject(navigationManager)
         .environmentObject(nfcWriter)

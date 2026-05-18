@@ -6,6 +6,14 @@ import SwiftUI
 class RequestAuthorizer: ObservableObject {
   @Published var isAuthorized = false
 
+  func refreshAuthorizationStatus() {
+    let isApproved = getAuthorizationStatus() == .approved
+
+    Task { @MainActor in
+      self.isAuthorized = isApproved
+    }
+  }
+
   func requestAuthorization() {
     Task {
       do {
