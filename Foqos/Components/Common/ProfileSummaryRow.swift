@@ -168,10 +168,10 @@ struct ProfileSummaryContent: View {
     Text("Active")
       .font(.caption2)
       .fontWeight(.bold)
-      .foregroundStyle(themeManager.themeColor)
+      .foregroundStyle(.primary)
       .padding(.horizontal, 7)
       .padding(.vertical, 4)
-      .background(themeManager.themeColor.opacity(0.13), in: Capsule())
+      .background(Color(.secondarySystemFill), in: Capsule())
   }
 }
 

@@ -5,6 +5,7 @@ struct CardBackground: View {
 
   var isActive: Bool
   var customColor: Color?
+  var backgroundColor: Color?
   var cornerRadius: CGFloat
   var activeBlobScale: CGFloat
 
@@ -14,6 +15,7 @@ struct CardBackground: View {
   init(
     isActive: Bool = false,
     customColor: Color? = nil,
+    backgroundColor: Color? = nil,
     cornerRadius: CGFloat = 24,
     activeBlobScale: CGFloat = 1,
     activeBlobCount: Int = 5,
@@ -23,6 +25,7 @@ struct CardBackground: View {
   ) {
     self.isActive = isActive
     self.customColor = customColor
+    self.backgroundColor = backgroundColor
     self.cornerRadius = cornerRadius
     self.activeBlobScale = activeBlobScale
     _blobs = State(
@@ -39,16 +42,24 @@ struct CardBackground: View {
 
   // Select a color based on custom color or active state
   private var cardColor: Color {
+    if let customColor {
+      return customColor
+    }
+
     if isActive {
       return themeManager.themeColor.opacity(0.5)
     }
 
-    return customColor ?? .blue
+    return .blue
+  }
+
+  private var cardBackgroundColor: Color {
+    backgroundColor ?? Color(UIColor.systemBackground)
   }
 
   var body: some View {
     RoundedRectangle(cornerRadius: cornerRadius)
-      .fill(Color(UIColor.systemBackground))
+      .fill(cardBackgroundColor)
       .overlay(
         GeometryReader { geometry in
           ZStack {

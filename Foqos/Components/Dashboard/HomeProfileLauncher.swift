@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct HomeProfileLauncher: View {
+  @Environment(\.colorScheme) private var colorScheme
   @EnvironmentObject private var themeManager: ThemeManager
 
   let activeProfile: BlockedProfiles?
@@ -71,47 +72,35 @@ struct HomeProfileLauncher: View {
   }
 
   private var activeButtonBackground: some View {
-    RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous)
-      .fill(activeButtonBaseFill)
-      .overlay {
-        CardBackground(
-          isActive: true,
-          customColor: themeManager.themeColor,
-          cornerRadius: activeButtonCornerRadius,
-          activeBlobScale: activeButtonBlobScale,
-          activeBlobCount: activeButtonBlobCount,
-          activeBlobSizeRange: activeButtonBlobSizeRange,
-          activeBlobWidthRange: activeButtonBlobWidthRange,
-          activeBlobHeightRange: activeButtonBlobHeightRange
-        )
-        .opacity(0.72)
-      }
-      .frame(height: activeButtonHeight)
-      .clipShape(RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous))
-      .shadow(
-        color: themeManager.themeColor.opacity(0.18),
-        radius: 12,
-        x: 0,
-        y: 6
-      )
-      .shadow(
-        color: Color.black.opacity(0.14),
-        radius: 6,
-        x: 0,
-        y: 3
-      )
+    CardBackground(
+      isActive: true,
+      customColor: activeBlobColor,
+      backgroundColor: themeManager.themeColor,
+      cornerRadius: activeButtonCornerRadius,
+      activeBlobScale: activeButtonBlobScale,
+      activeBlobCount: activeButtonBlobCount,
+      activeBlobSizeRange: activeButtonBlobSizeRange,
+      activeBlobWidthRange: activeButtonBlobWidthRange,
+      activeBlobHeightRange: activeButtonBlobHeightRange
+    )
+    .frame(height: activeButtonHeight)
+    .clipShape(RoundedRectangle(cornerRadius: activeButtonCornerRadius, style: .continuous))
+    .shadow(
+      color: themeManager.themeColor.opacity(0.18),
+      radius: 12,
+      x: 0,
+      y: 6
+    )
+    .shadow(
+      color: Color.black.opacity(0.14),
+      radius: 6,
+      x: 0,
+      y: 3
+    )
   }
 
-  private var activeButtonBaseFill: LinearGradient {
-    LinearGradient(
-      colors: [
-        themeManager.themeColor.opacity(0.46),
-        Color(.secondarySystemBackground).opacity(0.92),
-        themeManager.themeColor.opacity(0.32),
-      ],
-      startPoint: .topLeading,
-      endPoint: .bottomTrailing
-    )
+  private var activeBlobColor: Color {
+    colorScheme == .dark ? Color.black.opacity(0.56) : Color.white.opacity(0.72)
   }
 
   private func startTapped() {
