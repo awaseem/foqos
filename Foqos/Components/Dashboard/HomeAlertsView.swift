@@ -74,24 +74,27 @@ struct HomeAlertDetailView: View {
 
   var body: some View {
     NavigationStack {
-      VStack(alignment: .leading, spacing: 20) {
-        HStack(alignment: .top, spacing: 14) {
-          Image(systemName: alert.iconName)
-            .font(.title3)
-            .foregroundStyle(.red)
-            .frame(width: 44, height: 44)
+      VStack(spacing: 22) {
+        Spacer(minLength: 10)
 
-          VStack(alignment: .leading, spacing: 6) {
-            Text(alert.title)
-              .font(.title3)
-              .fontWeight(.semibold)
+        Image(systemName: alert.iconName)
+          .font(.system(size: 50, weight: .semibold))
+          .foregroundStyle(.red)
+          .frame(width: 104, height: 104)
 
-            Text(alert.detailMessage)
-              .font(.subheadline)
-              .foregroundStyle(.secondary)
-              .fixedSize(horizontal: false, vertical: true)
-          }
+        VStack(spacing: 10) {
+          Text(alert.title)
+            .font(.title2.weight(.bold))
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.center)
+
+          Text(alert.detailMessage)
+            .font(.body)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
         }
+        .padding(.horizontal, 28)
 
         if let disabledReason {
           Text(disabledReason)
@@ -105,30 +108,26 @@ struct HomeAlertDetailView: View {
             )
         }
 
-        Spacer(minLength: 0)
+        Spacer(minLength: 12)
 
-        Button(action: runPrimaryAction) {
-          Text(alert.primaryActionTitle)
-            .font(.headline)
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-              themeManager.themeColor,
-              in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-        }
-        .disabled(!canRunPrimaryAction)
-        .opacity(canRunPrimaryAction ? 1 : 0.45)
+        ActionButton(
+          title: alert.primaryActionTitle,
+          backgroundColor: themeManager.themeColor,
+          isDisabled: !canRunPrimaryAction,
+          action: runPrimaryAction
+        )
       }
-      .padding(20)
-      .navigationTitle("Alert")
+      .padding()
+      .navigationTitle("Details")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
             dismiss()
+          } label: {
+            Image(systemName: "xmark")
           }
+          .accessibilityLabel("Cancel")
         }
       }
     }
