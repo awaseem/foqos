@@ -21,12 +21,18 @@ enum ProfileSummaryLayout: Equatable {
   case compact
 }
 
+enum ProfileSummaryStatusMode: Equatable {
+  case scheduleOnly
+  case scheduleOrIndicators
+}
+
 struct ProfileSummaryRow<Accessory: View>: View {
   let profile: BlockedProfiles
   let isActive: Bool
   let metadata: ProfileSummaryMetadata
   let showsStatusLine: Bool
   let layout: ProfileSummaryLayout
+  let statusMode: ProfileSummaryStatusMode
   let accessory: () -> Accessory
 
   init(
@@ -35,6 +41,7 @@ struct ProfileSummaryRow<Accessory: View>: View {
     metadata: ProfileSummaryMetadata,
     showsStatusLine: Bool,
     layout: ProfileSummaryLayout = .dashboard,
+    statusMode: ProfileSummaryStatusMode = .scheduleOrIndicators,
     @ViewBuilder accessory: @escaping () -> Accessory
   ) {
     self.profile = profile
@@ -42,6 +49,7 @@ struct ProfileSummaryRow<Accessory: View>: View {
     self.metadata = metadata
     self.showsStatusLine = showsStatusLine
     self.layout = layout
+    self.statusMode = statusMode
     self.accessory = accessory
   }
 
@@ -52,7 +60,8 @@ struct ProfileSummaryRow<Accessory: View>: View {
         isActive: isActive,
         metadata: metadata,
         showsStatusLine: showsStatusLine,
-        layout: layout
+        layout: layout,
+        statusMode: statusMode
       )
 
       accessory()
@@ -77,6 +86,7 @@ struct ProfileSummaryContent: View {
   let metadata: ProfileSummaryMetadata
   let showsStatusLine: Bool
   let layout: ProfileSummaryLayout
+  let statusMode: ProfileSummaryStatusMode
 
   private var blockingStrategy: BlockingStrategy? {
     guard let strategyId = profile.blockingStrategyId else {
@@ -146,7 +156,7 @@ struct ProfileSummaryContent: View {
         }
 
         if showsStatusLine {
-          ProfileSummaryStatusLine(profile: profile)
+          ProfileSummaryStatusLine(profile: profile, mode: statusMode)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -278,11 +288,12 @@ private struct ProfileSummaryMetadataLine: View {
 
 private struct ProfileSummaryStatusLine: View {
   let profile: BlockedProfiles
+  let mode: ProfileSummaryStatusMode
 
   var body: some View {
     if let schedule = profile.schedule, schedule.isActive {
       ProfileSummaryNextScheduleLine(schedule: schedule)
-    } else {
+    } else if mode == .scheduleOrIndicators {
       ProfileSummaryCompactIndicators(
         enableLiveActivity: profile.enableLiveActivity,
         hasReminders: profile.reminderTimeInSeconds != nil,

@@ -87,7 +87,8 @@ private struct HomeProfileRow: View {
           profile: profile,
           isActive: isActive,
           metadata: .appsAndDomains,
-          showsStatusLine: true
+          showsStatusLine: true,
+          statusMode: .scheduleOnly
         ) {
           ProfileUsageMiniBarChart(profile: profile)
             .frame(width: 118, height: 62)

@@ -15,7 +15,8 @@ struct ProfileRow: View {
       isActive: isActive,
       metadata: .appsAndDomains,
       showsStatusLine: false,
-      layout: .compact
+      layout: .compact,
+      statusMode: .scheduleOrIndicators
     )
   }
 }
