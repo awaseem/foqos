@@ -316,8 +316,7 @@ struct GuidedBlockedProfileCreationView: View {
         BlockedProfileBreaksFields(
           draft: draft,
           disabled: false,
-          showsSeparators: true,
-          showsFieldLabels: false
+          showsSeparators: true
         )
       }
 
@@ -345,8 +344,7 @@ struct GuidedBlockedProfileCreationView: View {
           draft: draft,
           profile: nil,
           disabled: false,
-          showsSeparators: true,
-          showsFieldLabels: false
+          showsSeparators: true
         )
       }
 

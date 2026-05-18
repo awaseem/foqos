@@ -36,7 +36,7 @@ struct StrategyPicker: View {
 
     return [
       StrategyPickerSection(
-        title: "Most Popular",
+        title: "Most popular",
         description: "Physical triggers that make starting and stopping more deliberate.",
         strategies: mostPopular
       ),

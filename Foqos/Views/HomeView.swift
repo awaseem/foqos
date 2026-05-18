@@ -96,7 +96,8 @@ struct HomeView: View {
               "Support",
               action: {
                 showDonationView = true
-              }, iconName: "heart.fill")
+              },
+              imageName: "SupportStickerLogo")
             RoundedButton(
               "",
               action: {
