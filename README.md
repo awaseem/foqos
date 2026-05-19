@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./Foqos/Assets.xcassets/AppIcon.appiconset/AppIcon~ios-marketing.png" width="250" style="border-radius: 40px;">
+  <img src="./images/foqos-app-icon.png" width="250" style="border-radius: 40px;" alt="Foqos app icon">
 </p>
 
 <p align="center">
