@@ -85,6 +85,10 @@ struct HomeView: View {
     return strategyManager.isPauseActive
   }
 
+  private var canCreateProfiles: Bool {
+    return !isBlocking
+  }
+
   var body: some View {
     ScrollView(showsIndicators: false) {
       VStack(alignment: .leading, spacing: 30) {
@@ -119,10 +123,14 @@ struct HomeView: View {
         if profiles.isEmpty {
           Welcome(
             onGuidedTap: {
-              showGuidedProfileCreationView = true
+              if canCreateProfiles {
+                showGuidedProfileCreationView = true
+              }
             },
             onAdvancedTap: {
-              showNewProfileView = true
+              if canCreateProfiles {
+                showNewProfileView = true
+              }
             }
           )
           .padding(.horizontal, 16)
