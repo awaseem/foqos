@@ -16,6 +16,8 @@ struct ActiveProfileSessionView: View {
 
   @State private var showEmergencyView = false
   @State private var showProfileInsights = false
+  @State private var showingAlert = false
+  @State private var alertMessage = ""
   @State private var focusMessageIndex = Self.initialFocusMessageIndex()
 
   private let focusMessageTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
@@ -87,6 +89,18 @@ struct ActiveProfileSessionView: View {
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
+    }
+    .onReceive(strategyManager.$errorMessage) { errorMessage in
+      guard let message = errorMessage else { return }
+      alertMessage = message
+      showingAlert = true
+    }
+    .alert("Whoops", isPresented: $showingAlert) {
+      Button("OK", role: .cancel) {
+        dismissAlert()
+      }
+    } message: {
+      Text(alertMessage)
     }
   }
 
@@ -236,6 +250,11 @@ struct ActiveProfileSessionView: View {
     withAnimation(.easeInOut(duration: 0.35)) {
       focusMessageIndex = (focusMessageIndex + 1) % FocusMessages.messages.count
     }
+  }
+
+  private func dismissAlert() {
+    showingAlert = false
+    strategyManager.errorMessage = nil
   }
 
   private static func initialFocusMessageIndex() -> Int {

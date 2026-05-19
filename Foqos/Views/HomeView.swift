@@ -241,9 +241,8 @@ struct HomeView: View {
       }
     }
     .onReceive(strategyManager.$errorMessage) { errorMessage in
-      if let message = errorMessage {
-        showErrorAlert(message: message)
-      }
+      guard let message = errorMessage, !showActiveProfileSessionView else { return }
+      showErrorAlert(message: message)
     }
     .onAppear {
       onAppearApp()
@@ -423,6 +422,7 @@ struct HomeView: View {
 
   private func dismissAlert() {
     showingAlert = false
+    strategyManager.errorMessage = nil
   }
 }
 
