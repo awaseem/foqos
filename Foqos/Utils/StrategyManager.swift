@@ -6,6 +6,7 @@ class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
 
   static let availableStrategies: [BlockingStrategy] = [
+    PauseBlockingStrategy(),
     ManualBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
@@ -541,6 +542,8 @@ class StrategyManager: ObservableObject {
   private func handleSessionEnded(profile: BlockedProfiles) {
     self.dismissView()
 
+    SharedData.clearPauseModeState()
+
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()
     self.activeSession = nil
@@ -734,6 +737,7 @@ class StrategyManager: ObservableObject {
 
     // Clear all restrictions
     appBlocker.deactivateRestrictions()
+    SharedData.clearPauseModeState()
 
     // Remove all break timer activities
     DeviceActivityCenterUtil.removeAllBreakTimerActivities()

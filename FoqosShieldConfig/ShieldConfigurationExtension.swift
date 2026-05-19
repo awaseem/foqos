@@ -14,7 +14,28 @@ import UIKit
 // The system provides a default appearance for any methods that your subclass doesn't override.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
+  override init() {
+    super.init()
+    SharedData.debugLog(
+      "ShieldConfigurationExtension init bundle=\(Bundle.main.bundleIdentifier ?? "nil") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
+  }
+
   override func configuration(shielding application: Application) -> ShieldConfiguration {
+    SharedData.debugLog(
+      "Shield config requested app=\(application.localizedDisplayName ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
+
+    if let pauseConfiguration = pauseModeConfiguration(for: application, in: nil) {
+      SharedData.debugLog(
+        "Returning pause shield for app=\(application.localizedDisplayName ?? "unknown")"
+      )
+      return pauseConfiguration
+    }
+
+    SharedData.debugLog(
+      "Returning standard shield for app=\(application.localizedDisplayName ?? "unknown")"
+    )
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -22,17 +43,37 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    SharedData.debugLog(
+      "Shield config requested appInCategory=\(application.localizedDisplayName ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
+
+    if let pauseConfiguration = pauseModeConfiguration(for: application, in: category) {
+      SharedData.debugLog(
+        "Returning pause shield for category-shielded app=\(application.localizedDisplayName ?? "unknown")"
+      )
+      return pauseConfiguration
+    }
+
+    SharedData.debugLog(
+      "Returning standard shield for category-shielded app=\(application.localizedDisplayName ?? "unknown")"
+    )
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
 
   override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
+    SharedData.debugLog(
+      "Shield config requested webDomain=\(webDomain.domain ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 
   override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    SharedData.debugLog(
+      "Shield config requested webDomainInCategory=\(webDomain.domain ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 
@@ -66,6 +107,77 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       ),
       primaryButtonBackgroundColor: .white,
       secondaryButtonLabel: nil
+    )
+  }
+
+  private func pauseModeConfiguration(
+    for application: Application,
+    in category: ActivityCategory?
+  ) -> ShieldConfiguration? {
+    guard let profileId = SharedData.activePauseModeProfileId else {
+      SharedData.debugLog("Pause shield skipped: no active pause profile")
+      return nil
+    }
+
+    if let token = application.token, SharedData.pauseUnlockedApplicationTokens.contains(token) {
+      SharedData.debugLog(
+        "Pause shield skipped: app already unlocked app=\(application.localizedDisplayName ?? "unknown") profile=\(profileId)"
+      )
+      return nil
+    }
+
+    if let categoryToken = category?.token,
+      SharedData.pauseUnlockedCategoryTokens.contains(categoryToken)
+    {
+      SharedData.debugLog(
+        "Pause shield skipped: category already unlocked app=\(application.localizedDisplayName ?? "unknown") profile=\(profileId)"
+      )
+      return nil
+    }
+
+    if application.token == nil {
+      SharedData.debugLog(
+        "Pause shield has no app token; using category action fallback app=\(application.localizedDisplayName ?? "unknown") category=\(category?.localizedDisplayName ?? "unknown") profile=\(profileId)"
+      )
+    }
+
+    guard let snapshot = SharedData.snapshot(for: profileId) else {
+      SharedData.debugLog("Pause shield skipped: snapshot missing profile=\(profileId)")
+      return nil
+    }
+
+    let accessMinutes =
+      snapshot.strategyData
+      .map { StrategyPauseTimerData.toStrategyPauseTimerData(from: $0).pauseDurationInMinutes }
+      ?? StrategyPauseTimerData(pauseDurationInMinutes: 15).pauseDurationInMinutes
+    let appName = application.localizedDisplayName ?? "this app"
+    let buttonText = "Open for \(accessMinutes)m"
+
+    SharedData.debugLog(
+      "Pause shield ready app=\(appName) profile=\(profileId) accessMinutes=\(accessMinutes) selectedApps=\(snapshot.selectedActivity.applicationTokens.count) selectedCategories=\(snapshot.selectedActivity.categoryTokens.count)"
+    )
+
+    return ShieldConfiguration(
+      backgroundBlurStyle: .dark,
+      backgroundColor: UIColor(ThemeManager.shared.themeColor),
+      icon: makeEmojiIcon("⏳", size: 96),
+      title: ShieldConfiguration.Label(
+        text: "Timed access",
+        color: .white
+      ),
+      subtitle: ShieldConfiguration.Label(
+        text: "Temporarily open \(appName). Other blocked apps stay protected.",
+        color: UIColor.white.withAlphaComponent(0.88)
+      ),
+      primaryButtonLabel: ShieldConfiguration.Label(
+        text: buttonText,
+        color: .black
+      ),
+      primaryButtonBackgroundColor: .white,
+      secondaryButtonLabel: ShieldConfiguration.Label(
+        text: "Back",
+        color: .white
+      )
     )
   }
 

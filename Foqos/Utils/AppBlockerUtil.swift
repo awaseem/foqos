@@ -20,18 +20,38 @@ class AppBlockerUtil {
     let applicationTokens = selection.applicationTokens
     let categoriesTokens = selection.categoryTokens
     let webTokens = selection.webDomainTokens
+    let unlockedApplicationTokens =
+      SharedData.pauseModeActiveProfileId == profile.id.uuidString
+      ? SharedData.pauseUnlockedApplicationTokens
+      : []
+    let unlockedCategoryTokens =
+      SharedData.pauseModeActiveProfileId == profile.id.uuidString
+      ? SharedData.pauseUnlockedCategoryTokens
+      : []
+
+    SharedData.debugLog(
+      "Applying restrictions profile=\(profile.id.uuidString) allowMode=\(allowOnlyApps) apps=\(applicationTokens.count) categories=\(categoriesTokens.count) unlockedApps=\(unlockedApplicationTokens.count) unlockedCategories=\(unlockedCategoryTokens.count) activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
+    )
 
     if allowOnlyApps {
       store.shield.applicationCategories =
-        .all(except: applicationTokens)
+        .all(except: applicationTokens.union(unlockedApplicationTokens))
 
       if enableSafariBlocking {
         store.shield.webDomainCategories = .all(except: webTokens)
       }
 
     } else {
-      store.shield.applications = applicationTokens
-      store.shield.applicationCategories = .specific(categoriesTokens)
+      let shieldedApplications = applicationTokens.subtracting(unlockedApplicationTokens)
+      let shieldedCategories = categoriesTokens.subtracting(unlockedCategoryTokens)
+      store.shield.applications = shieldedApplications.isEmpty ? nil : shieldedApplications
+      store.shield.applicationCategories =
+        shieldedCategories.isEmpty
+        ? nil
+        : .specific(
+          shieldedCategories,
+          except: unlockedApplicationTokens
+        )
 
       if enableSafariBlocking {
         store.shield.webDomainCategories = .specific(categoriesTokens)
@@ -55,6 +75,7 @@ class AppBlockerUtil {
 
   func deactivateRestrictions() {
     print("Stoping restrictions...")
+    SharedData.debugLog("Deactivating all restrictions")
 
     store.shield.applications = nil
     store.shield.applicationCategories = nil
@@ -71,6 +92,7 @@ class AppBlockerUtil {
 
   func deactivateRestrictionsForBreak(for profile: SharedData.ProfileSnapshot) {
     print("Stopping restrictions for break (strict mode: \(profile.enableStrictMode))...")
+    SharedData.debugLog("Deactivating restrictions for break profile=\(profile.id.uuidString)")
 
     store.shield.applications = nil
     store.shield.applicationCategories = nil
