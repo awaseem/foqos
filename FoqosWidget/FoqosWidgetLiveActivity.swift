@@ -93,8 +93,7 @@ struct FoqosWidgetLiveActivity: Widget {
           if context.state.isPauseActive {
             statusView(
               label: "Paused",
-              systemImage: "pause.circle.fill",
-              color: .yellow,
+              assetName: "PauseStickerIcon",
               countdownRange: context.state.countdownRange,
               timerFont: .title,
               alignment: .trailing
@@ -102,8 +101,7 @@ struct FoqosWidgetLiveActivity: Widget {
           } else if context.state.isBreakActive {
             statusView(
               label: "On a Break",
-              systemImage: "cup.and.heat.waves.fill",
-              color: .orange,
+              assetName: "CoffeeStickerIcon",
               countdownRange: context.state.countdownRange,
               timerFont: .title,
               alignment: .trailing
@@ -170,19 +168,11 @@ struct FoqosWidgetLiveActivity: Widget {
     for state: FoqosWidgetAttributes.ContentState
   ) -> some View {
     if state.isPauseActive {
-      compactStatusView(
-        systemImage: "pause.fill",
-        color: .yellow,
-        font: .system(size: expandedTimerFontSize, weight: .semibold)
-      )
-      .frame(width: expandedTimerWidth, alignment: .center)
+      stickerStatusView(assetName: "PauseStickerIcon", size: 30)
+        .frame(width: expandedTimerWidth, alignment: .center)
     } else if state.isBreakActive {
-      compactStatusView(
-        systemImage: "cup.and.heat.waves.fill",
-        color: .orange,
-        font: .system(size: expandedTimerFontSize, weight: .semibold)
-      )
-      .frame(width: expandedTimerWidth, alignment: .center)
+      stickerStatusView(assetName: "CoffeeStickerIcon", size: 30)
+        .frame(width: expandedTimerWidth, alignment: .center)
     } else {
       expandedElapsedTimerText(for: state)
     }
@@ -193,33 +183,21 @@ struct FoqosWidgetLiveActivity: Widget {
     for state: FoqosWidgetAttributes.ContentState
   ) -> some View {
     if state.isPauseActive {
-      compactStatusView(
-        systemImage: "pause.fill",
-        color: .yellow,
-        font: .system(size: compactTimerFontSize, weight: .semibold)
-      )
-      .frame(width: compactTimerWidth, alignment: .center)
+      stickerStatusView(assetName: "PauseStickerIcon", size: 20)
+        .frame(width: compactTimerWidth, alignment: .center)
     } else if state.isBreakActive {
-      compactStatusView(
-        systemImage: "cup.and.heat.waves.fill",
-        color: .orange,
-        font: .system(size: compactTimerFontSize, weight: .semibold)
-      )
-      .frame(width: compactTimerWidth, alignment: .center)
+      stickerStatusView(assetName: "CoffeeStickerIcon", size: 20)
+        .frame(width: compactTimerWidth, alignment: .center)
     } else {
       compactElapsedTimerText(for: state)
     }
   }
 
-  private func compactStatusView(
-    systemImage: String,
-    color: Color,
-    font: Font
-  ) -> some View {
-    Image(systemName: systemImage)
-      .font(font)
-      .fontWeight(.semibold)
-      .foregroundColor(color)
+  private func stickerStatusView(assetName: String, size: CGFloat) -> some View {
+    Image(assetName)
+      .resizable()
+      .scaledToFit()
+      .frame(width: size, height: size)
   }
 
   private func elapsedTimerText(
@@ -296,21 +274,18 @@ struct FoqosWidgetLiveActivity: Widget {
   @ViewBuilder
   private func statusView(
     label: String,
-    systemImage: String,
-    color: Color,
+    assetName: String,
     countdownRange: ClosedRange<Date>?,
     timerFont: Font,
     alignment: TextAlignment
   ) -> some View {
     VStack(alignment: alignment == .trailing ? .trailing : .center, spacing: 4) {
       HStack(spacing: 6) {
-        Image(systemName: systemImage)
-          .font(.title2)
-          .foregroundColor(color)
+        stickerStatusView(assetName: assetName, size: 28)
         Text(label)
           .font(.subheadline)
           .fontWeight(.semibold)
-          .foregroundColor(color)
+          .foregroundColor(.primary)
       }
 
       if let countdownRange {

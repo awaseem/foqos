@@ -52,9 +52,15 @@ struct ProfileWidgetEntryView: View {
         //Lockscreen: Inline widget above clock
         case .accessoryInline:
             if entry.isPauseActive {
-                Label("Paused", systemImage: "pause.circle.fill")
+                Label(
+                    title: { Text("Paused") },
+                    icon: { stickerIcon("PauseStickerIcon", size: 14) }
+                )
             } else if entry.isBreakActive {
-                Label("On a Break", systemImage: "cup.and.saucer.fill")
+                Label(
+                    title: { Text("On a Break") },
+                    icon: { stickerIcon("CoffeeStickerIcon", size: 14) }
+                )
             } else if entry.isSessionActive, let startTime = entry.sessionStartTime {
                 Label(
                     title: { Text(startTime, style: .timer) },
@@ -74,11 +80,17 @@ struct ProfileWidgetEntryView: View {
                     .lineLimit(1)
                 // Status section with break (one line), pause (one line), or session timer with info (two lines)
                 if entry.isBreakActive {
-                    Label("On a Break", systemImage: "cup.and.saucer.fill")
-                        .font(.caption2)
+                    HStack(spacing: 4) {
+                        stickerIcon("CoffeeStickerIcon", size: 14)
+                        Text("On a Break")
+                            .font(.caption2)
+                    }
                 } else if entry.isPauseActive {
-                    Label("Paused", systemImage: "pause.circle.fill")
-                        .font(.caption2)
+                    HStack(spacing: 4) {
+                        stickerIcon("PauseStickerIcon", size: 14)
+                        Text("Paused")
+                            .font(.caption2)
+                    }
                 // Session info (Blocked count + enabled options count)
                 } else if entry.isSessionActive, let startTime = entry.sessionStartTime {
                     if let profile = entry.profileSnapshot {
@@ -151,9 +163,7 @@ struct ProfileWidgetEntryView: View {
                         VStack {
                             if entry.isBreakActive {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "cup.and.saucer.fill")
-                                        .font(.body)
-                                        .foregroundColor(.white)
+                                    stickerIcon("CoffeeStickerIcon", size: 24)
                                     Text("On a Break")
                                         .font(.body)
                                         .fontWeight(.bold)
@@ -161,9 +171,7 @@ struct ProfileWidgetEntryView: View {
                                 }
                             } else if entry.isPauseActive {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "pause.circle.fill")
-                                        .font(.body)
-                                        .foregroundColor(.white)
+                                    stickerIcon("PauseStickerIcon", size: 24)
                                     Text("Paused")
                                         .font(.body)
                                         .fontWeight(.bold)
@@ -226,6 +234,13 @@ struct ProfileWidgetEntryView: View {
             }
         }
     }
+
+  private func stickerIcon(_ assetName: String, size: CGFloat) -> some View {
+    Image(assetName)
+      .resizable()
+      .scaledToFit()
+      .frame(width: size, height: size)
+  }
 
   // Helper function to count total blocked items
   private func getBlockedCount(from profile: SharedData.ProfileSnapshot) -> Int {
