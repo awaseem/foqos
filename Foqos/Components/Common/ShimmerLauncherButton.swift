@@ -6,6 +6,7 @@ struct ShimmerLauncherButton: View {
 
   let title: String
   let iconName: String
+  let imageName: String?
   let height: CGFloat
   let isEnabled: Bool
   let accessibilityLabel: String
@@ -19,6 +20,7 @@ struct ShimmerLauncherButton: View {
   init(
     title: String,
     iconName: String = "play.fill",
+    imageName: String? = nil,
     height: CGFloat = 64,
     isEnabled: Bool = true,
     accessibilityLabel: String,
@@ -26,6 +28,7 @@ struct ShimmerLauncherButton: View {
   ) {
     self.title = title
     self.iconName = iconName
+    self.imageName = imageName
     self.height = height
     self.isEnabled = isEnabled
     self.accessibilityLabel = accessibilityLabel
@@ -35,8 +38,7 @@ struct ShimmerLauncherButton: View {
   var body: some View {
     Button(action: action) {
       HStack(spacing: 10) {
-        Image(systemName: iconName)
-          .font(.system(size: 18, weight: .bold))
+        icon
 
         Text(title)
           .font(.title3)
@@ -106,7 +108,21 @@ struct ShimmerLauncherButton: View {
         }
       }
   }
+
+  @ViewBuilder
+  private var icon: some View {
+    if let imageName {
+      Image(imageName)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 24, height: 24)
+    } else {
+      Image(systemName: iconName)
+        .font(.system(size: 18, weight: .bold))
+    }
+  }
 }
+
 struct LauncherButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label

@@ -34,6 +34,7 @@ struct HomeProfileLauncher: View {
   private var inactiveLauncherButtons: some View {
     ShimmerLauncherButton(
       title: "Start",
+      imageName: "PlayStickerIcon",
       height: inactiveButtonHeight,
       accessibilityLabel: "Start Profile",
       action: startTapped
