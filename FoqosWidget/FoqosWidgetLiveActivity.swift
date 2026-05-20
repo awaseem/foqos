@@ -73,8 +73,7 @@ struct FoqosWidgetLiveActivity: Widget {
               .font(.headline)
               .fontWeight(.bold)
               .foregroundColor(.primary)
-            Image(systemName: "hourglass")
-              .foregroundColor(.purple)
+            foqosLogo(size: 20)
           }
 
           Text(context.attributes.name)
