@@ -124,28 +124,6 @@ struct FoqosWidgetLiveActivity: Widget {
               .font(.subheadline)
               .foregroundColor(.secondary)
               .multilineTextAlignment(.center)
-
-            if context.state.isPauseActive {
-              statusView(
-                label: "Paused",
-                systemImage: "pause.circle.fill",
-                color: .yellow,
-                countdownRange: context.state.countdownRange,
-                timerFont: .title2,
-                alignment: .center
-              )
-            } else if context.state.isBreakActive {
-              statusView(
-                label: "On a Break",
-                systemImage: "cup.and.heat.waves.fill",
-                color: .orange,
-                countdownRange: context.state.countdownRange,
-                timerFont: .title2,
-                alignment: .center
-              )
-            } else {
-              timerText(for: context.state, font: .title2, alignment: .center)
-            }
           }
           .padding(.horizontal, 16)
           .padding(.vertical, 4)
@@ -155,12 +133,23 @@ struct FoqosWidgetLiveActivity: Widget {
         Image(systemName: "hourglass")
           .foregroundColor(.purple)
       } compactTrailing: {
-        // Compact trailing state
-        Text(
-          context.attributes.name
-        )
-        .font(.caption)
+        //
+        Group {
+            if let range = context.state.countdownRange {
+                Text(timerInterval: range, countsDown: true)
+            } else {
+                Text(
+                    Date(timeIntervalSinceNow: context.state.getTimeIntervalSinceNow()),
+                    style: .timer
+                )
+            }
+        }
+        .monospacedDigit()
+        .font(.caption2)
         .fontWeight(.semibold)
+        .frame(width: 44, alignment: .trailing)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
       } minimal: {
         // Minimal state
         Image(systemName: "hourglass")
