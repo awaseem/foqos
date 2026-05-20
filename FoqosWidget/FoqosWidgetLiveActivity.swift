@@ -54,6 +54,11 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 }
 
 struct FoqosWidgetLiveActivity: Widget {
+  private let compactLogoSize: CGFloat = 24
+  private let compactTimerWidth: CGFloat = 48
+  private let compactTimerFontSize: CGFloat = 16
+  private let minimalLogoSize: CGFloat = 18
+
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
       // Lock screen/banner UI goes here
@@ -110,65 +115,130 @@ struct FoqosWidgetLiveActivity: Widget {
 
     } dynamicIsland: { context in
       DynamicIsland {
-        DynamicIslandExpandedRegion(.center) {
-          VStack(spacing: 8) {
-            HStack(spacing: 6) {
-              Image(systemName: "hourglass")
-                .foregroundColor(.purple)
-              Text(context.attributes.name)
+        DynamicIslandExpandedRegion(.leading) {
+          HStack(spacing: 8) {
+            foqosLogo(size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+              Text("Foqos")
                 .font(.headline)
-                .fontWeight(.medium)
-            }
-
-            Text(context.attributes.message)
-              .font(.subheadline)
-              .foregroundColor(.secondary)
-              .multilineTextAlignment(.center)
-
-            if context.state.isPauseActive {
-              statusView(
-                label: "Paused",
-                systemImage: "pause.circle.fill",
-                color: .yellow,
-                countdownRange: context.state.countdownRange,
-                timerFont: .title2,
-                alignment: .center
-              )
-            } else if context.state.isBreakActive {
-              statusView(
-                label: "On a Break",
-                systemImage: "cup.and.heat.waves.fill",
-                color: .orange,
-                countdownRange: context.state.countdownRange,
-                timerFont: .title2,
-                alignment: .center
-              )
-            } else {
-              timerText(for: context.state, font: .title2, alignment: .center)
+                .fontWeight(.bold)
+              Text(context.attributes.name)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
             }
           }
-          .padding(.horizontal, 16)
-          .padding(.vertical, 4)
+          .padding(.leading, 4)
+        }
+
+        DynamicIslandExpandedRegion(.trailing) {
+          expandedIslandStatusView(for: context.state)
+            .padding(.trailing, 4)
         }
       } compactLeading: {
-        // Compact leading state
-        Image(systemName: "hourglass")
-          .foregroundColor(.purple)
+        foqosLogo(size: compactLogoSize)
+          .frame(width: compactLogoSize, height: compactLogoSize)
       } compactTrailing: {
-        // Compact trailing state
-        Text(
-          context.attributes.name
-        )
-        .font(.caption)
-        .fontWeight(.semibold)
+        compactIslandStatusView(for: context.state)
       } minimal: {
-        // Minimal state
-        Image(systemName: "hourglass")
-          .foregroundColor(.purple)
+        foqosLogo(size: minimalLogoSize)
+          .frame(width: minimalLogoSize, height: minimalLogoSize)
       }
       .widgetURL(URL(string: "http://www.foqos.app"))
       .keylineTint(Color.purple)
     }
+  }
+
+  private func foqosLogo(size: CGFloat) -> some View {
+    Image("FoqosStickerLogo")
+      .resizable()
+      .scaledToFit()
+      .frame(width: size, height: size)
+  }
+
+  @ViewBuilder
+  private func expandedIslandStatusView(
+    for state: FoqosWidgetAttributes.ContentState
+  ) -> some View {
+    if state.isPauseActive {
+      compactStatusView(
+        systemImage: "pause.fill",
+        color: .yellow,
+        font: .title2
+      )
+    } else if state.isBreakActive {
+      compactStatusView(
+        systemImage: "cup.and.heat.waves.fill",
+        color: .orange,
+        font: .title2
+      )
+    } else {
+      elapsedTimerText(for: state, font: .title2)
+    }
+  }
+
+  @ViewBuilder
+  private func compactIslandStatusView(
+    for state: FoqosWidgetAttributes.ContentState
+  ) -> some View {
+    if state.isPauseActive {
+      compactStatusView(
+        systemImage: "pause.fill",
+        color: .yellow,
+        font: .system(size: compactTimerFontSize, weight: .semibold)
+      )
+      .frame(width: compactTimerWidth, alignment: .center)
+    } else if state.isBreakActive {
+      compactStatusView(
+        systemImage: "cup.and.heat.waves.fill",
+        color: .orange,
+        font: .system(size: compactTimerFontSize, weight: .semibold)
+      )
+      .frame(width: compactTimerWidth, alignment: .center)
+    } else {
+      compactElapsedTimerText(for: state)
+    }
+  }
+
+  private func compactStatusView(
+    systemImage: String,
+    color: Color,
+    font: Font
+  ) -> some View {
+    Image(systemName: systemImage)
+      .font(font)
+      .fontWeight(.semibold)
+      .foregroundColor(color)
+  }
+
+  private func elapsedTimerText(
+    for state: FoqosWidgetAttributes.ContentState,
+    font: Font
+  ) -> some View {
+    Text(
+      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
+      style: .timer
+    )
+    .font(font)
+    .fontWeight(.semibold)
+    .monospacedDigit()
+    .foregroundColor(.purple)
+    .contentTransition(.numericText())
+  }
+
+  private func compactElapsedTimerText(for state: FoqosWidgetAttributes.ContentState) -> some View {
+    Text(
+      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
+      style: .timer
+    )
+    .font(.system(size: compactTimerFontSize, weight: .semibold, design: .rounded))
+    .monospacedDigit()
+    .lineLimit(1)
+    .minimumScaleFactor(0.68)
+    .allowsTightening(true)
+    .foregroundColor(.purple)
+    .frame(width: compactTimerWidth, alignment: .center)
+    .contentTransition(.numericText())
   }
 
   @ViewBuilder
