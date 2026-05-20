@@ -129,11 +129,18 @@ struct ActiveProfileSessionView: View {
           .lineLimit(2)
           .minimumScaleFactor(0.72)
 
-        if let statusMessage {
-          Text(statusMessage)
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
+        if let statusMessage, let statusIconName {
+          HStack(spacing: 6) {
+            Image(statusIconName)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 18, height: 18)
+
+            Text(statusMessage)
+              .font(.subheadline)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+          }
         }
       }
 
@@ -171,6 +178,16 @@ struct ActiveProfileSessionView: View {
     }
     if isBreakActive {
       return "On a Break"
+    }
+    return nil
+  }
+
+  private var statusIconName: String? {
+    if isPauseActive {
+      return "PauseStickerIcon"
+    }
+    if isBreakActive {
+      return "CoffeeStickerIcon"
     }
     return nil
   }
@@ -215,6 +232,7 @@ struct ActiveProfileSessionView: View {
         ActiveSessionActionButton(
           title: breakButtonTitle,
           iconName: "cup.and.heat.waves.fill",
+          imageName: "CoffeeStickerIcon",
           role: isBreakActive ? .warning : .standard,
           requiresLongPress: true,
           action: onBreakTapped
@@ -413,6 +431,7 @@ private enum ActiveSessionActionRole {
 private struct ActiveSessionActionButton: View {
   let title: String
   let iconName: String
+  var imageName: String? = nil
   let role: ActiveSessionActionRole
   var requiresLongPress = false
   let action: () -> Void
@@ -454,8 +473,7 @@ private struct ActiveSessionActionButton: View {
 
   private var label: some View {
     HStack(spacing: 8) {
-      Image(systemName: iconName)
-        .font(.system(size: 15, weight: .bold))
+      icon
 
       Text(title)
         .font(.headline)
@@ -472,6 +490,19 @@ private struct ActiveSessionActionButton: View {
         .strokeBorder(foregroundColor.opacity(0.22), lineWidth: 1)
     )
     .contentShape(Capsule())
+  }
+
+  @ViewBuilder
+  private var icon: some View {
+    if let imageName {
+      Image(imageName)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 24, height: 24)
+    } else {
+      Image(systemName: iconName)
+        .font(.system(size: 15, weight: .bold))
+    }
   }
 
   private func triggerAction() {

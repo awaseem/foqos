@@ -117,7 +117,7 @@ struct StartProfilePickerView: View {
     VStack(spacing: 8) {
       ShimmerLauncherButton(
         title: "Go",
-        iconName: "flag.pattern.checkered",
+        imageName: "RacingFlagStickerIcon",
         height: 64,
         isEnabled: canGo,
         accessibilityLabel: "Start selected profile",
