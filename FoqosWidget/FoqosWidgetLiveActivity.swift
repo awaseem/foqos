@@ -57,6 +57,9 @@ struct FoqosWidgetLiveActivity: Widget {
   private let compactLogoSize: CGFloat = 24
   private let compactTimerWidth: CGFloat = 48
   private let compactTimerFontSize: CGFloat = 16
+  private let expandedLogoSize: CGFloat = 30
+  private let expandedTimerWidth: CGFloat = 76
+  private let expandedTimerFontSize: CGFloat = 24
   private let minimalLogoSize: CGFloat = 18
 
   var body: some WidgetConfiguration {
@@ -116,24 +119,11 @@ struct FoqosWidgetLiveActivity: Widget {
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          HStack(spacing: 8) {
-            foqosLogo(size: 36)
-            VStack(alignment: .leading, spacing: 2) {
-              Text("Foqos")
-                .font(.headline)
-                .fontWeight(.bold)
-              Text(context.attributes.name)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-            }
-          }
-          .padding(.leading, 4)
+          expandedIslandTitle(name: context.attributes.name)
         }
 
         DynamicIslandExpandedRegion(.trailing) {
           expandedIslandStatusView(for: context.state)
-            .padding(.trailing, 4)
         }
       } compactLeading: {
         foqosLogo(size: compactLogoSize)
@@ -156,6 +146,25 @@ struct FoqosWidgetLiveActivity: Widget {
       .frame(width: size, height: size)
   }
 
+  private func expandedIslandTitle(name: String) -> some View {
+    HStack(alignment: .center, spacing: 8) {
+      foqosLogo(size: expandedLogoSize)
+        .frame(width: expandedLogoSize, height: expandedLogoSize)
+
+      VStack(alignment: .leading, spacing: 1) {
+        Text("Foqos")
+          .font(.system(size: 18, weight: .bold, design: .rounded))
+          .foregroundColor(.primary)
+          .lineLimit(1)
+
+        Text(name)
+          .font(.system(size: 14, weight: .medium, design: .rounded))
+          .foregroundColor(.secondary)
+          .lineLimit(1)
+      }
+    }
+  }
+
   @ViewBuilder
   private func expandedIslandStatusView(
     for state: FoqosWidgetAttributes.ContentState
@@ -164,16 +173,18 @@ struct FoqosWidgetLiveActivity: Widget {
       compactStatusView(
         systemImage: "pause.fill",
         color: .yellow,
-        font: .title2
+        font: .system(size: expandedTimerFontSize, weight: .semibold)
       )
+      .frame(width: expandedTimerWidth, alignment: .center)
     } else if state.isBreakActive {
       compactStatusView(
         systemImage: "cup.and.heat.waves.fill",
         color: .orange,
-        font: .title2
+        font: .system(size: expandedTimerFontSize, weight: .semibold)
       )
+      .frame(width: expandedTimerWidth, alignment: .center)
     } else {
-      elapsedTimerText(for: state, font: .title2)
+      expandedElapsedTimerText(for: state)
     }
   }
 
@@ -223,6 +234,23 @@ struct FoqosWidgetLiveActivity: Widget {
     .fontWeight(.semibold)
     .monospacedDigit()
     .foregroundColor(.purple)
+    .contentTransition(.numericText())
+  }
+
+  private func expandedElapsedTimerText(
+    for state: FoqosWidgetAttributes.ContentState
+  ) -> some View {
+    Text(
+      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
+      style: .timer
+    )
+    .font(.system(size: expandedTimerFontSize, weight: .semibold, design: .rounded))
+    .monospacedDigit()
+    .lineLimit(1)
+    .minimumScaleFactor(0.76)
+    .allowsTightening(true)
+    .foregroundColor(.purple)
+    .frame(width: expandedTimerWidth, alignment: .center)
     .contentTransition(.numericText())
   }
 
