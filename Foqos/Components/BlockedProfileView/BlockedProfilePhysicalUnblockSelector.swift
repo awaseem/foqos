@@ -3,6 +3,9 @@ import SwiftUI
 struct BlockedProfilePhysicalUnblockSelector: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
+  @ScaledMetric(relativeTo: .body) private var columnHeaderMinHeight: CGFloat = 40
+  @ScaledMetric(relativeTo: .caption2) private var columnDescriptionMinHeight: CGFloat = 50
+
   @Binding var physicalUnblockItems: [PhysicalUnblockItem]
   var disabled: Bool = false
   var disabledText: String?
@@ -129,7 +132,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           }
         }
       }
-      .frame(minHeight: 40, maxHeight: 40)
+      .frame(minHeight: columnHeaderMinHeight)
 
       VStack(spacing: 8) {
         Text(description)
@@ -138,7 +141,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           .multilineTextAlignment(.center)
           .fixedSize(horizontal: false, vertical: true)
       }
-      .frame(minHeight: 50, maxHeight: 50, alignment: .center)
+      .frame(minHeight: columnDescriptionMinHeight, alignment: .center)
 
       VStack(spacing: 10) {
         if items.isEmpty {
