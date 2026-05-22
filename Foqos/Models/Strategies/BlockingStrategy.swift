@@ -69,6 +69,20 @@ enum BlockingStrategyTag: String, Hashable {
   }
 }
 
+struct BlockingStrategySessionAction {
+  let title: String
+  let systemImageName: String
+  let assetImageName: String?
+
+  static func stop(isEnabled: Bool = true) -> BlockingStrategySessionAction {
+    return BlockingStrategySessionAction(
+      title: isEnabled ? "Stop" : "Stop Locked",
+      systemImageName: isEnabled ? "stop.fill" : "lock.fill",
+      assetImageName: nil
+    )
+  }
+}
+
 extension BlockingStrategy {
   var usesNFC: Bool { false }
   var usesQRCode: Bool { false }
@@ -106,6 +120,29 @@ extension BlockingStrategy {
     }
 
     return tags
+  }
+
+  func activeSessionAction(
+    isPauseActive: Bool,
+    isEnabled: Bool = true
+  ) -> BlockingStrategySessionAction {
+    guard isEnabled else {
+      return BlockingStrategySessionAction(
+        title: hasPauseMode ? "Pause Locked" : "Stop Locked",
+        systemImageName: "lock.fill",
+        assetImageName: nil
+      )
+    }
+
+    guard hasPauseMode else {
+      return .stop()
+    }
+
+    return BlockingStrategySessionAction(
+      title: isPauseActive ? "End" : "Pause",
+      systemImageName: isPauseActive ? "stop.fill" : "pause.fill",
+      assetImageName: isPauseActive ? nil : "PauseStickerIcon"
+    )
   }
 }
 

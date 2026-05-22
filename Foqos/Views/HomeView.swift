@@ -151,6 +151,7 @@ struct HomeView: View {
             isBlocking: isBlocking,
             activeSessionProfileId: activeSessionProfileId,
             elapsedTime: strategyManager.elapsedTime,
+            isPauseActive: isPauseActive,
             onManageTapped: {
               isProfileListPresent = true
             },
@@ -179,6 +180,8 @@ struct HomeView: View {
         HomeProfileLauncher(
           activeProfile: isBlocking ? strategyManager.activeSession?.blockedProfile : nil,
           elapsedTime: strategyManager.elapsedTime,
+          isBreakActive: isBreakActive,
+          isPauseActive: isPauseActive,
           onStartTapped: {
             showStartProfilePicker = true
           },

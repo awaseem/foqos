@@ -26,8 +26,8 @@ struct ActiveProfileSessionView: View {
     profile.showStopButton(elapsedTime: elapsedTime)
   }
 
-  private var stopButtonTitle: String {
-    isPauseActive ? "End" : "Stop"
+  private var stopButtonAction: BlockingStrategySessionAction {
+    blockingStrategy?.activeSessionAction(isPauseActive: isPauseActive) ?? .stop()
   }
 
   private var breakButtonTitle: String {
@@ -253,8 +253,9 @@ struct ActiveProfileSessionView: View {
 
         if showStopButton {
           ActiveSessionActionButton(
-            title: stopButtonTitle,
-            iconName: "stop.fill",
+            title: stopButtonAction.title,
+            iconName: stopButtonAction.systemImageName,
+            imageName: stopButtonAction.assetImageName,
             role: .standard,
             action: onStopTapped
           )
