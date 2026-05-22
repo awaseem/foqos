@@ -7,6 +7,8 @@ struct HomeProfileLauncher: View {
 
   let activeProfile: BlockedProfiles?
   let elapsedTime: TimeInterval
+  var isBreakActive = false
+  var isPauseActive = false
   let onStartTapped: () -> Void
   var onActiveTapped: () -> Void = {}
 
@@ -50,7 +52,7 @@ struct HomeProfileLauncher: View {
         showsStatusLine: true,
         layout: .compact
       ) {
-        activeElapsedTime
+        activeAccessory
       }
       .padding(.horizontal, 20)
       .frame(maxWidth: .infinity)
@@ -60,16 +62,52 @@ struct HomeProfileLauncher: View {
     }
     .buttonStyle(LauncherButtonStyle())
     .foregroundStyle(.primary)
-    .accessibilityLabel("Active Profile \(profile.name)")
+    .accessibilityLabel(activeAccessibilityLabel(for: profile))
   }
 
-  private var activeElapsedTime: some View {
-    Text(DateFormatters.formatDurationClock(elapsedTime))
-      .font(.system(size: 20, weight: .bold, design: .monospaced))
-      .lineLimit(1)
-      .minimumScaleFactor(0.72)
-      .contentTransition(.numericText())
-      .animation(.default, value: elapsedTime)
+  @ViewBuilder
+  private var activeAccessory: some View {
+    if let activeStateTitle, let activeStateImageName {
+      HStack(spacing: 6) {
+        Image(activeStateImageName)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 24, height: 24)
+
+        Text(activeStateTitle)
+          .font(.headline)
+          .fontWeight(.semibold)
+          .lineLimit(1)
+          .minimumScaleFactor(0.72)
+      }
+    } else {
+      Text(DateFormatters.formatDurationClock(elapsedTime))
+        .font(.system(size: 20, weight: .bold, design: .monospaced))
+        .lineLimit(1)
+        .minimumScaleFactor(0.72)
+        .contentTransition(.numericText())
+        .animation(.default, value: elapsedTime)
+    }
+  }
+
+  private var activeStateTitle: String? {
+    if isPauseActive {
+      return "Paused"
+    }
+    if isBreakActive {
+      return "On Break"
+    }
+    return nil
+  }
+
+  private var activeStateImageName: String? {
+    if isPauseActive {
+      return "PauseStickerIcon"
+    }
+    if isBreakActive {
+      return "CoffeeStickerIcon"
+    }
+    return nil
   }
 
   private var activeButtonBackground: some View {
@@ -113,6 +151,13 @@ struct HomeProfileLauncher: View {
     UIImpactFeedbackGenerator(style: .light).impactOccurred()
     onActiveTapped()
   }
+
+  private func activeAccessibilityLabel(for profile: BlockedProfiles) -> String {
+    if let activeStateTitle {
+      return "\(activeStateTitle) Profile \(profile.name)"
+    }
+    return "Active Profile \(profile.name)"
+  }
 }
 
 #Preview("Inactive") {
@@ -141,6 +186,27 @@ struct HomeProfileLauncher: View {
         domains: ["example.com", "social.example"]
       ),
       elapsedTime: 3665,
+      onStartTapped: {}
+    )
+  }
+  .background(Color(.systemGroupedBackground))
+  .environmentObject(ThemeManager.shared)
+}
+
+#Preview("Paused") {
+  VStack {
+    Spacer()
+    HomeProfileLauncher(
+      activeProfile: BlockedProfiles(
+        name: "Work Focus",
+        blockingStrategyId: NFCPauseTimerBlockingStrategy.id,
+        enableLiveActivity: true,
+        reminderTimeInSeconds: 3600,
+        enableBreaks: true,
+        domains: ["example.com", "social.example"]
+      ),
+      elapsedTime: 900,
+      isPauseActive: true,
       onStartTapped: {}
     )
   }

@@ -5,6 +5,7 @@ struct HomeProfilesListView: View {
   let isBlocking: Bool
   let activeSessionProfileId: UUID?
   let elapsedTime: TimeInterval
+  let isPauseActive: Bool
   let onManageTapped: () -> Void
   let onStartTapped: (BlockedProfiles) -> Void
   let onStopTapped: (BlockedProfiles) -> Void
@@ -27,6 +28,7 @@ struct HomeProfilesListView: View {
             isBlocking: isBlocking,
             isActive: profile.id == activeSessionProfileId,
             elapsedTime: elapsedTime,
+            isPauseActive: isPauseActive,
             onStartTapped: {
               onStartTapped(profile)
             },
@@ -64,6 +66,7 @@ private struct HomeProfileRow: View {
   let isBlocking: Bool
   let isActive: Bool
   let elapsedTime: TimeInterval
+  let isPauseActive: Bool
   let onStartTapped: () -> Void
   let onStopTapped: () -> Void
   let onEditTapped: () -> Void
@@ -75,6 +78,18 @@ private struct HomeProfileRow: View {
 
   private var canStop: Bool {
     profile.showStopButton(elapsedTime: elapsedTime)
+  }
+
+  private var blockingStrategy: BlockingStrategy? {
+    guard let strategyId = profile.blockingStrategyId else { return nil }
+    return StrategyManager.getStrategyFromId(id: strategyId)
+  }
+
+  private var activeAction: BlockingStrategySessionAction {
+    blockingStrategy?.activeSessionAction(
+      isPauseActive: isPauseActive,
+      isEnabled: canStop
+    ) ?? .stop(isEnabled: canStop)
   }
 
   var body: some View {
@@ -120,7 +135,7 @@ private struct HomeProfileRow: View {
 
       if isActive {
         Button(action: onStopTapped) {
-          Label(canStop ? "Stop" : "Stop Locked", systemImage: canStop ? "stop.fill" : "lock.fill")
+          Label(activeAction.title, systemImage: activeAction.systemImageName)
         }
         .disabled(!canStop)
       } else {
