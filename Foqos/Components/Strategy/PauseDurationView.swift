@@ -188,7 +188,7 @@ struct PauseDurationPreviewSheetHost: View {
             }
           )
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
   }
 }

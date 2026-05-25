@@ -228,7 +228,7 @@ struct TimerDurationPreviewSheetHost: View {
             }
           )
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
   }
 }

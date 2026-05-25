@@ -258,7 +258,7 @@ struct HomeView: View {
           runAlertPrimaryAction(for: alert)
         }
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .fullScreenCover(isPresented: $showIntroScreen) {
       IntroView {
@@ -321,7 +321,7 @@ struct HomeView: View {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()

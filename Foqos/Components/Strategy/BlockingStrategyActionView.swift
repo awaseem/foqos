@@ -11,6 +11,6 @@ struct BlockingStrategyActionView: View {
         AnyView(customViewToDisplay)
       }
     }
-    .presentationDetents([.medium])
+    .presentationDetents([.medium, .large])
   }
 }

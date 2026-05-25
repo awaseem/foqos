@@ -76,7 +76,7 @@ struct ActiveProfileSessionView: View {
     }
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
-        .presentationDetents([.height(350)])
+        .presentationDetents([.height(350), .large])
     }
     .sheet(isPresented: $showProfileInsights) {
       ProfileInsightsView(profile: profile)
@@ -85,7 +85,7 @@ struct ActiveProfileSessionView: View {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
