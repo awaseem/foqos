@@ -106,7 +106,7 @@ struct StrategyPicker: View {
             isPresented = false
           }
         )
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
     }
   }

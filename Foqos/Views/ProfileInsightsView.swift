@@ -393,7 +393,7 @@ struct ProfileInsightsView: View {
           weeklyViewModel.setWeek(for: date)
           clearDaySelection()
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
       .sheet(isPresented: $showingMonthPicker) {
         InsightsMonthPickerView(selectedDate: monthlyViewModel.selectedDate) { date in
@@ -401,7 +401,7 @@ struct ProfileInsightsView: View {
           monthlyViewModel.setMonth(for: date)
           clearDaySelection()
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
       .alert(item: $alertIdentifier) { alert in
         switch alert.id {
