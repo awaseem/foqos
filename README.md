@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./images/foqos-app-icon.png" width="250" style="border-radius: 40px;" alt="Foqos app icon">
+  <img src="./images/foqos-logo.png" width="250" style="border-radius: 40px;" alt="Foqos app icon">
 </p>
 
 <p align="center">
