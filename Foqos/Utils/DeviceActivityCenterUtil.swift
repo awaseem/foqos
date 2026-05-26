@@ -53,7 +53,7 @@ class DeviceActivityCenterUtil {
       // Remove any existing schedule and create a new one
       stopActivities(for: [deviceActivityName], with: center)
       try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
-      print("Scheduled break timer activity from \(intervalStart) to \(intervalEnd) daily")
+      print("Scheduled break timer activity from \(intervalStart) to \(intervalEnd)")
     } catch {
       print("Failed to start break timer activity: \(error.localizedDescription)")
     }
@@ -208,29 +208,25 @@ class DeviceActivityCenterUtil {
     center.stopMonitoring(activities)
   }
 
-  private static func getTimeIntervalStartAndEnd(from minutes: Int) -> (
+  static func getTimeIntervalStartAndEnd(
+    from minutes: Int,
+    startingAt now: Date = Date(),
+    calendar: Calendar = .current
+  ) -> (
     intervalStart: DateComponents, intervalEnd: DateComponents
   ) {
-    let intervalStart = DateComponents(hour: 0, minute: 0)
+    let currentComponents = calendar.dateComponents([.hour, .minute], from: now)
+    let intervalStart = DateComponents(
+      hour: currentComponents.hour,
+      minute: currentComponents.minute
+    )
 
-    // Get current time
-    let now = Date()
-    let currentComponents = Calendar.current.dateComponents([.hour, .minute], from: now)
-    let currentHour = currentComponents.hour ?? 0
-    let currentMinute = currentComponents.minute ?? 0
-
-    // Calculate end time by adding minutes to current time
-    let totalMinutes = currentMinute + minutes
-    var endHour = currentHour + (totalMinutes / 60)
-    var endMinute = totalMinutes % 60
-
-    // Cap at 23:59 if it would roll over past midnight.
-    if endHour >= 24 || (endHour == 23 && endMinute >= 59) {
-      endHour = 23
-      endMinute = 59
-    }
-
-    let intervalEnd = DateComponents(hour: endHour, minute: endMinute)
+    let endDate = calendar.date(byAdding: .minute, value: minutes, to: now) ?? now
+    let endComponents = calendar.dateComponents([.hour, .minute], from: endDate)
+    let intervalEnd = DateComponents(
+      hour: endComponents.hour,
+      minute: endComponents.minute
+    )
     return (intervalStart: intervalStart, intervalEnd: intervalEnd)
   }
 }
