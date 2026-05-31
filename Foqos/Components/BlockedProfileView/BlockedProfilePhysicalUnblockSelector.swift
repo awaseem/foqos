@@ -32,7 +32,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
       HStack(alignment: .top, spacing: 12) {
         physicalUnblockColumn(
           title: "NFC Tags",
-          description: "Set one or more NFC tags that can only unblock this profile when active",
+          description: "Add NFC tags that can unlock this profile while a session is active.",
           systemImage: "wave.3.right.circle.fill",
           assetImage: "NFCStickerLogo",
           items: nfcItems,
@@ -44,7 +44,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
         physicalUnblockColumn(
           title: "QR/Barcode",
           description:
-            "Set one or more QR/Barcodes that can only unblock this profile when active",
+            "Add QR codes or barcodes that can unlock this profile while a session is active.",
           systemImage: "qrcode.viewfinder",
           assetImage: "QRStickerLogo",
           items: qrItems,

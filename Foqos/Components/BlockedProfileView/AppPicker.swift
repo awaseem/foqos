@@ -23,8 +23,8 @@ struct AppPicker: View {
 
   private var detailedMessage: String {
     return allowMode
-      ? "Apple enforces a 50 app limit. In Allow mode, each app within a selected category counts separately."
-      : "Apple enforces a 50 app limit. In Block mode, categories count as 1 item each."
+      ? "Apple enforces a 50 app limit. When allowing only selected apps, each app within a selected category counts separately."
+      : "Apple enforces a 50 app limit. When blocking selected apps, categories count as 1 item each."
   }
 
   private var isOverLimit: Bool {
