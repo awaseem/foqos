@@ -78,7 +78,7 @@ struct BlockedProfileView: View {
               Image(systemName: "lock.fill")
                 .font(.title2)
                 .foregroundColor(.orange)
-              Text("A session is currently active, profile editing is disabled.")
+              Text("A session is active. Stop it before editing this profile.")
                 .font(.subheadline)
                 .foregroundColor(.red)
             }
@@ -128,7 +128,7 @@ struct BlockedProfileView: View {
         )
 
       }
-      .navigationTitle(isEditing ? "Profile Details" : "New Profile")
+      .navigationTitle(isEditing ? "Edit Profile" : "New Profile")
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button(action: { dismiss() }) {

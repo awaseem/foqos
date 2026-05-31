@@ -331,7 +331,7 @@ private struct ProfileSummaryCompactIndicators: View {
       values.append("Breaks")
     }
     if enableStrictMode {
-      values.append("Strict")
+      values.append("Deletion Blocked")
     }
     if enableLiveActivity {
       values.append("Live Activity")

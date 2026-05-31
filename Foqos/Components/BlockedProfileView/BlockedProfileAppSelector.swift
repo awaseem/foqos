@@ -60,7 +60,7 @@ struct BlockedProfileAppSelector: View {
           .foregroundStyle(.gray)
 
         if shouldShowWarning {
-          Text("⚠️ Allow mode: Categories expand to individual apps (50 limit applies)")
+          Text("Selected categories expand to individual apps. Apple's 50 app limit applies.")
             .font(.caption)
             .foregroundColor(.orange)
             .padding(.top, 4)

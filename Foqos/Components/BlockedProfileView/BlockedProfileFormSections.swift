@@ -49,7 +49,7 @@ struct BlockedProfileStrategyFields: View {
   var body: some View {
     Button(action: { showingStrategyPicker = true }) {
       HStack {
-        Text("Set Strategy")
+        Text("Choose Strategy")
           .foregroundStyle(themeManager.themeColor)
         Spacer()
         Image(systemName: "chevron.right")
@@ -78,12 +78,16 @@ struct BlockedProfileStrategySection: View {
   var disabled: Bool
 
   var body: some View {
-    Section("Blocking Strategy") {
+    Section {
       BlockedProfileStrategyFields(
         draft: draft,
         showingStrategyPicker: $showingStrategyPicker,
         disabled: disabled
       )
+    } header: {
+      Text("Blocking Strategy")
+    } footer: {
+      Text("Choose how this profile starts and stops.")
     }
   }
 }
@@ -105,9 +109,9 @@ struct BlockedProfileAppsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
-      title: "Apps Allow Mode",
+      title: "Allow Only Selected Apps",
       description:
-        "Pick apps to allow and block everything else. This will erase any other selection you've made.",
+        "Only selected apps stay available during sessions. Turning this on clears your blocked-app selection.",
       isOn: $draft.enableAllowMode,
       isDisabled: disabled
     )
@@ -115,9 +119,9 @@ struct BlockedProfileAppsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
-      title: "Block Safari",
+      title: "Block Websites in Safari",
       description:
-        "Block Safari websites that are selected in the app selector above. When disabled, Safari will remain unrestricted regardless of the websites you pick.",
+        "Also block selected websites in Safari. When off, Safari stays unrestricted.",
       isOn: $draft.enableSafariBlocking,
       isDisabled: disabled
     )
@@ -160,9 +164,9 @@ struct BlockedProfileDomainsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
-      title: "Domain Allow Mode",
+      title: "Allow Only Selected Domains",
       description:
-        "Pick domains to allow and block everything else. This will erase any other selection you've made.",
+        "Only selected domains stay available during sessions. Turning this on clears your blocked-domain selection.",
       isOn: $draft.enableAllowModeDomain,
       isDisabled: disabled
     )
@@ -222,7 +226,7 @@ struct BlockedProfileStrictUnlocksSection: View {
   var disabled: Bool
 
   var body: some View {
-    Section("Strict Unlocks") {
+    Section("Physical Unlocks") {
       BlockedProfileStrictUnlocksFields(draft: draft, disabled: disabled)
     }
   }
@@ -308,9 +312,9 @@ struct BlockedProfileStrictSafeguardsFields: View {
 
   var body: some View {
     CustomToggle(
-      title: "Strict",
+      title: "Prevent App Deletion",
       description:
-        "Block deleting apps from your phone, stops you from deleting Foqos to access apps",
+        "Stop apps from being deleted during sessions, including Foqos.",
       isOn: $draft.enableStrictMode,
       isDisabled: disabled
     )
@@ -318,9 +322,9 @@ struct BlockedProfileStrictSafeguardsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
-      title: "Prevent App Installation",
+      title: "Prevent New App Installs",
       description:
-        "Block installing new apps, including via Spotlight search and the App Store.",
+        "Stop new apps from being installed during sessions.",
       isOn: $draft.enableBlockAppInstallation,
       isDisabled: disabled
     )
@@ -334,9 +338,9 @@ struct BlockedProfileSessionSafeguardsFields: View {
 
   var body: some View {
     CustomToggle(
-      title: "Disable Background Stops",
+      title: "Require Foqos to Stop",
       description:
-        "Disable the ability to stop a profile from the background, this includes shortcuts and scanning links from NFC tags or QR codes.",
+        "Prevent this profile from being stopped by Shortcuts, NFC links, or QR links outside the app.",
       isOn: $draft.disableBackgroundStops,
       isDisabled: disabled
     )
@@ -344,9 +348,9 @@ struct BlockedProfileSessionSafeguardsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
-      title: "Allow Emergency Unblock",
+      title: "Emergency Unblock",
       description:
-        "Enable the emergency unblock feature for this profile. When disabled, you won't be able to use emergency unblocks during active sessions.",
+        "Allow limited emergency unblocks during active sessions.",
       isOn: $draft.enableEmergencyUnblock,
       isDisabled: disabled
     )
@@ -358,7 +362,7 @@ struct BlockedProfileStrictSafeguardsSection: View {
   var disabled: Bool
 
   var body: some View {
-    Section("Strict Safeguards") {
+    Section("Session Protection") {
       BlockedProfileStrictSafeguardsFields(draft: draft, disabled: disabled)
     }
   }
@@ -369,7 +373,7 @@ struct BlockedProfileSessionSafeguardsSection: View {
   var disabled: Bool
 
   var body: some View {
-    Section("Session Safeguards") {
+    Section("Stop Options") {
       BlockedProfileSessionSafeguardsFields(draft: draft, disabled: disabled)
     }
   }
@@ -388,7 +392,7 @@ struct BlockedProfileNotificationsFields: View {
     CustomToggle(
       title: "Live Activity",
       description:
-        "Shows a live activity on your lock screen with some inspirational quote",
+        "Show session progress on the Lock Screen.",
       isOn: $draft.enableLiveActivity,
       isDisabled: disabled
     )
@@ -398,7 +402,7 @@ struct BlockedProfileNotificationsFields: View {
     CustomToggle(
       title: "Reminder",
       description:
-        "Sends a reminder to start this profile when its ended",
+        "Remind you to start this profile when it ends.",
       isOn: $draft.enableReminder,
       isDisabled: disabled
     )
@@ -454,7 +458,7 @@ struct BlockedProfileNotificationsFields: View {
           UIApplication.shared.open(url)
         }
       } label: {
-        Text("Go to settings to disable globally")
+        Text("Manage notification settings")
           .foregroundStyle(themeManager.themeColor)
           .font(.caption)
       }

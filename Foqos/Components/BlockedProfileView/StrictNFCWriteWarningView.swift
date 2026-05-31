@@ -61,14 +61,14 @@ struct StrictNFCWriteWarningView: View {
 
   private var strictModeWarning: Text {
     let baseText = Text(
-      "You already use an NFC tag as a strict unlock for \(profileName). "
+      "You already use an NFC tag as a physical unlock for \(profileName). "
     )
 
     return baseText
       + Text("Do not write over that unlock tag")
       .fontWeight(.bold)
       + Text(
-        ". Rewriting it can change what Foqos reads later and may stop it from unlocking the profile. You do not need to create another NFC tag for this profile."
+        ". Rewriting it can change what Foqos reads later and may stop this profile from unlocking. You do not need to create another NFC tag for this profile."
       )
   }
 
