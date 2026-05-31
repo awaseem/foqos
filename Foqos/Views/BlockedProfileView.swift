@@ -8,7 +8,6 @@ struct AlertIdentifier: Identifiable {
   enum AlertType {
     case error
     case deleteProfile
-    case overwriteNFCWarning
   }
 
   let id: AlertType
@@ -47,6 +46,7 @@ struct BlockedProfileView: View {
 
   // NFC write URL storage for overwrite warning
   @State private var pendingNFCWriteURL: String?
+  @State private var showingStrictNFCWriteWarning = false
 
   // Alert for cloning
   @State private var showingClonePrompt = false
@@ -236,6 +236,20 @@ struct BlockedProfileView: View {
           ProfileInsightsView(profile: validProfile)
         }
       }
+      .sheet(isPresented: $showingStrictNFCWriteWarning) {
+        StrictNFCWriteWarningView(
+          profileName: profile?.name ?? "this profile",
+          onCancel: {
+            pendingNFCWriteURL = nil
+            showingStrictNFCWriteWarning = false
+          },
+          onContinue: {
+            continuePendingNFCWrite()
+          }
+        )
+        .presentationDetents([.height(520), .large])
+        .presentationDragIndicator(.visible)
+      }
       .background(
         TextFieldAlert(
           isPresented: $showingClonePrompt,
@@ -285,20 +299,6 @@ struct BlockedProfileView: View {
               }
             }
           )
-        case .overwriteNFCWarning:
-          return Alert(
-            title: Text("Warning: NFC Tag Already Set"),
-            message: Text(
-              "Writing to this NFC tag will overwrite its current data. If this is the tag you previously set for unblocking, it will no longer match and you won't be able to unblock your profile. Continue?"
-            ),
-            primaryButton: .cancel(),
-            secondaryButton: .default(Text("Continue")) {
-              if let url = pendingNFCWriteURL {
-                nfcWriter.writeURL(url)
-              }
-              pendingNFCWriteURL = nil
-            }
-          )
         }
       }
     }
@@ -312,13 +312,30 @@ struct BlockedProfileView: View {
     if let profileToWrite = profile {
       let url = BlockedProfiles.getProfileDeepLink(profileToWrite)
 
-      // Check if a physical unblock NFC tag is already set
-      if profileToWrite.hasPhysicalUnblockItem(ofType: .nfc) {
+      if shouldWarnBeforeNFCWrite(for: profileToWrite) {
         pendingNFCWriteURL = url
-        alertIdentifier = AlertIdentifier(id: .overwriteNFCWarning)
+        showingStrictNFCWriteWarning = true
       } else {
         nfcWriter.writeURL(url)
       }
+    }
+  }
+
+  private func shouldWarnBeforeNFCWrite(for profile: BlockedProfiles) -> Bool {
+    return profile.hasPhysicalUnblockItem(ofType: .nfc)
+  }
+
+  private func continuePendingNFCWrite() {
+    guard let url = pendingNFCWriteURL else {
+      showingStrictNFCWriteWarning = false
+      return
+    }
+
+    pendingNFCWriteURL = nil
+    showingStrictNFCWriteWarning = false
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+      nfcWriter.writeURL(url)
     }
   }
 
