@@ -47,11 +47,11 @@ struct StrictNFCWriteWarningView: View {
           Button(action: onContinue) {
             Text("Continue")
               .font(.headline)
+              .foregroundStyle(.primary)
               .frame(maxWidth: .infinity)
               .frame(height: 50)
           }
-          .buttonStyle(.bordered)
-          .tint(themeManager.themeColor)
+          .buttonStyle(.plain)
         }
       }
       .padding(24)
