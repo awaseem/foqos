@@ -57,6 +57,7 @@ struct RoundedButton: View {
           Text(text)
             .font(font)
             .fontWeight(fontWeight)
+            .lineLimit(1)
         }
       }
       .foregroundColor(textColor)
