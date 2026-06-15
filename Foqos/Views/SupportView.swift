@@ -8,8 +8,6 @@ private let linkedinURL = URL(string: "https://www.linkedin.com/in/aliw")!
 private let donateURL = URL(string: "https://www.buymeacoffee.com/ambitionsoftware")!
 
 struct SupportView: View {
-  @Environment(\.openURL) private var openURL
-
   @EnvironmentObject var donationManager: TipManager
   @EnvironmentObject var themeManager: ThemeManager
 
@@ -115,9 +113,9 @@ struct SupportView: View {
 
       Spacer()
 
-      VStack(spacing: 12) {
+      VStack(spacing: 16) {
         ActionButton(
-          title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Tip with Apple",
+          title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
           backgroundColor: donationManager.hasPurchasedTip ? .gray : themeManager.themeColor,
           iconName: "heart.fill",
           iconColor: donationManager.hasPurchasedTip ? .red : nil,
@@ -130,16 +128,9 @@ struct SupportView: View {
         )
 
         if isUnitedStatesStorefront {
-          Button {
-            openURL(donateURL)
-          } label: {
-            Label("Support on Buy Me a Coffee", systemImage: "arrow.up.right")
-              .font(.subheadline.weight(.semibold))
-              .frame(maxWidth: .infinity)
-              .frame(height: 44)
-          }
-          .buttonStyle(.bordered)
-          .tint(themeManager.themeColor)
+          Link("Or Buy Me a Coffee", destination: donateURL)
+            .font(.subheadline.weight(.semibold))
+            .foregroundColor(themeManager.themeColor)
         }
       }
       .fadeInSlide(delay: 0.6)
