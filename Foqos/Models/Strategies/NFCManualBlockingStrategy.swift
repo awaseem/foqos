@@ -13,8 +13,6 @@ class NFCManualBlockingStrategy: BlockingStrategy {
   var usesNFC: Bool = true
   var startsManually: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

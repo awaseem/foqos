@@ -13,8 +13,6 @@ class QRTimerBlockingStrategy: BlockingStrategy {
   var usesQRCode: Bool = true
   var hasTimer: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

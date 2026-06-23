@@ -15,8 +15,6 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
   var hasPauseMode: Bool = true
   var isBeta: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

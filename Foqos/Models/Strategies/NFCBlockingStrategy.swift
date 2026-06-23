@@ -12,8 +12,6 @@ class NFCBlockingStrategy: BlockingStrategy {
   var usesNFC: Bool = true
   var requiresSameCodeToStop: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

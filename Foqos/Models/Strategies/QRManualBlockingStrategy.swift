@@ -14,8 +14,6 @@ class QRManualBlockingStrategy: BlockingStrategy {
   var usesQRCode: Bool = true
   var startsManually: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

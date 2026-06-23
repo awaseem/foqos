@@ -13,8 +13,6 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
   var hasTimer: Bool = true
   var startsManually: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 
