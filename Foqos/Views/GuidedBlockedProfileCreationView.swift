@@ -218,7 +218,7 @@ struct GuidedBlockedProfileCreationView: View {
       }
       .sheet(isPresented: $showingStrategyPicker) {
         StrategyPicker(
-          strategies: StrategyManager.availableStrategies.filter { !$0.hidden },
+          strategies: StrategyManager.availableStrategies,
           selectedStrategy: $draft.selectedStrategy,
           isPresented: $showingStrategyPicker
         )

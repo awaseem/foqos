@@ -22,8 +22,6 @@ protocol BlockingStrategy {
   var requiresSameCodeToStop: Bool { get }
   var isBeta: Bool { get }
 
-  var hidden: Bool { get }
-
   // Callback closures session creation
   var onSessionCreation: ((SessionStatus) -> Void)? {
     get set
