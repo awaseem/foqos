@@ -6,7 +6,7 @@ struct HomeProfileLauncher: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
   let activeProfile: BlockedProfiles?
-  let elapsedTime: TimeInterval
+  let displayTime: TimeInterval
   var isBreakActive = false
   var isPauseActive = false
   let onStartTapped: () -> Void
@@ -81,12 +81,12 @@ struct HomeProfileLauncher: View {
           .minimumScaleFactor(0.72)
       }
     } else {
-      Text(DateFormatters.formatDurationClock(elapsedTime))
+      Text(DateFormatters.formatDurationClock(displayTime))
         .font(.system(size: 20, weight: .bold, design: .monospaced))
         .lineLimit(1)
         .minimumScaleFactor(0.72)
         .contentTransition(.numericText())
-        .animation(.default, value: elapsedTime)
+        .animation(.default, value: displayTime)
     }
   }
 
@@ -165,7 +165,7 @@ struct HomeProfileLauncher: View {
     Spacer()
     HomeProfileLauncher(
       activeProfile: nil,
-      elapsedTime: 0,
+      displayTime: 0,
       onStartTapped: {}
     )
   }
@@ -185,7 +185,7 @@ struct HomeProfileLauncher: View {
         enableBreaks: true,
         domains: ["example.com", "social.example"]
       ),
-      elapsedTime: 3665,
+      displayTime: 3665,
       onStartTapped: {}
     )
   }
@@ -205,7 +205,7 @@ struct HomeProfileLauncher: View {
         enableBreaks: true,
         domains: ["example.com", "social.example"]
       ),
-      elapsedTime: 900,
+      displayTime: 900,
       isPauseActive: true,
       onStartTapped: {}
     )

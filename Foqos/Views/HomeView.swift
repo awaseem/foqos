@@ -179,7 +179,7 @@ struct HomeView: View {
       if !profiles.isEmpty {
         HomeProfileLauncher(
           activeProfile: isBlocking ? strategyManager.activeSession?.blockedProfile : nil,
-          elapsedTime: strategyManager.elapsedTime,
+          displayTime: strategyManager.sessionDisplayTime,
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
           onStartTapped: {
@@ -270,6 +270,7 @@ struct HomeView: View {
         ActiveProfileSessionView(
           profile: activeProfile,
           elapsedTime: strategyManager.elapsedTime,
+          displayTime: strategyManager.sessionDisplayTime,
           isBreakAvailable: isBreakAvailable,
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
