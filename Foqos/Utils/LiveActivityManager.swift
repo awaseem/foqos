@@ -3,12 +3,6 @@ import Foundation
 import SwiftUI
 
 class LiveActivityManager: ObservableObject {
-  private static let timerStrategyIds: Set<String> = [
-    "NFCTimerBlockingStrategy",
-    "QRTimerBlockingStrategy",
-    "ShortcutTimerBlockingStrategy",
-  ]
-
   // Published property for live activity reference
   @Published var currentActivity: Activity<FoqosWidgetAttributes>?
 
@@ -193,7 +187,7 @@ class LiveActivityManager: ObservableObject {
   {
     FoqosWidgetAttributes.ContentState(
       startTime: session.startTime,
-      expectedEndTime: expectedEndTime(for: session),
+      expectedEndTime: SessionTimeCalculator.expectedEndTime(for: session),
       isBreakActive: session.isBreakActive,
       breakStartTime: session.breakStartTime,
       breakEndTime: session.breakEndTime,
@@ -201,59 +195,5 @@ class LiveActivityManager: ObservableObject {
       pauseStartTime: session.pauseStartTime,
       pauseEndTime: session.pauseEndTime
     )
-  }
-
-  private func expectedEndTime(for session: BlockedProfileSession) -> Date? {
-    if let pauseStartTime = session.pauseStartTime, session.isPauseActive {
-      return pauseStartTime.addingTimeInterval(getPauseDurationInSeconds(for: session))
-    }
-
-    if let breakStartTime = session.breakStartTime, session.isBreakActive {
-      return breakStartTime.addingTimeInterval(
-        TimeInterval(session.blockedProfile.breakTimeInMinutes * 60))
-    }
-
-    if isScheduledSession(session), let schedule = session.blockedProfile.schedule {
-      let durationInSeconds = schedule.totalDurationInSeconds
-
-      guard durationInSeconds > 0 else {
-        return nil
-      }
-
-      return session.startTime.addingTimeInterval(TimeInterval(durationInSeconds))
-    }
-
-    if isTimerSession(session) {
-      return session.startTime.addingTimeInterval(getStrategyDurationInSeconds(for: session))
-    }
-
-    return nil
-  }
-
-  private func isScheduledSession(_ session: BlockedProfileSession) -> Bool {
-    session.blockedProfile.schedule?.isActive == true && UUID(uuidString: session.tag) != nil
-  }
-
-  private func isTimerSession(_ session: BlockedProfileSession) -> Bool {
-    Self.timerStrategyIds.contains(session.tag)
-      || Self.timerStrategyIds.contains(session.blockedProfile.blockingStrategyId ?? "")
-  }
-
-  private func getStrategyDurationInSeconds(for session: BlockedProfileSession) -> TimeInterval {
-    guard let strategyData = session.blockedProfile.strategyData else {
-      return 0
-    }
-
-    let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
-    return TimeInterval(timerData.durationInMinutes * 60)
-  }
-
-  private func getPauseDurationInSeconds(for session: BlockedProfileSession) -> TimeInterval {
-    guard let strategyData = session.blockedProfile.strategyData else {
-      return TimeInterval(15 * 60)
-    }
-
-    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
-    return TimeInterval(pauseData.pauseDurationInMinutes * 60)
   }
 }

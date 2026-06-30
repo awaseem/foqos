@@ -8,6 +8,7 @@ struct ActiveProfileSessionView: View {
 
   let profile: BlockedProfiles
   let elapsedTime: TimeInterval
+  let displayTime: TimeInterval
   let isBreakAvailable: Bool
   let isBreakActive: Bool
   let isPauseActive: Bool
@@ -207,12 +208,12 @@ struct ActiveProfileSessionView: View {
           .foregroundStyle(.secondary)
       }
 
-      Text(DateFormatters.formatDurationClock(elapsedTime))
+      Text(DateFormatters.formatDurationClock(displayTime))
         .font(.system(size: 58, weight: .bold, design: .monospaced))
         .lineLimit(1)
         .minimumScaleFactor(0.55)
         .contentTransition(.numericText())
-        .animation(.default, value: elapsedTime)
+        .animation(.default, value: displayTime)
 
       Text(focusMessage)
         .font(.subheadline)
@@ -527,6 +528,7 @@ private struct ActiveSessionPressStyle: ButtonStyle {
   ActiveProfileSessionView(
     profile: BlockedProfiles(name: "Work Focus"),
     elapsedTime: 3665,
+    displayTime: 3665,
     isBreakAvailable: true,
     isBreakActive: false,
     isPauseActive: false,
