@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct ActiveProfileSessionView: View {
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
@@ -54,6 +55,10 @@ struct ActiveProfileSessionView: View {
       return nil
     }
     return StrategyManager.getStrategyFromId(id: strategyId)
+  }
+
+  private var supportingTextColor: Color {
+    colorScheme == .dark ? Color.white.opacity(0.78) : Color.black.opacity(0.66)
   }
 
   var body: some View {
@@ -197,15 +202,15 @@ struct ActiveProfileSessionView: View {
     VStack(spacing: 14) {
       HStack(spacing: 8) {
         BlockingStrategyIconImage(strategy: blockingStrategy)
-          .font(.system(size: 14, weight: .semibold))
+          .font(.system(size: 20, weight: .semibold))
           .foregroundStyle(.primary)
-          .frame(width: 34, height: 34)
+          .frame(width: 50, height: 50)
           .accessibilityHidden(true)
 
         Text(strategyName)
-          .font(.subheadline)
-          .fontWeight(.semibold)
-          .foregroundStyle(.secondary)
+          .font(.headline)
+          .fontWeight(.bold)
+          .foregroundStyle(supportingTextColor)
       }
 
       Text(DateFormatters.formatDurationClock(displayTime))
@@ -216,9 +221,9 @@ struct ActiveProfileSessionView: View {
         .animation(.default, value: displayTime)
 
       Text(focusMessage)
-        .font(.subheadline)
-        .fontWeight(.semibold)
-        .foregroundStyle(.secondary)
+        .font(.headline)
+        .fontWeight(.bold)
+        .foregroundStyle(supportingTextColor)
         .multilineTextAlignment(.center)
         .lineLimit(2)
         .contentTransition(.opacity)
