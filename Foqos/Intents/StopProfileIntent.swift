@@ -14,6 +14,10 @@ struct StopProfileIntent: AppIntent {
 
   static var title: LocalizedStringResource = "Stop Foqos Profile"
 
+  static var description = IntentDescription(
+    "Stop a Foqos blocking profile."
+  )
+
   @MainActor
   func perform() async throws -> some IntentResult {
     let strategyManager = StrategyManager.shared
