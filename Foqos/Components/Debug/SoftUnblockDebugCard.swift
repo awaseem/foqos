@@ -88,6 +88,9 @@ struct SoftUnblockDiagnostics {
     if let activeSession = store.activeSession {
       markdown += "- **Grant Session ID:** \(activeSession.sessionId)\n"
       markdown += "- **Grant Profile ID:** \(activeSession.profileId.uuidString)\n"
+      markdown += "- **Maximum Unblocks:** \(activeSession.maximumUnblockCount)\n"
+      markdown += "- **Used Unblocks:** \(activeSession.usedUnblockCount)\n"
+      markdown += "- **Remaining Unblocks:** \(activeSession.remainingUnblockCount)\n"
     }
 
     if let sharedSession {
@@ -208,6 +211,7 @@ struct SoftUnblockDiagnostics {
     if let configuration {
       markdown +=
         "- **\(label) Access Duration:** \(configuration.accessDurationInMinutes) minutes\n"
+      markdown += "- **\(label) Maximum Unblocks:** \(configuration.maximumUnblockCount)\n"
     }
   }
 
@@ -245,6 +249,9 @@ struct SoftUnblockDebugCard: View {
       if let activeSession = diagnostics.store.activeSession {
         DebugRow(label: "Grant Session ID", value: activeSession.sessionId)
         DebugRow(label: "Grant Profile ID", value: activeSession.profileId.uuidString)
+        DebugRow(label: "Maximum Unblocks", value: "\(activeSession.maximumUnblockCount)")
+        DebugRow(label: "Used Unblocks", value: "\(activeSession.usedUnblockCount)")
+        DebugRow(label: "Remaining Unblocks", value: "\(activeSession.remainingUnblockCount)")
       }
 
       if let sharedSession = diagnostics.sharedSession {
@@ -304,6 +311,10 @@ struct SoftUnblockDebugCard: View {
             value: duration(profile.modelConfiguration)
           )
           DebugRow(
+            label: "Model Unblock Limit",
+            value: unblockLimit(profile.modelConfiguration)
+          )
+          DebugRow(
             label: "Shared Snapshot",
             value: "\(profile.sharedSnapshot != nil)"
           )
@@ -318,6 +329,10 @@ struct SoftUnblockDebugCard: View {
           DebugRow(
             label: "Shared Duration",
             value: duration(profile.sharedConfiguration)
+          )
+          DebugRow(
+            label: "Shared Unblock Limit",
+            value: unblockLimit(profile.sharedConfiguration)
           )
           DebugRow(label: "Model/Shared Match", value: "\(profile.isInSync)")
         }
@@ -425,6 +440,10 @@ struct SoftUnblockDebugCard: View {
 
   private func duration(_ configuration: SoftUnblockStrategyData?) -> String {
     configuration.map { "\($0.accessDurationInMinutes) minutes" } ?? "Undecodable"
+  }
+
+  private func unblockLimit(_ configuration: SoftUnblockStrategyData?) -> String {
+    configuration.map { "\($0.maximumUnblockCount)" } ?? "Undecodable"
   }
 
   private func format(_ date: Date) -> String {

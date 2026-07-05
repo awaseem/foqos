@@ -97,8 +97,16 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     let configuration = SoftUnblockStrategyData.decode(snapshot.strategyData)
+    guard session.remainingUnblockCount > 0 else {
+      return exhaustedSoftUnblockConfiguration(maximumUnblockCount: session.maximumUnblockCount)
+    }
+
     let accessMinutes = configuration.accessDurationInMinutes
     let buttonText = "Open for \(accessMinutes)m"
+    let remainingText =
+      session.remainingUnblockCount == 1
+      ? "1 unblock remaining."
+      : "\(session.remainingUnblockCount) unblocks remaining."
 
     return ShieldConfiguration(
       backgroundBlurStyle: .dark,
@@ -109,7 +117,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(
-        text: presentation.subtitle,
+        text: "\(presentation.subtitle) \(remainingText)",
         color: UIColor.white.withAlphaComponent(0.88)
       ),
       primaryButtonLabel: ShieldConfiguration.Label(
@@ -121,6 +129,35 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         text: "Back",
         color: .white
       )
+    )
+  }
+
+  private func exhaustedSoftUnblockConfiguration(
+    maximumUnblockCount: Int
+  ) -> ShieldConfiguration {
+    let usageText =
+      maximumUnblockCount == 1
+      ? "The unblock for this session has already been used."
+      : "All \(maximumUnblockCount) unblocks for this session have been used."
+
+    return ShieldConfiguration(
+      backgroundBlurStyle: .dark,
+      backgroundColor: UIColor(ThemeManager.shared.themeColor),
+      icon: makeEmojiIcon("🔒", size: 96),
+      title: ShieldConfiguration.Label(
+        text: "No unblocks remaining",
+        color: .white
+      ),
+      subtitle: ShieldConfiguration.Label(
+        text: usageText,
+        color: UIColor.white.withAlphaComponent(0.88)
+      ),
+      primaryButtonLabel: ShieldConfiguration.Label(
+        text: "Back",
+        color: .black
+      ),
+      primaryButtonBackgroundColor: .white,
+      secondaryButtonLabel: nil
     )
   }
 

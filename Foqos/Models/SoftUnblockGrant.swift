@@ -32,4 +32,10 @@ struct SoftUnblockGrant: Codable, Equatable, Identifiable {
 struct SoftUnblockSessionState: Codable, Equatable {
   let sessionId: String
   let profileId: UUID
+  let maximumUnblockCount: Int
+  var usedUnblockCount: Int
+
+  var remainingUnblockCount: Int {
+    max(maximumUnblockCount - usedUnblockCount, 0)
+  }
 }

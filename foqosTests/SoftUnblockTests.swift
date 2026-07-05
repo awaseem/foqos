@@ -5,7 +5,10 @@ import XCTest
 
 final class SoftUnblockTests: XCTestCase {
   func testStrategyConfigurationRoundTrips() {
-    let configuration = SoftUnblockStrategyData(accessDurationInMinutes: 30)
+    let configuration = SoftUnblockStrategyData(
+      accessDurationInMinutes: 30,
+      maximumUnblockCount: 6
+    )
     let encoded = SoftUnblockStrategyData.encode(configuration)
 
     XCTAssertEqual(SoftUnblockStrategyData.decode(encoded), configuration)
@@ -17,6 +20,10 @@ final class SoftUnblockTests: XCTestCase {
     XCTAssertEqual(
       configuration.accessDurationInMinutes,
       SoftUnblockStrategyData.defaultDurationInMinutes
+    )
+    XCTAssertEqual(
+      configuration.maximumUnblockCount,
+      SoftUnblockStrategyData.defaultMaximumUnblockCount
     )
   }
 

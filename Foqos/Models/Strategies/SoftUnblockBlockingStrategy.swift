@@ -6,7 +6,7 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
 
   var name: String = "Soft Unblock"
   var description: String =
-    "Start manually, then request temporary access to individual blocked apps or categories from their shields."
+    "Choose a limited number of temporary app or category unblocks, then request them directly from their shields."
   var iconAssetName: String = "ShieldSticker"
   var color: Color = .purple
 
@@ -27,15 +27,10 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    PauseDurationView(
+    SoftUnblockConfigurationView(
       profileName: profile.name,
-      title: "Access Duration",
-      description: "Select how long a shield grant should open an app or category.",
-      onDurationSelected: { accessDurationInMinutes in
-        let configuration = SoftUnblockStrategyData(
-          accessDurationInMinutes: accessDurationInMinutes
-        )
-
+      initialConfiguration: SoftUnblockStrategyData.decode(profile.strategyData),
+      onStart: { configuration in
         guard let data = SoftUnblockStrategyData.encode(configuration) else {
           self.onErrorMessage?("Failed to save the soft-unblock configuration.")
           return
@@ -63,7 +58,8 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
         SoftUnblockGrantScheduler.stopAll()
         SoftUnblockGrantStore.beginSession(
           sessionId: activeSession.id,
-          profileId: profile.id
+          profileId: profile.id,
+          maximumUnblockCount: configuration.maximumUnblockCount
         )
         self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
         self.onSessionCreation?(.started(activeSession))

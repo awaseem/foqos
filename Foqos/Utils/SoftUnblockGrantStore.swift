@@ -21,23 +21,53 @@ enum SoftUnblockGrantStore {
     return try? JSONDecoder().decode(SoftUnblockSessionState.self, from: data)
   }
 
-  static func beginSession(sessionId: String, profileId: UUID) {
+  static func beginSession(
+    sessionId: String,
+    profileId: UUID,
+    maximumUnblockCount: Int
+  ) {
     clearAll()
 
-    let state = SoftUnblockSessionState(sessionId: sessionId, profileId: profileId)
-    guard let data = try? JSONEncoder().encode(state) else { return }
-    suite.set(data, forKey: activeSessionKey)
+    let state = SoftUnblockSessionState(
+      sessionId: sessionId,
+      profileId: profileId,
+      maximumUnblockCount: min(max(maximumUnblockCount, 1), 10),
+      usedUnblockCount: 0
+    )
+    saveActiveSession(state)
   }
 
-  static func add(_ grant: SoftUnblockGrant) -> Bool {
-    guard isActive(sessionId: grant.sessionId, profileId: grant.profileId),
-      let data = try? JSONEncoder().encode(grant)
+  static func issue(_ grant: SoftUnblockGrant) -> Bool {
+    guard var session = activeSession,
+      session.sessionId == grant.sessionId,
+      session.profileId == grant.profileId,
+      session.remainingUnblockCount > 0,
+      let grantData = try? JSONEncoder().encode(grant)
     else {
       return false
     }
 
-    suite.set(data, forKey: grantKey(sessionId: grant.sessionId, grantId: grant.id))
+    session.usedUnblockCount += 1
+    guard let sessionData = try? JSONEncoder().encode(session) else { return false }
+
+    suite.set(grantData, forKey: grantKey(sessionId: grant.sessionId, grantId: grant.id))
+    suite.set(sessionData, forKey: activeSessionKey)
     return true
+  }
+
+  static func rollbackIssuedGrant(id: UUID, sessionId: String) {
+    guard grant(id: id, sessionId: sessionId) != nil else { return }
+    removeGrant(id: id, sessionId: sessionId)
+
+    guard var session = activeSession,
+      session.sessionId == sessionId,
+      session.usedUnblockCount > 0
+    else {
+      return
+    }
+
+    session.usedUnblockCount -= 1
+    saveActiveSession(session)
   }
 
   static func grant(id: UUID, sessionId: String) -> SoftUnblockGrant? {
@@ -82,7 +112,8 @@ enum SoftUnblockGrantStore {
   }
 
   static func isActive(sessionId: String, profileId: UUID) -> Bool {
-    activeSession == SoftUnblockSessionState(sessionId: sessionId, profileId: profileId)
+    guard let activeSession else { return false }
+    return activeSession.sessionId == sessionId && activeSession.profileId == profileId
   }
 
   static func debugSnapshot() -> DebugSnapshot {
@@ -135,5 +166,10 @@ enum SoftUnblockGrantStore {
 
   private static func grantKey(sessionId: String, grantId: UUID) -> String {
     "\(grantSessionKeyPrefix(sessionId: sessionId))\(grantId.uuidString)"
+  }
+
+  private static func saveActiveSession(_ session: SoftUnblockSessionState) {
+    guard let data = try? JSONEncoder().encode(session) else { return }
+    suite.set(data, forKey: activeSessionKey)
   }
 }

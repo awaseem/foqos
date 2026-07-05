@@ -70,7 +70,7 @@ class ShieldActionExtension: ShieldActionDelegate {
       expiresAt: now.addingTimeInterval(TimeInterval(durationInMinutes * 60))
     )
 
-    guard SoftUnblockGrantStore.add(grant) else {
+    guard SoftUnblockGrantStore.issue(grant) else {
       completionHandler(.close)
       return
     }
@@ -78,7 +78,10 @@ class ShieldActionExtension: ShieldActionDelegate {
     do {
       try SoftUnblockGrantScheduler.scheduleGrant(grant)
     } catch {
-      SoftUnblockGrantStore.removeGrant(id: grant.id, sessionId: grant.sessionId)
+      SoftUnblockGrantStore.rollbackIssuedGrant(
+        id: grant.id,
+        sessionId: grant.sessionId
+      )
       log.error("Failed to schedule a soft-unblock grant: \(error.localizedDescription)")
     }
 
