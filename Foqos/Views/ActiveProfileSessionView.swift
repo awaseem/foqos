@@ -235,7 +235,7 @@ struct ActiveProfileSessionView: View {
 
       if profile.blockingStrategyId == SoftUnblockBlockingStrategy.id {
         SoftUnblockActiveGrantsCard(profileId: profile.id)
-          .padding(.top, 8)
+          .padding(.top, 16)
       }
     }
     .padding(.horizontal, 12)
@@ -318,35 +318,29 @@ private struct SoftUnblockActiveGrantsCard: View {
       let overflowCount = activeGrants.count - visibleGrants.count
 
       if !activeGrants.isEmpty {
-        VStack(alignment: .leading, spacing: 12) {
-          Label("Temporary access", systemImage: "hourglass")
-            .font(.headline)
-            .fontWeight(.bold)
-
-          VStack(spacing: 0) {
-            ForEach(Array(visibleGrants.enumerated()), id: \.element.id) { index, grant in
-              if index > 0 {
-                Divider()
-                  .opacity(0.45)
-              }
-
-              SoftUnblockActiveGrantRow(
-                grant: grant,
-                date: timeline.date
-              )
-            }
-
-            if overflowCount > 0 {
+        VStack(spacing: 0) {
+          ForEach(Array(visibleGrants.enumerated()), id: \.element.id) { index, grant in
+            if index > 0 {
               Divider()
                 .opacity(0.45)
-
-              Text("+\(overflowCount) more active")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 10)
             }
+
+            SoftUnblockActiveGrantRow(
+              grant: grant,
+              date: timeline.date
+            )
+          }
+
+          if overflowCount > 0 {
+            Divider()
+              .opacity(0.45)
+
+            Text("+\(overflowCount) more active")
+              .font(.footnote)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 10)
           }
         }
         .padding(16)
