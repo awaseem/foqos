@@ -27,7 +27,7 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
       return
     }
 
-    appBlocker.activateRestrictions(for: profile)
+    applyActiveGrants(for: profile)
     log.info("Started soft-unblock grant \(grant.id.uuidString)")
   }
 
@@ -61,6 +61,22 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
 
   private func expire(_ grant: SoftUnblockGrant, for profile: SharedData.ProfileSnapshot) {
     SoftUnblockGrantStore.removeGrant(id: grant.id, sessionId: grant.sessionId)
-    appBlocker.activateRestrictions(for: profile)
+    applyActiveGrants(for: profile)
+  }
+
+  private func applyActiveGrants(for profile: SharedData.ProfileSnapshot) {
+    let activeGrants = SoftUnblockGrantStore.activeGrants(for: profile.id)
+    let unblockedApplicationTokens = Set(
+      activeGrants.compactMap(\.resource.applicationToken)
+    )
+    let unblockedCategoryTokens = Set(
+      activeGrants.compactMap(\.resource.categoryToken)
+    )
+
+    appBlocker.activateSoftUnblockRestrictions(
+      for: profile,
+      unblockedApplicationTokens: unblockedApplicationTokens,
+      unblockedCategoryTokens: unblockedCategoryTokens
+    )
   }
 }
