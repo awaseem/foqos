@@ -1,6 +1,14 @@
 import Foundation
 
 enum SoftUnblockGrantStore {
+  struct DebugSnapshot: Equatable {
+    let activeSession: SoftUnblockSessionState?
+    let hasStoredActiveSession: Bool
+    let grants: [SoftUnblockGrant]
+    let storedGrantEntryCount: Int
+    let undecodableGrantKeys: [String]
+  }
+
   private static let suite = UserDefaults(
     suiteName: "group.dev.ambitionsoftware.foqos"
   )!
@@ -21,14 +29,15 @@ enum SoftUnblockGrantStore {
     suite.set(data, forKey: activeSessionKey)
   }
 
-  static func add(_ grant: SoftUnblockGrant) {
+  static func add(_ grant: SoftUnblockGrant) -> Bool {
     guard isActive(sessionId: grant.sessionId, profileId: grant.profileId),
       let data = try? JSONEncoder().encode(grant)
     else {
-      return
+      return false
     }
 
     suite.set(data, forKey: grantKey(sessionId: grant.sessionId, grantId: grant.id))
+    return true
   }
 
   static func grant(id: UUID, sessionId: String) -> SoftUnblockGrant? {
@@ -54,11 +63,8 @@ enum SoftUnblockGrantStore {
     activeGrants(for: profileId, at: date).contains { $0.resource == resource }
   }
 
-  @discardableResult
-  static func removeGrant(id: UUID, sessionId: String) -> SoftUnblockGrant? {
-    let existingGrant = grant(id: id, sessionId: sessionId)
+  static func removeGrant(id: UUID, sessionId: String) {
     suite.removeObject(forKey: grantKey(sessionId: sessionId, grantId: id))
-    return existingGrant
   }
 
   static func endSession(sessionId: String) {
@@ -77,6 +83,34 @@ enum SoftUnblockGrantStore {
 
   static func isActive(sessionId: String, profileId: UUID) -> Bool {
     activeSession == SoftUnblockSessionState(sessionId: sessionId, profileId: profileId)
+  }
+
+  static func debugSnapshot() -> DebugSnapshot {
+    let storedValues = suite.dictionaryRepresentation()
+    let grantEntries = storedValues.filter { key, _ in
+      key.hasPrefix(grantKeyPrefix)
+    }
+    var grants: [SoftUnblockGrant] = []
+    var undecodableGrantKeys: [String] = []
+
+    for (key, value) in grantEntries {
+      guard let data = value as? Data,
+        let grant = try? JSONDecoder().decode(SoftUnblockGrant.self, from: data)
+      else {
+        undecodableGrantKeys.append(key)
+        continue
+      }
+
+      grants.append(grant)
+    }
+
+    return DebugSnapshot(
+      activeSession: activeSession,
+      hasStoredActiveSession: storedValues[activeSessionKey] != nil,
+      grants: grants.sorted { $0.createdAt < $1.createdAt },
+      storedGrantEntryCount: grantEntries.count,
+      undecodableGrantKeys: undecodableGrantKeys.sorted()
+    )
   }
 
   private static func grants(for sessionId: String) -> [SoftUnblockGrant] {
@@ -102,5 +136,4 @@ enum SoftUnblockGrantStore {
   private static func grantKey(sessionId: String, grantId: UUID) -> String {
     "\(grantSessionKeyPrefix(sessionId: sessionId))\(grantId.uuidString)"
   }
-
 }

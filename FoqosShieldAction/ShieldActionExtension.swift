@@ -70,18 +70,15 @@ class ShieldActionExtension: ShieldActionDelegate {
       expiresAt: now.addingTimeInterval(TimeInterval(durationInMinutes * 60))
     )
 
+    guard SoftUnblockGrantStore.add(grant) else {
+      completionHandler(.close)
+      return
+    }
+
     do {
-      try SoftUnblockGrantScheduler.scheduleExpiration(for: grant)
-      SoftUnblockGrantStore.add(grant)
-
-      guard SoftUnblockGrantStore.grant(id: grant.id, sessionId: grant.sessionId) != nil else {
-        SoftUnblockGrantScheduler.stopExpiration(for: grant)
-        completionHandler(.close)
-        return
-      }
-
-      AppBlockerUtil().activateRestrictions(for: snapshot)
+      try SoftUnblockGrantScheduler.scheduleGrant(grant)
     } catch {
+      SoftUnblockGrantStore.removeGrant(id: grant.id, sessionId: grant.sessionId)
       log.error("Failed to schedule a soft-unblock grant: \(error.localizedDescription)")
     }
 

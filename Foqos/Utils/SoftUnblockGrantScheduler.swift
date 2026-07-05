@@ -10,14 +10,20 @@ enum SoftUnblockGrantScheduler {
     let grantId: UUID
   }
 
-  static func scheduleExpiration(for grant: SoftUnblockGrant) throws {
+  static func scheduleGrant(_ grant: SoftUnblockGrant) throws {
     let center = DeviceActivityCenter()
     let activityName = activityName(for: grant)
     let calendar = Calendar.current
     let now = Date()
-    let intervalStart = calendar.dateComponents([.hour, .minute, .second], from: now)
+    let dateComponents: Set<Calendar.Component> = [
+      .year, .month, .day, .hour, .minute, .second,
+    ]
+    let intervalStart = calendar.dateComponents(
+      dateComponents,
+      from: calendar.startOfDay(for: now)
+    )
     let intervalEnd = calendar.dateComponents(
-      [.hour, .minute, .second],
+      dateComponents,
       from: max(grant.expiresAt, now.addingTimeInterval(60))
     )
     let schedule = DeviceActivitySchedule(
@@ -26,12 +32,7 @@ enum SoftUnblockGrantScheduler {
       repeats: false
     )
 
-    center.stopMonitoring([activityName])
     try center.startMonitoring(activityName, during: schedule)
-  }
-
-  static func stopExpiration(for grant: SoftUnblockGrant) {
-    DeviceActivityCenter().stopMonitoring([activityName(for: grant)])
   }
 
   static func stopAll(sessionId: String? = nil) {

@@ -11,16 +11,24 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
 
   private let appBlocker = AppBlockerUtil()
 
-  func getDeviceActivityName(from profileId: String) -> DeviceActivityName {
-    DeviceActivityName(rawValue: "\(SoftUnblockGrantTimerActivity.id):\(profileId)")
-  }
-
   func profileId(from activityName: DeviceActivityName) -> String {
     SoftUnblockGrantScheduler.identifiers(from: activityName)?.profileId.uuidString ?? ""
   }
 
   func start(for profile: SharedData.ProfileSnapshot) {
-    log.info("Started a soft-unblock expiration monitor for profile \(profile.id.uuidString)")
+    log.error("Soft-unblock expiration monitor started without grant identifiers")
+  }
+
+  func start(for profile: SharedData.ProfileSnapshot, activityName: DeviceActivityName) {
+    guard let grant = activeGrant(for: activityName) else { return }
+
+    guard !grant.isExpired() else {
+      expire(grant, for: profile)
+      return
+    }
+
+    appBlocker.activateRestrictions(for: profile)
+    log.info("Started soft-unblock grant \(grant.id.uuidString)")
   }
 
   func stop(for profile: SharedData.ProfileSnapshot) {
@@ -28,31 +36,31 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
   }
 
   func stop(for profile: SharedData.ProfileSnapshot, activityName: DeviceActivityName) {
+    guard let grant = activeGrant(for: activityName) else { return }
+    guard grant.isExpired() else { return }
+
+    expire(grant, for: profile)
+    log.info("Expired soft-unblock grant \(grant.id.uuidString)")
+  }
+
+  private func activeGrant(for activityName: DeviceActivityName) -> SoftUnblockGrant? {
     guard let identifiers = SoftUnblockGrantScheduler.identifiers(from: activityName),
       SoftUnblockGrantStore.isActive(
         sessionId: identifiers.sessionId,
         profileId: identifiers.profileId
-      ),
-      let grant = SoftUnblockGrantStore.grant(
-        id: identifiers.grantId,
-        sessionId: identifiers.sessionId
       )
     else {
-      return
+      return nil
     }
 
-    guard grant.isExpired() else {
-      do {
-        try SoftUnblockGrantScheduler.scheduleExpiration(for: grant)
-      } catch {
-        log.error("Failed to reschedule a soft-unblock expiration: \(error.localizedDescription)")
-      }
-      return
-    }
+    return SoftUnblockGrantStore.grant(
+      id: identifiers.grantId,
+      sessionId: identifiers.sessionId
+    )
+  }
 
+  private func expire(_ grant: SoftUnblockGrant, for profile: SharedData.ProfileSnapshot) {
     SoftUnblockGrantStore.removeGrant(id: grant.id, sessionId: grant.sessionId)
     appBlocker.activateRestrictions(for: profile)
-
-    log.info("Expired soft-unblock grant \(grant.id.uuidString)")
   }
 }
