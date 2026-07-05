@@ -146,7 +146,7 @@ struct ProfileSummaryContent: View {
             .foregroundStyle(.primary)
             .lineLimit(1)
 
-          if isActive {
+          if showsActiveChip {
             activeChip
           }
         }
@@ -172,6 +172,10 @@ struct ProfileSummaryContent: View {
       .padding(.horizontal, 7)
       .padding(.vertical, 4)
       .background(Color(.secondarySystemFill), in: Capsule())
+  }
+
+  private var showsActiveChip: Bool {
+    isActive && !DeviceLayoutUtil.hasCompactEffectiveWidth
   }
 }
 
@@ -331,7 +335,7 @@ private struct ProfileSummaryCompactIndicators: View {
       values.append("Breaks")
     }
     if enableStrictMode {
-      values.append("Strict")
+      values.append("Deletion Blocked")
     }
     if enableLiveActivity {
       values.append("Live Activity")

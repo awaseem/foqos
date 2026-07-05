@@ -20,6 +20,7 @@ class StrategyManager: ObservableObject {
   ]
 
   @Published var elapsedTime: TimeInterval = 0
+  @Published var sessionDisplayTime: TimeInterval = 0
   @Published var timer: Timer?
   @Published var activeSession: BlockedProfileSession?
 
@@ -75,6 +76,10 @@ class StrategyManager: ObservableObject {
         liveActivityManager.startSessionActivity(session: session)
       }
     } else {
+      stopTimer()
+      elapsedTime = 0
+      sessionDisplayTime = 0
+
       // Close live activity if no session is active and a scheduled session might have ended
       liveActivityManager.endSessionActivity()
     }
@@ -104,36 +109,12 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  private func getPauseDurationInSeconds(for profile: BlockedProfiles) -> TimeInterval {
-    guard let strategyData = profile.strategyData else {
-      return TimeInterval(15 * 60)  // Default 15 minutes
-    }
-    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
-    return TimeInterval(pauseData.pauseDurationInMinutes * 60)
-  }
-
   func startTimer() {
-    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-      guard let session = self.activeSession else { return }
+    stopTimer()
+    updateSessionTimes()
 
-      if self.isPauseActive {
-        // Calculate pause time remaining (countdown)
-        guard let pauseStartTime = session.pauseStartTime else { return }
-        let timeSincePauseStart = Date().timeIntervalSince(pauseStartTime)
-        let pauseDurationInSeconds = self.getPauseDurationInSeconds(for: session.blockedProfile)
-        self.elapsedTime = max(0, pauseDurationInSeconds - timeSincePauseStart)
-      } else if session.isBreakActive {
-        // Calculate break time remaining (countdown)
-        guard let breakStartTime = session.breakStartTime else { return }
-        let timeSinceBreakStart = Date().timeIntervalSince(breakStartTime)
-        let breakDurationInSeconds = TimeInterval(session.blockedProfile.breakTimeInMinutes * 60)
-        self.elapsedTime = max(0, breakDurationInSeconds - timeSinceBreakStart)
-      } else {
-        // Calculate session elapsed time
-        let rawElapsedTime = Date().timeIntervalSince(session.startTime)
-        let breakDuration = self.calculateBreakDuration()
-        self.elapsedTime = rawElapsedTime - breakDuration
-      }
+    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+      self?.updateSessionTimes()
     }
   }
 
@@ -142,20 +123,20 @@ class StrategyManager: ObservableObject {
     timer = nil
   }
 
-  private func calculateBreakDuration() -> TimeInterval {
+  private func updateSessionTimes(at date: Date = Date()) {
     guard let session = activeSession else {
-      return 0
+      elapsedTime = 0
+      sessionDisplayTime = 0
+      return
     }
 
-    guard let breakStartTime = session.breakStartTime else {
-      return 0
-    }
-
-    if let breakEndTime = session.breakEndTime {
-      return breakEndTime.timeIntervalSince(breakStartTime)
-    }
-
-    return 0
+    let focusTime = SessionTimeCalculator.elapsedFocusTime(for: session, at: date)
+    elapsedTime = focusTime
+    sessionDisplayTime = SessionTimeCalculator.displayedTime(
+      for: session,
+      elapsedFocusTime: focusTime,
+      at: date
+    )
   }
 
   func toggleSessionFromDeeplink(
@@ -552,6 +533,7 @@ class StrategyManager: ObservableObject {
 
     self.stopTimer()
     self.elapsedTime = 0
+    self.sessionDisplayTime = 0
 
     // Refresh widgets when session ends
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")

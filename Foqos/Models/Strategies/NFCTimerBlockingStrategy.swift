@@ -13,8 +13,6 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   var usesNFC: Bool = true
   var hasTimer: Bool = true
 
-  var hidden: Bool = false
-
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 

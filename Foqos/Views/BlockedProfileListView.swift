@@ -48,10 +48,14 @@ struct BlockedProfileListView: View {
 
               Welcome(
                 onGuidedTap: {
-                  profileCreationDestination = .guided
+                  if canCreateProfiles {
+                    profileCreationDestination = .guided
+                  }
                 },
                 onAdvancedTap: {
-                  profileCreationDestination = .advanced
+                  if canCreateProfiles {
+                    profileCreationDestination = .advanced
+                  }
                 }
               )
 
@@ -108,20 +112,22 @@ struct BlockedProfileListView: View {
               Image(systemName: "ellipsis.circle")
             }
           }
-          Menu {
-            Button {
-              profileCreationDestination = .guided
-            } label: {
-              Label("Guided Setup", systemImage: "list.bullet.clipboard")
-            }
+          if canCreateProfiles {
+            Menu {
+              Button {
+                profileCreationDestination = .guided
+              } label: {
+                Label("Guided Setup", systemImage: "list.bullet.clipboard")
+              }
 
-            Button {
-              profileCreationDestination = .advanced
+              Button {
+                profileCreationDestination = .advanced
+              } label: {
+                Label("Full Profile Editor", systemImage: "slider.horizontal.3")
+              }
             } label: {
-              Label("Full Profile Editor", systemImage: "slider.horizontal.3")
+              Image(systemName: "plus")
             }
-          } label: {
-            Image(systemName: "plus")
           }
         }
       }
@@ -154,6 +160,10 @@ struct BlockedProfileListView: View {
 
   private var activeSessionProfileId: UUID? {
     activeSessions.first?.blockedProfile.id
+  }
+
+  private var canCreateProfiles: Bool {
+    return activeSessionProfileId == nil
   }
 
   private func deleteProfiles(at offsets: IndexSet) {

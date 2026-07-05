@@ -4,14 +4,14 @@ import SwiftUI
 class ShortcutTimerBlockingStrategy: BlockingStrategy {
   static var id: String = "ShortcutTimerBlockingStrategy"
 
-  var name: String = "Timer"
-  var description: String = "Runs from a Shortcut and ends automatically when the timer finishes."
-  var iconAssetName: String = "NFC+TimerSticker"
+  var name: String = "Timer + Manual"
+  var description: String =
+    "Choose how long blocking should last. Stop early with the Stop button."
+  var iconAssetName: String = "Manual + Timer"
   var color: Color = .mint
 
   var hasTimer: Bool = true
-
-  var hidden: Bool = true
+  var startsManually: Bool = true
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
@@ -27,6 +27,30 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
+    if forceStart == true {
+      return startTimerSession(context: context, profile: profile, forceStart: true)
+    }
+
+    return TimerDurationView(
+      profileName: profile.name,
+      onDurationSelected: { duration in
+        if let strategyTimerData = StrategyTimerData.toData(from: duration) {
+          profile.strategyData = strategyTimerData
+          profile.updatedAt = Date()
+          BlockedProfiles.updateSnapshot(for: profile)
+          try? context.save()
+        }
+
+        _ = self.startTimerSession(context: context, profile: profile, forceStart: false)
+      }
+    )
+  }
+
+  private func startTimerSession(
+    context: ModelContext,
+    profile: BlockedProfiles,
+    forceStart: Bool
+  ) -> (any View)? {
     guard profile.strategyData != nil else {
       self.onErrorMessage?("No timer duration specified for this profile")
       return nil
@@ -36,7 +60,7 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
       in: context,
       withTag: profile.blockingStrategyId ?? "ManualBlockingStrategy",
       withProfile: profile,
-      forceStart: forceStart ?? true
+      forceStart: forceStart
     )
 
     DeviceActivityCenterUtil.startStrategyTimerActivity(for: profile)

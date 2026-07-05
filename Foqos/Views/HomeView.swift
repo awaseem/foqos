@@ -85,6 +85,10 @@ struct HomeView: View {
     return strategyManager.isPauseActive
   }
 
+  private var canCreateProfiles: Bool {
+    return !isBlocking
+  }
+
   var body: some View {
     ScrollView(showsIndicators: false) {
       VStack(alignment: .leading, spacing: 30) {
@@ -119,10 +123,14 @@ struct HomeView: View {
         if profiles.isEmpty {
           Welcome(
             onGuidedTap: {
-              showGuidedProfileCreationView = true
+              if canCreateProfiles {
+                showGuidedProfileCreationView = true
+              }
             },
             onAdvancedTap: {
-              showNewProfileView = true
+              if canCreateProfiles {
+                showNewProfileView = true
+              }
             }
           )
           .padding(.horizontal, 16)
@@ -143,6 +151,7 @@ struct HomeView: View {
             isBlocking: isBlocking,
             activeSessionProfileId: activeSessionProfileId,
             elapsedTime: strategyManager.elapsedTime,
+            isPauseActive: isPauseActive,
             onManageTapped: {
               isProfileListPresent = true
             },
@@ -170,7 +179,9 @@ struct HomeView: View {
       if !profiles.isEmpty {
         HomeProfileLauncher(
           activeProfile: isBlocking ? strategyManager.activeSession?.blockedProfile : nil,
-          elapsedTime: strategyManager.elapsedTime,
+          displayTime: strategyManager.sessionDisplayTime,
+          isBreakActive: isBreakActive,
+          isPauseActive: isPauseActive,
           onStartTapped: {
             showStartProfilePicker = true
           },
@@ -233,9 +244,8 @@ struct HomeView: View {
       }
     }
     .onReceive(strategyManager.$errorMessage) { errorMessage in
-      if let message = errorMessage {
-        showErrorAlert(message: message)
-      }
+      guard let message = errorMessage, !showActiveProfileSessionView else { return }
+      showErrorAlert(message: message)
     }
     .onAppear {
       onAppearApp()
@@ -248,7 +258,7 @@ struct HomeView: View {
           runAlertPrimaryAction(for: alert)
         }
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .fullScreenCover(isPresented: $showIntroScreen) {
       IntroView {
@@ -260,6 +270,7 @@ struct HomeView: View {
         ActiveProfileSessionView(
           profile: activeProfile,
           elapsedTime: strategyManager.elapsedTime,
+          displayTime: strategyManager.sessionDisplayTime,
           isBreakAvailable: isBreakAvailable,
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
@@ -311,7 +322,7 @@ struct HomeView: View {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()
@@ -415,6 +426,7 @@ struct HomeView: View {
 
   private func dismissAlert() {
     showingAlert = false
+    strategyManager.errorMessage = nil
   }
 }
 

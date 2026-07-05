@@ -208,7 +208,8 @@ struct TimerDurationView: View {
 
   private func handleConfirm() {
     let data = StrategyTimerData(
-      durationInMinutes: Int(durationMinutes), hideStopButton: hideStopButton)
+      durationInMinutes: Int(durationMinutes), hideStopButton: hideStopButton
+    )
     onDurationSelected(data)
     dismiss()
   }
@@ -228,7 +229,7 @@ struct TimerDurationPreviewSheetHost: View {
             }
           )
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
   }
 }

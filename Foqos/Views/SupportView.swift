@@ -1,18 +1,27 @@
+import StoreKit
 import SwiftUI
 
-let THREADS_URL = "https://www.threads.com/@softwarecuddler"
-let TWITTER_URL = "https://x.com/softwarecuddler"
-let REDDIT_URL = "https://www.reddit.com/user/waseema393/"
-let LINKEDIN_URL = "https://www.linkedin.com/in/aliw"
-let DONATE_URL = "https://buymeacoffee.com/softwarecuddler"  // You can replace this with your actual donation URL
+private let threadsURL = URL(string: "https://www.threads.com/@softwarecuddler")!
+private let twitterURL = URL(string: "https://x.com/softwarecuddler")!
+private let redditURL = URL(string: "https://www.reddit.com/user/waseema393/")!
+private let linkedinURL = URL(string: "https://www.linkedin.com/in/aliw")!
+private let donateURL = URL(string: "https://www.buymeacoffee.com/ambitionsoftware")!
 
 struct SupportView: View {
   @EnvironmentObject var donationManager: TipManager
   @EnvironmentObject var themeManager: ThemeManager
 
+  private let isUnitedStatesStorefrontOverride: Bool?
+
+  @State private var isUnitedStatesStorefront = false
   @State private var stampScale: CGFloat = 0.1
   @State private var stampRotation: Double = 0
   @State private var stampOpacity: Double = 0.0
+
+  init(isUnitedStatesStorefrontOverride: Bool? = nil) {
+    self.isUnitedStatesStorefrontOverride = isUnitedStatesStorefrontOverride
+    _isUnitedStatesStorefront = State(initialValue: isUnitedStatesStorefrontOverride ?? false)
+  }
 
   var body: some View {
     // Thank you stamp image and header
@@ -71,27 +80,27 @@ struct SupportView: View {
         .foregroundColor(.secondary)
 
         HStack(alignment: .center, spacing: 20) {
-          Link(destination: URL(string: THREADS_URL)!) {
+          Link(destination: threadsURL) {
             Image("Threads")
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(width: 24, height: 24)
           }
 
-          Link(destination: URL(string: TWITTER_URL)!) {
+          Link(destination: twitterURL) {
             Image("Twitter")
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(width: 24, height: 24)
           }
-          Link(destination: URL(string: REDDIT_URL)!) {
+          Link(destination: redditURL) {
             Image("Reddit")
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(width: 24, height: 24)
           }
 
-          Link(destination: URL(string: LINKEDIN_URL)!) {
+          Link(destination: linkedinURL) {
             Image("Linkedin")
               .resizable()
               .aspectRatio(contentMode: .fit)
@@ -104,27 +113,55 @@ struct SupportView: View {
 
       Spacer()
 
-      ActionButton(
-        title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
-        backgroundColor: donationManager.hasPurchasedTip ? .gray : themeManager.themeColor,
-        iconName: "heart.fill",
-        iconColor: donationManager.hasPurchasedTip ? .red : nil,
-        isLoading: donationManager.loadingTip,
-        action: {
-          if !donationManager.hasPurchasedTip {
-            donationManager.tip()
+      VStack(spacing: 16) {
+        ActionButton(
+          title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
+          backgroundColor: donationManager.hasPurchasedTip ? .gray : themeManager.themeColor,
+          iconName: "heart.fill",
+          iconColor: donationManager.hasPurchasedTip ? .red : nil,
+          isLoading: donationManager.loadingTip,
+          action: {
+            if !donationManager.hasPurchasedTip {
+              donationManager.tip()
+            }
           }
+        )
+
+        if isUnitedStatesStorefront {
+          Link("Or Buy Me a Coffee", destination: donateURL)
+            .font(.subheadline.weight(.semibold))
+            .foregroundColor(themeManager.themeColor)
         }
-      )
+      }
       .fadeInSlide(delay: 0.6)
     }
     .padding(.horizontal, 20)
+    .task {
+      guard isUnitedStatesStorefrontOverride == nil else {
+        return
+      }
+
+      isUnitedStatesStorefront = await Storefront.current?.countryCode == "USA"
+
+      for await storefront in Storefront.updates {
+        isUnitedStatesStorefront = storefront.countryCode == "USA"
+      }
+    }
   }
 }
 
-#Preview {
+#Preview("United States") {
   NavigationView {
-    SupportView()
+    SupportView(isUnitedStatesStorefrontOverride: true)
       .environmentObject(TipManager())
+      .environmentObject(ThemeManager.shared)
+  }
+}
+
+#Preview("Outside United States") {
+  NavigationView {
+    SupportView(isUnitedStatesStorefrontOverride: false)
+      .environmentObject(TipManager())
+      .environmentObject(ThemeManager.shared)
   }
 }

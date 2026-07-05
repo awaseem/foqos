@@ -2,12 +2,14 @@ import SwiftUI
 import UIKit
 
 struct ActiveProfileSessionView: View {
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
 
   let profile: BlockedProfiles
   let elapsedTime: TimeInterval
+  let displayTime: TimeInterval
   let isBreakAvailable: Bool
   let isBreakActive: Bool
   let isPauseActive: Bool
@@ -16,6 +18,8 @@ struct ActiveProfileSessionView: View {
 
   @State private var showEmergencyView = false
   @State private var showProfileInsights = false
+  @State private var showingAlert = false
+  @State private var alertMessage = ""
   @State private var focusMessageIndex = Self.initialFocusMessageIndex()
 
   private let focusMessageTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
@@ -24,8 +28,8 @@ struct ActiveProfileSessionView: View {
     profile.showStopButton(elapsedTime: elapsedTime)
   }
 
-  private var stopButtonTitle: String {
-    isPauseActive ? "End" : "Stop"
+  private var stopButtonAction: BlockingStrategySessionAction {
+    blockingStrategy?.activeSessionAction(isPauseActive: isPauseActive) ?? .stop()
   }
 
   private var breakButtonTitle: String {
@@ -53,6 +57,10 @@ struct ActiveProfileSessionView: View {
     return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
+  private var supportingTextColor: Color {
+    colorScheme == .dark ? Color.white.opacity(0.78) : Color.black.opacity(0.66)
+  }
+
   var body: some View {
     ZStack {
       background
@@ -74,7 +82,7 @@ struct ActiveProfileSessionView: View {
     }
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
-        .presentationDetents([.height(350)])
+        .presentationDetents([.height(350), .large])
     }
     .sheet(isPresented: $showProfileInsights) {
       ProfileInsightsView(profile: profile)
@@ -83,10 +91,22 @@ struct ActiveProfileSessionView: View {
       BlockingStrategyActionView(
         customView: strategyManager.customStrategyView
       )
-      .presentationDetents([.medium])
+      .presentationDetents([.medium, .large])
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
+    }
+    .onReceive(strategyManager.$errorMessage) { errorMessage in
+      guard let message = errorMessage else { return }
+      alertMessage = message
+      showingAlert = true
+    }
+    .alert("Whoops", isPresented: $showingAlert) {
+      Button("OK", role: .cancel) {
+        dismissAlert()
+      }
+    } message: {
+      Text(alertMessage)
     }
   }
 
@@ -115,11 +135,18 @@ struct ActiveProfileSessionView: View {
           .lineLimit(2)
           .minimumScaleFactor(0.72)
 
-        if let statusMessage {
-          Text(statusMessage)
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
+        if let statusMessage, let statusIconName {
+          HStack(spacing: 6) {
+            Image(statusIconName)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 18, height: 18)
+
+            Text(statusMessage)
+              .font(.subheadline)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+          }
         }
       }
 
@@ -161,32 +188,42 @@ struct ActiveProfileSessionView: View {
     return nil
   }
 
+  private var statusIconName: String? {
+    if isPauseActive {
+      return "PauseStickerIcon"
+    }
+    if isBreakActive {
+      return "CoffeeStickerIcon"
+    }
+    return nil
+  }
+
   private var timerSection: some View {
     VStack(spacing: 14) {
       HStack(spacing: 8) {
         BlockingStrategyIconImage(strategy: blockingStrategy)
-          .font(.system(size: 14, weight: .semibold))
+          .font(.system(size: 20, weight: .semibold))
           .foregroundStyle(.primary)
-          .frame(width: 34, height: 34)
+          .frame(width: 50, height: 50)
           .accessibilityHidden(true)
 
         Text(strategyName)
-          .font(.subheadline)
-          .fontWeight(.semibold)
-          .foregroundStyle(.secondary)
+          .font(.headline)
+          .fontWeight(.bold)
+          .foregroundStyle(supportingTextColor)
       }
 
-      Text(DateFormatters.formatDurationClock(elapsedTime))
+      Text(DateFormatters.formatDurationClock(displayTime))
         .font(.system(size: 58, weight: .bold, design: .monospaced))
         .lineLimit(1)
         .minimumScaleFactor(0.55)
         .contentTransition(.numericText())
-        .animation(.default, value: elapsedTime)
+        .animation(.default, value: displayTime)
 
       Text(focusMessage)
-        .font(.subheadline)
-        .fontWeight(.semibold)
-        .foregroundStyle(.secondary)
+        .font(.headline)
+        .fontWeight(.bold)
+        .foregroundStyle(supportingTextColor)
         .multilineTextAlignment(.center)
         .lineLimit(2)
         .contentTransition(.opacity)
@@ -201,6 +238,7 @@ struct ActiveProfileSessionView: View {
         ActiveSessionActionButton(
           title: breakButtonTitle,
           iconName: "cup.and.heat.waves.fill",
+          imageName: "CoffeeStickerIcon",
           role: isBreakActive ? .warning : .standard,
           requiresLongPress: true,
           action: onBreakTapped
@@ -221,8 +259,9 @@ struct ActiveProfileSessionView: View {
 
         if showStopButton {
           ActiveSessionActionButton(
-            title: stopButtonTitle,
-            iconName: "stop.fill",
+            title: stopButtonAction.title,
+            iconName: stopButtonAction.systemImageName,
+            imageName: stopButtonAction.assetImageName,
             role: .standard,
             action: onStopTapped
           )
@@ -236,6 +275,11 @@ struct ActiveProfileSessionView: View {
     withAnimation(.easeInOut(duration: 0.35)) {
       focusMessageIndex = (focusMessageIndex + 1) % FocusMessages.messages.count
     }
+  }
+
+  private func dismissAlert() {
+    showingAlert = false
+    strategyManager.errorMessage = nil
   }
 
   private static func initialFocusMessageIndex() -> Int {
@@ -394,6 +438,7 @@ private enum ActiveSessionActionRole {
 private struct ActiveSessionActionButton: View {
   let title: String
   let iconName: String
+  var imageName: String? = nil
   let role: ActiveSessionActionRole
   var requiresLongPress = false
   let action: () -> Void
@@ -435,8 +480,7 @@ private struct ActiveSessionActionButton: View {
 
   private var label: some View {
     HStack(spacing: 8) {
-      Image(systemName: iconName)
-        .font(.system(size: 15, weight: .bold))
+      icon
 
       Text(title)
         .font(.headline)
@@ -453,6 +497,19 @@ private struct ActiveSessionActionButton: View {
         .strokeBorder(foregroundColor.opacity(0.22), lineWidth: 1)
     )
     .contentShape(Capsule())
+  }
+
+  @ViewBuilder
+  private var icon: some View {
+    if let imageName {
+      Image(imageName)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 24, height: 24)
+    } else {
+      Image(systemName: iconName)
+        .font(.system(size: 15, weight: .bold))
+    }
   }
 
   private func triggerAction() {
@@ -476,6 +533,7 @@ private struct ActiveSessionPressStyle: ButtonStyle {
   ActiveProfileSessionView(
     profile: BlockedProfiles(name: "Work Focus"),
     elapsedTime: 3665,
+    displayTime: 3665,
     isBreakAvailable: true,
     isBreakActive: false,
     isPauseActive: false,

@@ -34,7 +34,7 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .breaks:
       return "Breaks"
     case .strictSafeguards:
-      return "Strict"
+      return "Protection"
     case .sessionSafeguards:
       return "Session"
     case .notifications:
@@ -55,13 +55,13 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .domains:
       return "Choose domains and how to block them"
     case .strictUnlocks:
-      return "Set unlock rules"
+      return "Set physical unlocks"
     case .schedule:
       return "Add a schedule"
     case .breaks:
       return "Allow breaks"
     case .strictSafeguards:
-      return "Choose strict safeguards"
+      return "Choose session protection"
     case .sessionSafeguards:
       return "Choose session controls"
     case .notifications:
@@ -76,19 +76,25 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .name:
       return "Profiles group the apps, websites, schedules, and rules you want to use together."
     case .strategy:
-      return "Pick the blocking method that fits this profile. You can can even mix and match how you want to start and how to stop."
+      return
+        "Pick the blocking method that fits this profile. "
+        + "You can mix and match how you want to start and stop."
     case .apps:
       return "Select the apps or categories this profile should restrict or allow."
     case .domains:
       return "Add specific domains and decide whether Safari website blocking applies."
     case .strictUnlocks:
-      return "Some strategies let any NFC or QR/Barcode to unblock profiles (ex: Manual + NFC, Manual + QR). Enabling strict unlocks requires a specific NFC tag or QR/Barcode to unblock. You can have many tags or QR/Barcodes."
+      return
+        "Some strategies let any NFC tag, QR code, or barcode unlock profiles. "
+        + "Physical unlocks require a specific tag or code. You can add more than one."
     case .schedule:
       return "Schedules can start this profile automatically on selected days."
     case .breaks:
       return "Timed breaks let you pause once during a session without ending the profile."
     case .strictSafeguards:
-      return "These settings make it harder to work around restrictions by removing/installing apps."
+      return
+        "These settings make it harder to work around restrictions "
+        + "by deleting or installing apps."
     case .sessionSafeguards:
       return
         "Control how active sessions can be stopped and whether emergency unblocks are allowed."
@@ -212,7 +218,7 @@ struct GuidedBlockedProfileCreationView: View {
       }
       .sheet(isPresented: $showingStrategyPicker) {
         StrategyPicker(
-          strategies: StrategyManager.availableStrategies.filter { !$0.hidden },
+          strategies: StrategyManager.availableStrategies,
           selectedStrategy: $draft.selectedStrategy,
           isPresented: $showingStrategyPicker
         )
@@ -298,7 +304,7 @@ struct GuidedBlockedProfileCreationView: View {
       }
 
     case .strictUnlocks:
-      guidedCard(title: "Strict Unlocks") {
+      guidedCard(title: "Physical Unlocks") {
         BlockedProfileStrictUnlocksFields(draft: draft, disabled: false)
       }
 
@@ -321,7 +327,7 @@ struct GuidedBlockedProfileCreationView: View {
       }
 
     case .strictSafeguards:
-      guidedCard(title: "Strict Safeguards") {
+      guidedCard(title: "Session Protection") {
         BlockedProfileStrictSafeguardsFields(
           draft: draft,
           disabled: false,
@@ -330,7 +336,7 @@ struct GuidedBlockedProfileCreationView: View {
       }
 
     case .sessionSafeguards:
-      guidedCard(title: "Session Safeguards") {
+      guidedCard(title: "Stop Options") {
         BlockedProfileSessionSafeguardsFields(
           draft: draft,
           disabled: false,
@@ -496,15 +502,15 @@ private struct GuidedProfileReviewContent: View {
     var enabled: [String] = []
 
     if draft.enableStrictMode {
-      enabled.append("Strict")
+      enabled.append("App deletion blocked")
     }
 
     if draft.enableBlockAppInstallation {
-      enabled.append("Install blocking")
+      enabled.append("New app installs blocked")
     }
 
     if draft.disableBackgroundStops {
-      enabled.append("Background stops disabled")
+      enabled.append("Foqos required to stop")
     }
 
     if !draft.enableEmergencyUnblock {

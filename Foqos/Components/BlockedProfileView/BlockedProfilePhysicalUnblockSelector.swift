@@ -3,6 +3,9 @@ import SwiftUI
 struct BlockedProfilePhysicalUnblockSelector: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
+  @ScaledMetric(relativeTo: .body) private var columnHeaderMinHeight: CGFloat = 40
+  @ScaledMetric(relativeTo: .caption2) private var columnDescriptionMinHeight: CGFloat = 50
+
   @Binding var physicalUnblockItems: [PhysicalUnblockItem]
   var disabled: Bool = false
   var disabledText: String?
@@ -29,7 +32,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
       HStack(alignment: .top, spacing: 12) {
         physicalUnblockColumn(
           title: "NFC Tags",
-          description: "Set one or more NFC tags that can only unblock this profile when active",
+          description: "Add NFC tags that can unlock this profile while a session is active.",
           systemImage: "wave.3.right.circle.fill",
           assetImage: "NFCStickerLogo",
           items: nfcItems,
@@ -41,7 +44,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
         physicalUnblockColumn(
           title: "QR/Barcode",
           description:
-            "Set one or more QR/Barcodes that can only unblock this profile when active",
+            "Add QR codes or barcodes that can unlock this profile while a session is active.",
           systemImage: "qrcode.viewfinder",
           assetImage: "QRStickerLogo",
           items: qrItems,
@@ -129,7 +132,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           }
         }
       }
-      .frame(minHeight: 40, maxHeight: 40)
+      .frame(minHeight: columnHeaderMinHeight)
 
       VStack(spacing: 8) {
         Text(description)
@@ -138,7 +141,7 @@ struct BlockedProfilePhysicalUnblockSelector: View {
           .multilineTextAlignment(.center)
           .fixedSize(horizontal: false, vertical: true)
       }
-      .frame(minHeight: 50, maxHeight: 50, alignment: .center)
+      .frame(minHeight: columnDescriptionMinHeight, alignment: .center)
 
       VStack(spacing: 10) {
         if items.isEmpty {

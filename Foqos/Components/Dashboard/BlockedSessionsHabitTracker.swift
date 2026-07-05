@@ -196,7 +196,7 @@ struct BlockedSessionsHabitTracker: View {
           chartType: chartTypeBinding,
           onDismiss: { showingConfiguration = false }
         )
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
       }
     }
   }
