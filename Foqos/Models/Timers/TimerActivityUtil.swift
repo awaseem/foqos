@@ -51,8 +51,8 @@ class TimerActivityUtil {
       return StrategyTimerActivity()
     case PauseTimerActivity.id:
       return PauseTimerActivity()
-    case ShieldAppAccessTimerActivity.id:
-      return ShieldAppAccessTimerActivity()
+    case SoftUnblockGrantTimerActivity.id:
+      return SoftUnblockGrantTimerActivity()
     default:
       return nil
     }

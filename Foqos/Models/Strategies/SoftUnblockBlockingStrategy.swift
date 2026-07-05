@@ -2,8 +2,7 @@ import SwiftData
 import SwiftUI
 
 class SoftUnblockBlockingStrategy: BlockingStrategy {
-  // Preserve the prototype identifier so existing profiles continue to resolve this strategy.
-  static var id: String = "PauseBlockingStrategy"
+  static var id: String = "SoftUnblockBlockingStrategy"
 
   var name: String = "Soft Unblock"
   var description: String =

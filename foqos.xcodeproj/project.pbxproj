@@ -156,7 +156,7 @@
 				Models/Timers/BreakTimerActivity.swift,
 				Models/Timers/PauseTimerActivity.swift,
 				Models/Timers/ScheduleTimerActivity.swift,
-				Models/Timers/ShieldAppAccessTimerActivity.swift,
+				Models/Timers/SoftUnblockGrantTimerActivity.swift,
 				Models/Timers/StrategyTimerActivity.swift,
 				Models/Timers/TimerActivity.swift,
 				Models/Timers/TimerActivityUtil.swift,

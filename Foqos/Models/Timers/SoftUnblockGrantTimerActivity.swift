@@ -3,16 +3,16 @@ import OSLog
 
 private let log = Logger(
   subsystem: "dev.ambitionsoftware.foqos",
-  category: ShieldAppAccessTimerActivity.id
+  category: SoftUnblockGrantTimerActivity.id
 )
 
-class ShieldAppAccessTimerActivity: TimerActivity {
+class SoftUnblockGrantTimerActivity: TimerActivity {
   static var id: String = SoftUnblockGrantScheduler.activityId
 
   private let appBlocker = AppBlockerUtil()
 
   func getDeviceActivityName(from profileId: String) -> DeviceActivityName {
-    DeviceActivityName(rawValue: "\(ShieldAppAccessTimerActivity.id):\(profileId)")
+    DeviceActivityName(rawValue: "\(SoftUnblockGrantTimerActivity.id):\(profileId)")
   }
 
   func profileId(from activityName: DeviceActivityName) -> String {

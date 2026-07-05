@@ -2,7 +2,7 @@ import DeviceActivity
 import Foundation
 
 enum SoftUnblockGrantScheduler {
-  static let activityId = "ShieldAppAccessTimerActivity"
+  static let activityId = "SoftUnblockGrantTimerActivity"
 
   struct ActivityIdentifiers: Equatable {
     let profileId: UUID

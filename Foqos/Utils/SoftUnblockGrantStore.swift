@@ -73,7 +73,6 @@ enum SoftUnblockGrantStore {
       suite.removeObject(forKey: key)
     }
     suite.removeObject(forKey: activeSessionKey)
-    clearLegacyPrototypeState()
   }
 
   static func isActive(sessionId: String, profileId: UUID) -> Bool {
@@ -104,18 +103,4 @@ enum SoftUnblockGrantStore {
     "\(grantSessionKeyPrefix(sessionId: sessionId))\(grantId.uuidString)"
   }
 
-  private static func clearLegacyPrototypeState() {
-    let legacyKeys = [
-      "pauseModeActiveProfileId",
-      "pauseUnlockedApplicationTokens",
-      "pauseUnlockedCategoryTokens",
-    ]
-    for key in legacyKeys {
-      suite.removeObject(forKey: key)
-    }
-
-    for key in suite.dictionaryRepresentation().keys where key.hasPrefix("pauseTimer_") {
-      suite.removeObject(forKey: key)
-    }
-  }
 }
