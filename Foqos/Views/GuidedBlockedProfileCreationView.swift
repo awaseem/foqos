@@ -243,13 +243,13 @@ struct GuidedBlockedProfileCreationView: View {
         .contentTransition(.numericText())
         .animation(.easeInOut(duration: 0.16), value: currentStepIndex)
 
-      Text(currentStep.introTitle)
+      Text(currentStepIntroTitle)
         .font(.largeTitle)
         .fontWeight(.bold)
         .foregroundStyle(.primary)
         .contentTransition(.interpolate)
 
-      Text(currentStep.introDescription)
+      Text(currentStepIntroDescription)
         .font(.body)
         .foregroundStyle(.secondary)
         .lineSpacing(3)
@@ -259,6 +259,23 @@ struct GuidedBlockedProfileCreationView: View {
     .padding(.horizontal, 20)
     .padding(.top, 20)
     .padding(.bottom, 28)
+  }
+
+  private var currentStepIntroTitle: String {
+    if currentStep == .breaks && !draft.selectedStrategyAllowsTimedBreaks {
+      return "Breaks are off"
+    }
+
+    return currentStep.introTitle
+  }
+
+  private var currentStepIntroDescription: String {
+    if currentStep == .breaks && !draft.selectedStrategyAllowsTimedBreaks {
+      return
+        "Temporary Access already gives short opens for blocked apps and categories, so timed breaks are not needed."
+    }
+
+    return currentStep.introDescription
   }
 
   @ViewBuilder
@@ -495,6 +512,10 @@ private struct GuidedProfileReviewContent: View {
   }
 
   private var breaksSummary: String {
+    if !draft.selectedStrategyAllowsTimedBreaks {
+      return "Not needed"
+    }
+
     return draft.enableBreaks ? "\(draft.breakTimeInMinutes) minutes" : "Disabled"
   }
 

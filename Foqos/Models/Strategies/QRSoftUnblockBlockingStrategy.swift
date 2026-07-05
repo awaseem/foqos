@@ -13,6 +13,7 @@ final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
 
   var usesQRCode: Bool = true
   var startsManually: Bool = true
+  var allowsTimedBreaks: Bool = false
   var isBeta: Bool = true
   var startViewPresentationDetents: Set<PresentationDetent> = [.large]
 

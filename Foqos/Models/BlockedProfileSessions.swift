@@ -25,11 +25,13 @@ class BlockedProfileSession {
 
   var isBreakAvailable: Bool {
     return blockedProfile.enableBreaks == true
+      && blockedProfile.allowsTimedBreaks
       && breakEndTime == nil
   }
 
   var isBreakActive: Bool {
     return blockedProfile.enableBreaks == true
+      && blockedProfile.allowsTimedBreaks
       && breakStartTime != nil
       && breakEndTime == nil
   }

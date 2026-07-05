@@ -21,6 +21,7 @@ protocol BlockingStrategy {
   var hasPauseMode: Bool { get }
   var startsManually: Bool { get }
   var requiresSameCodeToStop: Bool { get }
+  var allowsTimedBreaks: Bool { get }
   var isBeta: Bool { get }
   var startViewPresentationDetents: Set<PresentationDetent> { get }
 
@@ -128,6 +129,7 @@ extension BlockingStrategy {
   var hasPauseMode: Bool { false }
   var startsManually: Bool { false }
   var requiresSameCodeToStop: Bool { false }
+  var allowsTimedBreaks: Bool { true }
   var isBeta: Bool { false }
   var startViewPresentationDetents: Set<PresentationDetent> { [.medium, .large] }
 
