@@ -9,6 +9,7 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
     "Choose how long blocking should last. Stop early with the Stop button."
   var iconAssetName: String = "Manual + Timer"
   var color: Color = .mint
+  var pickerCategory: BlockingStrategyPickerCategory = .timers
 
   var hasTimer: Bool = true
   var startsManually: Bool = true

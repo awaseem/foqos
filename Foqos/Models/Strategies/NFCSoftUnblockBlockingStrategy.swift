@@ -4,11 +4,12 @@ import SwiftUI
 final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
   static var id: String = "NFCSoftUnblockBlockingStrategy"
 
-  var name: String = "Soft Unblock + NFC"
+  var name: String = "Temporary Access + NFC"
   var description: String =
-    "Choose limited temporary app or category unblocks. To stop, scan an NFC tag. Use Strict Unlocks if you want only selected tags to work."
+    "Block your apps, but allow a few short opens when you need them. Scan an NFC tag to stop the session."
   var iconAssetName: String = "Soft Unblock + NFC"
   var color: Color = .purple
+  var pickerCategory: BlockingStrategyPickerCategory = .forever
 
   var usesNFC: Bool = true
   var startsManually: Bool = true
@@ -35,7 +36,7 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
       initialConfiguration: SoftUnblockStrategyData.decode(profile.strategyData),
       onStart: { configuration in
         guard let data = SoftUnblockStrategyData.encode(configuration) else {
-          self.onErrorMessage?("Failed to save the soft-unblock configuration.")
+          self.onErrorMessage?("Failed to save the temporary access settings.")
           return
         }
 
@@ -45,7 +46,7 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
         do {
           try context.save()
         } catch {
-          self.onErrorMessage?("Failed to save the soft-unblock configuration.")
+          self.onErrorMessage?("Failed to save the temporary access settings.")
           return
         }
 
@@ -83,7 +84,7 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
         && !session.blockedProfile.canUnblock(withCode: code, type: .nfc)
       {
         self.onErrorMessage?(
-          "This NFC tag is not allowed to unblock this profile."
+          "This NFC tag can't stop this profile."
         )
         return
       }

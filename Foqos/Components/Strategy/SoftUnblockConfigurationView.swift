@@ -33,16 +33,16 @@ struct SoftUnblockConfigurationView: View {
         ScrollView {
           VStack(alignment: .leading, spacing: 28) {
             VStack(alignment: .leading, spacing: 8) {
-              Text("Soft Unblock Settings")
+              Text("Temporary Access")
                 .font(.title2.bold())
 
-              Text("Choose how temporary access works while \(profileName) is active.")
+              Text("Choose how many times blocked apps can open, and for how long.")
                 .font(.callout)
                 .foregroundColor(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 12) {
-              Text("Allowed Unblocks")
+              Text("Allowed Opens")
                 .font(.headline)
 
               Stepper(
@@ -54,19 +54,19 @@ struct SoftUnblockConfigurationView: View {
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .contentTransition(.numericText())
 
-                  Text(maximumUnblockCount == 1 ? "unblock" : "unblocks")
+                  Text(maximumUnblockCount == 1 ? "open" : "opens")
                     .foregroundColor(.secondary)
                 }
               }
               .sensoryFeedback(.selection, trigger: maximumUnblockCount)
 
-              Text("Each successful app or category request uses one unblock.")
+              Text("Each time you open a blocked app or category, it uses one.")
                 .font(.caption)
                 .foregroundColor(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 12) {
-              Text("Access Duration")
+              Text("Open Time")
                 .font(.headline)
 
               Text(formattedDuration)
@@ -93,10 +93,10 @@ struct SoftUnblockConfigurationView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-              Text("Allowance Reset")
+              Text("Reset Opens")
                 .font(.headline)
 
-              Picker("Allowance Reset", selection: $allowanceResetIntervalInHours) {
+              Picker("Reset Opens", selection: $allowanceResetIntervalInHours) {
                 Text("Never").tag(Int?.none)
                 ForEach(SoftUnblockStrategyData.allowanceResetIntervalsInHours, id: \.self) {
                   hours in
@@ -162,11 +162,10 @@ struct SoftUnblockConfigurationView: View {
 
   private var resetDescription: String {
     guard let allowanceResetIntervalInHours else {
-      return "The selected allowance lasts for the entire profile session."
+      return "Your opens do not reset during this session."
     }
 
-    return
-      "The full allowance resets every \(allowanceResetIntervalInHours) hours after the profile starts."
+    return "You get all your opens back every \(allowanceResetIntervalInHours) hours."
   }
 }
 

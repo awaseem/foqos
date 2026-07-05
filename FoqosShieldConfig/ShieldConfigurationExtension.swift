@@ -146,8 +146,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   ) -> ShieldConfiguration {
     let usageText =
       session.maximumUnblockCount == 1
-      ? "The unblock for this session has already been used."
-      : "All \(session.maximumUnblockCount) unblocks for this session have been used."
+      ? "You already used your open for this session."
+      : "You used all \(session.maximumUnblockCount) opens for this session."
     let subtitle = [usageText, allowanceResetDescription(for: session)]
       .compactMap { $0 }
       .joined(separator: " ")
@@ -157,7 +157,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       backgroundColor: UIColor(ThemeManager.shared.themeColor),
       icon: makeEmojiIcon("🔒", size: 96),
       title: ShieldConfiguration.Label(
-        text: "No unblocks remaining",
+        text: "No opens left",
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(

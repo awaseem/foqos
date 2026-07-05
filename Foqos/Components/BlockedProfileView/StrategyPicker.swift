@@ -10,58 +10,16 @@ struct StrategyPicker: View {
   @State private var strategyDetails: StrategyDetailsPresentation?
 
   private var sections: [StrategyPickerSection] {
-    let mostPopularIds = [NFCBlockingStrategy.id, QRCodeBlockingStrategy.id]
-    let mostPopular = orderedStrategies(withIds: mostPopularIds)
+    return BlockingStrategyPickerCategory.allCases.compactMap { category in
+      let categoryStrategies = strategies.filter { $0.pickerCategory == category }
+      guard !categoryStrategies.isEmpty else { return nil }
 
-    var usedIds = Set(mostPopular.map { $0.getIdentifier() })
-
-    let easyToStart = strategies.filter { strategy in
-      strategy.startsManually && !strategy.hasTimer && !strategy.hasPauseMode
+      return StrategyPickerSection(
+        title: category.title,
+        description: category.description,
+        strategies: categoryStrategies
+      )
     }
-    usedIds.formUnion(easyToStart.map { $0.getIdentifier() })
-
-    let timers = strategies.filter { strategy in
-      strategy.hasTimer && !strategy.hasPauseMode
-    }
-    usedIds.formUnion(timers.map { $0.getIdentifier() })
-
-    let forever = strategies.filter { strategy in
-      strategy.hasPauseMode
-    }
-    usedIds.formUnion(forever.map { $0.getIdentifier() })
-
-    let moreOptions = strategies.filter { strategy in
-      !usedIds.contains(strategy.getIdentifier())
-    }
-
-    return [
-      StrategyPickerSection(
-        title: "Most popular",
-        description: "Physical triggers that make starting and stopping more deliberate.",
-        strategies: mostPopular
-      ),
-      StrategyPickerSection(
-        title: "Easy to start",
-        description: "Start from the app, then choose how intentional stopping should be.",
-        strategies: easyToStart
-      ),
-      StrategyPickerSection(
-        title: "Timers",
-        description: "Choose a duration first, then let the session end automatically.",
-        strategies: timers
-      ),
-      StrategyPickerSection(
-        title: "Forever",
-        description: "Pause strategies for sessions that keep going until you intentionally stop.",
-        strategies: forever
-      ),
-      StrategyPickerSection(
-        title: "More options",
-        description: "Additional ways to control a focus session.",
-        strategies: moreOptions
-      ),
-    ]
-    .filter { !$0.strategies.isEmpty }
   }
 
   var body: some View {
@@ -111,11 +69,6 @@ struct StrategyPicker: View {
     }
   }
 
-  private func orderedStrategies(withIds ids: [String]) -> [BlockingStrategy] {
-    return ids.compactMap { id in
-      strategies.first { $0.getIdentifier() == id }
-    }
-  }
 }
 
 #Preview {

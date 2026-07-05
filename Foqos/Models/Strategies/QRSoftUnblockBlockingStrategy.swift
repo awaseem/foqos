@@ -4,11 +4,12 @@ import SwiftUI
 final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
   static var id: String = "QRSoftUnblockBlockingStrategy"
 
-  var name: String = "Soft Unblock + QR"
+  var name: String = "Temporary Access + QR"
   var description: String =
-    "Choose limited temporary app or category unblocks. To stop, scan a QR code or barcode. Use Strict Unlocks if you want only selected codes to work."
+    "Block your apps, but allow a few short opens when you need them. Scan a QR code or barcode to stop the session."
   var iconAssetName: String = "Soft Unblock + QR"
   var color: Color = .purple
+  var pickerCategory: BlockingStrategyPickerCategory = .forever
 
   var usesQRCode: Bool = true
   var startsManually: Bool = true
@@ -34,7 +35,7 @@ final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
       initialConfiguration: SoftUnblockStrategyData.decode(profile.strategyData),
       onStart: { configuration in
         guard let data = SoftUnblockStrategyData.encode(configuration) else {
-          self.onErrorMessage?("Failed to save the soft-unblock configuration.")
+          self.onErrorMessage?("Failed to save the temporary access settings.")
           return
         }
 
@@ -44,7 +45,7 @@ final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
         do {
           try context.save()
         } catch {
-          self.onErrorMessage?("Failed to save the soft-unblock configuration.")
+          self.onErrorMessage?("Failed to save the temporary access settings.")
           return
         }
 
@@ -77,7 +78,7 @@ final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
   ) -> (any View)? {
     LabeledCodeScannerView(
       heading: "Scan to stop",
-      subtitle: "Point your camera at a QR code or barcode to deactivate this profile."
+      subtitle: "Point your camera at a QR code or barcode to stop this profile."
     ) { result in
       switch result {
       case .success(let result):
@@ -87,7 +88,7 @@ final class QRSoftUnblockBlockingStrategy: BlockingStrategy {
           && !session.blockedProfile.canUnblock(withCode: code, type: .qrCode)
         {
           self.onErrorMessage?(
-            "This QR code or barcode is not allowed to unblock this profile."
+            "This QR code or barcode can't stop this profile."
           )
           return
         }

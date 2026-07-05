@@ -13,6 +13,7 @@ protocol BlockingStrategy {
   var description: String { get }
   var iconAssetName: String { get }
   var color: Color { get }
+  var pickerCategory: BlockingStrategyPickerCategory { get }
 
   var usesNFC: Bool { get }
   var usesQRCode: Bool { get }
@@ -40,6 +41,44 @@ protocol BlockingStrategy {
   ) -> (any View)?
   func stopBlocking(context: ModelContext, session: BlockedProfileSession)
     -> (any View)?
+}
+
+enum BlockingStrategyPickerCategory: String, CaseIterable {
+  case mostPopular
+  case easyToStart
+  case timers
+  case forever
+  case moreOptions
+
+  var title: String {
+    switch self {
+    case .mostPopular:
+      return "Most popular"
+    case .easyToStart:
+      return "Easy to start"
+    case .timers:
+      return "Timers"
+    case .forever:
+      return "Forever"
+    case .moreOptions:
+      return "More options"
+    }
+  }
+
+  var description: String {
+    switch self {
+    case .mostPopular:
+      return "Physical triggers that make starting and stopping more deliberate."
+    case .easyToStart:
+      return "Start from the app, then choose how intentional stopping should be."
+    case .timers:
+      return "Choose a duration first, then let the session end automatically."
+    case .forever:
+      return "Sessions that keep going until you intentionally stop."
+    case .moreOptions:
+      return "Additional ways to control a focus session."
+    }
+  }
 }
 
 enum BlockingStrategyTag: String, Hashable {
