@@ -20,18 +20,9 @@ class AppBlockerUtil {
     let applicationTokens = selection.applicationTokens
     let categoriesTokens = selection.categoryTokens
     let webTokens = selection.webDomainTokens
-    let unlockedApplicationTokens =
-      SharedData.pauseModeActiveProfileId == profile.id.uuidString
-      ? SharedData.pauseUnlockedApplicationTokens
-      : []
-    let unlockedCategoryTokens =
-      SharedData.pauseModeActiveProfileId == profile.id.uuidString
-      ? SharedData.pauseUnlockedCategoryTokens
-      : []
-
-    SharedData.debugLog(
-      "Applying restrictions profile=\(profile.id.uuidString) allowMode=\(allowOnlyApps) apps=\(applicationTokens.count) categories=\(categoriesTokens.count) unlockedApps=\(unlockedApplicationTokens.count) unlockedCategories=\(unlockedCategoryTokens.count) activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
+    let activeGrants = SoftUnblockGrantStore.activeGrants(for: profile.id)
+    let unlockedApplicationTokens = Set(activeGrants.compactMap(\.resource.applicationToken))
+    let unlockedCategoryTokens = Set(activeGrants.compactMap(\.resource.categoryToken))
 
     if allowOnlyApps {
       store.shield.applicationCategories =
@@ -75,7 +66,6 @@ class AppBlockerUtil {
 
   func deactivateRestrictions() {
     print("Stoping restrictions...")
-    SharedData.debugLog("Deactivating all restrictions")
 
     store.shield.applications = nil
     store.shield.applicationCategories = nil
@@ -92,7 +82,6 @@ class AppBlockerUtil {
 
   func deactivateRestrictionsForBreak(for profile: SharedData.ProfileSnapshot) {
     print("Stopping restrictions for break (strict mode: \(profile.enableStrictMode))...")
-    SharedData.debugLog("Deactivating restrictions for break profile=\(profile.id.uuidString)")
 
     store.shield.applications = nil
     store.shield.applicationCategories = nil

@@ -14,28 +14,11 @@ import UIKit
 // The system provides a default appearance for any methods that your subclass doesn't override.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
-  override init() {
-    super.init()
-    SharedData.debugLog(
-      "ShieldConfigurationExtension init bundle=\(Bundle.main.bundleIdentifier ?? "nil") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
-  }
-
   override func configuration(shielding application: Application) -> ShieldConfiguration {
-    SharedData.debugLog(
-      "Shield config requested app=\(application.localizedDisplayName ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
-
-    if let pauseConfiguration = pauseModeConfiguration(for: application, in: nil) {
-      SharedData.debugLog(
-        "Returning pause shield for app=\(application.localizedDisplayName ?? "unknown")"
-      )
-      return pauseConfiguration
+    if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: nil) {
+      return softUnblockConfiguration
     }
 
-    SharedData.debugLog(
-      "Returning standard shield for app=\(application.localizedDisplayName ?? "unknown")"
-    )
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -43,37 +26,21 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application, in category: ActivityCategory)
     -> ShieldConfiguration
   {
-    SharedData.debugLog(
-      "Shield config requested appInCategory=\(application.localizedDisplayName ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
-
-    if let pauseConfiguration = pauseModeConfiguration(for: application, in: category) {
-      SharedData.debugLog(
-        "Returning pause shield for category-shielded app=\(application.localizedDisplayName ?? "unknown")"
-      )
-      return pauseConfiguration
+    if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: category) {
+      return softUnblockConfiguration
     }
 
-    SharedData.debugLog(
-      "Returning standard shield for category-shielded app=\(application.localizedDisplayName ?? "unknown")"
-    )
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
 
   override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
-    SharedData.debugLog(
-      "Shield config requested webDomain=\(webDomain.domain ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 
   override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory)
     -> ShieldConfiguration
   {
-    SharedData.debugLog(
-      "Shield config requested webDomainInCategory=\(webDomain.domain ?? "unknown") activePauseProfile=\(SharedData.activePauseModeProfileId ?? "nil")"
-    )
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 
@@ -110,63 +77,39 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     )
   }
 
-  private func pauseModeConfiguration(
+  private func softUnblockConfiguration(
     for application: Application,
     in category: ActivityCategory?
   ) -> ShieldConfiguration? {
-    guard let profileId = SharedData.activePauseModeProfileId else {
-      SharedData.debugLog("Pause shield skipped: no active pause profile")
-      return nil
-    }
-
-    if let token = application.token, SharedData.pauseUnlockedApplicationTokens.contains(token) {
-      SharedData.debugLog(
-        "Pause shield skipped: app already unlocked app=\(application.localizedDisplayName ?? "unknown") profile=\(profileId)"
+    guard let session = SoftUnblockGrantStore.activeSession,
+      let snapshot = SharedData.snapshot(for: session.profileId.uuidString),
+      let presentation = softUnblockPresentation(
+        for: application,
+        in: category,
+        profile: snapshot
+      ),
+      !SoftUnblockGrantStore.hasActiveGrant(
+        for: presentation.resource,
+        profileId: session.profileId
       )
+    else {
       return nil
     }
 
-    if let categoryToken = category?.token,
-      SharedData.pauseUnlockedCategoryTokens.contains(categoryToken)
-    {
-      SharedData.debugLog(
-        "Pause shield skipped: category already unlocked app=\(application.localizedDisplayName ?? "unknown") profile=\(profileId)"
-      )
-      return nil
-    }
-
-    if application.token == nil {
-      SharedData.debugLog(
-        "Pause shield has no app token; using category action fallback app=\(application.localizedDisplayName ?? "unknown") category=\(category?.localizedDisplayName ?? "unknown") profile=\(profileId)"
-      )
-    }
-
-    guard let snapshot = SharedData.snapshot(for: profileId) else {
-      SharedData.debugLog("Pause shield skipped: snapshot missing profile=\(profileId)")
-      return nil
-    }
-
-    let accessMinutes =
-      snapshot.strategyData
-      .map { StrategyPauseTimerData.toStrategyPauseTimerData(from: $0).pauseDurationInMinutes }
-      ?? StrategyPauseTimerData(pauseDurationInMinutes: 15).pauseDurationInMinutes
-    let appName = application.localizedDisplayName ?? "this app"
+    let configuration = SoftUnblockStrategyData.decode(snapshot.strategyData)
+    let accessMinutes = configuration.accessDurationInMinutes
     let buttonText = "Open for \(accessMinutes)m"
-
-    SharedData.debugLog(
-      "Pause shield ready app=\(appName) profile=\(profileId) accessMinutes=\(accessMinutes) selectedApps=\(snapshot.selectedActivity.applicationTokens.count) selectedCategories=\(snapshot.selectedActivity.categoryTokens.count)"
-    )
 
     return ShieldConfiguration(
       backgroundBlurStyle: .dark,
       backgroundColor: UIColor(ThemeManager.shared.themeColor),
       icon: makeEmojiIcon("⏳", size: 96),
       title: ShieldConfiguration.Label(
-        text: "Timed access",
+        text: presentation.title,
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(
-        text: "Temporarily open \(appName). Other blocked apps stay protected.",
+        text: presentation.subtitle,
         color: UIColor.white.withAlphaComponent(0.88)
       ),
       primaryButtonLabel: ShieldConfiguration.Label(
@@ -178,6 +121,31 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         text: "Back",
         color: .white
       )
+    )
+  }
+
+  private func softUnblockPresentation(
+    for application: Application,
+    in category: ActivityCategory?,
+    profile: SharedData.ProfileSnapshot
+  ) -> (resource: SoftUnblockResource, title: String, subtitle: String)? {
+    if let categoryToken = category?.token {
+      guard !profile.enableAllowMode else { return nil }
+
+      let categoryName = category?.localizedDisplayName ?? "this category"
+      return (
+        resource: .category(categoryToken),
+        title: "Timed category access",
+        subtitle: "Temporarily open \(categoryName). Other blocked categories stay protected."
+      )
+    }
+
+    guard let applicationToken = application.token else { return nil }
+    let applicationName = application.localizedDisplayName ?? "this app"
+    return (
+      resource: .application(applicationToken),
+      title: "Timed app access",
+      subtitle: "Temporarily open \(applicationName). Other blocked apps stay protected."
     )
   }
 

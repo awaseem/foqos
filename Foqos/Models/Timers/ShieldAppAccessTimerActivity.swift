@@ -1,77 +1,58 @@
 import DeviceActivity
 import OSLog
 
-private let log = Logger(subsystem: "com.foqos.monitor", category: ShieldAppAccessTimerActivity.id)
+private let log = Logger(
+  subsystem: "dev.ambitionsoftware.foqos",
+  category: ShieldAppAccessTimerActivity.id
+)
 
 class ShieldAppAccessTimerActivity: TimerActivity {
-  static var id: String = "ShieldAppAccessTimerActivity"
+  static var id: String = SoftUnblockGrantScheduler.activityId
 
   private let appBlocker = AppBlockerUtil()
 
   func getDeviceActivityName(from profileId: String) -> DeviceActivityName {
-    return DeviceActivityName(rawValue: "\(ShieldAppAccessTimerActivity.id):\(profileId)")
-  }
-
-  func getDeviceActivityName(profileId: String, tokenKey: String) -> DeviceActivityName {
-    return DeviceActivityName(
-      rawValue: "\(ShieldAppAccessTimerActivity.id):\(profileId)|app|\(tokenKey)"
-    )
+    DeviceActivityName(rawValue: "\(ShieldAppAccessTimerActivity.id):\(profileId)")
   }
 
   func profileId(from activityName: DeviceActivityName) -> String {
-    let payload = payload(from: activityName)
-    return String(payload.split(separator: "|", maxSplits: 1).first ?? "")
+    SoftUnblockGrantScheduler.identifiers(from: activityName)?.profileId.uuidString ?? ""
   }
 
   func start(for profile: SharedData.ProfileSnapshot) {
-    SharedData.debugLog("ShieldAppAccessTimerActivity.start profile=\(profile.id.uuidString)")
-    log.info("Started app access timer for profile \(profile.id.uuidString)")
+    log.info("Started a soft-unblock expiration monitor for profile \(profile.id.uuidString)")
   }
 
   func stop(for profile: SharedData.ProfileSnapshot) {
-    SharedData.debugLog("ShieldAppAccessTimerActivity.stop profile=\(profile.id.uuidString)")
-    appBlocker.activateRestrictions(for: profile)
-    log.info("Stopped app access timer for profile \(profile.id.uuidString)")
+    log.error("Soft-unblock expiration monitor ended without grant identifiers")
   }
 
   func stop(for profile: SharedData.ProfileSnapshot, activityName: DeviceActivityName) {
-    let payload = payload(from: activityName)
-    let components = payload.split(separator: "|", maxSplits: 2)
-
-    guard components.count == 2 || components.count == 3 else {
-      SharedData.debugLog(
-        "ShieldAppAccessTimerActivity.stop could not parse token activity=\(activityName.rawValue)"
+    guard let identifiers = SoftUnblockGrantScheduler.identifiers(from: activityName),
+      SoftUnblockGrantStore.isActive(
+        sessionId: identifiers.sessionId,
+        profileId: identifiers.profileId
+      ),
+      let grant = SoftUnblockGrantStore.grant(
+        id: identifiers.grantId,
+        sessionId: identifiers.sessionId
       )
-      stop(for: profile)
+    else {
       return
     }
 
-    let resourceKind = components.count == 3 ? String(components[1]) : "app"
-    let tokenKey = String(components[components.count - 1])
-
-    if resourceKind == "category" {
-      SharedData.debugLog(
-        "Expiring category access profile=\(profile.id.uuidString) tokenKey=\(String(tokenKey.prefix(12)))"
-      )
-      SharedData.removePauseUnlockedCategoryToken(matching: tokenKey)
-    } else {
-      SharedData.debugLog(
-        "Expiring app access profile=\(profile.id.uuidString) tokenKey=\(String(tokenKey.prefix(12)))"
-      )
-      SharedData.removePauseUnlockedApplicationToken(matching: tokenKey)
+    guard grant.isExpired() else {
+      do {
+        try SoftUnblockGrantScheduler.scheduleExpiration(for: grant)
+      } catch {
+        log.error("Failed to reschedule a soft-unblock expiration: \(error.localizedDescription)")
+      }
+      return
     }
 
+    SoftUnblockGrantStore.removeGrant(id: grant.id, sessionId: grant.sessionId)
     appBlocker.activateRestrictions(for: profile)
 
-    log.info("Expired \(resourceKind) access for profile \(profile.id.uuidString)")
-  }
-
-  private func payload(from activityName: DeviceActivityName) -> String {
-    let components = activityName.rawValue.split(separator: ":", maxSplits: 1)
-    guard components.count == 2 else {
-      return activityName.rawValue
-    }
-
-    return String(components[1])
+    log.info("Expired soft-unblock grant \(grant.id.uuidString)")
   }
 }

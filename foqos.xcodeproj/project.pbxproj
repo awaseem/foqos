@@ -127,7 +127,9 @@
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
+				Models/SoftUnblockGrant.swift,
 				Utils/AppBlockerUtil.swift,
+				Utils/SoftUnblockGrantStore.swift,
 			);
 			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
 		};
@@ -137,7 +139,9 @@
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
-				Models/Strategies/Data/StrategyPauseTimerData.swift,
+				Models/SoftUnblockGrant.swift,
+				Models/Strategies/Data/SoftUnblockStrategyData.swift,
+				Utils/SoftUnblockGrantStore.swift,
 				Utils/ThemeManager.swift,
 			);
 			target = 808A3C492E4ACD18002A7812 /* FoqosShieldConfig */;
@@ -148,6 +152,7 @@
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
+				Models/SoftUnblockGrant.swift,
 				Models/Timers/BreakTimerActivity.swift,
 				Models/Timers/PauseTimerActivity.swift,
 				Models/Timers/ScheduleTimerActivity.swift,
@@ -156,6 +161,8 @@
 				Models/Timers/TimerActivity.swift,
 				Models/Timers/TimerActivityUtil.swift,
 				Utils/AppBlockerUtil.swift,
+				Utils/SoftUnblockGrantScheduler.swift,
+				Utils/SoftUnblockGrantStore.swift,
 			);
 			target = 801713092DE6C78C00B77FE1 /* FoqosDeviceMonitor */;
 		};
@@ -193,8 +200,11 @@
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
-				Models/Strategies/Data/StrategyPauseTimerData.swift,
+				Models/SoftUnblockGrant.swift,
+				Models/Strategies/Data/SoftUnblockStrategyData.swift,
 				Utils/AppBlockerUtil.swift,
+				Utils/SoftUnblockGrantScheduler.swift,
+				Utils/SoftUnblockGrantStore.swift,
 			);
 			target = C8D73DC22F7C155C0028E76A /* FoqosShieldAction */;
 		};
@@ -736,7 +746,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosDeviceMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -769,7 +779,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosDeviceMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1227,7 +1237,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosShieldAction;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1255,7 +1265,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.FoqosShieldAction;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
