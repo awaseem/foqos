@@ -103,24 +103,26 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     let accessMinutes = configuration.accessDurationInMinutes
     let buttonText = "Open for \(accessMinutes)m"
-    let remainingText =
-      session.remainingUnblockCount == 1
-      ? "1 unblock remaining."
-      : "\(session.remainingUnblockCount) unblocks remaining."
-    let subtitle = [
-      presentation.subtitle,
-      remainingText,
-      allowanceResetDescription(for: session),
+    let randomMessage = getFunBlockMessage(
+      for: .app,
+      title: application.localizedDisplayName ?? presentation.resourceName
+    )
+    var allowanceLines = [
+      "\(presentation.resourceName) (\(session.remainingUnblockCount)/\(session.maximumUnblockCount))",
+      breakAllowanceIndicator(for: session),
     ]
-    .compactMap { $0 }
-    .joined(separator: " ")
+    if let resetDescription = allowanceResetDescription(for: session) {
+      allowanceLines.append(resetDescription)
+    }
+    let subtitle = [randomMessage.subtitle, allowanceLines.joined(separator: "\n")]
+      .joined(separator: "\n\n")
 
     return ShieldConfiguration(
       backgroundBlurStyle: .dark,
       backgroundColor: UIColor(ThemeManager.shared.themeColor),
-      icon: makeEmojiIcon("⏳", size: 96),
+      icon: makeEmojiIcon(randomMessage.emoji, size: 96),
       title: ShieldConfiguration.Label(
-        text: presentation.title,
+        text: randomMessage.title,
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(
@@ -178,28 +180,40 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       return nil
     }
 
-    let formatter = RelativeDateTimeFormatter()
-    formatter.unitsStyle = .full
-    let relativeResetTime = formatter.localizedString(
-      for: nextAllowanceResetAt,
-      relativeTo: Date()
+    let remainingMinutes = max(
+      Int(ceil(nextAllowanceResetAt.timeIntervalSinceNow / 60)),
+      1
     )
-    return "Allowance resets \(relativeResetTime)."
+    if remainingMinutes >= 60 {
+      return "Resets in \(remainingMinutes / 60)h"
+    }
+    return "Resets in \(remainingMinutes)m"
+  }
+
+  private func breakAllowanceIndicator(for session: SoftUnblockSessionState) -> String {
+    let availableBreaks = Array(
+      repeating: "●",
+      count: session.remainingUnblockCount
+    )
+    let usedBreaks = Array(
+      repeating: "○",
+      count: session.maximumUnblockCount - session.remainingUnblockCount
+    )
+    return (availableBreaks + usedBreaks).joined(separator: "  ")
   }
 
   private func softUnblockPresentation(
     for application: Application,
     in category: ActivityCategory?,
     profile: SharedData.ProfileSnapshot
-  ) -> (resource: SoftUnblockResource, title: String, subtitle: String)? {
+  ) -> (resource: SoftUnblockResource, resourceName: String)? {
     if let categoryToken = category?.token {
       guard !profile.enableAllowMode else { return nil }
 
       let categoryName = category?.localizedDisplayName ?? "this category"
       return (
         resource: .category(categoryToken),
-        title: "Timed category access",
-        subtitle: "Temporarily open \(categoryName). Other blocked categories stay protected."
+        resourceName: categoryName
       )
     }
 
@@ -207,8 +221,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     let applicationName = application.localizedDisplayName ?? "this app"
     return (
       resource: .application(applicationToken),
-      title: "Timed app access",
-      subtitle: "Temporarily open \(applicationName). Other blocked apps stay protected."
+      resourceName: applicationName
     )
   }
 
