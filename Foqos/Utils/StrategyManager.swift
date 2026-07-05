@@ -6,6 +6,8 @@ class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
 
   static let availableStrategies: [BlockingStrategy] = [
+    NFCSoftUnblockBlockingStrategy(),
+    QRSoftUnblockBlockingStrategy(),
     ManualBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
@@ -25,6 +27,9 @@ class StrategyManager: ObservableObject {
 
   @Published var showCustomStrategyView: Bool = false
   @Published var customStrategyView: (any View)? = nil
+  @Published var customStrategyViewPresentationDetents: Set<PresentationDetent> = [
+    .medium, .large,
+  ]
 
   @Published var errorMessage: String?
 
@@ -503,6 +508,11 @@ class StrategyManager: ObservableObject {
   private func handleSessionStarted(session: BlockedProfileSession) {
     self.dismissView()
 
+    if SoftUnblockGrantStore.activeSession?.sessionId != session.id {
+      SoftUnblockGrantScheduler.stopAll()
+      SoftUnblockGrantStore.clearAll()
+    }
+
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()
     // Update the snapshot of the profile in case some settings were changed
@@ -521,6 +531,9 @@ class StrategyManager: ObservableObject {
 
   private func handleSessionEnded(profile: BlockedProfiles) {
     self.dismissView()
+
+    SoftUnblockGrantScheduler.stopAll()
+    SoftUnblockGrantStore.clearAll()
 
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()
@@ -548,6 +561,16 @@ class StrategyManager: ObservableObject {
   private func dismissView() {
     showCustomStrategyView = false
     customStrategyView = nil
+    customStrategyViewPresentationDetents = [.medium, .large]
+  }
+
+  private func presentCustomStrategyView(
+    _ view: any View,
+    presentationDetents: Set<PresentationDetent>
+  ) {
+    customStrategyView = view
+    customStrategyViewPresentationDetents = presentationDetents
+    showCustomStrategyView = true
   }
 
   private func getActiveSession(context: ModelContext)
@@ -607,8 +630,10 @@ class StrategyManager: ObservableObject {
       )
 
       if let customView = view {
-        showCustomStrategyView = true
-        customStrategyView = customView
+        presentCustomStrategyView(
+          customView,
+          presentationDetents: strategy.startViewPresentationDetents
+        )
       }
     }
   }
@@ -626,8 +651,10 @@ class StrategyManager: ObservableObject {
       let view = strategy.stopBlocking(context: context, session: session)
 
       if let customView = view {
-        showCustomStrategyView = true
-        customStrategyView = customView
+        presentCustomStrategyView(
+          customView,
+          presentationDetents: [.medium, .large]
+        )
       }
     }
   }
@@ -716,6 +743,8 @@ class StrategyManager: ObservableObject {
 
     // Clear all restrictions
     appBlocker.deactivateRestrictions()
+    SoftUnblockGrantScheduler.stopAll()
+    SoftUnblockGrantStore.clearAll()
 
     // Remove all break timer activities
     DeviceActivityCenterUtil.removeAllBreakTimerActivities()

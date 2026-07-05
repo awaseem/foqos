@@ -320,9 +320,9 @@ struct HomeView: View {
     }
     .sheet(isPresented: strategyActionSheetBinding) {
       BlockingStrategyActionView(
-        customView: strategyManager.customStrategyView
+        customView: strategyManager.customStrategyView,
+        presentationDetents: strategyManager.customStrategyViewPresentationDetents
       )
-      .presentationDetents([.medium, .large])
     }
     .sheet(isPresented: $showDonationView) {
       SupportView()

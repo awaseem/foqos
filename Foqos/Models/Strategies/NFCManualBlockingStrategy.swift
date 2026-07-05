@@ -9,6 +9,7 @@ class NFCManualBlockingStrategy: BlockingStrategy {
     "Start in the app. To stop, scan any NFC tag. Use Strict Unlocks if you want only selected tags to work."
   var iconAssetName: String = "Manual+NFCSticker"
   var color: Color = .yellow
+  var pickerCategory: BlockingStrategyPickerCategory = .easyToStart
 
   var usesNFC: Bool = true
   var startsManually: Bool = true

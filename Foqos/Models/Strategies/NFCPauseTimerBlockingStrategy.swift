@@ -9,10 +9,10 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
     "Choose how long a pause should last. Scan an NFC tag once to pause. Scan it again during the pause to fully stop."
   var iconAssetName: String = "NFCPauseSticker"
   var color: Color = .orange
+  var pickerCategory: BlockingStrategyPickerCategory = .forever
 
   var usesNFC: Bool = true
   var hasPauseMode: Bool = true
-  var isBeta: Bool = true
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?

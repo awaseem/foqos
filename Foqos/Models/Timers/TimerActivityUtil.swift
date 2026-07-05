@@ -5,31 +5,31 @@ class TimerActivityUtil {
     let parts = getTimerParts(from: activity)
 
     guard let timerActivity = getTimerActivity(for: parts.deviceActivityId),
-      let profile = getProfile(for: parts.profileId)
+      let profile = getProfile(for: timerActivity.profileId(from: activity))
     else {
       return
     }
 
-    timerActivity.start(for: profile)
+    timerActivity.start(for: profile, activityName: activity)
   }
 
   static func stopTimerActivity(for activity: DeviceActivityName) {
     let parts = getTimerParts(from: activity)
 
     guard let timerActivity = getTimerActivity(for: parts.deviceActivityId),
-      let profile = getProfile(for: parts.profileId)
+      let profile = getProfile(for: timerActivity.profileId(from: activity))
     else {
       return
     }
 
-    timerActivity.stop(for: profile)
+    timerActivity.stop(for: profile, activityName: activity)
   }
 
   private static func getTimerParts(from activity: DeviceActivityName) -> (
     deviceActivityId: String, profileId: String
   ) {
     let activityName = activity.rawValue
-    let components = activityName.split(separator: ":")
+    let components = activityName.split(separator: ":", maxSplits: 1)
 
     // For versions >= 1.24, the activity name format is "type:profileId"
     if components.count == 2 {
@@ -51,6 +51,8 @@ class TimerActivityUtil {
       return StrategyTimerActivity()
     case PauseTimerActivity.id:
       return PauseTimerActivity()
+    case SoftUnblockGrantTimerActivity.id:
+      return SoftUnblockGrantTimerActivity()
     default:
       return nil
     }

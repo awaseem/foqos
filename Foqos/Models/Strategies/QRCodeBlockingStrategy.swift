@@ -10,6 +10,7 @@ class QRCodeBlockingStrategy: BlockingStrategy {
     "Start by scanning a QR code or barcode. To stop, scan the same code again."
   var iconAssetName: String = "QRStickerLogo"
   var color: Color = .pink
+  var pickerCategory: BlockingStrategyPickerCategory = .mostPopular
 
   var usesQRCode: Bool = true
   var requiresSameCodeToStop: Bool = true

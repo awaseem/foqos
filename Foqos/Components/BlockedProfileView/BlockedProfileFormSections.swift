@@ -267,19 +267,28 @@ struct BlockedProfileBreaksFields: View {
   var disabled: Bool
   var showsSeparators: Bool = false
 
+  @ViewBuilder
   var body: some View {
-    CustomToggle(
-      title: "Allow Timed Breaks",
-      description:
-        "Take a single break during your session. The break will automatically end after the selected duration.",
-      isOn: $draft.enableBreaks,
-      isDisabled: disabled
-    )
+    if draft.selectedStrategyAllowsTimedBreaks {
+      CustomToggle(
+        title: "Allow Timed Breaks",
+        description:
+          "Take a single break during your session. The break will automatically end after the selected duration.",
+        isOn: $draft.enableBreaks,
+        isDisabled: disabled
+      )
 
-    if draft.enableBreaks {
-      ProfileFieldDivider(isVisible: showsSeparators)
+      if draft.enableBreaks {
+        ProfileFieldDivider(isVisible: showsSeparators)
 
-      breakDurationPicker
+        breakDurationPicker
+      }
+    } else {
+      ProfileFieldNotice(
+        title: "Breaks are off for Temporary Access",
+        message:
+          "This strategy already gives short opens for blocked apps and categories, so timed breaks are not needed for this profile."
+      )
     }
   }
 
@@ -302,6 +311,27 @@ struct BlockedProfileBreaksSection: View {
     Section("Breaks") {
       BlockedProfileBreaksFields(draft: draft, disabled: disabled)
     }
+  }
+}
+
+private struct ProfileFieldNotice: View {
+  let title: String
+  let message: String
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(title)
+        .font(.subheadline)
+        .fontWeight(.semibold)
+        .foregroundStyle(.primary)
+
+      Text(message)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.vertical, 4)
   }
 }
 

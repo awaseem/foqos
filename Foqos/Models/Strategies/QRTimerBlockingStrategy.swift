@@ -9,6 +9,7 @@ class QRTimerBlockingStrategy: BlockingStrategy {
     "Choose how long blocking should last. To stop early, scan any QR code or barcode. Use Strict Unlocks if you want only selected codes to work."
   var iconAssetName: String = "QR+TimerSticker"
   var color: Color = .mint
+  var pickerCategory: BlockingStrategyPickerCategory = .timers
 
   var usesQRCode: Bool = true
   var hasTimer: Bool = true

@@ -1,3 +1,4 @@
+import FamilyControls
 import SwiftUI
 import UIKit
 
@@ -57,6 +58,14 @@ struct ActiveProfileSessionView: View {
     return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
+  private var isSoftUnblockStrategy: Bool {
+    guard let strategyId = profile.blockingStrategyId else { return false }
+    return [
+      NFCSoftUnblockBlockingStrategy.id,
+      QRSoftUnblockBlockingStrategy.id,
+    ].contains(strategyId)
+  }
+
   private var supportingTextColor: Color {
     colorScheme == .dark ? Color.white.opacity(0.78) : Color.black.opacity(0.66)
   }
@@ -68,11 +77,14 @@ struct ActiveProfileSessionView: View {
       VStack(alignment: .leading, spacing: 0) {
         header
 
-        timerSection
-          .padding(.top, 60)
-          .frame(maxWidth: .infinity)
-
-        Spacer(minLength: 48)
+        ScrollView {
+          timerSection
+            .padding(.top, 60)
+            .padding(.bottom, 36)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize)
 
         actionSection
       }
@@ -89,9 +101,9 @@ struct ActiveProfileSessionView: View {
     }
     .sheet(isPresented: $strategyManager.showCustomStrategyView) {
       BlockingStrategyActionView(
-        customView: strategyManager.customStrategyView
+        customView: strategyManager.customStrategyView,
+        presentationDetents: strategyManager.customStrategyViewPresentationDetents
       )
-      .presentationDetents([.medium, .large])
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
@@ -228,6 +240,11 @@ struct ActiveProfileSessionView: View {
         .lineLimit(2)
         .contentTransition(.opacity)
         .animation(.easeInOut(duration: 0.35), value: focusMessage)
+
+      if isSoftUnblockStrategy {
+        SoftUnblockActiveGrantsCard(profileId: profile.id)
+          .padding(.top, 16)
+      }
     }
     .padding(.horizontal, 12)
   }
@@ -285,6 +302,121 @@ struct ActiveProfileSessionView: View {
   private static func initialFocusMessageIndex() -> Int {
     guard !FocusMessages.messages.isEmpty else { return 0 }
     return Int.random(in: 0..<FocusMessages.messages.count)
+  }
+}
+
+private struct SoftUnblockActiveGrantsCard: View {
+  private static let visibleGrantLimit = 3
+
+  let profileId: UUID
+
+  var body: some View {
+    TimelineView(.periodic(from: .now, by: 1)) { timeline in
+      let activeGrants = SoftUnblockGrantStore.activeGrants(
+        for: profileId,
+        at: timeline.date
+      )
+      .sorted { lhs, rhs in
+        if lhs.expiresAt == rhs.expiresAt {
+          return lhs.createdAt < rhs.createdAt
+        }
+        return lhs.expiresAt < rhs.expiresAt
+      }
+      let visibleGrants = Array(activeGrants.prefix(Self.visibleGrantLimit))
+      let overflowCount = activeGrants.count - visibleGrants.count
+
+      if !activeGrants.isEmpty {
+        VStack(spacing: 0) {
+          ForEach(Array(visibleGrants.enumerated()), id: \.element.id) { index, grant in
+            if index > 0 {
+              Divider()
+                .opacity(0.45)
+            }
+
+            SoftUnblockActiveGrantRow(
+              grant: grant,
+              date: timeline.date
+            )
+          }
+
+          if overflowCount > 0 {
+            Divider()
+              .opacity(0.45)
+
+            Text("+\(overflowCount) more active")
+              .font(.footnote)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 10)
+          }
+        }
+        .padding(16)
+        .background(
+          .thinMaterial,
+          in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        )
+        .overlay {
+          RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+        }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.25), value: activeGrants.map(\.id))
+      }
+    }
+  }
+}
+
+private struct SoftUnblockActiveGrantRow: View {
+  let grant: SoftUnblockGrant
+  let date: Date
+
+  private var remainingSeconds: Int {
+    max(Int(ceil(grant.expiresAt.timeIntervalSince(date))), 0)
+  }
+
+  private var countdownText: String {
+    String(
+      format: "%02d:%02d",
+      remainingSeconds / 60,
+      remainingSeconds % 60
+    )
+  }
+
+  private var accessibilityCountdownText: String {
+    let minutes = remainingSeconds / 60
+    let seconds = remainingSeconds % 60
+    let minuteLabel = minutes == 1 ? "minute" : "minutes"
+    let secondLabel = seconds == 1 ? "second" : "seconds"
+    return "\(minutes) \(minuteLabel), \(seconds) \(secondLabel) remaining"
+  }
+
+  var body: some View {
+    HStack(spacing: 12) {
+      resourceLabel
+        .font(.subheadline)
+        .fontWeight(.semibold)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+
+      Spacer(minLength: 8)
+
+      Text(countdownText)
+        .font(.system(.subheadline, design: .monospaced, weight: .bold))
+        .contentTransition(.numericText(countsDown: true))
+        .accessibilityLabel(accessibilityCountdownText)
+    }
+    .padding(.vertical, 10)
+  }
+
+  @ViewBuilder
+  private var resourceLabel: some View {
+    switch grant.resource {
+    case .application(let token):
+      Label(token)
+    case .category(let token):
+      Label(token)
+    }
   }
 }
 

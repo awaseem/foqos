@@ -23,7 +23,11 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var physicalUnblockItems: [PhysicalUnblockItem]
   @Published var schedule: BlockedProfileSchedule
   @Published var selectedActivity: FamilyActivitySelection
-  @Published var selectedStrategy: BlockingStrategy?
+  @Published var selectedStrategy: BlockingStrategy? {
+    didSet {
+      enforceStrategyBreaksPolicy()
+    }
+  }
 
   init(profile: BlockedProfiles? = nil) {
     name = profile?.name ?? ""
@@ -60,10 +64,16 @@ final class BlockedProfileDraft: ObservableObject {
     } else {
       selectedStrategy = NFCBlockingStrategy()
     }
+
+    enforceStrategyBreaksPolicy()
   }
 
   var isValid: Bool {
     return !name.isEmpty
+  }
+
+  var selectedStrategyAllowsTimedBreaks: Bool {
+    return selectedStrategy?.allowsTimedBreaks ?? true
   }
 
   func save(
@@ -76,6 +86,7 @@ final class BlockedProfileDraft: ObservableObject {
       enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
     let physicalUnblockItemsToSave: [PhysicalUnblockItem]? =
       physicalUnblockItems.isEmpty ? nil : physicalUnblockItems
+    let enableTimedBreaksToSave = selectedStrategyAllowsTimedBreaks && enableBreaks
 
     if let existingProfile {
       let updatedProfile = try BlockedProfiles.updateProfile(
@@ -87,7 +98,7 @@ final class BlockedProfileDraft: ObservableObject {
         enableLiveActivity: enableLiveActivity,
         reminderTime: reminderTimeSeconds,
         customReminderMessage: customReminderMessage,
-        enableBreaks: enableBreaks,
+        enableBreaks: enableTimedBreaksToSave,
         breakTimeInMinutes: breakTimeInMinutes,
         enableStrictMode: enableStrictMode,
         enableBlockAppInstallation: enableBlockAppInstallation,
@@ -114,7 +125,7 @@ final class BlockedProfileDraft: ObservableObject {
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeSeconds,
       customReminderMessage: customReminderMessage,
-      enableBreaks: enableBreaks,
+      enableBreaks: enableTimedBreaksToSave,
       breakTimeInMinutes: breakTimeInMinutes,
       enableStrictMode: enableStrictMode,
       enableBlockAppInstallation: enableBlockAppInstallation,
@@ -131,5 +142,13 @@ final class BlockedProfileDraft: ObservableObject {
 
     DeviceActivityCenterUtil.scheduleTimerActivity(for: newProfile)
     return newProfile
+  }
+
+  private func enforceStrategyBreaksPolicy() {
+    if selectedStrategyAllowsTimedBreaks {
+      return
+    }
+
+    enableBreaks = false
   }
 }

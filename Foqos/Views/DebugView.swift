@@ -34,6 +34,10 @@ struct DebugView: View {
             }
           }
 
+          DebugSection(title: "Soft Unblock") {
+            SoftUnblockDebugCard(diagnostics: makeSoftUnblockDiagnostics())
+          }
+
           // Device Activities Section (always shown)
           DebugSection(title: "Device Activities (\(deviceActivities.count))") {
             DeviceActivitiesDebugCard(
@@ -116,6 +120,7 @@ struct DebugView: View {
   }
 
   private func copyToMarkdown() {
+    let softUnblockDiagnostics = makeSoftUnblockDiagnostics()
     var markdown = "# Debug Information\n\n"
 
     // Strategy Manager Section (always shown)
@@ -150,6 +155,8 @@ struct DebugView: View {
       markdown += "- **Force Started:** \(session.forceStarted ? "Yes" : "No")\n"
       markdown += "- **Duration:** \(DateFormatters.formatDuration(session.duration))\n\n"
     }
+
+    markdown += softUnblockDiagnostics.markdown()
 
     // Device Activities Section (always shown)
     markdown += "## Device Activities (\(deviceActivities.count))\n\n"
@@ -258,7 +265,9 @@ struct DebugView: View {
   private func activityType(for activity: DeviceActivityName) -> String {
     let rawValue = activity.rawValue
 
-    if rawValue.hasPrefix(BreakTimerActivity.id) {
+    if rawValue.hasPrefix(SoftUnblockGrantScheduler.activityId) {
+      return "Soft Unblock Grant Timer"
+    } else if rawValue.hasPrefix(BreakTimerActivity.id) {
       return "Break Timer"
     } else if rawValue.hasPrefix(PauseTimerActivity.id) {
       return "Pause Timer"
@@ -278,6 +287,10 @@ struct DebugView: View {
   private func isActivityForProfile(_ activity: DeviceActivityName, profileId: UUID) -> Bool {
     let rawValue = activity.rawValue
     let profileIdString = profileId.uuidString
+
+    if let identifiers = SoftUnblockGrantScheduler.identifiers(from: activity) {
+      return identifiers.profileId == profileId
+    }
 
     // Check if it's a break timer activity for this profile
     if rawValue.hasPrefix(BreakTimerActivity.id) {
@@ -301,6 +314,59 @@ struct DebugView: View {
 
     // Check if it's a legacy schedule format (just the UUID)
     return rawValue == profileIdString
+  }
+
+  private func makeSoftUnblockDiagnostics(
+    capturedAt: Date = Date()
+  ) -> SoftUnblockDiagnostics {
+    let store = SoftUnblockGrantStore.debugSnapshot()
+    let sharedSnapshots = SharedData.profileSnapshots
+    let activeProfileId = store.activeSession?.profileId
+    let modelProfilesById = Dictionary(uniqueKeysWithValues: allProfiles.map { ($0.id, $0) })
+    let sharedProfilesById = Dictionary(
+      uniqueKeysWithValues: sharedSnapshots.values.map { ($0.id, $0) }
+    )
+    let softUnblockStrategyIds: Set<String> = [
+      NFCSoftUnblockBlockingStrategy.id,
+      QRSoftUnblockBlockingStrategy.id,
+    ]
+    let modelSoftUnblockIds: [UUID] = allProfiles.compactMap { profile -> UUID? in
+      guard let strategyId = profile.blockingStrategyId else { return nil }
+      return softUnblockStrategyIds.contains(strategyId) ? profile.id : nil
+    }
+    let sharedSoftUnblockIds: [UUID] = sharedSnapshots.values.compactMap {
+      profile -> UUID? in
+      guard let strategyId = profile.blockingStrategyId else { return nil }
+      return softUnblockStrategyIds.contains(strategyId) ? profile.id : nil
+    }
+    var profileIds = Set(modelSoftUnblockIds + sharedSoftUnblockIds)
+    if let activeProfileId {
+      profileIds.insert(activeProfileId)
+    }
+
+    let configurations: [SoftUnblockDiagnostics.ProfileConfiguration] = profileIds.compactMap {
+      profileId -> SoftUnblockDiagnostics.ProfileConfiguration? in
+      let modelProfile = modelProfilesById[profileId]
+      let sharedProfile = sharedProfilesById[profileId]
+      guard modelProfile != nil || sharedProfile != nil else { return nil }
+
+      return SoftUnblockDiagnostics.ProfileConfiguration(
+        id: profileId,
+        name: modelProfile?.name ?? sharedProfile?.name ?? "Unknown Profile",
+        modelStrategyId: modelProfile?.blockingStrategyId,
+        modelStrategyData: modelProfile?.strategyData,
+        sharedSnapshot: sharedProfile
+      )
+    }
+    .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+    return SoftUnblockDiagnostics(
+      capturedAt: capturedAt,
+      store: store,
+      sharedSession: SharedData.getActiveSharedSession(),
+      profileConfigurations: configurations,
+      activities: deviceActivities
+    )
   }
 }
 

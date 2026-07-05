@@ -1,9 +1,8 @@
 import SwiftUI
 
 struct BlockingStrategyActionView: View {
-  @Environment(\.dismiss) private var dismiss
-
   var customView: (any View)?
+  var presentationDetents: Set<PresentationDetent> = [.medium, .large]
 
   var body: some View {
     VStack {
@@ -11,6 +10,6 @@ struct BlockingStrategyActionView: View {
         AnyView(customViewToDisplay)
       }
     }
-    .presentationDetents([.medium, .large])
+    .presentationDetents(presentationDetents)
   }
 }

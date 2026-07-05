@@ -10,10 +10,10 @@ class QRPauseTimerBlockingStrategy: BlockingStrategy {
     "Choose how long a pause should last. Scan a QR code or barcode once to pause. Scan it again during the pause to fully stop."
   var iconAssetName: String = "QRPauseSticker"
   var color: Color = .indigo
+  var pickerCategory: BlockingStrategyPickerCategory = .forever
 
   var usesQRCode: Bool = true
   var hasPauseMode: Bool = true
-  var isBeta: Bool = true
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?

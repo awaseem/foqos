@@ -5,6 +5,8 @@ struct PauseDurationView: View {
   @Environment(\.dismiss) private var dismiss
 
   let profileName: String
+  var title: String = "Pause Duration"
+  var description: String? = nil
   let onDurationSelected: (Int) -> Void
 
   // State for slider-based duration selection
@@ -24,11 +26,11 @@ struct PauseDurationView: View {
     VStack(spacing: 32) {
       // Header
       VStack(alignment: .leading, spacing: 12) {
-        Text("Pause Duration")
+        Text(title)
           .font(.title2).bold()
 
         Text(
-          "Select how long you want to allow access when pausing \(profileName)."
+          description ?? "Select how long you want to allow access when pausing \(profileName)."
         )
         .font(.callout)
         .foregroundColor(.secondary)

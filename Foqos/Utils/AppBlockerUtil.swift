@@ -1,5 +1,4 @@
 import ManagedSettings
-import SwiftUI
 
 class AppBlockerUtil {
   let store = ManagedSettingsStore(
@@ -7,6 +6,46 @@ class AppBlockerUtil {
   )
 
   func activateRestrictions(for profile: SharedData.ProfileSnapshot) {
+    let selection = profile.selectedActivity
+    applyRestrictions(
+      for: profile,
+      applicationTokens: selection.applicationTokens,
+      categoryTokens: selection.categoryTokens,
+      categoryApplicationExceptions: []
+    )
+  }
+
+  func activateSoftUnblockRestrictions(
+    for profile: SharedData.ProfileSnapshot,
+    unblockedApplicationTokens: Set<ApplicationToken>,
+    unblockedCategoryTokens: Set<ActivityCategoryToken>
+  ) {
+    let selection = profile.selectedActivity
+    let applicationTokens: Set<ApplicationToken>
+    let categoryTokens: Set<ActivityCategoryToken>
+
+    if profile.enableAllowMode {
+      applicationTokens = selection.applicationTokens.union(unblockedApplicationTokens)
+      categoryTokens = selection.categoryTokens
+    } else {
+      applicationTokens = selection.applicationTokens.subtracting(unblockedApplicationTokens)
+      categoryTokens = selection.categoryTokens.subtracting(unblockedCategoryTokens)
+    }
+
+    applyRestrictions(
+      for: profile,
+      applicationTokens: applicationTokens,
+      categoryTokens: categoryTokens,
+      categoryApplicationExceptions: unblockedApplicationTokens
+    )
+  }
+
+  private func applyRestrictions(
+    for profile: SharedData.ProfileSnapshot,
+    applicationTokens: Set<ApplicationToken>,
+    categoryTokens: Set<ActivityCategoryToken>,
+    categoryApplicationExceptions: Set<ApplicationToken>
+  ) {
     print("Starting restrictions...")
 
     let selection = profile.selectedActivity
@@ -17,24 +56,27 @@ class AppBlockerUtil {
     let enableAdultContentBlocking = profile.enableAdultContentBlocking == true
     let domains = getWebDomains(from: profile)
 
-    let applicationTokens = selection.applicationTokens
-    let categoriesTokens = selection.categoryTokens
     let webTokens = selection.webDomainTokens
 
     if allowOnlyApps {
-      store.shield.applicationCategories =
-        .all(except: applicationTokens)
+      store.shield.applicationCategories = .all(except: applicationTokens)
 
       if enableSafariBlocking {
         store.shield.webDomainCategories = .all(except: webTokens)
       }
 
     } else {
-      store.shield.applications = applicationTokens
-      store.shield.applicationCategories = .specific(categoriesTokens)
+      store.shield.applications = applicationTokens.isEmpty ? nil : applicationTokens
+      store.shield.applicationCategories =
+        categoryTokens.isEmpty
+        ? nil
+        : .specific(
+          categoryTokens,
+          except: categoryApplicationExceptions
+        )
 
       if enableSafariBlocking {
-        store.shield.webDomainCategories = .specific(categoriesTokens)
+        store.shield.webDomainCategories = .specific(selection.categoryTokens)
         store.shield.webDomains = webTokens
       }
     }

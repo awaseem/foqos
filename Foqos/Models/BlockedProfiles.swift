@@ -61,6 +61,11 @@ class BlockedProfiles {
       && DeviceActivityCenterUtil.getActiveScheduleTimerActivity(for: self) == nil
   }
 
+  var allowsTimedBreaks: Bool {
+    let strategyId = blockingStrategyId ?? NFCBlockingStrategy.id
+    return StrategyManager.getStrategyFromId(id: strategyId).allowsTimedBreaks
+  }
+
   // MARK: - Physical Unblock Helpers
 
   /// Checks if a specific NFC tag or QR code can unblock this profile

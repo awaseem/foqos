@@ -15,6 +15,10 @@ import UIKit
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application) -> ShieldConfiguration {
+    if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: nil) {
+      return softUnblockConfiguration
+    }
+
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -22,6 +26,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: category) {
+      return softUnblockConfiguration
+    }
+
     return createCustomShieldConfiguration(
       for: .app, title: application.localizedDisplayName ?? "App")
   }
@@ -66,6 +74,154 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       ),
       primaryButtonBackgroundColor: .white,
       secondaryButtonLabel: nil
+    )
+  }
+
+  private func softUnblockConfiguration(
+    for application: Application,
+    in category: ActivityCategory?
+  ) -> ShieldConfiguration? {
+    guard let session = SoftUnblockGrantStore.activeSession,
+      let snapshot = SharedData.snapshot(for: session.profileId.uuidString),
+      let presentation = softUnblockPresentation(
+        for: application,
+        in: category,
+        profile: snapshot
+      ),
+      !SoftUnblockGrantStore.hasActiveGrant(
+        for: presentation.resource,
+        profileId: session.profileId
+      )
+    else {
+      return nil
+    }
+
+    let configuration = SoftUnblockStrategyData.decode(snapshot.strategyData)
+    guard session.remainingUnblockCount > 0 else {
+      return exhaustedSoftUnblockConfiguration(session: session)
+    }
+
+    let accessMinutes = configuration.accessDurationInMinutes
+    let buttonText = "Open for \(accessMinutes)m"
+    let randomMessage = getFunBlockMessage(
+      for: .app,
+      title: application.localizedDisplayName ?? presentation.resourceName
+    )
+    var allowanceLines = [
+      "\(presentation.resourceName) (\(session.remainingUnblockCount)/\(session.maximumUnblockCount))",
+      breakAllowanceIndicator(for: session),
+    ]
+    if let resetDescription = allowanceResetDescription(for: session) {
+      allowanceLines.append(resetDescription)
+    }
+    let subtitle = [randomMessage.subtitle, allowanceLines.joined(separator: "\n")]
+      .joined(separator: "\n\n")
+
+    return ShieldConfiguration(
+      backgroundBlurStyle: .dark,
+      backgroundColor: UIColor(ThemeManager.shared.themeColor),
+      icon: makeEmojiIcon(randomMessage.emoji, size: 96),
+      title: ShieldConfiguration.Label(
+        text: randomMessage.title,
+        color: .white
+      ),
+      subtitle: ShieldConfiguration.Label(
+        text: subtitle,
+        color: UIColor.white.withAlphaComponent(0.88)
+      ),
+      primaryButtonLabel: ShieldConfiguration.Label(
+        text: buttonText,
+        color: .black
+      ),
+      primaryButtonBackgroundColor: .white,
+      secondaryButtonLabel: ShieldConfiguration.Label(
+        text: "Back",
+        color: .white
+      )
+    )
+  }
+
+  private func exhaustedSoftUnblockConfiguration(
+    session: SoftUnblockSessionState
+  ) -> ShieldConfiguration {
+    let usageText =
+      session.maximumUnblockCount == 1
+      ? "You already used your open for this session."
+      : "You used all \(session.maximumUnblockCount) opens for this session."
+    let subtitle = [usageText, allowanceResetDescription(for: session)]
+      .compactMap { $0 }
+      .joined(separator: " ")
+
+    return ShieldConfiguration(
+      backgroundBlurStyle: .dark,
+      backgroundColor: UIColor(ThemeManager.shared.themeColor),
+      icon: makeEmojiIcon("🔒", size: 96),
+      title: ShieldConfiguration.Label(
+        text: "No opens left",
+        color: .white
+      ),
+      subtitle: ShieldConfiguration.Label(
+        text: subtitle,
+        color: UIColor.white.withAlphaComponent(0.88)
+      ),
+      primaryButtonLabel: ShieldConfiguration.Label(
+        text: "Back",
+        color: .black
+      ),
+      primaryButtonBackgroundColor: .white,
+      secondaryButtonLabel: nil
+    )
+  }
+
+  private func allowanceResetDescription(for session: SoftUnblockSessionState) -> String? {
+    guard session.allowanceResetIntervalInHours != nil,
+      let nextAllowanceResetAt = session.nextAllowanceResetAt
+    else {
+      return nil
+    }
+
+    let remainingMinutes = max(
+      Int(ceil(nextAllowanceResetAt.timeIntervalSinceNow / 60)),
+      1
+    )
+    if remainingMinutes >= 60 {
+      return "Resets in \(remainingMinutes / 60)h"
+    }
+    return "Resets in \(remainingMinutes)m"
+  }
+
+  private func breakAllowanceIndicator(for session: SoftUnblockSessionState) -> String {
+    let availableBreaks = Array(
+      repeating: "●",
+      count: session.remainingUnblockCount
+    )
+    let usedBreaks = Array(
+      repeating: "○",
+      count: session.maximumUnblockCount - session.remainingUnblockCount
+    )
+    return (availableBreaks + usedBreaks).joined(separator: "  ")
+  }
+
+  private func softUnblockPresentation(
+    for application: Application,
+    in category: ActivityCategory?,
+    profile: SharedData.ProfileSnapshot
+  ) -> (resource: SoftUnblockResource, resourceName: String)? {
+    if let categoryToken = category?.token {
+      guard !profile.enableAllowMode else { return nil }
+
+      let categoryName = category?.localizedDisplayName ?? "this category"
+      return (
+        resource: .category(categoryToken),
+        resourceName: categoryName
+      )
+    }
+
+    guard let applicationToken = application.token else { return nil }
+    let applicationName = application.localizedDisplayName ?? "this app"
+    return (
+      resource: .application(applicationToken),
+      resourceName: applicationName
     )
   }
 

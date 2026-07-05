@@ -8,6 +8,7 @@ class ManualBlockingStrategy: BlockingStrategy {
   var description: String = "Start and stop in the app. You do not need to scan anything."
   var iconAssetName: String = "ManualLogoSticker"
   var color: Color = .blue
+  var pickerCategory: BlockingStrategyPickerCategory = .easyToStart
 
   var startsManually: Bool = true
 

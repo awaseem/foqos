@@ -45,7 +45,9 @@ struct DeviceActivitiesDebugCard: View {
   private func activityType(for activity: DeviceActivityName) -> String {
     let rawValue = activity.rawValue
 
-    if rawValue.hasPrefix(PauseTimerActivity.id) {
+    if rawValue.hasPrefix(SoftUnblockGrantScheduler.activityId) {
+      return "Soft Unblock Grant Timer"
+    } else if rawValue.hasPrefix(PauseTimerActivity.id) {
       return "Pause Timer"
     } else if rawValue.hasPrefix(BreakTimerActivity.id) {
       return "Break Timer"
@@ -65,6 +67,10 @@ struct DeviceActivitiesDebugCard: View {
   private func isActivityForProfile(_ activity: DeviceActivityName, profileId: UUID) -> Bool {
     let rawValue = activity.rawValue
     let profileIdString = profileId.uuidString
+
+    if let identifiers = SoftUnblockGrantScheduler.identifiers(from: activity) {
+      return identifiers.profileId == profileId
+    }
 
     // Check if it's a pause timer activity for this profile
     if rawValue.hasPrefix(PauseTimerActivity.id) {
