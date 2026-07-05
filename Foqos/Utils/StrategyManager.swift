@@ -653,7 +653,7 @@ class StrategyManager: ObservableObject {
       if let customView = view {
         presentCustomStrategyView(
           customView,
-          presentationDetents: strategy.stopViewPresentationDetents
+          presentationDetents: [.medium, .large]
         )
       }
     }
