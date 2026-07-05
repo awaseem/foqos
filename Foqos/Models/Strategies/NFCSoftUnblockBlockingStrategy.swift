@@ -1,26 +1,28 @@
 import SwiftData
 import SwiftUI
 
-class SoftUnblockBlockingStrategy: BlockingStrategy {
-  static var id: String = "SoftUnblockBlockingStrategy"
+final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
+  static var id: String = "NFCSoftUnblockBlockingStrategy"
 
-  var name: String = "Soft Unblock"
+  var name: String = "Soft Unblock + NFC"
   var description: String =
-    "Choose a limited number of temporary app or category unblocks, then request them directly from their shields."
-  var iconAssetName: String = "ShieldSticker"
+    "Choose limited temporary app or category unblocks. To stop, scan an NFC tag. Use Strict Unlocks if you want only selected tags to work."
+  var iconAssetName: String = "Soft Unblock + NFC"
   var color: Color = .purple
 
+  var usesNFC: Bool = true
   var startsManually: Bool = true
   var isBeta: Bool = true
-  var customViewPresentationDetents: Set<PresentationDetent> = [.large]
+  var startViewPresentationDetents: Set<PresentationDetent> = [.large]
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
 
+  private let nfcScanner = NFCScannerUtil()
   private let appBlocker = AppBlockerUtil()
 
   func getIdentifier() -> String {
-    SoftUnblockBlockingStrategy.id
+    Self.id
   }
 
   func startBlocking(
@@ -51,7 +53,7 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
 
         let activeSession = BlockedProfileSession.createSession(
           in: context,
-          withTag: SoftUnblockBlockingStrategy.id,
+          withTag: Self.id,
           withProfile: profile,
           forceStart: forceStart ?? false
         )
@@ -74,9 +76,28 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
     context: ModelContext,
     session: BlockedProfileSession
   ) -> (any View)? {
+    nfcScanner.onTagScanned = { tag in
+      let code = tag.url ?? tag.id
+
+      if session.blockedProfile.hasPhysicalUnblockItem(ofType: .nfc)
+        && !session.blockedProfile.canUnblock(withCode: code, type: .nfc)
+      {
+        self.onErrorMessage?(
+          "This NFC tag is not allowed to unblock this profile."
+        )
+        return
+      }
+
+      self.endSession(context: context, session: session)
+    }
+
+    nfcScanner.scan(profileName: session.blockedProfile.name)
+    return nil
+  }
+
+  private func endSession(context: ModelContext, session: BlockedProfileSession) {
     SoftUnblockGrantScheduler.stopAll(sessionId: session.id)
     SoftUnblockGrantStore.endSession(sessionId: session.id)
-
     session.endSession()
 
     do {
@@ -87,7 +108,5 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
 
     appBlocker.deactivateRestrictions()
     onSessionCreation?(.ended(session.blockedProfile))
-
-    return nil
   }
 }

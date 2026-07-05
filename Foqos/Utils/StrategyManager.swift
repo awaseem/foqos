@@ -6,7 +6,8 @@ class StrategyManager: ObservableObject {
   static var shared = StrategyManager()
 
   static let availableStrategies: [BlockingStrategy] = [
-    SoftUnblockBlockingStrategy(),
+    NFCSoftUnblockBlockingStrategy(),
+    QRSoftUnblockBlockingStrategy(),
     ManualBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
@@ -565,10 +566,10 @@ class StrategyManager: ObservableObject {
 
   private func presentCustomStrategyView(
     _ view: any View,
-    for strategy: BlockingStrategy
+    presentationDetents: Set<PresentationDetent>
   ) {
     customStrategyView = view
-    customStrategyViewPresentationDetents = strategy.customViewPresentationDetents
+    customStrategyViewPresentationDetents = presentationDetents
     showCustomStrategyView = true
   }
 
@@ -629,7 +630,10 @@ class StrategyManager: ObservableObject {
       )
 
       if let customView = view {
-        presentCustomStrategyView(customView, for: strategy)
+        presentCustomStrategyView(
+          customView,
+          presentationDetents: strategy.startViewPresentationDetents
+        )
       }
     }
   }
@@ -647,7 +651,10 @@ class StrategyManager: ObservableObject {
       let view = strategy.stopBlocking(context: context, session: session)
 
       if let customView = view {
-        presentCustomStrategyView(customView, for: strategy)
+        presentCustomStrategyView(
+          customView,
+          presentationDetents: strategy.stopViewPresentationDetents
+        )
       }
     }
   }

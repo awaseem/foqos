@@ -326,11 +326,18 @@ struct DebugView: View {
     let sharedProfilesById = Dictionary(
       uniqueKeysWithValues: sharedSnapshots.values.map { ($0.id, $0) }
     )
-    let modelSoftUnblockIds = allProfiles.compactMap { profile in
-      profile.blockingStrategyId == SoftUnblockBlockingStrategy.id ? profile.id : nil
+    let softUnblockStrategyIds: Set<String> = [
+      NFCSoftUnblockBlockingStrategy.id,
+      QRSoftUnblockBlockingStrategy.id,
+    ]
+    let modelSoftUnblockIds: [UUID] = allProfiles.compactMap { profile -> UUID? in
+      guard let strategyId = profile.blockingStrategyId else { return nil }
+      return softUnblockStrategyIds.contains(strategyId) ? profile.id : nil
     }
-    let sharedSoftUnblockIds = sharedSnapshots.values.compactMap { profile in
-      profile.blockingStrategyId == SoftUnblockBlockingStrategy.id ? profile.id : nil
+    let sharedSoftUnblockIds: [UUID] = sharedSnapshots.values.compactMap {
+      profile -> UUID? in
+      guard let strategyId = profile.blockingStrategyId else { return nil }
+      return softUnblockStrategyIds.contains(strategyId) ? profile.id : nil
     }
     var profileIds = Set(modelSoftUnblockIds + sharedSoftUnblockIds)
     if let activeProfileId {

@@ -58,6 +58,14 @@ struct ActiveProfileSessionView: View {
     return StrategyManager.getStrategyFromId(id: strategyId)
   }
 
+  private var isSoftUnblockStrategy: Bool {
+    guard let strategyId = profile.blockingStrategyId else { return false }
+    return [
+      NFCSoftUnblockBlockingStrategy.id,
+      QRSoftUnblockBlockingStrategy.id,
+    ].contains(strategyId)
+  }
+
   private var supportingTextColor: Color {
     colorScheme == .dark ? Color.white.opacity(0.78) : Color.black.opacity(0.66)
   }
@@ -233,7 +241,7 @@ struct ActiveProfileSessionView: View {
         .contentTransition(.opacity)
         .animation(.easeInOut(duration: 0.35), value: focusMessage)
 
-      if profile.blockingStrategyId == SoftUnblockBlockingStrategy.id {
+      if isSoftUnblockStrategy {
         SoftUnblockActiveGrantsCard(profileId: profile.id)
           .padding(.top, 16)
       }
