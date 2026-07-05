@@ -21,6 +21,7 @@ protocol BlockingStrategy {
   var startsManually: Bool { get }
   var requiresSameCodeToStop: Bool { get }
   var isBeta: Bool { get }
+  var customViewPresentationDetents: Set<PresentationDetent> { get }
 
   // Callback closures session creation
   var onSessionCreation: ((SessionStatus) -> Void)? {
@@ -89,6 +90,7 @@ extension BlockingStrategy {
   var startsManually: Bool { false }
   var requiresSameCodeToStop: Bool { false }
   var isBeta: Bool { false }
+  var customViewPresentationDetents: Set<PresentationDetent> { [.medium, .large] }
 
   var tags: [BlockingStrategyTag] {
     var tags: [BlockingStrategyTag] = []

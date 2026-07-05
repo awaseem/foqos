@@ -12,6 +12,7 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
 
   var startsManually: Bool = true
   var isBeta: Bool = true
+  var customViewPresentationDetents: Set<PresentationDetent> = [.large]
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?

@@ -26,6 +26,9 @@ class StrategyManager: ObservableObject {
 
   @Published var showCustomStrategyView: Bool = false
   @Published var customStrategyView: (any View)? = nil
+  @Published var customStrategyViewPresentationDetents: Set<PresentationDetent> = [
+    .medium, .large,
+  ]
 
   @Published var errorMessage: String?
 
@@ -557,6 +560,16 @@ class StrategyManager: ObservableObject {
   private func dismissView() {
     showCustomStrategyView = false
     customStrategyView = nil
+    customStrategyViewPresentationDetents = [.medium, .large]
+  }
+
+  private func presentCustomStrategyView(
+    _ view: any View,
+    for strategy: BlockingStrategy
+  ) {
+    customStrategyView = view
+    customStrategyViewPresentationDetents = strategy.customViewPresentationDetents
+    showCustomStrategyView = true
   }
 
   private func getActiveSession(context: ModelContext)
@@ -616,8 +629,7 @@ class StrategyManager: ObservableObject {
       )
 
       if let customView = view {
-        showCustomStrategyView = true
-        customStrategyView = customView
+        presentCustomStrategyView(customView, for: strategy)
       }
     }
   }
@@ -635,8 +647,7 @@ class StrategyManager: ObservableObject {
       let view = strategy.stopBlocking(context: context, session: session)
 
       if let customView = view {
-        showCustomStrategyView = true
-        customStrategyView = customView
+        presentCustomStrategyView(customView, for: strategy)
       }
     }
   }

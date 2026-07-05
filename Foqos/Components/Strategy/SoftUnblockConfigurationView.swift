@@ -28,101 +28,124 @@ struct SoftUnblockConfigurationView: View {
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 28) {
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Soft Unblock Settings")
-            .font(.title2.bold())
+    NavigationStack {
+      VStack(spacing: 0) {
+        ScrollView {
+          VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 8) {
+              Text("Soft Unblock Settings")
+                .font(.title2.bold())
 
-          Text("Choose how temporary access works while \(profileName) is active.")
-            .font(.callout)
-            .foregroundColor(.secondary)
-        }
+              Text("Choose how temporary access works while \(profileName) is active.")
+                .font(.callout)
+                .foregroundColor(.secondary)
+            }
 
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Allowed Unblocks")
-            .font(.headline)
+            VStack(alignment: .leading, spacing: 12) {
+              Text("Allowed Unblocks")
+                .font(.headline)
 
-          Stepper(
-            value: $maximumUnblockCount,
-            in: SoftUnblockStrategyData.unblockCountRange
-          ) {
-            HStack(alignment: .firstTextBaseline) {
-              Text("\(maximumUnblockCount)")
+              Stepper(
+                value: $maximumUnblockCount,
+                in: SoftUnblockStrategyData.unblockCountRange
+              ) {
+                HStack(alignment: .firstTextBaseline) {
+                  Text("\(maximumUnblockCount)")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .contentTransition(.numericText())
+
+                  Text(maximumUnblockCount == 1 ? "unblock" : "unblocks")
+                    .foregroundColor(.secondary)
+                }
+              }
+              .sensoryFeedback(.selection, trigger: maximumUnblockCount)
+
+              Text("Each successful app or category request uses one unblock.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+              Text("Access Duration")
+                .font(.headline)
+
+              Text(formattedDuration)
                 .font(.system(size: 40, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
 
-              Text(maximumUnblockCount == 1 ? "unblock" : "unblocks")
+              Slider(
+                value: durationBinding,
+                in: Double(
+                  SoftUnblockStrategyData.durationRange.lowerBound)...Double(
+                    SoftUnblockStrategyData.durationRange.upperBound),
+                step: 5
+              )
+              .tint(themeManager.themeColor)
+              .sensoryFeedback(.selection, trigger: accessDurationInMinutes)
+
+              HStack {
+                Text("5m")
+                Spacer()
+                Text("1h")
+              }
+              .font(.caption2)
+              .foregroundColor(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+              Text("Allowance Reset")
+                .font(.headline)
+
+              Picker("Allowance Reset", selection: $allowanceResetIntervalInHours) {
+                Text("Never").tag(Int?.none)
+                ForEach(SoftUnblockStrategyData.allowanceResetIntervalsInHours, id: \.self) {
+                  hours in
+                  Text("\(hours)h").tag(Int?.some(hours))
+                }
+              }
+              .pickerStyle(.segmented)
+
+              Text(resetDescription)
+                .font(.caption)
                 .foregroundColor(.secondary)
             }
           }
-          .sensoryFeedback(.selection, trigger: maximumUnblockCount)
-
-          Text("Each successful app or category request uses one unblock.")
-            .font(.caption)
-            .foregroundColor(.secondary)
+          .padding(.horizontal, 24)
+          .padding(.top, 24)
+          .padding(.bottom, 16)
         }
 
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Allowance Reset")
-            .font(.headline)
-
-          Picker("Allowance Reset", selection: $allowanceResetIntervalInHours) {
-            Text("Never").tag(Int?.none)
-            ForEach(SoftUnblockStrategyData.allowanceResetIntervalsInHours, id: \.self) { hours in
-              Text("\(hours)h").tag(Int?.some(hours))
-            }
+        startButton
+          .padding(.horizontal, 24)
+          .padding(.top, 12)
+          .padding(.bottom, 16)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
           }
-          .pickerStyle(.segmented)
-
-          Text(resetDescription)
-            .font(.caption)
-            .foregroundColor(.secondary)
-        }
-
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Access Duration")
-            .font(.headline)
-
-          Text(formattedDuration)
-            .font(.system(size: 40, weight: .bold, design: .rounded))
-            .contentTransition(.numericText())
-
-          Slider(
-            value: durationBinding,
-            in: Double(
-              SoftUnblockStrategyData.durationRange.lowerBound)...Double(
-                SoftUnblockStrategyData.durationRange.upperBound),
-            step: 5
-          )
-          .tint(themeManager.themeColor)
-          .sensoryFeedback(.selection, trigger: accessDurationInMinutes)
-
-          HStack {
-            Text("5m")
-            Spacer()
-            Text("1h")
-          }
-          .font(.caption2)
-          .foregroundColor(.secondary)
-        }
-
-        ActionButton(
-          title: "Start Blocking",
-          backgroundColor: themeManager.themeColor,
-          iconName: "checkmark.circle.fill"
-        ) {
-          onStart(
-            SoftUnblockStrategyData(
-              accessDurationInMinutes: accessDurationInMinutes,
-              maximumUnblockCount: maximumUnblockCount,
-              allowanceResetIntervalInHours: allowanceResetIntervalInHours
-            )
-          )
-          dismiss()
+          .accessibilityLabel("Cancel")
         }
       }
-      .padding(24)
+    }
+  }
+
+  private var startButton: some View {
+    ActionButton(
+      title: "Start Blocking",
+      backgroundColor: themeManager.themeColor,
+      iconName: "checkmark.circle.fill"
+    ) {
+      onStart(
+        SoftUnblockStrategyData(
+          accessDurationInMinutes: accessDurationInMinutes,
+          maximumUnblockCount: maximumUnblockCount,
+          allowanceResetIntervalInHours: allowanceResetIntervalInHours
+        )
+      )
+      dismiss()
     }
   }
 
