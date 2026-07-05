@@ -98,7 +98,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     let configuration = SoftUnblockStrategyData.decode(snapshot.strategyData)
     guard session.remainingUnblockCount > 0 else {
-      return exhaustedSoftUnblockConfiguration(maximumUnblockCount: session.maximumUnblockCount)
+      return exhaustedSoftUnblockConfiguration(session: session)
     }
 
     let accessMinutes = configuration.accessDurationInMinutes
@@ -107,6 +107,13 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       session.remainingUnblockCount == 1
       ? "1 unblock remaining."
       : "\(session.remainingUnblockCount) unblocks remaining."
+    let subtitle = [
+      presentation.subtitle,
+      remainingText,
+      allowanceResetDescription(for: session),
+    ]
+    .compactMap { $0 }
+    .joined(separator: " ")
 
     return ShieldConfiguration(
       backgroundBlurStyle: .dark,
@@ -117,7 +124,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(
-        text: "\(presentation.subtitle) \(remainingText)",
+        text: subtitle,
         color: UIColor.white.withAlphaComponent(0.88)
       ),
       primaryButtonLabel: ShieldConfiguration.Label(
@@ -133,12 +140,15 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   }
 
   private func exhaustedSoftUnblockConfiguration(
-    maximumUnblockCount: Int
+    session: SoftUnblockSessionState
   ) -> ShieldConfiguration {
     let usageText =
-      maximumUnblockCount == 1
+      session.maximumUnblockCount == 1
       ? "The unblock for this session has already been used."
-      : "All \(maximumUnblockCount) unblocks for this session have been used."
+      : "All \(session.maximumUnblockCount) unblocks for this session have been used."
+    let subtitle = [usageText, allowanceResetDescription(for: session)]
+      .compactMap { $0 }
+      .joined(separator: " ")
 
     return ShieldConfiguration(
       backgroundBlurStyle: .dark,
@@ -149,7 +159,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         color: .white
       ),
       subtitle: ShieldConfiguration.Label(
-        text: usageText,
+        text: subtitle,
         color: UIColor.white.withAlphaComponent(0.88)
       ),
       primaryButtonLabel: ShieldConfiguration.Label(
@@ -159,6 +169,22 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
       primaryButtonBackgroundColor: .white,
       secondaryButtonLabel: nil
     )
+  }
+
+  private func allowanceResetDescription(for session: SoftUnblockSessionState) -> String? {
+    guard session.allowanceResetIntervalInHours != nil,
+      let nextAllowanceResetAt = session.nextAllowanceResetAt
+    else {
+      return nil
+    }
+
+    let formatter = RelativeDateTimeFormatter()
+    formatter.unitsStyle = .full
+    let relativeResetTime = formatter.localizedString(
+      for: nextAllowanceResetAt,
+      relativeTo: Date()
+    )
+    return "Allowance resets \(relativeResetTime)."
   }
 
   private func softUnblockPresentation(

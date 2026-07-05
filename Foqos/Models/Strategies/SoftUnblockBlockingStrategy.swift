@@ -59,7 +59,9 @@ class SoftUnblockBlockingStrategy: BlockingStrategy {
         SoftUnblockGrantStore.beginSession(
           sessionId: activeSession.id,
           profileId: profile.id,
-          maximumUnblockCount: configuration.maximumUnblockCount
+          maximumUnblockCount: configuration.maximumUnblockCount,
+          allowanceResetIntervalInHours: configuration.allowanceResetIntervalInHours,
+          startedAt: activeSession.startTime
         )
         self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
         self.onSessionCreation?(.started(activeSession))

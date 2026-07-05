@@ -17,28 +17,51 @@ enum SoftUnblockGrantStore {
   private static let grantKeyPrefix = "softUnblock.grant."
 
   static var activeSession: SoftUnblockSessionState? {
+    currentSession(at: Date())
+  }
+
+  static func currentSession(at date: Date) -> SoftUnblockSessionState? {
     guard let data = suite.data(forKey: activeSessionKey) else { return nil }
-    return try? JSONDecoder().decode(SoftUnblockSessionState.self, from: data)
+    guard var session = try? JSONDecoder().decode(SoftUnblockSessionState.self, from: data) else {
+      return nil
+    }
+
+    if session.resetAllowanceIfNeeded(at: date) {
+      saveActiveSession(session)
+    }
+
+    return session
   }
 
   static func beginSession(
     sessionId: String,
     profileId: UUID,
-    maximumUnblockCount: Int
+    maximumUnblockCount: Int,
+    allowanceResetIntervalInHours: Int?,
+    startedAt: Date
   ) {
     clearAll()
 
+    let resetInterval = normalizedResetInterval(allowanceResetIntervalInHours)
     let state = SoftUnblockSessionState(
       sessionId: sessionId,
       profileId: profileId,
-      maximumUnblockCount: min(max(maximumUnblockCount, 1), 10),
+      maximumUnblockCount: min(
+        max(maximumUnblockCount, SoftUnblockSessionState.maximumUnblockCountRange.lowerBound),
+        SoftUnblockSessionState.maximumUnblockCountRange.upperBound
+      ),
+      allowanceResetIntervalInHours: resetInterval,
+      allowanceWindowStartedAt: startedAt,
+      nextAllowanceResetAt: resetInterval.map {
+        startedAt.addingTimeInterval(TimeInterval($0 * 60 * 60))
+      },
       usedUnblockCount: 0
     )
     saveActiveSession(state)
   }
 
   static func issue(_ grant: SoftUnblockGrant) -> Bool {
-    guard var session = activeSession,
+    guard var session = currentSession(at: grant.createdAt),
       session.sessionId == grant.sessionId,
       session.profileId == grant.profileId,
       session.remainingUnblockCount > 0,
@@ -56,11 +79,12 @@ enum SoftUnblockGrantStore {
   }
 
   static func rollbackIssuedGrant(id: UUID, sessionId: String) {
-    guard grant(id: id, sessionId: sessionId) != nil else { return }
+    guard let issuedGrant = grant(id: id, sessionId: sessionId) else { return }
     removeGrant(id: id, sessionId: sessionId)
 
     guard var session = activeSession,
       session.sessionId == sessionId,
+      session.containsAllowanceUse(createdAt: issuedGrant.createdAt),
       session.usedUnblockCount > 0
     else {
       return
@@ -80,7 +104,9 @@ enum SoftUnblockGrantStore {
     for profileId: UUID,
     at date: Date = Date()
   ) -> [SoftUnblockGrant] {
-    guard let activeSession, activeSession.profileId == profileId else { return [] }
+    guard let activeSession = currentSession(at: date), activeSession.profileId == profileId else {
+      return []
+    }
 
     return grants(for: activeSession.sessionId).filter { !$0.isExpired(at: date) }
   }
@@ -171,5 +197,14 @@ enum SoftUnblockGrantStore {
   private static func saveActiveSession(_ session: SoftUnblockSessionState) {
     guard let data = try? JSONEncoder().encode(session) else { return }
     suite.set(data, forKey: activeSessionKey)
+  }
+
+  private static func normalizedResetInterval(_ interval: Int?) -> Int? {
+    guard let interval,
+      SoftUnblockSessionState.allowanceResetIntervalsInHours.contains(interval)
+    else {
+      return nil
+    }
+    return interval
   }
 }

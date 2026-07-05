@@ -9,6 +9,7 @@ struct SoftUnblockConfigurationView: View {
 
   @State private var maximumUnblockCount: Int
   @State private var accessDurationInMinutes: Int
+  @State private var allowanceResetIntervalInHours: Int?
 
   init(
     profileName: String,
@@ -20,6 +21,9 @@ struct SoftUnblockConfigurationView: View {
     _maximumUnblockCount = State(initialValue: initialConfiguration.maximumUnblockCount)
     _accessDurationInMinutes = State(
       initialValue: initialConfiguration.accessDurationInMinutes
+    )
+    _allowanceResetIntervalInHours = State(
+      initialValue: initialConfiguration.allowanceResetIntervalInHours
     )
   }
 
@@ -60,6 +64,23 @@ struct SoftUnblockConfigurationView: View {
         }
 
         VStack(alignment: .leading, spacing: 12) {
+          Text("Allowance Reset")
+            .font(.headline)
+
+          Picker("Allowance Reset", selection: $allowanceResetIntervalInHours) {
+            Text("Never").tag(Int?.none)
+            ForEach(SoftUnblockStrategyData.allowanceResetIntervalsInHours, id: \.self) { hours in
+              Text("\(hours)h").tag(Int?.some(hours))
+            }
+          }
+          .pickerStyle(.segmented)
+
+          Text(resetDescription)
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+
+        VStack(alignment: .leading, spacing: 12) {
           Text("Access Duration")
             .font(.headline)
 
@@ -94,7 +115,8 @@ struct SoftUnblockConfigurationView: View {
           onStart(
             SoftUnblockStrategyData(
               accessDurationInMinutes: accessDurationInMinutes,
-              maximumUnblockCount: maximumUnblockCount
+              maximumUnblockCount: maximumUnblockCount,
+              allowanceResetIntervalInHours: allowanceResetIntervalInHours
             )
           )
           dismiss()
@@ -114,6 +136,15 @@ struct SoftUnblockConfigurationView: View {
   private var formattedDuration: String {
     accessDurationInMinutes == 60 ? "1 hour" : "\(accessDurationInMinutes) minutes"
   }
+
+  private var resetDescription: String {
+    guard let allowanceResetIntervalInHours else {
+      return "The selected allowance lasts for the entire profile session."
+    }
+
+    return
+      "The full allowance resets every \(allowanceResetIntervalInHours) hours after the profile starts."
+  }
 }
 
 #Preview {
@@ -121,7 +152,8 @@ struct SoftUnblockConfigurationView: View {
     profileName: "Deep Work",
     initialConfiguration: SoftUnblockStrategyData(
       accessDurationInMinutes: 15,
-      maximumUnblockCount: 3
+      maximumUnblockCount: 3,
+      allowanceResetIntervalInHours: 6
     ),
     onStart: { _ in }
   )

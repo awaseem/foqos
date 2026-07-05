@@ -91,6 +91,12 @@ struct SoftUnblockDiagnostics {
       markdown += "- **Maximum Unblocks:** \(activeSession.maximumUnblockCount)\n"
       markdown += "- **Used Unblocks:** \(activeSession.usedUnblockCount)\n"
       markdown += "- **Remaining Unblocks:** \(activeSession.remainingUnblockCount)\n"
+      markdown +=
+        "- **Allowance Reset Interval:** \(resetInterval(activeSession.allowanceResetIntervalInHours))\n"
+      markdown +=
+        "- **Allowance Window Started At:** \(format(activeSession.allowanceWindowStartedAt))\n"
+      markdown +=
+        "- **Next Allowance Reset At:** \(activeSession.nextAllowanceResetAt.map(format) ?? "Never")\n"
     }
 
     if let sharedSession {
@@ -212,6 +218,8 @@ struct SoftUnblockDiagnostics {
       markdown +=
         "- **\(label) Access Duration:** \(configuration.accessDurationInMinutes) minutes\n"
       markdown += "- **\(label) Maximum Unblocks:** \(configuration.maximumUnblockCount)\n"
+      markdown +=
+        "- **\(label) Allowance Reset:** \(resetInterval(configuration.allowanceResetIntervalInHours))\n"
     }
   }
 
@@ -228,6 +236,10 @@ struct SoftUnblockDiagnostics {
 
   private func yesNo(_ value: Bool) -> String {
     value ? "Yes" : "No"
+  }
+
+  private func resetInterval(_ hours: Int?) -> String {
+    hours.map { "Every \($0) hours" } ?? "Never"
   }
 }
 
@@ -252,6 +264,18 @@ struct SoftUnblockDebugCard: View {
         DebugRow(label: "Maximum Unblocks", value: "\(activeSession.maximumUnblockCount)")
         DebugRow(label: "Used Unblocks", value: "\(activeSession.usedUnblockCount)")
         DebugRow(label: "Remaining Unblocks", value: "\(activeSession.remainingUnblockCount)")
+        DebugRow(
+          label: "Allowance Reset",
+          value: resetInterval(activeSession.allowanceResetIntervalInHours)
+        )
+        DebugRow(
+          label: "Window Started At",
+          value: format(activeSession.allowanceWindowStartedAt)
+        )
+        DebugRow(
+          label: "Next Reset At",
+          value: activeSession.nextAllowanceResetAt.map(format) ?? "Never"
+        )
       }
 
       if let sharedSession = diagnostics.sharedSession {
@@ -315,6 +339,10 @@ struct SoftUnblockDebugCard: View {
             value: unblockLimit(profile.modelConfiguration)
           )
           DebugRow(
+            label: "Model Allowance Reset",
+            value: configurationResetInterval(profile.modelConfiguration)
+          )
+          DebugRow(
             label: "Shared Snapshot",
             value: "\(profile.sharedSnapshot != nil)"
           )
@@ -333,6 +361,10 @@ struct SoftUnblockDebugCard: View {
           DebugRow(
             label: "Shared Unblock Limit",
             value: unblockLimit(profile.sharedConfiguration)
+          )
+          DebugRow(
+            label: "Shared Allowance Reset",
+            value: configurationResetInterval(profile.sharedConfiguration)
           )
           DebugRow(label: "Model/Shared Match", value: "\(profile.isInSync)")
         }
@@ -444,6 +476,17 @@ struct SoftUnblockDebugCard: View {
 
   private func unblockLimit(_ configuration: SoftUnblockStrategyData?) -> String {
     configuration.map { "\($0.maximumUnblockCount)" } ?? "Undecodable"
+  }
+
+  private func configurationResetInterval(
+    _ configuration: SoftUnblockStrategyData?
+  ) -> String {
+    guard let configuration else { return "Undecodable" }
+    return resetInterval(configuration.allowanceResetIntervalInHours)
+  }
+
+  private func resetInterval(_ hours: Int?) -> String {
+    hours.map { "Every \($0) hours" } ?? "Never"
   }
 
   private func format(_ date: Date) -> String {

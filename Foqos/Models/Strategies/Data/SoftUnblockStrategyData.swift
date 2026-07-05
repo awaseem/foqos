@@ -3,11 +3,15 @@ import Foundation
 struct SoftUnblockStrategyData: Codable, Equatable {
   static let defaultDurationInMinutes = 15
   static let defaultMaximumUnblockCount = 3
+  static let defaultAllowanceResetIntervalInHours: Int? = nil
   static let durationRange = 5...60
-  static let unblockCountRange = 1...10
+  static let unblockCountRange = SoftUnblockSessionState.maximumUnblockCountRange
+  static let allowanceResetIntervalsInHours =
+    SoftUnblockSessionState.allowanceResetIntervalsInHours
 
   var accessDurationInMinutes: Int
   var maximumUnblockCount: Int
+  var allowanceResetIntervalInHours: Int?
 
   static func decode(_ data: Data?) -> SoftUnblockStrategyData {
     guard let data,
@@ -15,7 +19,8 @@ struct SoftUnblockStrategyData: Codable, Equatable {
     else {
       return SoftUnblockStrategyData(
         accessDurationInMinutes: defaultDurationInMinutes,
-        maximumUnblockCount: defaultMaximumUnblockCount
+        maximumUnblockCount: defaultMaximumUnblockCount,
+        allowanceResetIntervalInHours: defaultAllowanceResetIntervalInHours
       )
     }
 
@@ -35,7 +40,10 @@ struct SoftUnblockStrategyData: Codable, Equatable {
       maximumUnblockCount: min(
         max(maximumUnblockCount, Self.unblockCountRange.lowerBound),
         Self.unblockCountRange.upperBound
-      )
+      ),
+      allowanceResetIntervalInHours: allowanceResetIntervalInHours.flatMap { interval in
+        Self.allowanceResetIntervalsInHours.contains(interval) ? interval : nil
+      }
     )
   }
 }
