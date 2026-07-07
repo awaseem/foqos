@@ -127,7 +127,7 @@ Foqos also has a printable NFC brick and keychain design for 25 mm NFC tags:
 
 ## Android Alternative
 
-Foqos is iOS-only. Android users looking for a similar physical app blocker can try [Switchly](https://switchly.saltyy.at/#features).
+Foqos is iOS-only. Android users looking for a similar physical app blocker can try [Switchly](https://switchly.saltyy.at/#features) or [Lock](https://lock-app.fr) ([source](https://github.com/NathanLenias/lock-app)), a free and open-source NFC app blocker for Android.
 
 ## Development
 
