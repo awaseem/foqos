@@ -23,6 +23,7 @@ struct ProfileDebugCard: View {
         DebugRow(label: "Enable Live Activity", value: "\(profile.enableLiveActivity)")
         DebugRow(label: "Enable Breaks", value: "\(profile.enableBreaks)")
         DebugRow(label: "Break Time (minutes)", value: "\(profile.breakTimeInMinutes)")
+        DebugRow(label: "Allow Multiple Breaks", value: "\(profile.allowMultipleBreaks)")
         DebugRow(label: "Enable Strict Mode", value: "\(profile.enableStrictMode)")
         DebugRow(label: "Enable Allow Mode", value: "\(profile.enableAllowMode)")
         DebugRow(

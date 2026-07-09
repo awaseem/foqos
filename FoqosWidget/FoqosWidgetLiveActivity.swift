@@ -9,6 +9,7 @@ struct FoqosWidgetAttributes: ActivityAttributes {
     var isBreakActive: Bool = false
     var breakStartTime: Date?
     var breakEndTime: Date?
+    var usedBreakDurationInSeconds: TimeInterval = 0
     var isPauseActive: Bool = false
     var pauseStartTime: Date?
     var pauseEndTime: Date?
@@ -26,16 +27,14 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 
     private func calculateBreakDuration() -> TimeInterval {
       guard let breakStart = breakStartTime else {
-        return 0
+        return usedBreakDurationInSeconds
       }
 
       if let breakEnd = breakEndTime {
-        // Break is complete, return the full duration
-        return breakEnd.timeIntervalSince(breakStart)
+        return usedBreakDurationInSeconds + breakEnd.timeIntervalSince(breakStart)
       }
 
-      // Break is not yet ended, don't count it
-      return 0
+      return usedBreakDurationInSeconds
     }
 
     var countdownRange: ClosedRange<Date>? {
@@ -315,6 +314,7 @@ extension FoqosWidgetAttributes.ContentState {
         isBreakActive: false,
         breakStartTime: nil,
         breakEndTime: nil,
+        usedBreakDurationInSeconds: 0,
         isPauseActive: false,
         pauseStartTime: nil,
         pauseEndTime: nil
@@ -328,6 +328,7 @@ extension FoqosWidgetAttributes.ContentState {
       isBreakActive: false,
       breakStartTime: nil,
       breakEndTime: nil,
+      usedBreakDurationInSeconds: 0,
       isPauseActive: false,
       pauseStartTime: nil,
       pauseEndTime: nil
@@ -341,6 +342,7 @@ extension FoqosWidgetAttributes.ContentState {
       isBreakActive: true,
       breakStartTime: Date.now,
       breakEndTime: nil,
+      usedBreakDurationInSeconds: 0,
       isPauseActive: false,
       pauseStartTime: nil,
       pauseEndTime: nil
@@ -354,6 +356,7 @@ extension FoqosWidgetAttributes.ContentState {
       isBreakActive: false,
       breakStartTime: nil,
       breakEndTime: nil,
+      usedBreakDurationInSeconds: 0,
       isPauseActive: true,
       pauseStartTime: Date.now,
       pauseEndTime: nil

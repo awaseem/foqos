@@ -143,6 +143,10 @@ struct DebugView: View {
 
       markdown += "- **Break Available:** \(session.isBreakAvailable ? "Yes" : "No")\n"
       markdown += "- **Break Active:** \(session.isBreakActive ? "Yes" : "No")\n"
+      markdown +=
+        "- **Used Break Duration:** \(DateFormatters.formatDuration(session.usedBreakDurationInSeconds))\n"
+      markdown +=
+        "- **Remaining Break Allowance:** \(DateFormatters.formatDuration(session.remainingBreakAllowance()))\n"
 
       if let breakStartTime = session.breakStartTime {
         markdown += "- **Break Started At:** \(DateFormatters.formatDate(breakStartTime))\n"
@@ -196,6 +200,8 @@ struct DebugView: View {
           "- **Adult Content Blocking:** \(profile.enableAdultContentBlocking ? "Enabled" : "Disabled")\n"
         markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"
         markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
+        markdown +=
+          "- **Allow Multiple Breaks:** \(profile.allowMultipleBreaks ? "Enabled" : "Disabled")\n"
         markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
         markdown +=
           "- **Prevent App Installation:** \(profile.enableBlockAppInstallation ? "Enabled" : "Disabled")\n"

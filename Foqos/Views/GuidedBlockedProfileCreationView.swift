@@ -516,7 +516,15 @@ private struct GuidedProfileReviewContent: View {
       return "Not needed"
     }
 
-    return draft.enableBreaks ? "\(draft.breakTimeInMinutes) minutes" : "Disabled"
+    guard draft.enableBreaks else {
+      return "Disabled"
+    }
+
+    if draft.allowMultipleBreaks {
+      return "\(draft.breakTimeInMinutes) minutes, reusable"
+    }
+
+    return "\(draft.breakTimeInMinutes) minutes"
   }
 
   private var safeguardsSummary: String {

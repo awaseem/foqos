@@ -282,6 +282,15 @@ struct BlockedProfileBreaksFields: View {
         ProfileFieldDivider(isVisible: showsSeparators)
 
         breakDurationPicker
+
+        ProfileFieldDivider(isVisible: showsSeparators)
+
+        CustomToggle(
+          title: "Allow Multiple Breaks",
+          description: "Use the break duration across multiple breaks in this session.",
+          isOn: $draft.allowMultipleBreaks,
+          isDisabled: disabled
+        )
       }
     } else {
       ProfileFieldNotice(

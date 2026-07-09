@@ -191,6 +191,7 @@ class LiveActivityManager: ObservableObject {
       isBreakActive: session.isBreakActive,
       breakStartTime: session.breakStartTime,
       breakEndTime: session.breakEndTime,
+      usedBreakDurationInSeconds: session.usedBreakDurationInSeconds,
       isPauseActive: session.isPauseActive,
       pauseStartTime: session.pauseStartTime,
       pauseEndTime: session.pauseEndTime

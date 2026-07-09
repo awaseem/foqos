@@ -9,6 +9,7 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var enableReminder: Bool
   @Published var enableBreaks: Bool
   @Published var breakTimeInMinutes: Int
+  @Published var allowMultipleBreaks: Bool
   @Published var enableStrictMode: Bool
   @Published var enableBlockAppInstallation: Bool
   @Published var reminderTimeInMinutes: Int
@@ -35,6 +36,7 @@ final class BlockedProfileDraft: ObservableObject {
     enableLiveActivity = profile?.enableLiveActivity ?? false
     enableBreaks = profile?.enableBreaks ?? false
     breakTimeInMinutes = profile?.breakTimeInMinutes ?? 15
+    allowMultipleBreaks = profile?.allowMultipleBreaks ?? false
     enableStrictMode = profile?.enableStrictMode ?? false
     enableBlockAppInstallation = profile?.enableBlockAppInstallation ?? false
     enableAllowMode = profile?.enableAllowMode ?? false
@@ -100,6 +102,7 @@ final class BlockedProfileDraft: ObservableObject {
         customReminderMessage: customReminderMessage,
         enableBreaks: enableTimedBreaksToSave,
         breakTimeInMinutes: breakTimeInMinutes,
+        allowMultipleBreaks: enableTimedBreaksToSave && allowMultipleBreaks,
         enableStrictMode: enableStrictMode,
         enableBlockAppInstallation: enableBlockAppInstallation,
         enableAllowMode: enableAllowMode,
@@ -127,6 +130,7 @@ final class BlockedProfileDraft: ObservableObject {
       customReminderMessage: customReminderMessage,
       enableBreaks: enableTimedBreaksToSave,
       breakTimeInMinutes: breakTimeInMinutes,
+      allowMultipleBreaks: enableTimedBreaksToSave && allowMultipleBreaks,
       enableStrictMode: enableStrictMode,
       enableBlockAppInstallation: enableBlockAppInstallation,
       enableAllowMode: enableAllowMode,
@@ -150,5 +154,6 @@ final class BlockedProfileDraft: ObservableObject {
     }
 
     enableBreaks = false
+    allowMultipleBreaks = false
   }
 }

@@ -37,12 +37,21 @@ class DeviceActivityCenterUtil {
   }
 
   static func startBreakTimerActivity(for profile: BlockedProfiles) {
+    startBreakTimerActivity(
+      for: profile,
+      durationInSeconds: TimeInterval(profile.breakTimeInMinutes * 60)
+    )
+  }
+
+  static func startBreakTimerActivity(
+    for profile: BlockedProfiles,
+    durationInSeconds: TimeInterval
+  ) {
     let center = DeviceActivityCenter()
     let breakTimerActivity = BreakTimerActivity()
     let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
 
-    let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
-      from: profile.breakTimeInMinutes)
+    let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(from: durationInSeconds)
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
@@ -72,7 +81,7 @@ class DeviceActivityCenterUtil {
       from: profile.id.uuidString)
 
     let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
-      from: timerData.durationInMinutes)
+      from: TimeInterval(timerData.durationInMinutes * 60))
 
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
@@ -137,7 +146,7 @@ class DeviceActivityCenterUtil {
       from: profile.id.uuidString)
 
     let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
-      from: pauseData.pauseDurationInMinutes)
+      from: TimeInterval(pauseData.pauseDurationInMinutes * 60))
 
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
@@ -208,29 +217,18 @@ class DeviceActivityCenterUtil {
     center.stopMonitoring(activities)
   }
 
-  private static func getTimeIntervalStartAndEnd(from minutes: Int) -> (
+  private static func getTimeIntervalStartAndEnd(from durationInSeconds: TimeInterval) -> (
     intervalStart: DateComponents, intervalEnd: DateComponents
   ) {
-    let intervalStart = DateComponents(hour: 0, minute: 0)
+    let intervalStart = DateComponents(hour: 0, minute: 0, second: 0)
 
-    // Get current time
     let now = Date()
-    let currentComponents = Calendar.current.dateComponents([.hour, .minute], from: now)
-    let currentHour = currentComponents.hour ?? 0
-    let currentMinute = currentComponents.minute ?? 0
-
-    // Calculate end time by adding minutes to current time
-    let totalMinutes = currentMinute + minutes
-    var endHour = currentHour + (totalMinutes / 60)
-    var endMinute = totalMinutes % 60
-
-    // Cap at 23:59 if it would roll over past midnight.
-    if endHour >= 24 || (endHour == 23 && endMinute >= 59) {
-      endHour = 23
-      endMinute = 59
-    }
-
-    let intervalEnd = DateComponents(hour: endHour, minute: endMinute)
+    let safeDuration = max(1, durationInSeconds)
+    let endDate = min(
+      now.addingTimeInterval(safeDuration),
+      Calendar.current.startOfDay(for: now).addingTimeInterval((24 * 60 * 60) - 1)
+    )
+    let intervalEnd = Calendar.current.dateComponents([.hour, .minute, .second], from: endDate)
     return (intervalStart: intervalStart, intervalEnd: intervalEnd)
   }
 }
