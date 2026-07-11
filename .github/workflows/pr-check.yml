@@ -24,3 +24,6 @@ jobs:
 
       - name: Build project
         run: make build
+
+      - name: Run unit tests
+        run: make test
