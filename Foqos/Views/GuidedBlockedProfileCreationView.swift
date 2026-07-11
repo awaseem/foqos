@@ -182,6 +182,7 @@ struct GuidedBlockedProfileCreationView: View {
 
         stepControls
       }
+      .background(Color(.systemGroupedBackground).ignoresSafeArea())
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button(action: handleBackAction) {

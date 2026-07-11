@@ -2,6 +2,8 @@ import FamilyControls
 import SwiftUI
 
 struct AppPicker: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   let stateUpdateTimer = Timer.publish(every: 1, on: .main, in: .common)
     .autoconnect()
 
@@ -12,24 +14,21 @@ struct AppPicker: View {
 
   @State private var updateFlag: Bool = false
   @State private var refreshID: UUID = UUID()
-  @State private var isMessageExpanded: Bool = true  // Start expanded so users see the warning
+  @State private var showLimitInfo: Bool = false
   @State private var showLimitAlert: Bool = false
 
-  private var compactTitle: String {
-    let displayText = FamilyActivityUtil.getCountDisplayText(selection, allowMode: allowMode)
-    let action = allowMode ? "allowed" : "blocked"
-    return "\(displayText) \(action)"
+  private var selectedCount: Int {
+    return FamilyActivityUtil.countSelectedActivities(selection, allowMode: allowMode)
   }
 
   private var detailedMessage: String {
     return allowMode
-      ? "Apple enforces a 50 app limit. When allowing only selected apps, each app within a selected category counts separately."
-      : "Apple enforces a 50 app limit. When blocking selected apps, categories count as 1 item each."
+      ? "Apps inside selected categories each count toward Apple's 50-app limit."
+      : "Select up to 50 apps or categories. Each category counts as one item."
   }
 
   private var isOverLimit: Bool {
-    let count = FamilyActivityUtil.countSelectedActivities(selection, allowMode: allowMode)
-    return count > 50
+    return selectedCount > 50
   }
 
   private func handleDone() {
@@ -42,73 +41,23 @@ struct AppPicker: View {
 
   var body: some View {
     NavigationStack {
-      VStack(alignment: .leading, spacing: 12) {
-        ZStack {
-          Text(verbatim: "Updating view state because of bug in iOS...")
-            .foregroundStyle(.clear)
-            .accessibilityHidden(true)
-            .opacity(updateFlag ? 1 : 0)
+      ZStack {
+        Text(verbatim: "Updating view state because of bug in iOS...")
+          .foregroundStyle(.clear)
+          .accessibilityHidden(true)
+          .opacity(updateFlag ? 1 : 0)
 
-          FamilyActivityPicker(selection: $selection)
-            .id(refreshID)
-        }
-
-        // Compact info section
-        Button(action: {
-          withAnimation(.easeInOut(duration: 0.2)) {
-            isMessageExpanded.toggle()
-          }
-        }) {
-          VStack(alignment: .leading, spacing: 10) {
-            HStack {
-              VStack(alignment: .leading, spacing: 4) {
-                Text(compactTitle)
-                  .font(.subheadline)
-                  .bold()
-                  .foregroundColor(.primary)
-
-                if !isMessageExpanded {
-                  Text("Tap for details")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                }
-              }
-
-              Spacer()
-
-              Image(systemName: isMessageExpanded ? "chevron.up.circle.fill" : "info.circle")
-                .font(.title3)
-                .foregroundColor(.secondary)
-            }
-
-            if isMessageExpanded {
-              VStack(alignment: .leading, spacing: 12) {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 6) {
-                  Text("Apple's 50 App Limit")
-                    .font(.caption)
-                    .bold()
-                    .foregroundColor(.secondary)
-
-                  Text(detailedMessage)
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
-              }
-            }
-          }
-          .padding(12)
-          .background(Color(.systemGray6))
-          .cornerRadius(10)
-          .padding(.horizontal, 16)
-        }
-        .buttonStyle(.plain)
+        FamilyActivityPicker(selection: $selection)
+          .id(refreshID)
       }
+      .background(Color(.systemGroupedBackground).ignoresSafeArea())
+      .tint(themeManager.themeColor)
       .onReceive(stateUpdateTimer) { _ in
         updateFlag.toggle()
       }
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Color(.systemGroupedBackground), for: .navigationBar)
+      .toolbarBackground(.visible, for: .navigationBar)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button(action: { refreshID = UUID() }) {
@@ -117,12 +66,38 @@ struct AppPicker: View {
           .accessibilityLabel("Refresh")
         }
 
+        ToolbarItem(placement: .principal) {
+          Button(action: { showLimitInfo = true }) {
+            HStack(spacing: 5) {
+              Text("\(selectedCount)")
+                .fontWeight(.semibold)
+                .foregroundStyle(isOverLimit ? Color.red : themeManager.themeColor)
+
+              Text("/ 50")
+                .foregroundStyle(.secondary)
+
+              Image(systemName: "info.circle")
+                .font(.caption)
+                .foregroundStyle(isOverLimit ? Color.red : themeManager.themeColor)
+            }
+            .font(.subheadline)
+            .monospacedDigit()
+          }
+          .accessibilityLabel("\(selectedCount) of 50 items selected")
+          .accessibilityHint("Shows selection limit details")
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
           Button(action: handleDone) {
             Image(systemName: "checkmark")
           }
           .accessibilityLabel("Done")
         }
+      }
+      .alert("Apple's 50-App Limit", isPresented: $showLimitInfo) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text(detailedMessage)
       }
       .alert("Over 50 App Limit", isPresented: $showLimitAlert) {
         Button("Cancel", role: .cancel) {}
@@ -145,6 +120,7 @@ struct AppPicker: View {
         selection: .constant(FamilyActivitySelection()),
         isPresented: .constant(true)
       )
+      .environmentObject(ThemeManager.shared)
     }
   }
 #endif
