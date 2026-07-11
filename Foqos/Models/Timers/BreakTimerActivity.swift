@@ -36,9 +36,14 @@ class BreakTimerActivity: TimerActivity {
     // End restrictions for break, preserving strict mode if enabled
     appBlocker.deactivateRestrictionsForBreak(for: profile)
 
-    // End the active scheduled session
-    let now = Date()
-    SharedData.setBreakStartTime(date: now)
+    if activeSession.breakStartTime == nil || activeSession.breakEndTime != nil {
+      if profile.allowMultipleBreaks == true {
+        SharedData.resetBreak()
+      }
+
+      let now = Date()
+      SharedData.setBreakStartTime(date: now)
+    }
   }
 
   func stop(for profile: SharedData.ProfileSnapshot) {
@@ -65,7 +70,11 @@ class BreakTimerActivity: TimerActivity {
 
       // Set the break end time
       let now = Date()
-      SharedData.setBreakEndTime(date: now)
+      SharedData.endBreak(
+        date: now,
+        allowMultipleBreaks: profile.allowMultipleBreaks == true,
+        totalAllowanceInSeconds: TimeInterval(profile.breakTimeInMinutes * 60)
+      )
     }
   }
 }

@@ -273,7 +273,7 @@ struct BlockedProfileBreaksFields: View {
       CustomToggle(
         title: "Allow Timed Breaks",
         description:
-          "Take a single break during your session. The break will automatically end after the selected duration.",
+          "Take a break during your session. The break will automatically end after the selected duration.",
         isOn: $draft.enableBreaks,
         isDisabled: disabled
       )
@@ -282,6 +282,15 @@ struct BlockedProfileBreaksFields: View {
         ProfileFieldDivider(isVisible: showsSeparators)
 
         breakDurationPicker
+
+        ProfileFieldDivider(isVisible: showsSeparators)
+
+        CustomToggle(
+          title: "Allow Multiple Breaks",
+          description: "Take multiple breaks until your total break duration is used.",
+          isOn: $draft.allowMultipleBreaks,
+          isDisabled: disabled
+        )
       }
     } else {
       ProfileFieldNotice(

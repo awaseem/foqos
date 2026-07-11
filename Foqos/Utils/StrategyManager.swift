@@ -447,17 +447,33 @@ class StrategyManager: ObservableObject {
       return
     }
 
+    let remainingBreakAllowance = session.remainingBreakAllowance()
+    guard remainingBreakAllowance > 0 else {
+      print("No break allowance remaining")
+      return
+    }
+
+    session.startBreak()
+    appBlocker.deactivateRestrictionsForBreak(
+      for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
+    try? context.save()
+
     // Start the break timer activity
-    DeviceActivityCenterUtil.startBreakTimerActivity(for: session.blockedProfile)
+    DeviceActivityCenterUtil.startBreakTimerActivity(
+      for: session.blockedProfile,
+      durationInSeconds: remainingBreakAllowance
+    )
 
     // Schedule a reminder to get back to the profile after the break
-    scheduleBreakReminder(profile: session.blockedProfile)
+    scheduleBreakReminder(
+      profile: session.blockedProfile,
+      durationInSeconds: remainingBreakAllowance
+    )
 
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
-    // Load the active session since the break start time was set in a different thread
-    loadActiveSession(context: context)
+    updateSessionTimes()
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
@@ -469,10 +485,14 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    if !session.isBreakAvailable {
+    if !session.isBreakActive {
       print("Breaks is not availble")
       return
     }
+
+    session.endBreak()
+    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
+    try? context.save()
 
     // Remove the break timer activity
     DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
@@ -483,8 +503,7 @@ class StrategyManager: ObservableObject {
     // Refresh widgets when break ends
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
-    // Load the active session since the break end time was set in a different thread
-    loadActiveSession(context: context)
+    updateSessionTimes()
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
@@ -674,16 +693,20 @@ class StrategyManager: ObservableObject {
       )
   }
 
-  private func scheduleBreakReminder(profile: BlockedProfiles) {
+  private func scheduleBreakReminder(
+    profile: BlockedProfiles,
+    durationInSeconds: TimeInterval? = nil
+  ) {
     let profileName = profile.name
 
     // Schedule a reminder to let the user know that the break is about to end
-    let breakNotificationTimeInSeconds = UInt32((profile.breakTimeInMinutes - 1) * 60)
+    let breakDurationInSeconds = durationInSeconds ?? TimeInterval(profile.breakTimeInMinutes * 60)
+    let breakNotificationTimeInSeconds = breakDurationInSeconds - 60
     if breakNotificationTimeInSeconds > 0 {
       timersUtil.scheduleNotification(
         title: "Break almost over!",
         message: "Hope you enjoyed your break, starting " + profileName + " in 1 minute.",
-        seconds: TimeInterval(breakNotificationTimeInSeconds)
+        seconds: breakNotificationTimeInSeconds
       )
     }
   }

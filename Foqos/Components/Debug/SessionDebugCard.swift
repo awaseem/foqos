@@ -40,6 +40,14 @@ struct SessionDebugCard: View {
           label: "Break End Time",
           value: session.breakEndTime.map { DateFormatters.formatDate($0) } ?? "nil"
         )
+        DebugRow(
+          label: "Used Break Duration",
+          value: DateFormatters.formatDuration(session.usedBreakDurationInSeconds)
+        )
+        DebugRow(
+          label: "Remaining Break Allowance",
+          value: DateFormatters.formatDuration(session.remainingBreakAllowance())
+        )
       }
 
       Divider()

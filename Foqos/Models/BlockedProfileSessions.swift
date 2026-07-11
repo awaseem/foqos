@@ -13,6 +13,7 @@ class BlockedProfileSession {
 
   var breakStartTime: Date?
   var breakEndTime: Date?
+  var usedBreakDurationInSeconds: TimeInterval = 0
 
   var pauseStartTime: Date?
   var pauseEndTime: Date?
@@ -24,9 +25,17 @@ class BlockedProfileSession {
   }
 
   var isBreakAvailable: Bool {
-    return blockedProfile.enableBreaks == true
-      && blockedProfile.allowsTimedBreaks
-      && breakEndTime == nil
+    guard blockedProfile.enableBreaks == true,
+      blockedProfile.allowsTimedBreaks
+    else {
+      return false
+    }
+
+    if blockedProfile.allowMultipleBreaks {
+      return remainingBreakAllowance() > 0
+    }
+
+    return breakEndTime == nil
   }
 
   var isBreakActive: Bool {
@@ -45,6 +54,10 @@ class BlockedProfileSession {
     return end.timeIntervalSince(startTime)
   }
 
+  var totalBreakAllowanceInSeconds: TimeInterval {
+    TimeInterval(blockedProfile.breakTimeInMinutes * 60)
+  }
+
   init(
     tag: String,
     blockedProfile: BlockedProfiles,
@@ -60,18 +73,73 @@ class BlockedProfileSession {
     blockedProfile.sessions.append(self)
   }
 
-  func startBreak() {
-    let breakStartTime = Date()
+  func activeBreakElapsedTime(at date: Date = Date()) -> TimeInterval {
+    guard isBreakActive, let breakStartTime else {
+      return 0
+    }
+
+    return max(0, date.timeIntervalSince(breakStartTime))
+  }
+
+  func usedBreakDurationIncludingActiveBreak(at date: Date = Date()) -> TimeInterval {
+    if blockedProfile.allowMultipleBreaks {
+      return min(
+        totalBreakAllowanceInSeconds,
+        usedBreakDurationInSeconds + activeBreakElapsedTime(at: date)
+      )
+    }
+
+    return completedSingleBreakDuration(at: date)
+  }
+
+  func remainingBreakAllowance(at date: Date = Date()) -> TimeInterval {
+    max(0, totalBreakAllowanceInSeconds - usedBreakDurationIncludingActiveBreak(at: date))
+  }
+
+  func startBreak(at date: Date = Date()) {
+    let breakStartTime = date
+
+    if blockedProfile.allowMultipleBreaks {
+      SharedData.resetBreak()
+      self.breakStartTime = nil
+      self.breakEndTime = nil
+    }
 
     SharedData.setBreakStartTime(date: breakStartTime)
     self.breakStartTime = breakStartTime
   }
 
-  func endBreak() {
-    let breakEndTime = Date()
+  func endBreak(at date: Date = Date()) {
+    let breakEndTime = date
+
+    if blockedProfile.allowMultipleBreaks {
+      let completedDuration = activeBreakElapsedTime(at: breakEndTime)
+      let updatedUsedDuration = min(
+        totalBreakAllowanceInSeconds,
+        usedBreakDurationInSeconds + completedDuration
+      )
+      usedBreakDurationInSeconds = updatedUsedDuration
+      SharedData.setUsedBreakDurationInSeconds(updatedUsedDuration)
+    }
 
     SharedData.setBreakEndTime(date: breakEndTime)
     self.breakEndTime = breakEndTime
+  }
+
+  private func completedSingleBreakDuration(at date: Date) -> TimeInterval {
+    guard let breakStartTime else {
+      return 0
+    }
+
+    if let breakEndTime {
+      return max(0, breakEndTime.timeIntervalSince(breakStartTime))
+    }
+
+    if isBreakActive {
+      return max(0, date.timeIntervalSince(breakStartTime))
+    }
+
+    return 0
   }
 
   func startPause() {
@@ -107,6 +175,7 @@ class BlockedProfileSession {
       endTime: endTime,
       breakStartTime: breakStartTime,
       breakEndTime: breakEndTime,
+      usedBreakDurationInSeconds: usedBreakDurationInSeconds,
       pauseStartTime: pauseStartTime,
       pauseEndTime: pauseEndTime,
       forceStarted: forceStarted
@@ -162,6 +231,7 @@ class BlockedProfileSession {
       existingSession.endTime = snapshot.endTime
       existingSession.breakStartTime = snapshot.breakStartTime
       existingSession.breakEndTime = snapshot.breakEndTime
+      existingSession.usedBreakDurationInSeconds = snapshot.usedBreakDurationInSeconds ?? 0
       existingSession.pauseStartTime = snapshot.pauseStartTime
       existingSession.pauseEndTime = snapshot.pauseEndTime
       existingSession.forceStarted = snapshot.forceStarted
@@ -183,6 +253,7 @@ class BlockedProfileSession {
     newSession.endTime = snapshot.endTime
     newSession.breakStartTime = snapshot.breakStartTime
     newSession.breakEndTime = snapshot.breakEndTime
+    newSession.usedBreakDurationInSeconds = snapshot.usedBreakDurationInSeconds ?? 0
     newSession.pauseStartTime = snapshot.pauseStartTime
     newSession.pauseEndTime = snapshot.pauseEndTime
 

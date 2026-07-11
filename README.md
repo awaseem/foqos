@@ -40,9 +40,10 @@ Foqos is not affiliated with Brick, Unpluq, Blok, or Opal.
 - NFC tag blocking for physical start and stop flows
 - QR code and barcode blocking, including generated profile QR codes
 - Timer-based sessions that end automatically after a chosen duration
+- Optional reusable break allowance that can be split across multiple breaks in a session
 - Physical unlock rules for profiles that should only stop with approved tags or codes
 - Temporary Access strategies for limited, short opens without ending the full session
-- Pause Timer strategies for a short break before blocking resumes
+- Pause Timer strategies for a short pause before blocking resumes
 - Smart breaks, session history, focus streaks, and profile insights
 - Live Activities for Lock Screen and Dynamic Island status
 - Widgets and App Intents for faster profile control

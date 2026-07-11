@@ -29,6 +29,7 @@ enum SharedData {
     var customReminderMessage: String?
     var enableBreaks: Bool
     var breakTimeInMinutes: Int = 15
+    var allowMultipleBreaks: Bool? = nil
     var enableStrictMode: Bool
     var enableBlockAppInstallation: Bool = false
     var enableAllowMode: Bool
@@ -63,6 +64,7 @@ enum SharedData {
 
     var breakStartTime: Date?
     var breakEndTime: Date?
+    var usedBreakDurationInSeconds: TimeInterval? = nil
 
     var pauseStartTime: Date?
     var pauseEndTime: Date?
@@ -175,6 +177,32 @@ enum SharedData {
 
   static func setBreakEndTime(date: Date) {
     activeSharedSession?.breakEndTime = date
+  }
+
+  static func resetBreak() {
+    activeSharedSession?.breakStartTime = nil
+    activeSharedSession?.breakEndTime = nil
+  }
+
+  static func setUsedBreakDurationInSeconds(_ duration: TimeInterval) {
+    activeSharedSession?.usedBreakDurationInSeconds = duration
+  }
+
+  static func endBreak(date: Date, allowMultipleBreaks: Bool, totalAllowanceInSeconds: TimeInterval)
+  {
+    guard var session = activeSharedSession else { return }
+
+    if allowMultipleBreaks, let breakStartTime = session.breakStartTime {
+      let activeBreakDuration = max(0, date.timeIntervalSince(breakStartTime))
+      let existingUsedDuration = session.usedBreakDurationInSeconds ?? 0
+      session.usedBreakDurationInSeconds = min(
+        totalAllowanceInSeconds,
+        existingUsedDuration + activeBreakDuration
+      )
+    }
+
+    session.breakEndTime = date
+    activeSharedSession = session
   }
 
   static func setEndTime(date: Date) {
