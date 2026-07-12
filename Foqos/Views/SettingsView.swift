@@ -57,6 +57,41 @@ struct SettingsView: View {
           }
         }
 
+        AppIconPicker(selectionColor: themeManager.themeColor)
+
+        Section("Help") {
+          HStack {
+            Text("Debug Mode")
+              .foregroundColor(.primary)
+            Spacer()
+            Image(systemName: "chevron.right")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
+          .onTapGesture {
+            showDebugView = true
+          }
+
+          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+            HStack {
+              Text("Blocking Native Apps")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
+          if !strategyManager.isBlocking {
+            Button {
+              showResetBlockingStateAlert = true
+            } label: {
+              Text("Reset Blocking State")
+                .foregroundColor(themeManager.themeColor)
+            }
+          }
+        }
+
         Section("About") {
           HStack {
             Text("Version")
@@ -123,38 +158,6 @@ struct SettingsView: View {
           }
         }
 
-        Section("Help") {
-          HStack {
-            Text("Debug Mode")
-              .foregroundColor(.primary)
-            Spacer()
-            Image(systemName: "chevron.right")
-              .foregroundColor(.secondary)
-              .font(.caption)
-          }
-          .onTapGesture {
-            showDebugView = true
-          }
-
-          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
-            HStack {
-              Text("Blocking Native Apps")
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "arrow.up.right.square")
-                .foregroundColor(.secondary)
-            }
-          }
-
-          if !strategyManager.isBlocking {
-            Button {
-              showResetBlockingStateAlert = true
-            } label: {
-              Text("Reset Blocking State")
-                .foregroundColor(themeManager.themeColor)
-            }
-          }
-        }
       }
       .navigationTitle("Settings")
       .toolbar {
