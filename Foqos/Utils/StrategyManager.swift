@@ -40,6 +40,7 @@ class StrategyManager: ObservableObject {
     Double = 0
 
   private let liveActivityManager = LiveActivityManager.shared
+  private let companionDeviceManager = CompanionDeviceManager.shared
 
   private let timersUtil = TimersUtil()
   private let appBlocker = AppBlockerUtil()
@@ -90,6 +91,10 @@ class StrategyManager: ObservableObject {
 
     // Reload widget to reflect any changes from extension (e.g., timer expiration)
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Reconcile the companion device with the current truth, covering
+    // sessions started or ended while the app was not running
+    companionDeviceManager.pushStatus(session: activeSession)
   }
 
   func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
@@ -318,6 +323,18 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  // Toggle requested from the companion device (e.g. a screen tap): stops the
+  // active session if one is running, otherwise starts the configured profile.
+  func toggleSessionFromCompanion(profileId: UUID?, context: ModelContext) {
+    if let activeSession = getActiveSession(context: context) {
+      stopSessionFromBackground(activeSession.blockedProfile.id, context: context)
+    } else if let profileId = profileId {
+      startSessionFromBackground(profileId, context: context)
+    } else {
+      print("companion toggle ignored: no active session and no profile configured")
+    }
+  }
+
   func getRemainingEmergencyUnblocks() -> Int {
     return emergencyUnblocksRemaining
   }
@@ -342,6 +359,7 @@ class StrategyManager: ObservableObject {
 
     // Do end sections for the profile
     self.liveActivityManager.endSessionActivity()
+    self.companionDeviceManager.pushSessionEnded()
     self.scheduleReminder(profile: activeSession.blockedProfile)
     self.stopTimer()
 
@@ -477,6 +495,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
+    companionDeviceManager.pushStatus(session: session)
   }
 
   private func stopBreak(context: ModelContext) {
@@ -507,6 +526,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
+    companionDeviceManager.pushStatus(session: session)
   }
 
   private func handlePauseStarted(context: ModelContext) {
@@ -543,6 +563,7 @@ class StrategyManager: ObservableObject {
     self.startTimer()
     self.liveActivityManager
       .startSessionActivity(session: session)
+    self.companionDeviceManager.pushStatus(session: session)
 
     // Refresh widgets when session starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
@@ -558,6 +579,7 @@ class StrategyManager: ObservableObject {
     self.timersUtil.cancelAll()
     self.activeSession = nil
     self.liveActivityManager.endSessionActivity()
+    self.companionDeviceManager.pushSessionEnded()
     self.scheduleReminder(profile: profile)
 
     self.stopTimer()

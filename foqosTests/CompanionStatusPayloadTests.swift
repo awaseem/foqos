@@ -1,0 +1,132 @@
+import XCTest
+
+@testable import foqos
+
+final class CompanionStatusPayloadTests: XCTestCase {
+  // Golden payload shared byte-for-byte with the firmware decoder tests
+  // (esp32-companion/test/test_status_model/test_main.cpp).
+  private var goldenBytes: [UInt8] {
+    var bytes: [UInt8] = [
+      0x01,  // version
+      0x01,  // flags: active
+      0x00, 0xCA, 0x9A, 0x3B, 0, 0, 0, 0,  // start epoch 1000000000 LE
+      0x58, 0xCC, 0x9A, 0x3B, 0, 0, 0, 0,  // end epoch 1000000600 LE
+    ]
+    bytes.append(contentsOf: Array("Work".utf8))
+    bytes.append(contentsOf: [UInt8](repeating: 0, count: 64 - 4))
+    return bytes
+  }
+
+  func testEncodedLayoutMatchesGoldenVector() {
+    let payload = CompanionStatusPayload(
+      isActive: true,
+      isBreakActive: false,
+      isPauseActive: false,
+      sessionStartEpoch: 1_000_000_000,
+      expectedEndEpoch: 1_000_000_600,
+      profileName: "Work"
+    )
+
+    XCTAssertEqual([UInt8](payload.encoded()), goldenBytes)
+  }
+
+  func testEncodedSizeIsAlwaysFixed() {
+    let payloads = [
+      CompanionStatusPayload.inactive,
+      CompanionStatusPayload(
+        isActive: true,
+        isBreakActive: true,
+        isPauseActive: true,
+        sessionStartEpoch: .max,
+        expectedEndEpoch: .max,
+        profileName: String(repeating: "long", count: 100)
+      ),
+    ]
+    for payload in payloads {
+      XCTAssertEqual(payload.encoded().count, CompanionStatusPayload.encodedSize)
+    }
+    XCTAssertEqual(CompanionStatusPayload.encodedSize, 82)
+  }
+
+  func testFlagCombinations() {
+    let combos: [(Bool, Bool, Bool, UInt8)] = [
+      (false, false, false, 0b000),
+      (true, false, false, 0b001),
+      (true, true, false, 0b011),
+      (true, false, true, 0b101),
+      (true, true, true, 0b111),
+    ]
+    for (active, breakActive, pauseActive, expectedFlags) in combos {
+      let payload = CompanionStatusPayload(
+        isActive: active,
+        isBreakActive: breakActive,
+        isPauseActive: pauseActive,
+        sessionStartEpoch: 0,
+        expectedEndEpoch: 0,
+        profileName: ""
+      )
+      XCTAssertEqual([UInt8](payload.encoded())[1], expectedFlags)
+    }
+  }
+
+  func testInactivePayloadIsAllZerosAfterVersion() {
+    let bytes = [UInt8](CompanionStatusPayload.inactive.encoded())
+    XCTAssertEqual(bytes[0], 1)
+    XCTAssertTrue(bytes.dropFirst().allSatisfy { $0 == 0 })
+  }
+
+  func testNameTruncationDoesNotSplitMultibyteCharacter() {
+    // 63 ASCII bytes followed by a 2-byte scalar: truncating at 64 bytes
+    // blindly would leave a dangling UTF-8 continuation byte.
+    let name = String(repeating: "a", count: 63) + "é"
+    let payload = CompanionStatusPayload(
+      isActive: true,
+      isBreakActive: false,
+      isPauseActive: false,
+      sessionStartEpoch: 0,
+      expectedEndEpoch: 0,
+      profileName: name
+    )
+
+    let bytes = [UInt8](payload.encoded())
+    let nameField = Array(bytes[18...])
+    XCTAssertEqual(nameField.count, 64)
+    XCTAssertEqual(nameField[62], UInt8(ascii: "a"))
+    // The é must be dropped entirely, not half-written.
+    XCTAssertEqual(nameField[63], 0)
+
+    let decoded = String(decoding: nameField.prefix(while: { $0 != 0 }), as: UTF8.self)
+    XCTAssertEqual(decoded, String(repeating: "a", count: 63))
+  }
+
+  func testLongNameTruncatesToSixtyFourBytes() {
+    let payload = CompanionStatusPayload(
+      isActive: true,
+      isBreakActive: false,
+      isPauseActive: false,
+      sessionStartEpoch: 0,
+      expectedEndEpoch: 0,
+      profileName: String(repeating: "x", count: 200)
+    )
+
+    let bytes = [UInt8](payload.encoded())
+    XCTAssertEqual(bytes.count, 82)
+    XCTAssertTrue(bytes[18...].allSatisfy { $0 == UInt8(ascii: "x") })
+  }
+
+  func testNegativeEpochsRoundTripAsLittleEndianTwosComplement() {
+    let payload = CompanionStatusPayload(
+      isActive: true,
+      isBreakActive: false,
+      isPauseActive: false,
+      sessionStartEpoch: -1,
+      expectedEndEpoch: Int64.min,
+      profileName: ""
+    )
+
+    let bytes = [UInt8](payload.encoded())
+    XCTAssertTrue(bytes[2...9].allSatisfy { $0 == 0xFF })
+    XCTAssertEqual(Array(bytes[10...16]), [UInt8](repeating: 0, count: 7))
+    XCTAssertEqual(bytes[17], 0x80)
+  }
+}
