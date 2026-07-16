@@ -4,10 +4,12 @@ import Foundation
 // characteristic. Layout is shared byte-for-byte with the firmware decoder
 // (esp32-companion/src/status_model.cpp); bump the version when it changes.
 struct CompanionStatusPayload: Equatable {
-  static let version: UInt8 = 1
+  static let version: UInt8 = 2
   static let profileNameMaxBytes = 64
+  static let weekDayCount = 7
   // version(1) + flags(1) + startEpoch(8) + endEpoch(8) + name(64)
-  static let encodedSize = 2 + 8 + 8 + profileNameMaxBytes
+  //   + streak(2) + todaySeconds(4) + weekMinutes(7*2)
+  static let encodedSize = 2 + 8 + 8 + profileNameMaxBytes + 2 + 4 + weekDayCount * 2
 
   var isActive: Bool
   var isBreakActive: Bool
@@ -15,6 +17,9 @@ struct CompanionStatusPayload: Equatable {
   var sessionStartEpoch: Int64
   var expectedEndEpoch: Int64
   var profileName: String
+  var streakDays: UInt16 = 0
+  var todayFocusSeconds: UInt32 = 0
+  var weekMinutes: [UInt16] = []  // oldest first, last entry = today
 
   static let inactive = CompanionStatusPayload(
     isActive: false,
@@ -38,6 +43,13 @@ struct CompanionStatusPayload: Equatable {
     appendLittleEndian(sessionStartEpoch, to: &data)
     appendLittleEndian(expectedEndEpoch, to: &data)
     data.append(encodedProfileName())
+
+    withUnsafeBytes(of: streakDays.littleEndian) { data.append(contentsOf: $0) }
+    withUnsafeBytes(of: todayFocusSeconds.littleEndian) { data.append(contentsOf: $0) }
+    for day in 0..<Self.weekDayCount {
+      let minutes = day < weekMinutes.count ? weekMinutes[day] : 0
+      withUnsafeBytes(of: minutes.littleEndian) { data.append(contentsOf: $0) }
+    }
 
     return data
   }

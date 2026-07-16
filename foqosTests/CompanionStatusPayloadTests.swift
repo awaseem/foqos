@@ -3,17 +3,23 @@ import XCTest
 @testable import foqos
 
 final class CompanionStatusPayloadTests: XCTestCase {
-  // Golden payload shared byte-for-byte with the firmware decoder tests
-  // (esp32-companion/test/test_status_model/test_main.cpp).
+  // Golden v2 payload shared byte-for-byte with the firmware decoder tests
+  // (foqos-companion repo, test/test_status_model/test_main.cpp).
   private var goldenBytes: [UInt8] {
     var bytes: [UInt8] = [
-      0x01,  // version
+      0x02,  // version
       0x01,  // flags: active
       0x00, 0xCA, 0x9A, 0x3B, 0, 0, 0, 0,  // start epoch 1000000000 LE
       0x58, 0xCC, 0x9A, 0x3B, 0, 0, 0, 0,  // end epoch 1000000600 LE
     ]
     bytes.append(contentsOf: Array("Work".utf8))
     bytes.append(contentsOf: [UInt8](repeating: 0, count: 64 - 4))
+    bytes.append(contentsOf: [12, 0])  // streak 12 LE
+    bytes.append(contentsOf: [0x08, 0x34, 0, 0])  // today 13320s LE
+    for minutes in [30, 60, 0, 45, 90, 120, 222] as [UInt16] {
+      bytes.append(UInt8(minutes & 0xFF))
+      bytes.append(UInt8(minutes >> 8))
+    }
     return bytes
   }
 
@@ -24,10 +30,27 @@ final class CompanionStatusPayloadTests: XCTestCase {
       isPauseActive: false,
       sessionStartEpoch: 1_000_000_000,
       expectedEndEpoch: 1_000_000_600,
-      profileName: "Work"
+      profileName: "Work",
+      streakDays: 12,
+      todayFocusSeconds: 13320,
+      weekMinutes: [30, 60, 0, 45, 90, 120, 222]
     )
 
     XCTAssertEqual([UInt8](payload.encoded()), goldenBytes)
+  }
+
+  func testStatsDefaultToZero() {
+    let bytes = [UInt8](CompanionStatusPayload.inactive.encoded())
+    XCTAssertEqual(bytes.count, CompanionStatusPayload.encodedSize)
+    XCTAssertTrue(bytes[82...].allSatisfy { $0 == 0 })
+  }
+
+  func testWeekMinutesPadsAndTruncatesToSevenEntries() {
+    var payload = CompanionStatusPayload.inactive
+    payload.weekMinutes = [1, 2]  // short: pads with zeros
+    XCTAssertEqual(payload.encoded().count, CompanionStatusPayload.encodedSize)
+    payload.weekMinutes = Array(repeating: 9, count: 12)  // long: truncates
+    XCTAssertEqual(payload.encoded().count, CompanionStatusPayload.encodedSize)
   }
 
   func testEncodedSizeIsAlwaysFixed() {
@@ -45,7 +68,7 @@ final class CompanionStatusPayloadTests: XCTestCase {
     for payload in payloads {
       XCTAssertEqual(payload.encoded().count, CompanionStatusPayload.encodedSize)
     }
-    XCTAssertEqual(CompanionStatusPayload.encodedSize, 82)
+    XCTAssertEqual(CompanionStatusPayload.encodedSize, 102)
   }
 
   func testFlagCombinations() {
@@ -71,7 +94,7 @@ final class CompanionStatusPayloadTests: XCTestCase {
 
   func testInactivePayloadIsAllZerosAfterVersion() {
     let bytes = [UInt8](CompanionStatusPayload.inactive.encoded())
-    XCTAssertEqual(bytes[0], 1)
+    XCTAssertEqual(bytes[0], 2)
     XCTAssertTrue(bytes.dropFirst().allSatisfy { $0 == 0 })
   }
 
@@ -89,7 +112,7 @@ final class CompanionStatusPayloadTests: XCTestCase {
     )
 
     let bytes = [UInt8](payload.encoded())
-    let nameField = Array(bytes[18...])
+    let nameField = Array(bytes[18..<82])
     XCTAssertEqual(nameField.count, 64)
     XCTAssertEqual(nameField[62], UInt8(ascii: "a"))
     // The é must be dropped entirely, not half-written.
@@ -110,8 +133,8 @@ final class CompanionStatusPayloadTests: XCTestCase {
     )
 
     let bytes = [UInt8](payload.encoded())
-    XCTAssertEqual(bytes.count, 82)
-    XCTAssertTrue(bytes[18...].allSatisfy { $0 == UInt8(ascii: "x") })
+    XCTAssertEqual(bytes.count, 102)
+    XCTAssertTrue(bytes[18..<82].allSatisfy { $0 == UInt8(ascii: "x") })
   }
 
   func testNegativeEpochsRoundTripAsLittleEndianTwosComplement() {

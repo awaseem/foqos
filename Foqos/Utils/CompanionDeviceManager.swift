@@ -1,4 +1,5 @@
 import CoreBluetooth
+import SwiftData
 import SwiftUI
 
 // Pushes blocking session status to an ESP32 companion device over BLE and
@@ -103,17 +104,23 @@ class CompanionDeviceManager: NSObject, ObservableObject {
 
   // MARK: - Pushes
 
-  func pushStatus(session: BlockedProfileSession?) {
+  func pushStatus(session: BlockedProfileSession?, context: ModelContext) {
     guard isEnabled, isPaired else { return }
-    let payload = makePayload(for: session)
+
+    var payload = makePayload(for: session)
+    let stats = CompanionStatsCalculator.stats(in: context)
+    payload.streakDays = UInt16(clamping: stats.streakDays)
+    payload.todayFocusSeconds = UInt32(clamping: stats.todayFocusSeconds)
+    payload.weekMinutes = stats.weekMinutes.map { UInt16(clamping: $0) }
+
     if payload == currentStatus && !statusDirty { return }
     currentStatus = payload
     statusDirty = true
     flushPendingWrites()
   }
 
-  func pushSessionEnded() {
-    pushStatus(session: nil)
+  func pushSessionEnded(context: ModelContext) {
+    pushStatus(session: nil, context: context)
   }
 
   func pushTagConfig(profile: BlockedProfiles) {

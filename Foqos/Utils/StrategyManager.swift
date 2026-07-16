@@ -94,7 +94,7 @@ class StrategyManager: ObservableObject {
 
     // Reconcile the companion device with the current truth, covering
     // sessions started or ended while the app was not running
-    companionDeviceManager.pushStatus(session: activeSession)
+    companionDeviceManager.pushStatus(session: activeSession, context: context)
   }
 
   func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
@@ -359,7 +359,7 @@ class StrategyManager: ObservableObject {
 
     // Do end sections for the profile
     self.liveActivityManager.endSessionActivity()
-    self.companionDeviceManager.pushSessionEnded()
+    self.companionDeviceManager.pushSessionEnded(context: context)
     self.scheduleReminder(profile: activeSession.blockedProfile)
     self.stopTimer()
 
@@ -439,9 +439,9 @@ class StrategyManager: ObservableObject {
       case .paused:
         self.handlePauseStarted(context: context)
       case .started(let session):
-        self.handleSessionStarted(session: session)
+        self.handleSessionStarted(session: session, context: context)
       case .ended(let endedProfile):
-        self.handleSessionEnded(profile: endedProfile)
+        self.handleSessionEnded(profile: endedProfile, context: context)
       }
     }
 
@@ -495,7 +495,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
-    companionDeviceManager.pushStatus(session: session)
+    companionDeviceManager.pushStatus(session: session, context: context)
   }
 
   private func stopBreak(context: ModelContext) {
@@ -526,7 +526,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
-    companionDeviceManager.pushStatus(session: session)
+    companionDeviceManager.pushStatus(session: session, context: context)
   }
 
   private func handlePauseStarted(context: ModelContext) {
@@ -544,7 +544,7 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  private func handleSessionStarted(session: BlockedProfileSession) {
+  private func handleSessionStarted(session: BlockedProfileSession, context: ModelContext) {
     self.dismissView()
 
     if SoftUnblockGrantStore.activeSession?.sessionId != session.id {
@@ -563,13 +563,13 @@ class StrategyManager: ObservableObject {
     self.startTimer()
     self.liveActivityManager
       .startSessionActivity(session: session)
-    self.companionDeviceManager.pushStatus(session: session)
+    self.companionDeviceManager.pushStatus(session: session, context: context)
 
     // Refresh widgets when session starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
-  private func handleSessionEnded(profile: BlockedProfiles) {
+  private func handleSessionEnded(profile: BlockedProfiles, context: ModelContext) {
     self.dismissView()
 
     SoftUnblockGrantScheduler.stopAll()
@@ -579,7 +579,7 @@ class StrategyManager: ObservableObject {
     self.timersUtil.cancelAll()
     self.activeSession = nil
     self.liveActivityManager.endSessionActivity()
-    self.companionDeviceManager.pushSessionEnded()
+    self.companionDeviceManager.pushSessionEnded(context: context)
     self.scheduleReminder(profile: profile)
 
     self.stopTimer()
