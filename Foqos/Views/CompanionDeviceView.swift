@@ -2,6 +2,8 @@ import CoreBluetooth
 import SwiftData
 import SwiftUI
 
+let companionFirmwareLink = "https://github.com/rachelworld/foqos-companion"
+
 struct CompanionDeviceView: View {
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var themeManager: ThemeManager
@@ -16,6 +18,7 @@ struct CompanionDeviceView: View {
   @AppStorage(CompanionDeviceDefaults.profileIdKey) private var tagProfileId: String = ""
 
   @State private var showUnpairAlert = false
+  @State private var searchTimedOut = false
 
   private var isPaired: Bool {
     return !pairedIdentifier.isEmpty
@@ -163,11 +166,34 @@ struct CompanionDeviceView: View {
           .foregroundStyle(.secondary)
           .font(.subheadline)
       } else if companionDeviceManager.discoveredPeripherals.isEmpty {
-        HStack {
-          ProgressView()
-          Text("Searching for devices...")
+        if searchTimedOut {
+          // Most users have no companion hardware: turn the dead-end into
+          // an explanation and a pointer, while scanning continues quietly.
+          VStack(alignment: .leading, spacing: 8) {
+            Label("No companion devices found nearby", systemImage: "magnifyingglass")
+              .foregroundStyle(.secondary)
+              .font(.subheadline)
+            Text(
+              "A companion device is DIY hardware that shows your focus status on your desk."
+            )
+            .font(.caption)
             .foregroundStyle(.secondary)
-            .padding(.leading, 8)
+            Link(destination: URL(string: companionFirmwareLink)!) {
+              HStack(spacing: 4) {
+                Text("Learn how to build one")
+                Image(systemName: "arrow.up.right.square")
+              }
+              .font(.caption)
+            }
+          }
+          .padding(.vertical, 4)
+        } else {
+          HStack {
+            ProgressView()
+            Text("Searching for devices...")
+              .foregroundStyle(.secondary)
+              .padding(.leading, 8)
+          }
         }
       }
 
@@ -191,6 +217,13 @@ struct CompanionDeviceView: View {
     // sheet would otherwise never rescan.
     .onAppear {
       companionDeviceManager.startScanning()
+    }
+    .task {
+      searchTimedOut = false
+      try? await Task.sleep(nanoseconds: 12_000_000_000)
+      if !Task.isCancelled {
+        searchTimedOut = true
+      }
     }
   }
 
