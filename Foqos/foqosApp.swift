@@ -57,6 +57,11 @@ struct foqosApp: App {
         )
       }
     }
+    CompanionDeviceManager.shared.onStatusRefreshNeeded = {
+      Task { @MainActor in
+        StrategyManager.shared.pushCompanionStatus(context: container.mainContext)
+      }
+    }
 
     let asyncDependency: @Sendable () async -> (ModelContainer) = {
       @MainActor in

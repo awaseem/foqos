@@ -2,10 +2,20 @@ import CoreBluetooth
 import SwiftData
 import SwiftUI
 
-// Pushes blocking session status to an ESP32 companion device over BLE and
-// points its NFC tag at a profile deep link. Opt-in: no CBCentralManager (and
+// UserDefaults keys shared between the manager and views that mirror its
+// settings via @AppStorage.
+enum CompanionDeviceDefaults {
+  static let enabledKey = "companionDeviceEnabled"
+  static let identifierKey = "companionDeviceIdentifier"
+  static let nameKey = "companionDeviceName"
+  static let profileIdKey = "companionDeviceProfileId"
+}
+
+// Pushes blocking session status to a companion device over BLE and points
+// its NFC tag at a profile deep link. Opt-in: no CBCentralManager (and
 // therefore no Bluetooth permission prompt) exists until the user enables the
-// feature in settings. GATT contract lives in esp32-companion/README.md.
+// feature in settings. The canonical GATT contract is
+// docs/companion-device-protocol.md.
 class CompanionDeviceManager: NSObject, ObservableObject {
   static let shared = CompanionDeviceManager()
 
@@ -14,20 +24,27 @@ class CompanionDeviceManager: NSObject, ObservableObject {
   static let timeSyncCharacteristicUUID = CBUUID(string: "F0C50003-8B1E-4B6D-9F26-3F0B5C7A1D01")
   static let tagConfigCharacteristicUUID = CBUUID(string: "F0C50004-8B1E-4B6D-9F26-3F0B5C7A1D01")
   static let toggleCharacteristicUUID = CBUUID(string: "F0C50005-8B1E-4B6D-9F26-3F0B5C7A1D01")
+  static let tagURLMaxBytes = 128
   private static let restoreIdentifier = "dev.ambitionsoftware.foqos.companionCentral"
 
-  @AppStorage("companionDeviceEnabled") private(set) var isEnabled: Bool = false
-  @AppStorage("companionDeviceIdentifier") private var pairedIdentifier: String = ""
-  @AppStorage("companionDeviceName") private(set) var pairedDeviceName: String = ""
-  @AppStorage("companionDeviceProfileId") var tagProfileId: String = ""
+  @AppStorage(CompanionDeviceDefaults.enabledKey) private(set) var isEnabled: Bool = false
+  @AppStorage(CompanionDeviceDefaults.identifierKey) private var pairedIdentifier: String = ""
+  @AppStorage(CompanionDeviceDefaults.nameKey) private(set) var pairedDeviceName: String = ""
+  @AppStorage(CompanionDeviceDefaults.profileIdKey) var tagProfileId: String = ""
 
   @Published var isConnected: Bool = false
   @Published var isScanning: Bool = false
   @Published var discoveredPeripherals: [CBPeripheral] = []
+  @Published var bluetoothState: CBManagerState = .unknown
 
   // Fired when the device asks to toggle the session (e.g. a screen tap),
   // passing the profile configured for the device's tag. Wired in foqosApp.
   var onToggleRequested: ((UUID?) -> Void)?
+
+  // Fired after each (re)connection so the app pushes current truth with
+  // fresh stats — the device may have rebooted and lost its RAM state, and
+  // the cached payload may be stale. Wired in foqosApp.
+  var onStatusRefreshNeeded: (() -> Void)?
 
   private var centralManager: CBCentralManager?
   private var connectedPeripheral: CBPeripheral?
@@ -43,6 +60,12 @@ class CompanionDeviceManager: NSObject, ObservableObject {
   private var pendingTagConfigURL: String?
   private var wantsScanning = false
   private var lastToggleRequestAt: Date = .distantPast
+  private var lastToggleCounter: UInt8?
+
+  // Writes in flight, so a failure re-queues its value instead of the device
+  // silently keeping stale state, and a second flush can't double-write.
+  private var inFlightStatusWrite = false
+  private var inFlightTagConfigURL: String?
 
   var isPaired: Bool {
     return !pairedIdentifier.isEmpty
@@ -108,10 +131,18 @@ class CompanionDeviceManager: NSObject, ObservableObject {
     guard isEnabled, isPaired else { return }
 
     var payload = makePayload(for: session)
-    let stats = CompanionStatsCalculator.stats(in: context)
-    payload.streakDays = UInt16(clamping: stats.streakDays)
-    payload.todayFocusSeconds = UInt32(clamping: stats.todayFocusSeconds)
-    payload.weekMinutes = stats.weekMinutes.map { UInt16(clamping: $0) }
+    if connectedPeripheral?.state == .connected || currentStatus == nil {
+      let stats = CompanionStatsCalculator.stats(in: context)
+      payload.streakDays = UInt16(clamping: stats.streakDays)
+      payload.todayFocusSeconds = UInt32(clamping: stats.todayFocusSeconds)
+      payload.weekMinutes = stats.weekMinutes.map { UInt16(clamping: $0) }
+    } else if let previous = currentStatus {
+      // Nothing is listening, so skip the year-long session fetch; the
+      // reconnect flow re-pushes via onStatusRefreshNeeded with fresh stats.
+      payload.streakDays = previous.streakDays
+      payload.todayFocusSeconds = previous.todayFocusSeconds
+      payload.weekMinutes = previous.weekMinutes
+    }
 
     if payload == currentStatus && !statusDirty { return }
     currentStatus = payload
@@ -125,8 +156,21 @@ class CompanionDeviceManager: NSObject, ObservableObject {
 
   func pushTagConfig(profile: BlockedProfiles) {
     guard isEnabled, isPaired else { return }
+    let url = BlockedProfiles.getProfileDeepLink(profile)
+    // The protocol caps tag URLs at 128 bytes; generated deep links are far
+    // shorter, and a truncated URL would be worse than no write.
+    guard url.utf8.count <= Self.tagURLMaxBytes else { return }
     tagProfileId = profile.id.uuidString
-    pendingTagConfigURL = BlockedProfiles.getProfileDeepLink(profile)
+    pendingTagConfigURL = url
+    flushPendingWrites()
+  }
+
+  // Clears the device's NFC tag (a zero-length tag-config write, per the
+  // protocol doc) and forgets the configured profile.
+  func clearTagConfig() {
+    guard isEnabled, isPaired else { return }
+    tagProfileId = ""
+    pendingTagConfigURL = ""
     flushPendingWrites()
   }
 
@@ -186,11 +230,20 @@ class CompanionDeviceManager: NSObject, ObservableObject {
     if let peripheral = connectedPeripheral {
       centralManager?.cancelPeripheralConnection(peripheral)
     }
+    clearPeripheralState()
+  }
+
+  // Drops all references to the current peripheral without cancelling the
+  // connection; used when iOS has already invalidated it.
+  private func clearPeripheralState() {
     connectedPeripheral = nil
     statusCharacteristic = nil
     timeSyncCharacteristic = nil
     tagConfigCharacteristic = nil
+    inFlightStatusWrite = false
+    inFlightTagConfigURL = nil
     isConnected = false
+    isScanning = false
   }
 
   private func flushPendingWrites() {
@@ -199,16 +252,21 @@ class CompanionDeviceManager: NSObject, ObservableObject {
       return
     }
 
-    if statusDirty, let status = currentStatus, let characteristic = statusCharacteristic {
-      peripheral.writeValue(status.encoded(), for: characteristic, type: .withResponse)
+    if statusDirty, !inFlightStatusWrite, let status = currentStatus,
+      let characteristic = statusCharacteristic
+    {
+      inFlightStatusWrite = true
       statusDirty = false
+      peripheral.writeValue(status.encoded(), for: characteristic, type: .withResponse)
     }
 
-    if let url = pendingTagConfigURL, let characteristic = tagConfigCharacteristic,
+    if let url = pendingTagConfigURL, inFlightTagConfigURL == nil,
+      let characteristic = tagConfigCharacteristic,
       let data = url.data(using: .utf8)
     {
-      peripheral.writeValue(data, for: characteristic, type: .withResponse)
+      inFlightTagConfigURL = url
       pendingTagConfigURL = nil
+      peripheral.writeValue(data, for: characteristic, type: .withResponse)
     }
   }
 
@@ -224,6 +282,7 @@ class CompanionDeviceManager: NSObject, ObservableObject {
 
 extension CompanionDeviceManager: CBCentralManagerDelegate {
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
+    bluetoothState = central.state
     switch central.state {
     case .poweredOn:
       scanIfPoweredOn()
@@ -235,6 +294,11 @@ extension CompanionDeviceManager: CBCentralManagerDelegate {
       } else {
         reconnectPairedPeripheral()
       }
+    case .poweredOff, .resetting, .unauthorized:
+      // iOS invalidates peripherals here without firing
+      // didDisconnectPeripheral; a stale connectedPeripheral would block
+      // reconnectPairedPeripheral forever once Bluetooth comes back.
+      clearPeripheralState()
     default:
       isConnected = false
     }
@@ -278,6 +342,8 @@ extension CompanionDeviceManager: CBCentralManagerDelegate {
     statusCharacteristic = nil
     timeSyncCharacteristic = nil
     tagConfigCharacteristic = nil
+    inFlightStatusWrite = false
+    inFlightTagConfigURL = nil
 
     // Re-issue the connect so iOS delivers the device when it reappears.
     if isEnabled, isPaired {
@@ -336,10 +402,43 @@ extension CompanionDeviceManager: CBPeripheralDelegate {
     }
 
     // The device has no RTC: sync the wall clock, then re-push the current
-    // truth (the device may have rebooted since the last write).
+    // truth (the device may have rebooted since the last write). The cached
+    // payload goes out immediately; onStatusRefreshNeeded follows up with a
+    // freshly computed one, coalesced away when nothing changed.
     writeTimeSync(to: peripheral)
     statusDirty = currentStatus != nil
     flushPendingWrites()
+    onStatusRefreshNeeded?()
+  }
+
+  func peripheral(
+    _ peripheral: CBPeripheral,
+    didWriteValueFor characteristic: CBCharacteristic,
+    error: Error?
+  ) {
+    switch characteristic.uuid {
+    case Self.statusCharacteristicUUID:
+      inFlightStatusWrite = false
+      if error != nil {
+        // Re-queue instead of letting the device keep stale state; the next
+        // lifecycle push or reconnect delivers it.
+        statusDirty = true
+      } else if statusDirty {
+        // A newer payload arrived while this write was in flight.
+        flushPendingWrites()
+      }
+    case Self.tagConfigCharacteristicUUID:
+      let attempted = inFlightTagConfigURL
+      inFlightTagConfigURL = nil
+      if error != nil {
+        // Keep a newer pending URL if one superseded the failed write.
+        pendingTagConfigURL = pendingTagConfigURL ?? attempted
+      } else if pendingTagConfigURL != nil {
+        flushPendingWrites()
+      }
+    default:
+      break
+    }
   }
 
   func peripheral(
@@ -349,11 +448,32 @@ extension CompanionDeviceManager: CBPeripheralDelegate {
   ) {
     guard characteristic.uuid == Self.toggleCharacteristicUUID, error == nil else { return }
 
-    // Debounce duplicate deliveries (retransmits, double taps).
     let now = Date()
-    guard now.timeIntervalSince(lastToggleRequestAt) > 1.5 else { return }
+    let counter = characteristic.value?.first
+    guard
+      Self.shouldAcceptToggle(
+        counter: counter, at: now, lastAcceptedAt: lastToggleRequestAt,
+        lastCounter: lastToggleCounter)
+    else { return }
     lastToggleRequestAt = now
+    lastToggleCounter = counter
 
     onToggleRequested?(UUID(uuidString: tagProfileId))
+  }
+
+  // Debounces double taps and drops BLE retransmits (same counter value
+  // shortly after the original). Counters can repeat after a device reboot,
+  // so a match only counts as a duplicate within a short window. Pure so the
+  // documented semantics stay test-locked (CompanionToggleDedupTests).
+  static func shouldAcceptToggle(
+    counter: UInt8?, at now: Date, lastAcceptedAt: Date, lastCounter: UInt8?
+  ) -> Bool {
+    guard now.timeIntervalSince(lastAcceptedAt) > 1.5 else { return false }
+    if let counter = counter, counter == lastCounter,
+      now.timeIntervalSince(lastAcceptedAt) < 30
+    {
+      return false
+    }
+    return true
   }
 }

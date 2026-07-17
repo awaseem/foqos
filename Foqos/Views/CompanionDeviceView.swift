@@ -1,7 +1,6 @@
+import CoreBluetooth
 import SwiftData
 import SwiftUI
-
-let companionFirmwareLink = "https://github.com/rachelworld/foqos-companion"
 
 struct CompanionDeviceView: View {
   @Environment(\.dismiss) private var dismiss
@@ -11,10 +10,10 @@ struct CompanionDeviceView: View {
   @Query(sort: \BlockedProfiles.order) private var profiles: [BlockedProfiles]
 
   // Mirrored from CompanionDeviceManager so the view re-renders on changes.
-  @AppStorage("companionDeviceEnabled") private var isEnabled: Bool = false
-  @AppStorage("companionDeviceIdentifier") private var pairedIdentifier: String = ""
-  @AppStorage("companionDeviceName") private var pairedDeviceName: String = ""
-  @AppStorage("companionDeviceProfileId") private var tagProfileId: String = ""
+  @AppStorage(CompanionDeviceDefaults.enabledKey) private var isEnabled: Bool = false
+  @AppStorage(CompanionDeviceDefaults.identifierKey) private var pairedIdentifier: String = ""
+  @AppStorage(CompanionDeviceDefaults.nameKey) private var pairedDeviceName: String = ""
+  @AppStorage(CompanionDeviceDefaults.profileIdKey) private var tagProfileId: String = ""
 
   @State private var showUnpairAlert = false
 
@@ -35,7 +34,7 @@ struct CompanionDeviceView: View {
               Text("Companion Device")
                 .font(.headline)
               Text(
-                "Show live session status on an ESP32 device and toggle sessions with its NFC tag"
+                "Show live session status on a companion device and toggle sessions with its NFC tag"
               )
               .font(.caption)
               .foregroundStyle(.secondary)
@@ -54,18 +53,6 @@ struct CompanionDeviceView: View {
             pairedSection
           } else {
             scanningSection
-          }
-        }
-
-        Section {
-          Link(destination: URL(string: companionFirmwareLink)!) {
-            HStack {
-              Text("Build Your Own Device")
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "arrow.up.right.square")
-                .foregroundColor(.secondary)
-            }
           }
         }
       }
@@ -102,7 +89,7 @@ struct CompanionDeviceView: View {
           Circle()
             .fill(companionDeviceManager.isConnected ? .green : .red)
             .frame(width: 8, height: 8)
-          Text(companionDeviceManager.isConnected ? "Connected" : "Not Connected")
+          Text(connectionStatusText)
             .foregroundStyle(.secondary)
             .font(.subheadline)
         }
@@ -115,7 +102,11 @@ struct CompanionDeviceView: View {
         }
       }
       .onChange(of: tagProfileId) { _, newValue in
-        writeTagProfile(id: newValue)
+        if newValue.isEmpty {
+          companionDeviceManager.clearTagConfig()
+        } else {
+          writeTagProfile(id: newValue)
+        }
       }
 
       Button {
@@ -135,17 +126,48 @@ struct CompanionDeviceView: View {
     }
   }
 
+  // User-actionable explanation for why scanning or reconnecting can't work
+  // right now; nil when Bluetooth is usable.
+  private var bluetoothProblem: String? {
+    switch companionDeviceManager.bluetoothState {
+    case .poweredOff:
+      return "Bluetooth is turned off. Turn it on to connect to your device."
+    case .unauthorized:
+      return "Foqos doesn't have Bluetooth access. "
+        + "Allow it in Settings > Privacy & Security > Bluetooth."
+    case .unsupported:
+      return "Bluetooth is not available on this device."
+    default:
+      return nil
+    }
+  }
+
+  private var connectionStatusText: String {
+    if companionDeviceManager.isConnected {
+      return "Connected"
+    }
+    switch companionDeviceManager.bluetoothState {
+    case .poweredOff:
+      return "Bluetooth Off"
+    case .unauthorized:
+      return "No Bluetooth Access"
+    default:
+      return "Not Connected"
+    }
+  }
+
   private var scanningSection: some View {
     Section("Nearby Devices") {
-      if companionDeviceManager.discoveredPeripherals.isEmpty {
+      if let problem = bluetoothProblem {
+        Label(problem, systemImage: "exclamationmark.triangle")
+          .foregroundStyle(.secondary)
+          .font(.subheadline)
+      } else if companionDeviceManager.discoveredPeripherals.isEmpty {
         HStack {
           ProgressView()
           Text("Searching for devices...")
             .foregroundStyle(.secondary)
             .padding(.leading, 8)
-        }
-        .onAppear {
-          companionDeviceManager.startScanning()
         }
       }
 
@@ -163,6 +185,12 @@ struct CompanionDeviceView: View {
           }
         }
       }
+    }
+    // On the section, not the placeholder row: the row never reappears once
+    // a stale discovery survives in the shared manager, so reopening the
+    // sheet would otherwise never rescan.
+    .onAppear {
+      companionDeviceManager.startScanning()
     }
   }
 

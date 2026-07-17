@@ -60,7 +60,7 @@ struct SettingsView: View {
 
         AppIconPicker(selectionColor: themeManager.themeColor)
 
-        Section("Companion Device") {
+        Section("Devices") {
           HStack {
             Text("Companion Device")
               .foregroundColor(.primary)

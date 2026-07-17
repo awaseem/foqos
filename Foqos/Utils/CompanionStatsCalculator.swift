@@ -37,20 +37,24 @@ enum CompanionStatsCalculator {
       calendar: calendar
     )
 
-    var streak = 0
-    for daysAgo in 0..<streakLookbackDays {
-      guard let dayStart = calendar.date(byAdding: .day, value: -daysAgo, to: todayStart),
-        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)
-      else { break }
+    // Pre-bucket every day each interval touches, so the streak walk is a
+    // set lookup instead of scanning all intervals per day.
+    var focusDays = Set<Date>()
+    for interval in intervals {
+      var day = calendar.startOfDay(for: interval.startTime)
+      while day < interval.endTime {
+        focusDays.insert(day)
+        guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+        day = next
+      }
+    }
 
-      let hasFocus = intervals.contains { interval in
-        interval.startTime < dayEnd && interval.endTime > dayStart
-      }
-      if hasFocus {
-        streak += 1
-      } else {
-        break
-      }
+    var streak = 0
+    var day = todayStart
+    while streak < streakLookbackDays, focusDays.contains(day) {
+      streak += 1
+      guard let previous = calendar.date(byAdding: .day, value: -1, to: day) else { break }
+      day = previous
     }
 
     return CompanionStats(

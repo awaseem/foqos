@@ -6,9 +6,10 @@ over Bluetooth LE and accept session toggle requests from it. The feature is
 Bluetooth permission prompt appears) until the user enables it in
 Settings → Companion Device.
 
-Any hardware that implements the peripheral side of this contract works. A
-reference open-source implementation (ESP32 + AMOLED display + NFC tag) lives
-at <https://github.com/rachelworld/foqos-companion>.
+Any hardware that implements the peripheral side of this contract works —
+e.g. a microcontroller with a display, optionally carrying an NFC tag. This
+document is the canonical contract; firmware implementations live outside
+this repository.
 
 ## Roles
 
@@ -31,8 +32,8 @@ F0C50001-8B1E-4B6D-9F26-3F0B5C7A1D01
 | --- | --- | --- | --- |
 | Status | `…0002` | app → device (write) | packed status, below |
 | Time sync | `…0003` | app → device (write) | `i64` current epoch seconds, LE; written on every connect (device may lack an RTC) |
-| Tag config | `…0004` | app → device (write) | UTF-8 profile deep-link URL (≤128 B) for devices carrying an NFC tag |
-| Toggle | `…0005` | device → app (notify) | `u8` monotonic counter; each notification asks the app to toggle the session |
+| Tag config | `…0004` | app → device (write) | UTF-8 profile deep-link URL (≤128 B) for devices carrying an NFC tag; a zero-length write clears the tag |
+| Toggle | `…0005` | device → app (notify) | `u8` monotonic counter; each notification asks the app to toggle the session. The app uses the counter to drop retransmits, so devices should increment it per tap |
 
 ## Status payload (little-endian, fixed offsets)
 
@@ -49,8 +50,16 @@ Version 2, 102 bytes:
 | 84 | `u32` | today's focus time, seconds |
 | 88 | `u16[7]` | focus minutes per day, oldest first, `[6]` = today |
 
-Version 1 is the same layout truncated at 82 bytes; devices should accept both
-and treat missing stats as zero.
+Version 1 is the same layout truncated at 82 bytes.
+
+### Versioning
+
+The payload is append-only: a new version only adds fields after the existing
+ones and bumps the version byte; existing offsets never change. Devices MUST
+accept any version greater than or equal to the one they were built for,
+parse the prefix they understand, and treat fields beyond the received length
+as zero. A parser that requires an exact version match breaks on the next
+release.
 
 ## Behavioral contract
 
@@ -64,10 +73,24 @@ and treat missing stats as zero.
   treat RAM state as disposable.
 - Toggle semantics: active session → stop (subject to the profile's
   `disableBackgroundStops`); no session → start the profile the user selected
-  in the companion settings. The app debounces duplicate notifications
-  delivered within 1.5 s.
+  in the companion settings. The app debounces notifications delivered within
+  1.5 s and drops repeats of the last counter value within 30 s.
 - Toggle requests are fire-and-forget; devices should show a pending state and
   revert after ~10 s if no confirming status write arrives.
+
+## Security
+
+The link is deliberately unauthenticated and unencrypted. BLE
+bonding/pairing is out of scope: the payload carries no secrets (session
+flags, epochs, a profile name, aggregate focus stats), and requiring bonding
+would exclude hobbyist hardware without persistent key storage. Anyone in
+radio range can read status writes or send toggle notifications; the blast
+radius is bounded because toggle requests go through the same path as in-app
+actions — a profile with `disableBackgroundStops` ignores stop requests, so a
+nearby attacker cannot break a locked focus commitment. The worst case is
+starting a session, or stopping one whose profile already allows background
+stops. Implementations that want more can layer BLE bonding on the same GATT
+service without changing this contract.
 
 ## Swift surface (for maintainers)
 
@@ -75,4 +98,4 @@ and treat missing stats as zero.
 (Models) is the pure, unit-tested encoder; `StrategyManager` calls
 `pushStatus`/`pushSessionEnded` at its existing lifecycle points, mirroring
 `LiveActivityManager`. Payload byte layout is locked by golden-vector tests
-shared with the reference firmware (`foqosTests/CompanionStatusPayloadTests`).
+(`foqosTests/CompanionStatusPayloadTests`) that firmware decoders can share.

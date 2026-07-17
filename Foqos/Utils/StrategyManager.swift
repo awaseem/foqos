@@ -323,6 +323,15 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  // Re-pushes current truth (session + fresh stats) to the companion device;
+  // called after every BLE (re)connection via onStatusRefreshNeeded.
+  func pushCompanionStatus(context: ModelContext) {
+    companionDeviceManager.pushStatus(
+      session: getActiveSession(context: context),
+      context: context
+    )
+  }
+
   // Toggle requested from the companion device (e.g. a screen tap): stops the
   // active session if one is running, otherwise starts the configured profile.
   func toggleSessionFromCompanion(profileId: UUID?, context: ModelContext) {

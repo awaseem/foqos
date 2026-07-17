@@ -1,8 +1,8 @@
 import Foundation
 
-// Packed status payload written to the ESP32 companion's status
-// characteristic. Layout is shared byte-for-byte with the firmware decoder
-// (esp32-companion/src/status_model.cpp); bump the version when it changes.
+// Packed status payload written to the companion device's status
+// characteristic. The byte layout is the contract documented in
+// docs/companion-device-protocol.md; bump the version when it changes.
 struct CompanionStatusPayload: Equatable {
   static let version: UInt8 = 2
   static let profileNameMaxBytes = 64
