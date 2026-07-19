@@ -40,9 +40,28 @@ struct foqosApp: App {
   @StateObject private var liveActivityManager = LiveActivityManager.shared
   @StateObject private var themeManager = ThemeManager.shared
   @StateObject private var alertsManager = AlertsManager.shared
+  @StateObject private var companionDeviceManager = CompanionDeviceManager.shared
 
   init() {
     TimersUtil.registerBackgroundTasks()
+
+    // Must run at launch (not onAppear) so CoreBluetooth state restoration
+    // can re-adopt the companion device when iOS relaunches the app in the
+    // background for a BLE event.
+    CompanionDeviceManager.shared.start()
+    CompanionDeviceManager.shared.onToggleRequested = { profileId in
+      Task { @MainActor in
+        StrategyManager.shared.toggleSessionFromCompanion(
+          profileId: profileId,
+          context: container.mainContext
+        )
+      }
+    }
+    CompanionDeviceManager.shared.onStatusRefreshNeeded = {
+      Task { @MainActor in
+        StrategyManager.shared.pushCompanionStatus(context: container.mainContext)
+      }
+    }
 
     let asyncDependency: @Sendable () async -> (ModelContainer) = {
       @MainActor in
@@ -77,6 +96,7 @@ struct foqosApp: App {
         .environmentObject(ratingManager)
         .environmentObject(liveActivityManager)
         .environmentObject(themeManager)
+        .environmentObject(companionDeviceManager)
     }
     .modelContainer(container)
   }
