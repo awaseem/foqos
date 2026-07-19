@@ -266,6 +266,51 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  func pauseActiveSessionFromBackground(
+    context: ModelContext,
+    schedulePause: (BlockedProfiles) throws -> Void =
+      DeviceActivityCenterUtil.schedulePauseTimerActivity
+  ) throws -> String {
+    guard let session = getActiveSession(context: context) else {
+      throw PauseActiveSessionError.noActiveSession
+    }
+
+    let profile = session.blockedProfile
+    let profileName = profile.name
+    let strategy = StrategyManager.availableStrategies.first {
+      $0.getIdentifier() == session.tag
+    }
+
+    guard strategy?.hasPauseMode == true else {
+      throw PauseActiveSessionError.unsupportedStrategy(profileName: profileName)
+    }
+
+    guard !session.isPauseActive else {
+      throw PauseActiveSessionError.alreadyPaused(profileName: profileName)
+    }
+
+    guard !session.isBreakActive else {
+      throw PauseActiveSessionError.breakActive(profileName: profileName)
+    }
+
+    guard profile.strategyData != nil else {
+      throw PauseActiveSessionError.missingPauseConfiguration(profileName: profileName)
+    }
+
+    do {
+      try schedulePause(profile)
+    } catch DeviceActivityCenterUtil.PauseTimerSchedulingError.missingConfiguration {
+      throw PauseActiveSessionError.missingPauseConfiguration(profileName: profileName)
+    } catch {
+      throw PauseActiveSessionError.schedulingFailed(
+        profileName: profileName,
+        reason: error.localizedDescription
+      )
+    }
+
+    return profileName
+  }
+
   func stopSessionFromBackground(
     _ profileId: UUID,
     context: ModelContext
