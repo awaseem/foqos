@@ -4,6 +4,10 @@ import ManagedSettings
 import SwiftUI
 
 class DeviceActivityCenterUtil {
+  enum PauseTimerSchedulingError: Error {
+    case missingConfiguration
+  }
+
   static func scheduleTimerActivity(for profile: BlockedProfiles) {
     // Only schedule if the schedule is active
     guard let schedule = profile.schedule else { return }
@@ -134,9 +138,16 @@ class DeviceActivityCenterUtil {
   }
 
   static func startPauseTimerActivity(for profile: BlockedProfiles) {
+    do {
+      try schedulePauseTimerActivity(for: profile)
+    } catch {
+      print("Failed to start pause timer activity: \(error.localizedDescription)")
+    }
+  }
+
+  static func schedulePauseTimerActivity(for profile: BlockedProfiles) throws {
     guard let strategyData = profile.strategyData else {
-      print("No strategy data found for pause timer")
-      return
+      throw PauseTimerSchedulingError.missingConfiguration
     }
     let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
 
@@ -154,13 +165,9 @@ class DeviceActivityCenterUtil {
       repeats: false,
     )
 
-    do {
-      stopActivities(for: [deviceActivityName], with: center)
-      try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
-      print("Scheduled pause timer activity from \(intervalStart) to \(intervalEnd)")
-    } catch {
-      print("Failed to start pause timer activity: \(error.localizedDescription)")
-    }
+    stopActivities(for: [deviceActivityName], with: center)
+    try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
+    print("Scheduled pause timer activity from \(intervalStart) to \(intervalEnd)")
   }
 
   static func removePauseTimerActivity(for profile: BlockedProfiles) {
