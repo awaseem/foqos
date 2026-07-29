@@ -293,14 +293,8 @@ class StrategyManager: ObservableObject {
       throw PauseActiveSessionError.breakActive(profileName: profileName)
     }
 
-    guard profile.strategyData != nil else {
-      throw PauseActiveSessionError.missingPauseConfiguration(profileName: profileName)
-    }
-
     do {
       try schedulePause(profile)
-    } catch DeviceActivityCenterUtil.PauseTimerSchedulingError.missingConfiguration {
-      throw PauseActiveSessionError.missingPauseConfiguration(profileName: profileName)
     } catch {
       throw PauseActiveSessionError.schedulingFailed(
         profileName: profileName,

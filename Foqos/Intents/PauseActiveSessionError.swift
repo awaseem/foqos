@@ -5,7 +5,6 @@ enum PauseActiveSessionError: LocalizedError, Equatable {
   case unsupportedStrategy(profileName: String)
   case alreadyPaused(profileName: String)
   case breakActive(profileName: String)
-  case missingPauseConfiguration(profileName: String)
   case schedulingFailed(profileName: String, reason: String)
 
   var errorDescription: String? {
@@ -18,8 +17,6 @@ enum PauseActiveSessionError: LocalizedError, Equatable {
       return "\(profileName) is already paused."
     case .breakActive(let profileName):
       return "End the active break before pausing \(profileName)."
-    case .missingPauseConfiguration(let profileName):
-      return "\(profileName) does not have a pause duration configured."
     case .schedulingFailed(let profileName, let reason):
       return "Could not pause \(profileName): \(reason)"
     }

@@ -143,25 +143,29 @@ final class PauseActiveSessionTests: XCTestCase {
     }
   }
 
-  func testMissingPauseConfigurationThrows() throws {
+  func testMissingPauseConfigurationUsesDefaultDuration() throws {
     let context = try makeContext()
-    _ = try makeActiveSession(
+    let profile = try makeActiveSession(
       strategyId: NFCPauseTimerBlockingStrategy.id,
       includePauseConfiguration: false,
       context: context
+    ).blockedProfile
+    var scheduledProfileId: UUID?
+
+    let profileName = try StrategyManager().pauseActiveSessionFromBackground(
+      context: context,
+      schedulePause: { scheduledProfileId = $0.id }
+    )
+    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(
+      from: profile.strategyData
     )
 
-    XCTAssertThrowsError(
-      try StrategyManager().pauseActiveSessionFromBackground(
-        context: context,
-        schedulePause: { _ in XCTFail("Pause should not be scheduled") }
-      )
-    ) { error in
-      XCTAssertEqual(
-        error as? PauseActiveSessionError,
-        .missingPauseConfiguration(profileName: "Focus")
-      )
-    }
+    XCTAssertEqual(profileName, profile.name)
+    XCTAssertEqual(scheduledProfileId, profile.id)
+    XCTAssertEqual(
+      pauseData.pauseDurationInMinutes,
+      StrategyPauseTimerData.defaultPauseDurationInMinutes
+    )
   }
 
   func testSchedulerFailureThrowsLocalizedError() throws {
