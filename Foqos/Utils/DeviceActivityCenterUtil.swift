@@ -4,10 +4,6 @@ import ManagedSettings
 import SwiftUI
 
 class DeviceActivityCenterUtil {
-  enum PauseTimerSchedulingError: Error {
-    case missingConfiguration
-  }
-
   static func scheduleTimerActivity(for profile: BlockedProfiles) {
     // Only schedule if the schedule is active
     guard let schedule = profile.schedule else { return }
@@ -146,10 +142,7 @@ class DeviceActivityCenterUtil {
   }
 
   static func schedulePauseTimerActivity(for profile: BlockedProfiles) throws {
-    guard let strategyData = profile.strategyData else {
-      throw PauseTimerSchedulingError.missingConfiguration
-    }
-    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
+    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: profile.strategyData)
 
     let center = DeviceActivityCenter()
     let pauseTimerActivity = PauseTimerActivity()

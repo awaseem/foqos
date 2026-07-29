@@ -1,13 +1,23 @@
 import SwiftUI
 
 struct StrategyPauseTimerData: Codable {
+  static let defaultPauseDurationInMinutes = 15
+
   var pauseDurationInMinutes: Int
 
-  static func toStrategyPauseTimerData(from data: Data) -> StrategyPauseTimerData {
+  static func toStrategyPauseTimerData(from data: Data?) -> StrategyPauseTimerData {
+    guard let data else {
+      return StrategyPauseTimerData(
+        pauseDurationInMinutes: defaultPauseDurationInMinutes
+      )
+    }
+
     do {
       return try JSONDecoder().decode(StrategyPauseTimerData.self, from: data)
     } catch {
-      return StrategyPauseTimerData(pauseDurationInMinutes: 15)
+      return StrategyPauseTimerData(
+        pauseDurationInMinutes: defaultPauseDurationInMinutes
+      )
     }
   }
 
