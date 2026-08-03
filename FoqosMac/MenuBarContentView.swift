@@ -59,6 +59,16 @@ struct MenuBarContentView: View {
       .accessibilityLabel("Refresh Foqos status")
 
       Button {
+        updaterController.checkForUpdates()
+      } label: {
+        Image(systemName: "arrow.down.circle")
+      }
+      .buttonStyle(.borderless)
+      .disabled(!updaterController.isConfigured)
+      .help(updaterHelpText)
+      .accessibilityLabel("Check for updates")
+
+      Button {
         controller.quit()
       } label: {
         Image(systemName: "power")
@@ -115,15 +125,6 @@ struct MenuBarContentView: View {
         }
       }
 
-      Divider()
-
-      Button {
-        updaterController.checkForUpdates()
-      } label: {
-        Label("Check for Updates…", systemImage: "arrow.down.circle")
-      }
-      .disabled(!updaterController.isConfigured)
-      .help(updaterHelpText)
     }
   }
 
