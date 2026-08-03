@@ -81,7 +81,7 @@ final class FilterDataProvider: NEFilterDataProvider {
     }
 
     guard let data = append(readBytes, at: offset, for: flow) else {
-      return fallbackDataVerdict(for: rules)
+      return .allow()
     }
 
     switch TLSClientHelloParser.parse(data) {
@@ -92,19 +92,19 @@ final class FilterDataProvider: NEFilterDataProvider {
     case .needMoreData(let byteCount):
       guard byteCount > data.count else {
         removeBuffer(for: flow)
-        return fallbackDataVerdict(for: rules)
+        return .allow()
       }
       return .init(passBytes: 0, peekBytes: byteCount)
 
     case .notClientHello:
       removeBuffer(for: flow)
-      return fallbackDataVerdict(for: rules)
+      return .allow()
     }
   }
 
   override func handleOutboundDataComplete(for flow: NEFilterFlow) -> NEFilterDataVerdict {
     removeBuffer(for: flow)
-    return fallbackDataVerdict(for: currentRules)
+    return .allow()
   }
 
   private func reloadRules() {
@@ -117,7 +117,7 @@ final class FilterDataProvider: NEFilterDataProvider {
     stateLock.unlock()
 
     logger.notice(
-      "Rules updated: enabled=\(updatedRules.isEnabled) mode=\(updatedRules.mode.rawValue, privacy: .public) domains=\(updatedRules.domains.count) reset_flows=\(flowsToReset.count)"
+      "Rules updated: enabled=\(updatedRules.isEnabled) domains=\(updatedRules.domains.count) reset_flows=\(flowsToReset.count)"
     )
 
     for flow in flowsToReset {
@@ -154,15 +154,22 @@ final class FilterDataProvider: NEFilterDataProvider {
       return .allow()
     }
 
-    if let hostname = hostname(for: flow) {
-      return rules.shouldBlock(hostname) ? loggedDrop(hostname) : .allow()
-    }
-
     guard
       let socketFlow = flow as? NEFilterSocketFlow,
       let endpoint = socketFlow.remoteEndpoint as? NWHostEndpoint
     else {
-      return fallbackNewFlowVerdict(for: rules)
+      guard let hostname = flow.url?.host else {
+        return .allow()
+      }
+      return rules.shouldBlock(hostname) ? loggedDrop(hostname) : .allow()
+    }
+
+    guard endpoint.port == "80" || endpoint.port == "443" else {
+      return .allow()
+    }
+
+    if let hostname = hostname(for: flow) {
+      return rules.shouldBlock(hostname) ? loggedDrop(hostname) : .allow()
     }
 
     if socketFlow.socketProtocol == IPPROTO_UDP, endpoint.port == "443" {
@@ -170,7 +177,7 @@ final class FilterDataProvider: NEFilterDataProvider {
     }
 
     guard socketFlow.socketProtocol == IPPROTO_TCP, endpoint.port == "443" else {
-      return fallbackNewFlowVerdict(for: rules)
+      return .allow()
     }
 
     return .filterDataVerdict(
@@ -189,20 +196,12 @@ final class FilterDataProvider: NEFilterDataProvider {
       return .allow()
     }
 
-    logger.notice("Blocked TLS hostname: \(hostname, privacy: .public)")
+    logger.debug("Blocked TLS hostname: \(hostname, privacy: .public)")
     return .drop()
   }
 
-  private func fallbackNewFlowVerdict(for rules: FilterRules) -> NEFilterNewFlowVerdict {
-    rules.mode == .allowOnly ? .drop() : .allow()
-  }
-
-  private func fallbackDataVerdict(for rules: FilterRules) -> NEFilterDataVerdict {
-    rules.mode == .allowOnly ? .drop() : .allow()
-  }
-
   private func loggedDrop(_ hostname: String) -> NEFilterNewFlowVerdict {
-    logger.notice("Blocked hostname: \(hostname, privacy: .public)")
+    logger.debug("Blocked hostname: \(hostname, privacy: .public)")
     return .drop()
   }
 
@@ -239,7 +238,7 @@ final class FilterDataProvider: NEFilterDataProvider {
 
   private func isWebFlow(_ flow: NEFilterSocketFlow) -> Bool {
     guard let endpoint = flow.remoteEndpoint as? NWHostEndpoint else {
-      return flow.socketProtocol == IPPROTO_TCP || flow.socketProtocol == IPPROTO_UDP
+      return false
     }
     return endpoint.port == "80" || endpoint.port == "443"
   }

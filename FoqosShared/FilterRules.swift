@@ -1,36 +1,27 @@
 import Foundation
 
 struct FilterRules: Codable, Equatable {
-  enum Mode: String, Codable {
-    case allowOnly
-    case block
-  }
-
   static let vendorConfigurationKey = "filterRules"
-  static let disabled = FilterRules(isEnabled: false, domains: [], mode: .block)
+  static let disabled = FilterRules(isEnabled: false, domains: [])
 
   let isEnabled: Bool
   let domains: [String]
-  let mode: Mode
 
-  init(isEnabled: Bool, domains: [String], mode: Mode) {
+  init(isEnabled: Bool, domains: [String]) {
     let normalizedDomains = Self.normalize(domains)
 
-    self.isEnabled = isEnabled && (mode == .allowOnly || !normalizedDomains.isEmpty)
+    self.isEnabled = isEnabled && !normalizedDomains.isEmpty
     self.domains = normalizedDomains
-    self.mode = mode
   }
 
   func shouldBlock(_ hostname: String) -> Bool {
     guard let normalizedHostname = Self.normalize(hostname) else {
-      return mode == .allowOnly
+      return false
     }
 
-    let matches = domains.contains {
+    return domains.contains {
       normalizedHostname == $0 || normalizedHostname.hasSuffix(".\($0)")
     }
-
-    return mode == .block ? matches : !matches
   }
 
   static func normalize(_ domains: [String]) -> [String] {

@@ -69,7 +69,7 @@ struct MenuBarContentView: View {
 
   private var blockedDomainsSection: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text(controller.activeMode == .allowOnly ? "Allowed Websites" : "Blocked Websites")
+      Text("Blocked Websites")
         .font(.subheadline.weight(.semibold))
 
       if controller.activeDomains.isEmpty {
@@ -117,6 +117,10 @@ struct MenuBarContentView: View {
   }
 
   private var statusTitle: String {
+    if controller.isAllowModeActive {
+      return "Allow mode isn't supported on Mac"
+    }
+
     if controller.isBlocking {
       return "\(controller.syncedRecord?.profileName ?? "Foqos") is active"
     }
@@ -204,9 +208,7 @@ struct MenuBarContentView: View {
   }
 
   private var emptyDomainMessage: String {
-    controller.activeMode == .allowOnly
-      ? "No domains are allowed; all hostname-based flows are blocked."
-      : "No explicit domains are active."
+    "No blocked websites are active."
   }
 }
 

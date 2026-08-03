@@ -10,27 +10,23 @@ final class FoqosMacController: ObservableObject {
   private var cloudObserver: NSObjectProtocol?
 
   var isBlocking: Bool {
-    guard syncedRecord?.state == .active else {
+    guard syncedRecord?.state == .active, !isAllowModeActive else {
       return false
     }
 
-    return activeMode == .allowOnly || !activeDomains.isEmpty
+    return !activeDomains.isEmpty
   }
 
   var activeDomains: [String] {
-    guard syncedRecord?.state == .active else {
+    guard syncedRecord?.state == .active, !isAllowModeActive else {
       return []
     }
 
     return FilterRules.normalize(syncedRecord?.domains ?? [])
   }
 
-  var activeMode: FilterRules.Mode {
-    guard syncedRecord?.domainMode == .allowOnly else {
-      return .block
-    }
-
-    return .allowOnly
+  var isAllowModeActive: Bool {
+    syncedRecord?.state == .active && syncedRecord?.domainMode == .allowOnly
   }
 
   var isICloudAvailable: Bool {
@@ -84,8 +80,7 @@ final class FoqosMacController: ObservableObject {
     filterManager.setRules(
       FilterRules(
         isEnabled: isBlocking,
-        domains: activeDomains,
-        mode: activeMode
+        domains: activeDomains
       )
     )
   }
