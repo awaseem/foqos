@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarContentView: View {
   @EnvironmentObject private var controller: FoqosMacController
   @EnvironmentObject private var filterManager: FoqosFilterManager
+  @EnvironmentObject private var onboardingController: FoqosOnboardingWindowController
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -108,7 +109,7 @@ struct MenuBarContentView: View {
 
         if showsSetupButton {
           Button(setupButtonTitle) {
-            filterManager.installAndEnable()
+            onboardingController.show()
           }
         }
       }
@@ -214,8 +215,10 @@ struct MenuBarContentView: View {
 
 #Preview {
   let filterManager = FoqosFilterManager()
+  let onboardingController = FoqosOnboardingWindowController(filterManager: filterManager)
 
   MenuBarContentView()
     .environmentObject(FoqosMacController(filterManager: filterManager))
     .environmentObject(filterManager)
+    .environmentObject(onboardingController)
 }

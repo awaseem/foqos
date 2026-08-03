@@ -28,6 +28,8 @@
 		F0A300072F80000300000001 /* ActiveProfileSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */; };
 		F0A300082F80000300000001 /* ActiveProfileSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */; };
 		F0A300092F80000300000001 /* FilterRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300012F80000300000001 /* FilterRules.swift */; };
+		F0A400022F80000400000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0A400012F80000400000001 /* Assets.xcassets */; };
+		F0A400042F80000400000001 /* foqos-icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F0A400032F80000400000001 /* foqos-icon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,12 +126,14 @@
 		80DBF6132CB776D100EEA8A6 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		80FF388D2D80DB540032BC5E /* FoqosWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FoqosWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8D73DC32F7C155C0028E76A /* FoqosShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FoqosShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F0A100022F80000100000001 /* Foqos Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Foqos Mac.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0A100022F80000100000001 /* Foqos for Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Foqos for Mac.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0A200022F80000200000001 /* dev.ambitionsoftware.foqos.mac.filter.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = dev.ambitionsoftware.foqos.mac.filter.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0A200042F80000200000001 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		F0A200132F80000200000001 /* SystemExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemExtensions.framework; path = System/Library/Frameworks/SystemExtensions.framework; sourceTree = SDKROOT; };
 		F0A300012F80000300000001 /* FilterRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterRules.swift; sourceTree = "<group>"; };
 		F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveProfileSyncRecord.swift; sourceTree = "<group>"; };
+		F0A400012F80000400000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Foqos/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		F0A400032F80000400000001 /* foqos-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = foqos-icon.icon; path = Foqos/foqos-icon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -422,7 +426,7 @@
 				8017130A2DE6C78C00B77FE1 /* FoqosDeviceMonitor.appex */,
 				808A3C4A2E4ACD18002A7812 /* FoqosShieldConfig.appex */,
 				C8D73DC32F7C155C0028E76A /* FoqosShieldAction.appex */,
-				F0A100022F80000100000001 /* Foqos Mac.app */,
+				F0A100022F80000100000001 /* Foqos for Mac.app */,
 				F0A200022F80000200000001 /* dev.ambitionsoftware.foqos.mac.filter.systemextension */,
 			);
 			name = Products;
@@ -448,6 +452,8 @@
 			children = (
 				F0A300012F80000300000001 /* FilterRules.swift */,
 				F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */,
+				F0A400012F80000400000001 /* Assets.xcassets */,
+				F0A400032F80000400000001 /* foqos-icon.icon */,
 			);
 			path = FoqosShared;
 			sourceTree = "<group>";
@@ -634,8 +640,8 @@
 			name = "Foqos Mac";
 			packageProductDependencies = (
 			);
-			productName = FoqosMac;
-			productReference = F0A100022F80000100000001 /* Foqos Mac.app */;
+			productName = "Foqos for Mac";
+			productReference = F0A100022F80000100000001 /* Foqos for Mac.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F0A200012F80000200000001 /* FoqosFilter */ = {
@@ -785,6 +791,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0A400022F80000400000001 /* Assets.xcassets in Resources */,
+				F0A400042F80000400000001 /* foqos-icon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1460,6 +1468,7 @@
 		F0A100072F80000100000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "foqos-icon";
 				CODE_SIGN_ENTITLEMENTS = FoqosMac/FoqosMac.Debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1469,7 +1478,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Foqos Mac";
+				INFOPLIST_KEY_CFBundleDisplayName = "Foqos for Mac";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1481,7 +1490,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.mac;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Foqos for Mac";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1492,6 +1501,7 @@
 		F0A100082F80000100000001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "foqos-icon";
 				CODE_SIGN_ENTITLEMENTS = FoqosMac/FoqosMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1500,7 +1510,7 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Foqos Mac";
+				INFOPLIST_KEY_CFBundleDisplayName = "Foqos for Mac";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1512,7 +1522,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.mac;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Foqos for Mac";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;

@@ -3,13 +3,22 @@ import SwiftUI
 
 @main
 struct FoqosMacApp: App {
+  @NSApplicationDelegateAdaptor(FoqosMacAppDelegate.self) private var appDelegate
+
   @StateObject private var controller: FoqosMacController
   @StateObject private var filterManager: FoqosFilterManager
+  @StateObject private var onboardingController: FoqosOnboardingWindowController
 
   init() {
     let filterManager = FoqosFilterManager()
+    let onboardingController = FoqosOnboardingWindowController(filterManager: filterManager)
     _filterManager = StateObject(wrappedValue: filterManager)
     _controller = StateObject(wrappedValue: FoqosMacController(filterManager: filterManager))
+    _onboardingController = StateObject(wrappedValue: onboardingController)
+    appDelegate.configure(
+      filterManager: filterManager,
+      onboardingController: onboardingController
+    )
 
     #if DEBUG
       if CommandLine.arguments.contains("--reset-network-extension") {
@@ -40,6 +49,7 @@ struct FoqosMacApp: App {
       MenuBarContentView()
         .environmentObject(controller)
         .environmentObject(filterManager)
+        .environmentObject(onboardingController)
     } label: {
       Label("Foqos", systemImage: menuBarSystemImage)
     }

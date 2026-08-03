@@ -14,8 +14,9 @@ MAC_SCHEME := Foqos Mac
 MAC_CONFIGURATION ?= Debug
 MAC_DESTINATION := platform=macOS
 MAC_DERIVED_DATA ?= $(TMPDIR)foqos-mac-derived-data
-MAC_APP := $(MAC_DERIVED_DATA)/Build/Products/$(MAC_CONFIGURATION)/Foqos Mac.app
-MAC_INSTALL_PATH ?= /Applications/Foqos Mac.app
+MAC_APP := $(MAC_DERIVED_DATA)/Build/Products/$(MAC_CONFIGURATION)/Foqos for Mac.app
+MAC_INSTALL_PATH ?= /Applications/Foqos for Mac.app
+MAC_LEGACY_INSTALL_PATH := /Applications/Foqos Mac.app
 MAC_BUNDLE_IDENTIFIER := dev.ambitionsoftware.foqos.mac
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
@@ -33,8 +34,10 @@ mac-clean: ## Clean local Mac build artifacts
 	xcodebuild -project $(PROJECT) -scheme '$(MAC_SCHEME)' -configuration $(MAC_CONFIGURATION) -derivedDataPath '$(MAC_DERIVED_DATA)' clean
 
 mac-install: mac-build
+	@pkill -x 'Foqos for Mac' >/dev/null 2>&1 || true
 	@pkill -x 'Foqos Mac' >/dev/null 2>&1 || true
 	rm -rf '$(MAC_INSTALL_PATH)'
+	rm -rf '$(MAC_LEGACY_INSTALL_PATH)'
 	ditto '$(MAC_APP)' '$(MAC_INSTALL_PATH)'
 	@mdfind 'kMDItemCFBundleIdentifier == "$(MAC_BUNDLE_IDENTIFIER)"' | while IFS= read -r app_path; do \
 		if [ "$$app_path" != '$(MAC_INSTALL_PATH)' ] && [ -d "$$app_path" ]; then \
@@ -49,7 +52,7 @@ mac-dev: mac-install ## Install the local Mac build in Applications and launch i
 
 mac-reset: MAC_CONFIGURATION := Debug
 mac-reset: mac-install ## Remove the local Foqos filter configuration and system extension
-	'$(MAC_INSTALL_PATH)/Contents/MacOS/Foqos Mac' --reset-network-extension
+	'$(MAC_INSTALL_PATH)/Contents/MacOS/Foqos for Mac' --reset-network-extension
 	@if /usr/bin/systemextensionsctl list | grep -Fq '$(MAC_BUNDLE_IDENTIFIER).filter'; then \
 		echo 'macOS still has Foqos extension records. Restart this Mac before testing a fresh install.'; \
 	fi

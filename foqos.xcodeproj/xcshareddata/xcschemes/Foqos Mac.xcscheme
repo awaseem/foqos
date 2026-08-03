@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F0A100012F80000100000001"
-               BuildableName = "Foqos Mac.app"
+               BuildableName = "Foqos for Mac.app"
                BlueprintName = "Foqos Mac"
                ReferencedContainer = "container:foqos.xcodeproj">
             </BuildableReference>
@@ -43,7 +43,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F0A100012F80000100000001"
-            BuildableName = "Foqos Mac.app"
+            BuildableName = "Foqos for Mac.app"
             BlueprintName = "Foqos Mac"
             ReferencedContainer = "container:foqos.xcodeproj">
          </BuildableReference>
@@ -60,7 +60,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F0A100012F80000100000001"
-            BuildableName = "Foqos Mac.app"
+            BuildableName = "Foqos for Mac.app"
             BlueprintName = "Foqos Mac"
             ReferencedContainer = "container:foqos.xcodeproj">
          </BuildableReference>
