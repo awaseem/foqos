@@ -135,6 +135,8 @@
 		F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveProfileSyncRecord.swift; sourceTree = "<group>"; };
 		F0A400012F80000400000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Foqos/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		F0A400032F80000400000001 /* foqos-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = foqos-icon.icon; path = Foqos/foqos-icon.icon; sourceTree = SOURCE_ROOT; };
+		F0B100052F90000100000001 /* MacRelease.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MacRelease.xcconfig; sourceTree = "<group>"; };
+		F0B100072F90000100000001 /* MacReleaseExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MacReleaseExportOptions.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -414,6 +416,7 @@
 		801B208C2CB363A10073E9E2 = {
 			isa = PBXGroup;
 			children = (
+				F0B100062F90000100000001 /* Config */,
 				801B20972CB363A10073E9E2 /* Foqos */,
 				80AA00012F00000100000001 /* foqosTests */,
 				80FF38902D80DB540032BC5E /* FoqosWidget */,
@@ -426,6 +429,15 @@
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
 				801B20962CB363A10073E9E2 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		F0B100062F90000100000001 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F0B100052F90000100000001 /* MacRelease.xcconfig */,
+				F0B100072F90000100000001 /* MacReleaseExportOptions.plist */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		801B20962CB363A10073E9E2 /* Products */ = {
@@ -1510,12 +1522,12 @@
 		};
 		F0A100082F80000100000001 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F0B100052F90000100000001 /* MacRelease.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "foqos-icon";
 				CODE_SIGN_ENTITLEMENTS = FoqosMac/FoqosMac.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = YR54789JNV;
 				ENABLE_APP_SANDBOX = YES;
@@ -1527,7 +1539,6 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.mac;
 				PRODUCT_NAME = "Foqos for Mac";
 				PROVISIONING_PROFILE_SPECIFIER = "Foqos Mac Developer ID";
@@ -1571,11 +1582,11 @@
 		};
 		F0A2000F2F80000200000001 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F0B100052F90000100000001 /* MacRelease.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = FoqosFilter/FoqosFilter.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 12;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = YR54789JNV;
 				ENABLE_APP_SANDBOX = YES;
@@ -1588,7 +1599,6 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.ambitionsoftware.foqos.mac.filter;
 				PRODUCT_NAME = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PROVISIONING_PROFILE_SPECIFIER = "Foqos Filter Developer ID";

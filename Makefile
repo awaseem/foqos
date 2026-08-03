@@ -1,4 +1,4 @@
-.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-reset test test-all check help
+.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-release mac-reset test test-all check help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -18,6 +18,11 @@ MAC_APP := $(MAC_DERIVED_DATA)/Build/Products/$(MAC_CONFIGURATION)/Foqos for Mac
 MAC_INSTALL_PATH ?= /Applications/Foqos for Mac.app
 MAC_LEGACY_INSTALL_PATH := /Applications/Foqos Mac.app
 MAC_BUNDLE_IDENTIFIER := dev.ambitionsoftware.foqos.mac
+BUILD_NUMBER ?= $(shell git rev-list --count HEAD)
+NOTARY_PROFILE ?= foqos-notary
+SPARKLE_KEY_ACCOUNT ?= ambitionsoftware
+GITHUB_REPOSITORY ?= awaseem/foqos
+RELEASE_NOTES_FILE ?=
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 help: ## Show this help message
@@ -59,6 +64,15 @@ mac-reset: mac-install ## Remove the local Foqos filter configuration and system
 
 mac-logs: ## Stream structured Mac filter observations and verdicts
 	log stream --style compact --level info --predicate 'subsystem == "dev.ambitionsoftware.foqos.mac.filter"'
+
+mac-release: ## Build, notarize, package, sign, and publish a Mac release (VERSION=x.y.z)
+	@VERSION='$(VERSION)' \
+	BUILD_NUMBER='$(BUILD_NUMBER)' \
+	NOTARY_PROFILE='$(NOTARY_PROFILE)' \
+	SPARKLE_KEY_ACCOUNT='$(SPARKLE_KEY_ACCOUNT)' \
+	GITHUB_REPOSITORY='$(GITHUB_REPOSITORY)' \
+	RELEASE_NOTES_FILE='$(RELEASE_NOTES_FILE)' \
+	./scripts/release-mac.sh
 
 clean: ## Clean build artifacts
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) clean

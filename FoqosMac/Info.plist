@@ -32,6 +32,8 @@
 	<string>Foqos uses a network filter to block distracting websites during active sessions.</string>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/awaseem/foqos/main/appcast-macos.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>yGu0a7ntomnF4Lne6k8oRAGU2HEeTIc8yy/WWbmf+8o=</string>
 </dict>
