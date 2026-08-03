@@ -10,6 +10,7 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     case enabled
     case failed(String)
     case installing
+    case notConfigured
     case requiresRestart
     case unknown
   }
@@ -22,33 +23,53 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     subsystem: "dev.ambitionsoftware.foqos.mac",
     category: "filter-manager"
   )
+  private var configurationObserver: NSObjectProtocol?
   private var inspectionRequest: OSSystemExtensionRequest?
   private var latestRules: FilterRules?
   private var isSavingRules = false
 
+  #if DEBUG
+    private var developmentResetCompletion: ((Result<Bool, Error>) -> Void)?
+    private var developmentResetRequest: OSSystemExtensionRequest?
+  #endif
+
   var statusText: String {
     switch status {
     case .approvalRequired:
-      return "Approve the Foqos filter in System Settings."
+      return "Enable Foqos in System Settings › Network › Filters to finish setup."
     case .disabled:
-      return "The website filter is installed but disabled."
+      return "Active profiles cannot block websites while the network filter is disabled."
     case .enabled:
-      return "Website filter enabled"
+      return "Active profiles can block websites across supported browsers."
     case .failed(let message):
       return message
     case .installing:
-      return "Installing website filter…"
+      return "macOS may ask you to approve the Foqos network filter."
+    case .notConfigured:
+      return "Set up the network filter to block websites across browsers."
     case .requiresRestart:
       return "Restart your Mac to finish installing the filter."
     case .unknown:
-      return "Website filter not configured"
+      return "Reading the current network filter configuration."
     }
   }
 
   override init() {
     super.init()
-    refreshStatus()
-    installBundledExtensionIfNeeded()
+    configurationObserver = NotificationCenter.default.addObserver(
+      forName: .NEFilterConfigurationDidChange,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.refreshStatus()
+    }
+    inspectBundledExtension()
+  }
+
+  deinit {
+    if let configurationObserver {
+      NotificationCenter.default.removeObserver(configurationObserver)
+    }
   }
 
   func installAndEnable() {
@@ -62,7 +83,7 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     OSSystemExtensionManager.shared.submitRequest(request)
   }
 
-  private func installBundledExtensionIfNeeded() {
+  private func inspectBundledExtension() {
     let request = OSSystemExtensionRequest.propertiesRequest(
       forExtensionWithIdentifier: Self.extensionIdentifier,
       queue: .main
@@ -98,7 +119,13 @@ final class FoqosFilterManager: NSObject, ObservableObject {
           return
         }
 
-        self.status = NEFilterManager.shared().isEnabled ? .enabled : .disabled
+        let manager = NEFilterManager.shared()
+        guard manager.providerConfiguration != nil else {
+          self.status = .notConfigured
+          return
+        }
+
+        self.status = manager.isEnabled ? .enabled : .disabled
       }
     }
   }
@@ -111,6 +138,62 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     latestRules = rules
     saveLatestRulesIfNeeded()
   }
+
+  #if DEBUG
+    func resetForDevelopment(completion: @escaping (Result<Bool, Error>) -> Void) {
+      guard developmentResetCompletion == nil else {
+        return
+      }
+
+      developmentResetCompletion = completion
+
+      let manager = NEFilterManager.shared()
+      manager.loadFromPreferences { [weak self] error in
+        DispatchQueue.main.async {
+          guard let self else {
+            return
+          }
+
+          if let error {
+            self.finishDevelopmentReset(.failure(error))
+            return
+          }
+
+          guard manager.providerConfiguration != nil || manager.localizedDescription != nil else {
+            self.deactivateExtensionForDevelopment()
+            return
+          }
+
+          manager.removeFromPreferences { error in
+            DispatchQueue.main.async {
+              if let error {
+                self.finishDevelopmentReset(.failure(error))
+              } else {
+                self.deactivateExtensionForDevelopment()
+              }
+            }
+          }
+        }
+      }
+    }
+
+    private func deactivateExtensionForDevelopment() {
+      let request = OSSystemExtensionRequest.deactivationRequest(
+        forExtensionWithIdentifier: Self.extensionIdentifier,
+        queue: .main
+      )
+      request.delegate = self
+      developmentResetRequest = request
+      OSSystemExtensionManager.shared.submitRequest(request)
+    }
+
+    private func finishDevelopmentReset(_ result: Result<Bool, Error>) {
+      let completion = developmentResetCompletion
+      developmentResetCompletion = nil
+      developmentResetRequest = nil
+      completion?(result)
+    }
+  #endif
 
   private func configureFilter() {
     let manager = NEFilterManager.shared()
@@ -213,9 +296,24 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
     _ request: OSSystemExtensionRequest,
     didFailWithError error: Error
   ) {
+    #if DEBUG
+      if request === developmentResetRequest {
+        let resetError = error as NSError
+        if resetError.domain == OSSystemExtensionErrorDomain,
+          resetError.code == OSSystemExtensionError.extensionNotFound.rawValue
+        {
+          finishDevelopmentReset(.success(false))
+        } else {
+          finishDevelopmentReset(.failure(error))
+        }
+        return
+      }
+    #endif
+
     if request === inspectionRequest {
       inspectionRequest = nil
       logger.error("Unable to inspect installed filter version: \(error.localizedDescription)")
+      status = .disabled
       return
     }
 
@@ -226,6 +324,30 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
     _ request: OSSystemExtensionRequest,
     didFinishWithResult result: OSSystemExtensionRequest.Result
   ) {
+    #if DEBUG
+      if request === developmentResetRequest {
+        switch result {
+        case .completed:
+          finishDevelopmentReset(.success(false))
+        case .willCompleteAfterReboot:
+          finishDevelopmentReset(.success(true))
+        @unknown default:
+          finishDevelopmentReset(
+            .failure(
+              NSError(
+                domain: "FoqosDevelopmentReset",
+                code: 1,
+                userInfo: [
+                  NSLocalizedDescriptionKey: "The system returned an unknown reset result."
+                ]
+              )
+            )
+          )
+        }
+        return
+      }
+    #endif
+
     if request === inspectionRequest {
       inspectionRequest = nil
       return
@@ -257,8 +379,11 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       properties.isEnabled && properties.bundleVersion == bundledExtensionVersion
     }
 
-    if !hasCurrentVersion {
-      installAndEnable()
+    guard hasCurrentVersion else {
+      status = .notConfigured
+      return
     }
+
+    refreshStatus()
   }
 }

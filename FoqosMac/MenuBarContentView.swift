@@ -10,28 +10,17 @@ struct MenuBarContentView: View {
 
       Divider()
 
-      filterSection
-
-      Divider()
-
       blockedDomainsSection
 
       Divider()
 
-      HStack {
-        Button("Refresh iCloud") {
-          controller.refreshFromCloud()
-        }
-
-        Spacer()
-
-        Button("Quit Foqos") {
-          controller.quit()
-        }
-      }
+      footer
     }
     .padding(16)
     .frame(width: 360)
+    .onAppear {
+      filterManager.refreshStatus()
+    }
   }
 
   private var statusHeader: some View {
@@ -54,35 +43,27 @@ struct MenuBarContentView: View {
             .foregroundStyle(.orange)
         }
       }
-    }
-  }
 
-  private var filterSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Toggle("Enable website blocking", isOn: $controller.enableMacBlocking)
+      Spacer()
 
-      HStack {
-        Image(systemName: filterStatusSymbol)
-          .foregroundStyle(filterStatusColor)
-
-        Text(filterManager.statusText)
-          .font(.caption)
-
-        Spacer()
-
-        Button("Install or Enable") {
-          filterManager.installAndEnable()
-        }
-        .disabled(filterManager.status == .installing)
+      Button {
+        controller.refreshFromCloud()
+        filterManager.refreshStatus()
+      } label: {
+        Image(systemName: "arrow.clockwise")
       }
+      .buttonStyle(.borderless)
+      .help("Refresh Foqos status")
+      .accessibilityLabel("Refresh Foqos status")
 
-      Toggle("Test blocking locally", isOn: $controller.enableLocalTest)
-        .help("Tests one domain without waiting for an iPhone session.")
-
-      if controller.enableLocalTest {
-        TextField("youtube.com", text: $controller.localTestDomain)
-          .textFieldStyle(.roundedBorder)
+      Button {
+        controller.quit()
+      } label: {
+        Image(systemName: "power")
       }
+      .buttonStyle(.borderless)
+      .help("Quit Foqos")
+      .accessibilityLabel("Quit Foqos")
     }
   }
 
@@ -104,11 +85,40 @@ struct MenuBarContentView: View {
     }
   }
 
+  private var footer: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(alignment: .top, spacing: 9) {
+        Image(systemName: filterStatusSymbol)
+          .foregroundStyle(filterStatusColor)
+          .accessibilityHidden(true)
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(filterStatusTitle)
+            .font(.caption.weight(.semibold))
+
+          if filterManager.status != .enabled {
+            Text(filterManager.statusText)
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+              .fixedSize(horizontal: false, vertical: true)
+          }
+        }
+
+        Spacer(minLength: 8)
+
+        if showsSetupButton {
+          Button(setupButtonTitle) {
+            filterManager.installAndEnable()
+          }
+        }
+      }
+
+    }
+  }
+
   private var statusTitle: String {
     if controller.isBlocking {
-      return controller.enableLocalTest
-        ? "Local website test is active"
-        : "\(controller.syncedRecord?.profileName ?? "Foqos") is active"
+      return "\(controller.syncedRecord?.profileName ?? "Foqos") is active"
     }
 
     switch controller.syncedRecord?.state {
@@ -132,11 +142,65 @@ struct MenuBarContentView: View {
   }
 
   private var filterStatusSymbol: String {
-    filterManager.status == .enabled ? "checkmark.circle.fill" : "exclamationmark.circle"
+    switch filterManager.status {
+    case .enabled:
+      return "checkmark.circle.fill"
+    case .failed:
+      return "xmark.circle.fill"
+    case .installing:
+      return "arrow.triangle.2.circlepath.circle.fill"
+    case .requiresRestart:
+      return "arrow.clockwise.circle.fill"
+    default:
+      return "exclamationmark.circle.fill"
+    }
+  }
+
+  private var filterStatusTitle: String {
+    switch filterManager.status {
+    case .approvalRequired:
+      return "Approval required"
+    case .disabled:
+      return "Website blocking is off"
+    case .enabled:
+      return "Website blocking is ready"
+    case .failed:
+      return "Website blocking error"
+    case .installing:
+      return "Setting up website blocking"
+    case .notConfigured:
+      return "Website blocking needs setup"
+    case .requiresRestart:
+      return "Restart required"
+    case .unknown:
+      return "Checking website blocking"
+    }
+  }
+
+  private var showsSetupButton: Bool {
+    switch filterManager.status {
+    case .disabled, .failed, .notConfigured:
+      return true
+    default:
+      return false
+    }
+  }
+
+  private var setupButtonTitle: String {
+    filterManager.status == .disabled ? "Enable" : "Set Up"
   }
 
   private var filterStatusColor: Color {
-    filterManager.status == .enabled ? .green : .orange
+    switch filterManager.status {
+    case .enabled:
+      return .green
+    case .failed:
+      return .red
+    case .installing:
+      return .blue
+    default:
+      return .orange
+    }
   }
 
   private var emptyDomainMessage: String {

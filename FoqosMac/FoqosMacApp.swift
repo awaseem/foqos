@@ -1,3 +1,4 @@
+import Darwin
 import SwiftUI
 
 @main
@@ -9,6 +10,29 @@ struct FoqosMacApp: App {
     let filterManager = FoqosFilterManager()
     _filterManager = StateObject(wrappedValue: filterManager)
     _controller = StateObject(wrappedValue: FoqosMacController(filterManager: filterManager))
+
+    #if DEBUG
+      if CommandLine.arguments.contains("--reset-network-extension") {
+        Task { @MainActor in
+          filterManager.resetForDevelopment { result in
+            switch result {
+            case .success(let requiresRestart):
+              if requiresRestart {
+                print("Foqos reset is pending. Restart this Mac to finish removing the extension.")
+              } else {
+                print(
+                  "Foqos filter configuration was removed and the system extension was deactivated."
+                )
+              }
+              exit(EXIT_SUCCESS)
+            case .failure(let error):
+              fputs("Unable to reset Foqos: \(error.localizedDescription)\n", stderr)
+              exit(EXIT_FAILURE)
+            }
+          }
+        }
+      }
+    #endif
   }
 
   var body: some Scene {
@@ -17,8 +41,19 @@ struct FoqosMacApp: App {
         .environmentObject(controller)
         .environmentObject(filterManager)
     } label: {
-      Label("Foqos", systemImage: controller.isBlocking ? "hourglass.circle.fill" : "hourglass")
+      Label("Foqos", systemImage: menuBarSystemImage)
     }
     .menuBarExtraStyle(.window)
+  }
+
+  private var menuBarSystemImage: String {
+    switch filterManager.status {
+    case .approvalRequired, .disabled, .failed, .notConfigured, .requiresRestart:
+      return "exclamationmark.triangle.fill"
+    case .enabled:
+      return controller.isBlocking ? "hourglass.circle.fill" : "hourglass"
+    case .installing, .unknown:
+      return "hourglass"
+    }
   }
 }

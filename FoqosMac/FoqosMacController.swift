@@ -4,34 +4,13 @@ import Foundation
 @MainActor
 final class FoqosMacController: ObservableObject {
   @Published private(set) var syncedRecord: ActiveProfileSyncRecord?
-  @Published var enableMacBlocking: Bool {
-    didSet {
-      defaults.set(enableMacBlocking, forKey: enableMacBlockingKey)
-      applyCurrentRules()
-    }
-  }
-  @Published var enableLocalTest: Bool = false {
-    didSet {
-      applyCurrentRules()
-    }
-  }
-  @Published var localTestDomain: String {
-    didSet {
-      defaults.set(localTestDomain, forKey: localTestDomainKey)
-      scheduleLocalTestRuleUpdate()
-    }
-  }
 
-  private let enableMacBlockingKey = "enableMacBlocking"
-  private let localTestDomainKey = "localTestDomain"
   private let cloudStore = NSUbiquitousKeyValueStore.default
-  private let defaults = UserDefaults.standard
   private let filterManager: FoqosFilterManager
   private var cloudObserver: NSObjectProtocol?
-  private var localTestRuleUpdateWorkItem: DispatchWorkItem?
 
   var isBlocking: Bool {
-    guard enableMacBlocking, enableLocalTest || syncedRecord?.state == .active else {
+    guard syncedRecord?.state == .active else {
       return false
     }
 
@@ -39,10 +18,6 @@ final class FoqosMacController: ObservableObject {
   }
 
   var activeDomains: [String] {
-    if enableLocalTest {
-      return FilterRules.normalize([localTestDomain])
-    }
-
     guard syncedRecord?.state == .active else {
       return []
     }
@@ -51,7 +26,7 @@ final class FoqosMacController: ObservableObject {
   }
 
   var activeMode: FilterRules.Mode {
-    guard !enableLocalTest, syncedRecord?.domainMode == .allowOnly else {
+    guard syncedRecord?.domainMode == .allowOnly else {
       return .block
     }
 
@@ -64,14 +39,6 @@ final class FoqosMacController: ObservableObject {
 
   init(filterManager: FoqosFilterManager = FoqosFilterManager()) {
     self.filterManager = filterManager
-
-    if defaults.object(forKey: enableMacBlockingKey) == nil {
-      enableMacBlocking = true
-    } else {
-      enableMacBlocking = defaults.bool(forKey: enableMacBlockingKey)
-    }
-
-    localTestDomain = defaults.string(forKey: localTestDomainKey) ?? "youtube.com"
 
     startObserving()
     refreshFromCloud()
@@ -121,15 +88,5 @@ final class FoqosMacController: ObservableObject {
         mode: activeMode
       )
     )
-  }
-
-  private func scheduleLocalTestRuleUpdate() {
-    localTestRuleUpdateWorkItem?.cancel()
-
-    let workItem = DispatchWorkItem { [weak self] in
-      self?.applyCurrentRules()
-    }
-    localTestRuleUpdateWorkItem = workItem
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
   }
 }

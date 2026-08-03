@@ -1,4 +1,4 @@
-.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-logs test test-all check help
+.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-reset test test-all check help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -32,7 +32,7 @@ mac-build: ## Build the signed Mac app and system extension for local developmen
 mac-clean: ## Clean local Mac build artifacts
 	xcodebuild -project $(PROJECT) -scheme '$(MAC_SCHEME)' -configuration $(MAC_CONFIGURATION) -derivedDataPath '$(MAC_DERIVED_DATA)' clean
 
-mac-dev: mac-build ## Install the local Mac build in Applications and launch it
+mac-install: mac-build
 	@pkill -x 'Foqos Mac' >/dev/null 2>&1 || true
 	rm -rf '$(MAC_INSTALL_PATH)'
 	ditto '$(MAC_APP)' '$(MAC_INSTALL_PATH)'
@@ -43,7 +43,16 @@ mac-dev: mac-build ## Install the local Mac build in Applications and launch it
 	done
 	@'$(LSREGISTER)' -u '$(MAC_APP)' >/dev/null 2>&1 || true
 	'$(LSREGISTER)' -f '$(MAC_INSTALL_PATH)'
+
+mac-dev: mac-install ## Install the local Mac build in Applications and launch it
 	open '$(MAC_INSTALL_PATH)'
+
+mac-reset: MAC_CONFIGURATION := Debug
+mac-reset: mac-install ## Remove the local Foqos filter configuration and system extension
+	'$(MAC_INSTALL_PATH)/Contents/MacOS/Foqos Mac' --reset-network-extension
+	@if /usr/bin/systemextensionsctl list | grep -Fq '$(MAC_BUNDLE_IDENTIFIER).filter'; then \
+		echo 'macOS still has Foqos extension records. Restart this Mac before testing a fresh install.'; \
+	fi
 
 mac-logs: ## Stream structured Mac filter observations and verdicts
 	log stream --style compact --level info --predicate 'subsystem == "dev.ambitionsoftware.foqos.mac.filter"'
