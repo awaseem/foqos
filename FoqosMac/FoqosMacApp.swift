@@ -8,6 +8,7 @@ struct FoqosMacApp: App {
   @StateObject private var controller: FoqosMacController
   @StateObject private var filterManager: FoqosFilterManager
   @StateObject private var onboardingController: FoqosOnboardingWindowController
+  @StateObject private var updaterController: FoqosUpdaterController
 
   init() {
     let filterManager = FoqosFilterManager()
@@ -15,6 +16,7 @@ struct FoqosMacApp: App {
     _filterManager = StateObject(wrappedValue: filterManager)
     _controller = StateObject(wrappedValue: FoqosMacController(filterManager: filterManager))
     _onboardingController = StateObject(wrappedValue: onboardingController)
+    _updaterController = StateObject(wrappedValue: FoqosUpdaterController())
     appDelegate.configure(
       filterManager: filterManager,
       onboardingController: onboardingController
@@ -50,6 +52,7 @@ struct FoqosMacApp: App {
         .environmentObject(controller)
         .environmentObject(filterManager)
         .environmentObject(onboardingController)
+        .environmentObject(updaterController)
     } label: {
       Label("Foqos", systemImage: menuBarSystemImage)
     }

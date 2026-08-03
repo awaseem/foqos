@@ -4,6 +4,7 @@ struct MenuBarContentView: View {
   @EnvironmentObject private var controller: FoqosMacController
   @EnvironmentObject private var filterManager: FoqosFilterManager
   @EnvironmentObject private var onboardingController: FoqosOnboardingWindowController
+  @EnvironmentObject private var updaterController: FoqosUpdaterController
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -114,7 +115,24 @@ struct MenuBarContentView: View {
         }
       }
 
+      Divider()
+
+      Button {
+        updaterController.checkForUpdates()
+      } label: {
+        Label("Check for Updates…", systemImage: "arrow.down.circle")
+      }
+      .disabled(!updaterController.isConfigured)
+      .help(updaterHelpText)
     }
+  }
+
+  private var updaterHelpText: String {
+    if updaterController.isConfigured {
+      return "Check GitHub Releases for a newer version of Foqos"
+    }
+
+    return "The Sparkle appcast and signing key have not been configured yet"
   }
 
   private var statusTitle: String {
@@ -221,4 +239,5 @@ struct MenuBarContentView: View {
     .environmentObject(FoqosMacController(filterManager: filterManager))
     .environmentObject(filterManager)
     .environmentObject(onboardingController)
+    .environmentObject(FoqosUpdaterController())
 }

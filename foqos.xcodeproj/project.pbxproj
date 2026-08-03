@@ -30,6 +30,7 @@
 		F0A300092F80000300000001 /* FilterRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300012F80000300000001 /* FilterRules.swift */; };
 		F0A400022F80000400000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0A400012F80000400000001 /* Assets.xcassets */; };
 		F0A400042F80000400000001 /* foqos-icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F0A400032F80000400000001 /* foqos-icon.icon */; };
+		F0B100012F90000100000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = F0B100032F90000100000001 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -252,6 +253,13 @@
 			);
 			target = F0A200012F80000200000001 /* FoqosFilter */;
 		};
+		F0B100042F90000100000001 /* Exceptions for "FoqosMac" folder in "Foqos Mac" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F0A100012F80000100000001 /* Foqos Mac */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -308,6 +316,9 @@
 		};
 		F0A100032F80000100000001 /* FoqosMac */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F0B100042F90000100000001 /* Exceptions for "FoqosMac" folder in "Foqos Mac" target */,
+			);
 			path = FoqosMac;
 			sourceTree = "<group>";
 		};
@@ -385,6 +396,7 @@
 			files = (
 				F0A200122F80000200000001 /* SystemExtensions.framework in Frameworks */,
 				F0A200052F80000200000001 /* NetworkExtension.framework in Frameworks */,
+				F0B100012F90000100000001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -639,6 +651,7 @@
 			);
 			name = "Foqos Mac";
 			packageProductDependencies = (
+				F0B100032F90000100000001 /* Sparkle */,
 			);
 			productName = "Foqos for Mac";
 			productReference = F0A100022F80000100000001 /* Foqos for Mac.app */;
@@ -718,6 +731,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8021D2462D61837E00A92114 /* XCRemoteSwiftPackageReference "CodeScanner" */,
+				F0B100022F90000100000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 801B20962CB363A10073E9E2 /* Products */;
@@ -1477,12 +1491,8 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Foqos for Mac";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "Foqos uses a network filter to block distracting websites during active sessions.";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FoqosMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -1510,12 +1520,8 @@
 				DEVELOPMENT_TEAM = YR54789JNV;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Foqos for Mac";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "Foqos uses a network filter to block distracting websites during active sessions.";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FoqosMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -1700,6 +1706,14 @@
 				minimumVersion = 2.5.2;
 			};
 		};
+		F0B100022F90000100000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1707,6 +1721,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8021D2462D61837E00A92114 /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
+		};
+		F0B100032F90000100000001 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F0B100022F90000100000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
