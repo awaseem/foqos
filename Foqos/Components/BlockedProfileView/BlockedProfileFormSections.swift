@@ -164,11 +164,28 @@ struct BlockedProfileDomainsFields: View {
     ProfileFieldDivider(isVisible: showsSeparators)
 
     CustomToggle(
+      title: "Sync to Mac",
+      description:
+        "Sync blocked domains with the Foqos for Mac app.",
+      isOn: $draft.enableMacSync,
+      isDisabled: disabled
+    )
+    .onChange(of: draft.enableMacSync) { _, newValue in
+      if newValue {
+        draft.enableAllowModeDomain = false
+        draft.enableAdultContentBlocking = false
+      }
+    }
+
+    ProfileFieldDivider(isVisible: showsSeparators)
+
+    CustomToggle(
       title: "Allow Only Selected Domains",
       description:
-        "Only selected domains stay available during sessions. Turning this on clears your blocked-domain selection.",
+        "Only selected domains stay available during sessions.",
       isOn: $draft.enableAllowModeDomain,
-      isDisabled: disabled
+      isDisabled: disabled || draft.enableMacSync,
+      errorMessage: draft.enableMacSync ? "Allow-only mode isn't supported on Mac." : nil
     )
 
     ProfileFieldDivider(isVisible: showsSeparators)
@@ -178,7 +195,8 @@ struct BlockedProfileDomainsFields: View {
       description:
         "Use Apple's adult-content filter during sessions. You can still add extra domains to block.",
       isOn: $draft.enableAdultContentBlocking,
-      isDisabled: disabled
+      isDisabled: disabled || draft.enableMacSync,
+      errorMessage: draft.enableMacSync ? "Adult website blocking isn't supported on Mac." : nil
     )
     .onChange(of: draft.enableAllowModeDomain) { _, newValue in
       if newValue {

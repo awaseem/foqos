@@ -18,6 +18,7 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var enableAllowModeDomain: Bool
   @Published var enableSafariBlocking: Bool
   @Published var enableAdultContentBlocking: Bool
+  @Published var enableMacSync: Bool
   @Published var disableBackgroundStops: Bool
   @Published var enableEmergencyUnblock: Bool
   @Published var domains: [String]
@@ -31,6 +32,8 @@ final class BlockedProfileDraft: ObservableObject {
   }
 
   init(profile: BlockedProfiles? = nil) {
+    let isMacSyncEnabled = profile?.enableMacSync ?? false
+
     name = profile?.name ?? ""
     selectedActivity = profile?.selectedActivity ?? FamilyActivitySelection()
     enableLiveActivity = profile?.enableLiveActivity ?? false
@@ -40,9 +43,11 @@ final class BlockedProfileDraft: ObservableObject {
     enableStrictMode = profile?.enableStrictMode ?? false
     enableBlockAppInstallation = profile?.enableBlockAppInstallation ?? false
     enableAllowMode = profile?.enableAllowMode ?? false
-    enableAllowModeDomain = profile?.enableAllowModeDomains ?? false
+    enableMacSync = isMacSyncEnabled
+    enableAllowModeDomain = isMacSyncEnabled ? false : profile?.enableAllowModeDomains ?? false
     enableSafariBlocking = profile?.enableSafariBlocking ?? true
-    enableAdultContentBlocking = profile?.enableAdultContentBlocking ?? false
+    enableAdultContentBlocking =
+      isMacSyncEnabled ? false : profile?.enableAdultContentBlocking ?? false
     enableReminder = profile?.reminderTimeInSeconds != nil
     disableBackgroundStops = profile?.disableBackgroundStops ?? false
     enableEmergencyUnblock = profile?.enableEmergencyUnblock ?? true
@@ -109,6 +114,7 @@ final class BlockedProfileDraft: ObservableObject {
         enableAllowModeDomains: enableAllowModeDomain,
         enableSafariBlocking: enableSafariBlocking,
         enableAdultContentBlocking: enableAdultContentBlocking,
+        enableMacSync: enableMacSync,
         domains: domains,
         physicalUnblockItems: .some(physicalUnblockItemsToSave),
         schedule: schedule,
@@ -137,6 +143,7 @@ final class BlockedProfileDraft: ObservableObject {
       enableAllowModeDomains: enableAllowModeDomain,
       enableSafariBlocking: enableSafariBlocking,
       enableAdultContentBlocking: enableAdultContentBlocking,
+      enableMacSync: enableMacSync,
       domains: domains,
       physicalUnblockItems: physicalUnblockItemsToSave,
       schedule: schedule,

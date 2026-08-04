@@ -36,6 +36,7 @@ enum SharedData {
     var enableAllowModeDomains: Bool
     var enableSafariBlocking: Bool
     var enableAdultContentBlocking: Bool? = nil
+    var enableMacSync: Bool? = nil
 
     var domains: [String]?
 

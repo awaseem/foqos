@@ -6,7 +6,7 @@ enum ActiveProfileSyncStore {
   static func publish(session: BlockedProfileSession?) {
     let record: ActiveProfileSyncRecord
 
-    if let session, session.isActive {
+    if let session, session.isActive, session.blockedProfile.enableMacSync {
       record = ActiveProfileSyncRecord(
         profileId: session.blockedProfile.id,
         profileName: session.blockedProfile.name,
