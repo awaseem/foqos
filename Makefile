@@ -1,4 +1,4 @@
-.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-release mac-reset test test-all check help
+.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-release mac-reset mac-test test test-all check help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -11,6 +11,7 @@ DESTINATION := generic/platform=iOS Simulator
 TEST_DESTINATION ?= platform=iOS Simulator,name=iPhone 17,OS=latest
 UNIT_TEST_TARGET ?= foqosTests
 MAC_SCHEME := Foqos Mac
+MAC_TEST_SCHEME := FoqosMacTests
 MAC_CONFIGURATION ?= Debug
 MAC_DESTINATION := platform=macOS
 MAC_DERIVED_DATA ?= $(TMPDIR)foqos-mac-derived-data
@@ -64,6 +65,9 @@ mac-reset: mac-install ## Remove the local Foqos filter configuration and system
 
 mac-logs: ## Stream structured Mac filter observations and verdicts
 	log stream --style compact --level info --predicate 'subsystem == "dev.ambitionsoftware.foqos.mac.filter"'
+
+mac-test: ## Run Mac TCP/TLS filter unit tests
+	xcodebuild -project $(PROJECT) -scheme '$(MAC_TEST_SCHEME)' -configuration Debug -destination '$(MAC_DESTINATION)' CODE_SIGNING_ALLOWED=NO test
 
 mac-release: ## Build, notarize, package, sign, and publish a Mac release (VERSION=x.y.z)
 	@VERSION='$(VERSION)' \

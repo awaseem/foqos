@@ -24,3 +24,6 @@ jobs:
 
       - name: Run unit tests
         run: make test
+
+      - name: Run Mac TCP/TLS tests
+        run: make mac-test
