@@ -6,6 +6,19 @@
         <description>Foqos for Mac release updates.</description>
         <language>en</language>
         <item>
+            <title>0.1.2</title>
+            <pubDate>Tue, 04 Aug 2026 21:26:43 -0600</pubDate>
+            <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.2</link>
+            <sparkle:version>811</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Foqos for Mac 0.1.2
+
+See the GitHub release for details.
+]]></description>
+            <enclosure url="https://github.com/awaseem/foqos/releases/download/mac-v0.1.2/Foqos-for-Mac-0.1.2.dmg" length="10196477" type="application/octet-stream" sparkle:edSignature="rQkOFSTkk7sS040DwBhyJAgIUQYmad5WQQ8+39Deop7rojGWP/MZY6MnrRDjjp9AM8lVKXiesvAF4YIuD2q0Dw=="/>
+        </item>
+        <item>
             <title>0.1.1</title>
             <pubDate>Tue, 04 Aug 2026 21:06:28 -0600</pubDate>
             <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.1</link>
