@@ -1,9 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
-  <channel>
-    <title>Foqos for Mac Updates</title>
-    <link>https://raw.githubusercontent.com/awaseem/foqos/main/appcast-macos.xml</link>
-    <description>Foqos for Mac release updates.</description>
-    <language>en</language>
-  </channel>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Foqos for Mac Updates</title>
+        <link>https://raw.githubusercontent.com/awaseem/foqos/main/appcast-macos.xml</link>
+        <description>Foqos for Mac release updates.</description>
+        <language>en</language>
+        <item>
+            <title>0.1.0</title>
+            <pubDate>Tue, 04 Aug 2026 20:58:28 -0600</pubDate>
+            <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.0</link>
+            <sparkle:version>806</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Foqos for Mac 0.1.0
+
+See the GitHub release for details.
+]]></description>
+            <enclosure url="https://github.com/awaseem/foqos/releases/download/mac-v0.1.0/Foqos-for-Mac-0.1.0.dmg" length="10187596" type="application/octet-stream" sparkle:edSignature="2D52+qrO2e0Gpp3SMkNA1cca6OzhjaXuQgzsFeSwgbOAPL3QhJvjZYYRwII+l8/DuwwF1V2T6NgPDw7Ywz55DQ=="/>
+        </item>
+    </channel>
 </rss>
