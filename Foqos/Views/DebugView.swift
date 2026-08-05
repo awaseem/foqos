@@ -196,6 +196,7 @@ struct DebugView: View {
 
         markdown += "- **Allow Mode:** \(profile.enableAllowMode ? "Yes" : "No")\n"
         markdown += "- **Allow Mode Domains:** \(profile.enableAllowModeDomains ? "Yes" : "No")\n"
+        markdown += "- **Mac Sync:** \(profile.enableMacSync ? "Enabled" : "Disabled")\n"
         markdown +=
           "- **Adult Content Blocking:** \(profile.enableAdultContentBlocking ? "Enabled" : "Disabled")\n"
         markdown += "- **Live Activity:** \(profile.enableLiveActivity ? "Enabled" : "Disabled")\n"

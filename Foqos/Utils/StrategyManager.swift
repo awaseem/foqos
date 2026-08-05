@@ -70,6 +70,7 @@ class StrategyManager: ObservableObject {
 
   func loadActiveSession(context: ModelContext) {
     activeSession = getActiveSession(context: context)
+    ActiveProfileSyncStore.publish(session: activeSession)
 
     if activeSession?.isActive == true {
       startTimer()
@@ -493,6 +494,7 @@ class StrategyManager: ObservableObject {
     }
 
     session.startBreak()
+    ActiveProfileSyncStore.publish(session: session)
     appBlocker.deactivateRestrictionsForBreak(
       for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
     try? context.save()
@@ -530,6 +532,7 @@ class StrategyManager: ObservableObject {
     }
 
     session.endBreak()
+    ActiveProfileSyncStore.publish(session: session)
     appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
     try? context.save()
 
@@ -579,6 +582,7 @@ class StrategyManager: ObservableObject {
     self.errorMessage = nil
 
     self.activeSession = session
+    ActiveProfileSyncStore.publish(session: session)
     self.startTimer()
     self.liveActivityManager
       .startSessionActivity(session: session)
@@ -596,6 +600,7 @@ class StrategyManager: ObservableObject {
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()
     self.activeSession = nil
+    ActiveProfileSyncStore.publish(session: nil)
     self.liveActivityManager.endSessionActivity()
     self.scheduleReminder(profile: profile)
 

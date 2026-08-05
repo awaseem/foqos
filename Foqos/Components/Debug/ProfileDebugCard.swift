@@ -34,6 +34,7 @@ struct ProfileDebugCard: View {
           label: "Enable Adult Content Blocking",
           value: "\(profile.enableAdultContentBlocking)"
         )
+        DebugRow(label: "Enable Mac Sync", value: "\(profile.enableMacSync)")
         DebugRow(
           label: "Disable Background Stops",
           value: "\(profile.disableBackgroundStops)"

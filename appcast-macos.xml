@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Foqos for Mac Updates</title>
+    <link>https://raw.githubusercontent.com/awaseem/foqos/main/appcast-macos.xml</link>
+    <description>Foqos for Mac release updates.</description>
+    <language>en</language>
+  </channel>
+</rss>

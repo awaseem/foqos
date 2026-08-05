@@ -160,6 +160,65 @@ cd foqos
 open foqos.xcodeproj
 ```
 
+### Mac Releases
+
+Foqos for Mac is distributed as a notarized DMG attached to a GitHub release. Sparkle reads
+`appcast-macos.xml` from the repository's `main` branch and downloads signed updates from GitHub
+Releases.
+
+The release Mac needs:
+
+- The `Developer ID Application: Ali Waseem (YR54789JNV)` certificate and private key
+- The `Foqos Mac Developer ID` and `Foqos Filter Developer ID` provisioning profiles
+- GitHub CLI authentication for `awaseem/foqos`
+- The Sparkle private key in the login Keychain under account `ambitionsoftware`
+- A notarytool Keychain profile named `foqos-notary`
+
+Authenticate GitHub CLI if necessary:
+
+```bash
+gh auth login
+```
+
+Create the notarization profile using the Apple ID, team ID `YR54789JNV`, and an app-specific
+password:
+
+```bash
+xcrun notarytool store-credentials foqos-notary
+```
+
+The Sparkle private key must be backed up outside the repository. Never add the exported key to
+Git, a release asset, or the app bundle.
+
+Run releases from a clean, up-to-date `main` branch:
+
+```bash
+make mac-release VERSION=0.1.0
+```
+
+The build number defaults to the repository commit count. Override it when needed:
+
+```bash
+make mac-release VERSION=0.1.0 BUILD_NUMBER=812
+```
+
+Provide Markdown release notes with:
+
+```bash
+make mac-release VERSION=0.1.0 RELEASE_NOTES_FILE=release-notes.md
+```
+
+The command validates the release environment, updates both Mac targets from
+`Config/MacRelease.xcconfig`, builds a universal Developer ID app, notarizes the app and DMG,
+updates the signed Sparkle appcast, and publishes a `mac-vx.y.z` GitHub release. Mac releases are
+not marked as GitHub's repository-wide “Latest” release, so they do not replace the current iOS
+release badge.
+
+Release artifacts are retained under `.build/mac-release/`, which is ignored by Git. If the
+command fails before committing the Mac version, it restores the version and appcast source files
+automatically. If it fails after pushing the version, inspect the draft GitHub release before
+retrying. Do not publish a release unless its appcast entry and DMG are both present.
+
 ### Project Structure
 
 ```text

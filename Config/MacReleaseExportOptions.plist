@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>destination</key>
+	<string>export</string>
+	<key>distributionBundleIdentifier</key>
+	<string>dev.ambitionsoftware.foqos.mac</string>
+	<key>method</key>
+	<string>developer-id</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>dev.ambitionsoftware.foqos.mac</key>
+		<string>Foqos Mac Developer ID</string>
+		<key>dev.ambitionsoftware.foqos.mac.filter</key>
+		<string>Foqos Filter Developer ID</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>teamID</key>
+	<string>YR54789JNV</string>
+</dict>
+</plist>
