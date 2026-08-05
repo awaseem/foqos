@@ -1,4 +1,4 @@
-.PHONY: build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-release mac-reset mac-test test test-all check help
+.PHONY: app-release build clean lint lint-fix mac-build mac-clean mac-dev mac-install mac-logs mac-release mac-reset mac-test test test-all check help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -32,6 +32,9 @@ help: ## Show this help message
 
 build: ## Build the project
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIGURATION) -destination '$(DESTINATION)' build
+
+app-release: ## Update the iOS version and trigger Xcode Cloud (VERSION=x.y.z)
+	@VERSION='$(VERSION)' ./scripts/release-app.sh
 
 mac-build: ## Build the signed Mac app and system extension for local development
 	xcodebuild -project $(PROJECT) -scheme '$(MAC_SCHEME)' -configuration $(MAC_CONFIGURATION) -destination '$(MAC_DESTINATION)' -derivedDataPath '$(MAC_DERIVED_DATA)' build

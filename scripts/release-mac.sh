@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+export GH_PAGER=cat
+export GIT_PAGER=cat
+export PAGER=cat
+
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 readonly PROJECT="$REPO_ROOT/foqos.xcodeproj"
