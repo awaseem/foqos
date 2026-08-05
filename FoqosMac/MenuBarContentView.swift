@@ -203,7 +203,7 @@ struct MenuBarContentView: View {
 
   private var showsSetupButton: Bool {
     switch filterManager.status {
-    case .disabled, .failed, .notConfigured:
+    case .approvalRequired, .disabled, .failed, .notConfigured:
       return true
     default:
       return false
@@ -211,7 +211,14 @@ struct MenuBarContentView: View {
   }
 
   private var setupButtonTitle: String {
-    filterManager.status == .disabled ? "Enable" : "Set Up"
+    switch filterManager.status {
+    case .approvalRequired:
+      return "Approve"
+    case .disabled:
+      return "Enable"
+    default:
+      return "Set Up"
+    }
   }
 
   private var filterStatusColor: Color {

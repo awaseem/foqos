@@ -24,7 +24,9 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     category: "filter-manager"
   )
   private var configurationObserver: NSObjectProtocol?
+  private var activationRequest: OSSystemExtensionRequest?
   private var inspectionRequest: OSSystemExtensionRequest?
+  private var isBundledExtensionActive = false
   private var latestRules: FilterRules?
   private var isSavingRules = false
 
@@ -73,6 +75,11 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   }
 
   func installAndEnable() {
+    guard activationRequest == nil else {
+      return
+    }
+
+    isBundledExtensionActive = false
     status = .installing
 
     let request = OSSystemExtensionRequest.activationRequest(
@@ -80,6 +87,7 @@ final class FoqosFilterManager: NSObject, ObservableObject {
       queue: .main
     )
     request.delegate = self
+    activationRequest = request
     OSSystemExtensionManager.shared.submitRequest(request)
   }
 
@@ -108,6 +116,10 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   }
 
   func refreshStatus() {
+    guard isBundledExtensionActive else {
+      return
+    }
+
     NEFilterManager.shared().loadFromPreferences { [weak self] error in
       DispatchQueue.main.async {
         guard let self else {
@@ -317,6 +329,10 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       return
     }
 
+    if request === activationRequest {
+      activationRequest = nil
+    }
+
     status = .failed(error.localizedDescription)
   }
 
@@ -353,8 +369,15 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       return
     }
 
+    guard request === activationRequest else {
+      return
+    }
+
+    activationRequest = nil
+
     switch result {
     case .completed:
+      isBundledExtensionActive = true
       configureFilter()
     case .willCompleteAfterReboot:
       status = .requiresRestart
@@ -375,15 +398,29 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       return
     }
 
-    let hasCurrentVersion = properties.contains { properties in
-      properties.isEnabled && properties.bundleVersion == bundledExtensionVersion
+    let installedExtensions = properties.map { properties in
+      FilterExtensionVersionPolicy.InstalledExtension(
+        bundleVersion: properties.bundleVersion,
+        isEnabled: properties.isEnabled
+      )
     }
+    let versionStatus = FilterExtensionVersionPolicy.status(
+      bundledVersion: bundledExtensionVersion,
+      installedExtensions: installedExtensions
+    )
 
-    guard hasCurrentVersion else {
+    switch versionStatus {
+    case .current:
+      isBundledExtensionActive = true
+      refreshStatus()
+    case .notConfigured:
+      isBundledExtensionActive = false
       status = .notConfigured
-      return
+    case .requiresUpdate(let installedVersion):
+      logger.info(
+        "Updating installed filter version \(installedVersion, privacy: .public) to the bundled version."
+      )
+      installAndEnable()
     }
-
-    refreshStatus()
   }
 }

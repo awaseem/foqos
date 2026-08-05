@@ -33,6 +33,8 @@
 		F0B100012F90000100000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = F0B100032F90000100000001 /* Sparkle */; };
 		F0C100012FA0000100000001 /* TLSClientHelloParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C100022FA0000100000001 /* TLSClientHelloParser.swift */; };
 		F0C1000C2FA0000100000001 /* FilterRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300012F80000300000001 /* FilterRules.swift */; };
+		F0D100012FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */; };
+		F0D100022FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +143,7 @@
 		F0B100072F90000100000001 /* MacReleaseExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MacReleaseExportOptions.plist; sourceTree = "<group>"; };
 		F0C100022FA0000100000001 /* TLSClientHelloParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TLSClientHelloParser.swift; path = FoqosFilter/TLSClientHelloParser.swift; sourceTree = SOURCE_ROOT; };
 		F0C100032FA0000100000001 /* FoqosMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FoqosMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterExtensionVersionPolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -492,6 +495,7 @@
 		F0A300032F80000300000001 /* FoqosShared */ = {
 			isa = PBXGroup;
 			children = (
+				F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */,
 				F0A300012F80000300000001 /* FilterRules.swift */,
 				F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */,
 				F0A400012F80000400000001 /* Assets.xcassets */,
@@ -938,6 +942,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0D100012FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */,
 				F0A300052F80000300000001 /* FilterRules.swift in Sources */,
 				F0A300072F80000300000001 /* ActiveProfileSyncRecord.swift in Sources */,
 			);
@@ -955,6 +960,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0D100022FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */,
 				F0C1000C2FA0000100000001 /* FilterRules.swift in Sources */,
 				F0C100012FA0000100000001 /* TLSClientHelloParser.swift in Sources */,
 			);
