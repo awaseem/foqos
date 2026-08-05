@@ -60,7 +60,7 @@ validate_source_changes() {
 
 readonly TAG="v$VERSION"
 
-for command_name in cut git grep ruby; do
+for command_name in cut gh git grep head ruby; do
   require_command "$command_name"
 done
 [[ -x "$VERSION_UPDATER" ]] || fail "Version updater is not executable: $VERSION_UPDATER"
@@ -69,6 +69,8 @@ cd "$REPO_ROOT"
 
 step "Checking repository and release inputs"
 require_clean_release_branch
+gh auth status >/dev/null
+github_repository="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 
 current_version="$($VERSION_UPDATER --current)"
 version_is_greater "$VERSION" "$current_version" ||
@@ -80,12 +82,18 @@ fi
 if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
   fail "Git tag '$TAG' already exists on origin."
 fi
+if gh release view "$TAG" --repo "$github_repository" >/dev/null 2>&1; then
+  fail "GitHub release '$TAG' already exists."
+fi
+
+previous_ios_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n 1)"
 printf 'Release plan:\n'
 printf '  Current version: %s\n' "$current_version"
 printf '  New version:     %s\n' "$VERSION"
 printf '  Build:           1\n'
 printf '  Git tag:         %s\n' "$TAG"
-printf '  Git remote:      %s\n' "$(git remote get-url origin)"
+printf '  GitHub release:  Foqos for iOS %s\n' "$VERSION"
+printf '  GitHub repo:     %s\n' "$github_repository"
 printf '  Trigger:         push to main for Xcode Cloud\n'
 
 if [[ "${RELEASE_CONFIRM:-}" != "YES" ]]; then
@@ -94,11 +102,22 @@ if [[ "${RELEASE_CONFIRM:-}" != "YES" ]]; then
 fi
 
 source_changes_committed="NO"
+release_tag_pushed="NO"
+github_release_created="NO"
 release_exit() {
   local status="$?"
   if ((status != 0)) && [[ "$source_changes_committed" == "NO" ]]; then
     git restore --staged --worktree -- "$PROJECT_RELATIVE_PATH"
     printf 'Restored the iOS project version settings.\n' >&2
+  elif ((status != 0)) && [[ "$release_tag_pushed" == "YES" ]] &&
+    [[ "$github_release_created" == "NO" ]]; then
+    printf 'The version and tag were pushed, but the GitHub release was not created.\n' >&2
+    printf 'Retry with: gh release create %q --repo %q --verify-tag --title %q --generate-notes' \
+      "$TAG" "$github_repository" "Foqos for iOS $VERSION" >&2
+    if [[ -n "$previous_ios_tag" ]]; then
+      printf ' --notes-start-tag %q' "$previous_ios_tag" >&2
+    fi
+    printf ' --fail-on-no-commits --latest\n' >&2
   elif ((status != 0)); then
     printf 'The release commit and any local release tag remain for recovery.\n' >&2
   fi
@@ -123,8 +142,24 @@ git push origin "$RELEASE_BRANCH"
 step "Publishing the release tag"
 git tag "$TAG"
 git push origin "$TAG"
+release_tag_pushed="YES"
+
+step "Creating the GitHub release"
+release_options=(
+  --repo "$github_repository"
+  --verify-tag
+  --title "Foqos for iOS $VERSION"
+  --generate-notes
+  --fail-on-no-commits
+  --latest
+)
+if [[ -n "$previous_ios_tag" ]]; then
+  release_options+=(--notes-start-tag "$previous_ios_tag")
+fi
+release_url="$(gh release create "$TAG" "${release_options[@]}")"
+github_release_created="YES"
 
 trap - EXIT
-printf '\nApp release %s was started successfully.\n' "$VERSION"
+printf '\nFoqos for iOS %s was released successfully.\n' "$VERSION"
 printf 'Xcode Cloud was triggered by the main branch push.\n'
-printf 'Release tag %s was pushed to origin.\n' "$TAG"
+printf 'GitHub release: %s\n' "$release_url"

@@ -162,7 +162,7 @@ open foqos.xcodeproj
 
 ### iOS Releases
 
-Run iOS releases from a clean, up-to-date `main` branch with an authenticated Git remote:
+Run iOS releases from a clean, up-to-date `main` branch with GitHub CLI authenticated:
 
 ```bash
 make app-release VERSION=2.2.1
@@ -170,11 +170,13 @@ make app-release VERSION=2.2.1
 
 The command shows a release plan before making changes. After confirmation, it updates the main
 iOS app and every embedded extension to the requested marketing version, resets their build
-numbers to `1`, commits and pushes `main`, then creates and pushes the matching `vVERSION` tag.
+numbers to `1`, commits and pushes `main`, creates and pushes the matching `vVERSION` tag, then
+publishes a `Foqos for iOS VERSION` GitHub release with generated notes.
 
-The `main` push triggers the repository's configured Xcode Cloud workflow. The tag records the
-exact source used for the release. The entire release is performed locally, so no GitHub Actions
-workflow needs permission to bypass `main` branch protection.
+The iOS release is marked as GitHub's repository-wide “Latest” release. Generated notes use the
+previous iOS `vVERSION` tag as their baseline rather than the latest `mac-vVERSION` tag. The `main`
+push triggers the repository's configured Xcode Cloud workflow. The entire release is performed
+locally, so no GitHub Actions workflow needs permission to bypass `main` branch protection.
 
 ### Mac Releases
 
