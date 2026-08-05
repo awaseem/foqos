@@ -160,6 +160,22 @@ cd foqos
 open foqos.xcodeproj
 ```
 
+### iOS Releases
+
+Run iOS releases from a clean, up-to-date `main` branch with an authenticated Git remote:
+
+```bash
+make app-release VERSION=2.2.1
+```
+
+The command shows a release plan before making changes. After confirmation, it updates the main
+iOS app and every embedded extension to the requested marketing version, resets their build
+numbers to `1`, commits and pushes `main`, then creates and pushes the matching `vVERSION` tag.
+
+The `main` push triggers the repository's configured Xcode Cloud workflow. The tag records the
+exact source used for the release. The entire release is performed locally, so no GitHub Actions
+workflow needs permission to bypass `main` branch protection.
+
 ### Mac Releases
 
 Foqos for Mac is distributed as a notarized DMG attached to a GitHub release. Sparkle reads
