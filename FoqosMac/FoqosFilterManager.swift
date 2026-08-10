@@ -102,17 +102,10 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   }
 
   private var bundledExtensionVersion: String? {
-    guard
-      let bundleURL = Bundle.main.url(
-        forResource: Self.extensionIdentifier,
-        withExtension: "systemextension",
-        subdirectory: "Contents/Library/SystemExtensions"
-      )
-    else {
-      return nil
-    }
-
-    return Bundle(url: bundleURL)?.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+    FilterExtensionBundleLocator.bundleVersion(
+      in: Bundle.main.bundleURL,
+      extensionIdentifier: Self.extensionIdentifier
+    )
   }
 
   func refreshStatus() {
