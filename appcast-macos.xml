@@ -6,6 +6,19 @@
         <description>Foqos for Mac release updates.</description>
         <language>en</language>
         <item>
+            <title>0.1.3</title>
+            <pubDate>Sun, 09 Aug 2026 21:29:48 -0600</pubDate>
+            <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.3</link>
+            <sparkle:version>818</sparkle:version>
+            <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Foqos for Mac 0.1.3
+
+See the GitHub release for details.
+]]></description>
+            <enclosure url="https://github.com/awaseem/foqos/releases/download/mac-v0.1.3/Foqos-for-Mac-0.1.3.dmg" length="10195628" type="application/octet-stream" sparkle:edSignature="eWRbpHMYw+aeD88EGuMzOj00Sp26WFn3a9m+0eOniGKamdYPbLUw6p5hPzoJ6C2fpY3QUGIJ4Ghb8UhPiLZyDg=="/>
+        </item>
+        <item>
             <title>0.1.2</title>
             <pubDate>Tue, 04 Aug 2026 21:26:43 -0600</pubDate>
             <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.2</link>
@@ -30,19 +43,6 @@ See the GitHub release for details.
 See the GitHub release for details.
 ]]></description>
             <enclosure url="https://github.com/awaseem/foqos/releases/download/mac-v0.1.1/Foqos-for-Mac-0.1.1.dmg" length="10187640" type="application/octet-stream" sparkle:edSignature="fMjLmXsI9CgvI4RLaCxhjpZ/6Q9W5uK4/p6V6blcXhcqggkVdD+pVpFPNYhAHo/sDMgAI+8Mxt6jkrPVLZXtCQ=="/>
-        </item>
-        <item>
-            <title>0.1.0</title>
-            <pubDate>Tue, 04 Aug 2026 20:58:28 -0600</pubDate>
-            <link>https://github.com/awaseem/foqos/releases/tag/mac-v0.1.0</link>
-            <sparkle:version>806</sparkle:version>
-            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[# Foqos for Mac 0.1.0
-
-See the GitHub release for details.
-]]></description>
-            <enclosure url="https://github.com/awaseem/foqos/releases/download/mac-v0.1.0/Foqos-for-Mac-0.1.0.dmg" length="10187596" type="application/octet-stream" sparkle:edSignature="2D52+qrO2e0Gpp3SMkNA1cca6OzhjaXuQgzsFeSwgbOAPL3QhJvjZYYRwII+l8/DuwwF1V2T6NgPDw7Ywz55DQ=="/>
         </item>
     </channel>
 </rss>
