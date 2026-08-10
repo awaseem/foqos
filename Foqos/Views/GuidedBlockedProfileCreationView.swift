@@ -82,7 +82,8 @@ private enum GuidedProfileStep: Int, CaseIterable, Identifiable {
     case .apps:
       return "Select the apps or categories this profile should restrict or allow."
     case .domains:
-      return "Add specific domains and decide whether Safari website blocking applies."
+      return
+        "Add specific domains, choose how they're blocked in Safari, and optionally sync them with Foqos for Mac."
     case .strictUnlocks:
       return
         "Some strategies let any NFC tag, QR code, or barcode unlock profiles. "

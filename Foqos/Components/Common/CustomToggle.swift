@@ -8,6 +8,24 @@ struct CustomToggle: View {
   @Binding var isOn: Bool
   var isDisabled: Bool = false
   var errorMessage: String? = nil
+  var learnMoreURL: URL? = nil
+
+  private var attributedDescription: AttributedString {
+    var attributedDescription = AttributedString(description)
+
+    guard let learnMoreURL else {
+      return attributedDescription
+    }
+
+    attributedDescription.append(AttributedString(" "))
+
+    var learnMore = AttributedString("Learn more")
+    learnMore.link = learnMoreURL
+    learnMore.foregroundColor = themeManager.themeColor
+    attributedDescription.append(learnMore)
+
+    return attributedDescription
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -15,7 +33,7 @@ struct CustomToggle: View {
         .disabled(isDisabled)
         .tint(themeManager.themeColor)
 
-      Text(description)
+      Text(attributedDescription)
         .font(.caption)
         .foregroundColor(.secondary)
         .padding(.vertical, 4)
