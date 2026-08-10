@@ -166,9 +166,10 @@ struct BlockedProfileDomainsFields: View {
     CustomToggle(
       title: "Sync to Mac",
       description:
-        "Sync blocked domains with the Foqos for Mac app.",
+        "Block the same selected domains on your Mac with the Foqos for Mac app.",
       isOn: $draft.enableMacSync,
-      isDisabled: disabled
+      isDisabled: disabled,
+      learnMoreURL: URL(string: "https://www.foqos.app/mac.html")
     )
     .onChange(of: draft.enableMacSync) { _, newValue in
       if newValue {
