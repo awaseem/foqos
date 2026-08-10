@@ -134,13 +134,16 @@ enum SharedData {
     }
   }
 
-  static func createSessionForSchedular(for profileID: UUID) {
-    activeSharedSession = SessionSnapshot(
+  @discardableResult
+  static func createSessionForSchedular(for profileID: UUID) -> SessionSnapshot {
+    let session = SessionSnapshot(
       id: UUID().uuidString,
       tag: profileID.uuidString,
       blockedProfileId: profileID,
       startTime: Date(),
       forceStarted: true)
+    activeSharedSession = session
+    return session
   }
 
   static func createActiveSharedSession(for session: SessionSnapshot) {
