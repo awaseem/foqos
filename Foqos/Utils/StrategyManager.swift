@@ -569,11 +569,6 @@ class StrategyManager: ObservableObject {
   private func handleSessionStarted(session: BlockedProfileSession) {
     self.dismissView()
 
-    if SoftUnblockGrantStore.activeSession?.sessionId != session.id {
-      SoftUnblockGrantScheduler.stopAll()
-      SoftUnblockGrantStore.clearAll()
-    }
-
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()
     // Update the snapshot of the profile in case some settings were changed
@@ -593,9 +588,6 @@ class StrategyManager: ObservableObject {
 
   private func handleSessionEnded(profile: BlockedProfiles) {
     self.dismissView()
-
-    SoftUnblockGrantScheduler.stopAll()
-    SoftUnblockGrantStore.clearAll()
 
     // Remove any timers and notifications that were scheduled
     self.timersUtil.cancelAll()

@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
-  static var id: String = "NFCSoftUnblockBlockingStrategy"
+  static var id: String = SoftUnblockSessionLifecycleHandler.nfcStrategyId
 
   var name: String = "Temporary Access + NFC"
   var description: String =
@@ -60,14 +60,6 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
           forceStart: forceStart ?? false
         )
 
-        SoftUnblockGrantScheduler.stopAll()
-        SoftUnblockGrantStore.beginSession(
-          sessionId: activeSession.id,
-          profileId: profile.id,
-          maximumUnblockCount: configuration.maximumUnblockCount,
-          allowanceResetIntervalInHours: configuration.allowanceResetIntervalInHours,
-          startedAt: activeSession.startTime
-        )
         self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
         self.onSessionCreation?(.started(activeSession))
       }
@@ -98,8 +90,6 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
   }
 
   private func endSession(context: ModelContext, session: BlockedProfileSession) {
-    SoftUnblockGrantScheduler.stopAll(sessionId: session.id)
-    SoftUnblockGrantStore.endSession(sessionId: session.id)
     session.endSession()
 
     do {

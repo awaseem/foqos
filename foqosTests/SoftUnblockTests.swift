@@ -29,6 +29,119 @@ final class SoftUnblockTests: XCTestCase {
     XCTAssertNil(configuration.allowanceResetIntervalInHours)
   }
 
+  func testLifecycleRegistryBeginsSessionWithDefaultConfiguration() {
+    SoftUnblockGrantStore.clearAll()
+    defer { SoftUnblockGrantStore.clearAll() }
+
+    let profileId = UUID()
+    let sessionId = UUID().uuidString
+    let startedAt = Date(timeIntervalSince1970: 1_000_000)
+    let context = BlockingSessionLifecycleContext(
+      strategyId: SoftUnblockSessionLifecycleHandler.nfcStrategyId,
+      strategyData: nil,
+      sessionId: sessionId,
+      profileId: profileId,
+      startedAt: startedAt
+    )
+    BlockingSessionLifecycleRegistry.sessionDidStart(context)
+
+    let session = SoftUnblockGrantStore.currentSession(at: startedAt)
+    XCTAssertEqual(session?.sessionId, sessionId)
+    XCTAssertEqual(session?.profileId, profileId)
+    XCTAssertEqual(
+      session?.maximumUnblockCount,
+      SoftUnblockStrategyData.defaultMaximumUnblockCount
+    )
+    XCTAssertEqual(session?.allowanceWindowStartedAt, startedAt)
+    XCTAssertNil(session?.allowanceResetIntervalInHours)
+  }
+
+  func testLifecycleRegistryBeginsSessionWithSavedConfiguration() {
+    SoftUnblockGrantStore.clearAll()
+    defer { SoftUnblockGrantStore.clearAll() }
+
+    let configuration = SoftUnblockStrategyData(
+      accessDurationInMinutes: 30,
+      maximumUnblockCount: 6,
+      allowanceResetIntervalInHours: 12
+    )
+    let startedAt = Date(timeIntervalSince1970: 1_000_000)
+
+    BlockingSessionLifecycleRegistry.sessionDidStart(
+      BlockingSessionLifecycleContext(
+        strategyId: SoftUnblockSessionLifecycleHandler.qrStrategyId,
+        strategyData: SoftUnblockStrategyData.encode(configuration),
+        sessionId: UUID().uuidString,
+        profileId: UUID(),
+        startedAt: startedAt
+      )
+    )
+
+    let session = SoftUnblockGrantStore.currentSession(at: startedAt)
+    XCTAssertEqual(session?.maximumUnblockCount, configuration.maximumUnblockCount)
+    XCTAssertEqual(
+      session?.allowanceResetIntervalInHours,
+      configuration.allowanceResetIntervalInHours
+    )
+    XCTAssertEqual(
+      session?.nextAllowanceResetAt,
+      startedAt.addingTimeInterval(12 * 60 * 60)
+    )
+  }
+
+  func testLifecycleRegistryClearsTemporaryAccessStateForAnotherStrategy() {
+    SoftUnblockGrantStore.clearAll()
+    defer { SoftUnblockGrantStore.clearAll() }
+
+    BlockingSessionLifecycleRegistry.sessionDidStart(
+      BlockingSessionLifecycleContext(
+        strategyId: SoftUnblockSessionLifecycleHandler.nfcStrategyId,
+        strategyData: nil,
+        sessionId: UUID().uuidString,
+        profileId: UUID(),
+        startedAt: Date()
+      )
+    )
+    XCTAssertNotNil(SoftUnblockGrantStore.activeSession)
+
+    BlockingSessionLifecycleRegistry.sessionDidStart(
+      BlockingSessionLifecycleContext(
+        strategyId: ManualBlockingStrategy.id,
+        strategyData: nil,
+        sessionId: UUID().uuidString,
+        profileId: UUID(),
+        startedAt: Date()
+      )
+    )
+
+    XCTAssertNil(SoftUnblockGrantStore.activeSession)
+  }
+
+  func testTemporaryAccessLifecycleHandlerEndsMatchingSession() {
+    SoftUnblockGrantStore.clearAll()
+    defer { SoftUnblockGrantStore.clearAll() }
+
+    let sessionId = UUID().uuidString
+    var stoppedSessionId: String?
+    let context = BlockingSessionLifecycleContext(
+      strategyId: SoftUnblockSessionLifecycleHandler.nfcStrategyId,
+      strategyData: nil,
+      sessionId: sessionId,
+      profileId: UUID(),
+      startedAt: Date()
+    )
+    let handler = SoftUnblockSessionLifecycleHandler(
+      stopAllScheduledGrants: {},
+      stopScheduledGrantsForSession: { stoppedSessionId = $0 }
+    )
+    handler.sessionDidStart(context)
+
+    handler.sessionDidEnd(context)
+
+    XCTAssertEqual(stoppedSessionId, sessionId)
+    XCTAssertNil(SoftUnblockGrantStore.activeSession)
+  }
+
   func testAllowanceDoesNotResetBeforeBoundary() {
     let start = Date(timeIntervalSince1970: 1_000_000)
     var session = makeSession(startedAt: start, resetHours: 6, usedUnblocks: 2)

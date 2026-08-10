@@ -64,7 +64,13 @@ class ScheduleTimerActivity: TimerActivity {
     }
 
     // Create a new active scheduled session for the profile
-    SharedData.createSessionForSchedular(for: profile.id)
+    let session = SharedData.createSessionForSchedular(for: profile.id)
+    BlockingSessionLifecycleRegistry.sessionDidStart(
+      BlockingSessionLifecycleContext(
+        profile: profile,
+        session: session
+      )
+    )
 
     // Start restrictions
     appBlocker.activateRestrictions(for: profile)
@@ -85,6 +91,13 @@ class ScheduleTimerActivity: TimerActivity {
       )
       return
     }
+
+    BlockingSessionLifecycleRegistry.sessionDidEnd(
+      BlockingSessionLifecycleContext(
+        profile: profile,
+        session: activeSession
+      )
+    )
 
     // End restrictions
     appBlocker.deactivateRestrictions()

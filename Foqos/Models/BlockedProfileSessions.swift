@@ -159,6 +159,13 @@ class BlockedProfileSession {
   func endSession() {
     let endTime = Date()
 
+    BlockingSessionLifecycleRegistry.sessionDidEnd(
+      BlockingSessionLifecycleContext(
+        profile: BlockedProfiles.getSnapshot(for: blockedProfile),
+        session: toSnapshot()
+      )
+    )
+
     // Set the end time in shared data in case its being saved
     SharedData.setEndTime(date: endTime)
     self.endTime = endTime
@@ -206,7 +213,16 @@ class BlockedProfileSession {
       forceStarted: forceStart
     )
 
-    SharedData.createActiveSharedSession(for: newSession.toSnapshot())
+    let sessionSnapshot = newSession.toSnapshot()
+    let profileSnapshot = BlockedProfiles.getSnapshot(for: profile)
+
+    SharedData.createActiveSharedSession(for: sessionSnapshot)
+    BlockingSessionLifecycleRegistry.sessionDidStart(
+      BlockingSessionLifecycleContext(
+        profile: profileSnapshot,
+        session: sessionSnapshot
+      )
+    )
 
     context.insert(newSession)
     return newSession
