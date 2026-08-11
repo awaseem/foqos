@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "PauseStickerIcon@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "PauseStickerIcon@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
