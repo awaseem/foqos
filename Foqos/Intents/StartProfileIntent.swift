@@ -1,7 +1,7 @@
 import AppIntents
 import SwiftData
 
-struct StartProfileIntent: AppIntent {
+struct StartProfileIntent: LiveActivityIntent {
   @Dependency(key: "ModelContainer")
   private var modelContainer: ModelContainer
 
