@@ -12,8 +12,10 @@ struct HomeView: View {
   @EnvironmentObject var alertsManager: AlertsManager
   @EnvironmentObject var navigationManager: NavigationManager
   @EnvironmentObject var ratingManager: RatingManager
+  @EnvironmentObject var quickActionManager: QuickActionManager
 
   // Profile management
+  @State private var hasLoadedProfiles = false
   @Query(sort: [
     SortDescriptor(\BlockedProfiles.order, order: .forward),
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
@@ -83,6 +85,12 @@ struct HomeView: View {
 
   var isPauseActive: Bool {
     return strategyManager.isPauseActive
+  }
+
+  private var quickActionProfileSignature: String {
+    profiles.map {
+      "\($0.id.uuidString):\($0.name):\($0.order):\($0.createdAt.timeIntervalSinceReferenceDate)"
+    }.joined(separator: "|")
   }
 
   private var canCreateProfiles: Bool {
@@ -223,17 +231,24 @@ struct HomeView: View {
       }
       refreshAlerts()
     }
-    .onChange(of: profiles) { oldValue, newValue in
+    .onChange(of: profiles) { _, newValue in
+      hasLoadedProfiles = true
       if !newValue.isEmpty {
         loadApp()
       }
       refreshAlerts()
     }
-    .onChange(of: scenePhase) { oldPhase, newPhase in
+    .onChange(of: quickActionProfileSignature) { _, _ in
+      refreshQuickActions()
+      consumePendingQuickActionIfReady()
+    }
+    .onChange(of: scenePhase) { _, newPhase in
       if newPhase == .active {
         requestAuthorizer.refreshAuthorizationStatus()
         loadApp()
         refreshAlerts()
+        refreshQuickActions()
+        consumePendingQuickActionIfReady()
       } else if newPhase == .background {
         unloadApp()
       }
@@ -248,7 +263,13 @@ struct HomeView: View {
       showErrorAlert(message: message)
     }
     .onAppear {
+      hasLoadedProfiles = true
       onAppearApp()
+      refreshQuickActions()
+      consumePendingQuickActionIfReady()
+    }
+    .onChange(of: quickActionManager.pendingProfileID) { _, _ in
+      consumePendingQuickActionIfReady()
     }
     .sheet(item: $alertsManager.selectedAlert) { alert in
       HomeAlertDetailView(
@@ -382,6 +403,26 @@ struct HomeView: View {
     refreshAlerts()
   }
 
+  private func refreshQuickActions() {
+    quickActionManager.refreshActions(from: profiles)
+  }
+
+  private func consumePendingQuickActionIfReady() {
+    guard scenePhase == .active, hasLoadedProfiles,
+      let profileID = quickActionManager.pendingProfileID
+    else {
+      return
+    }
+
+    guard let profile = profiles.first(where: { $0.id == profileID }) else {
+      quickActionManager.clearPendingProfileStart()
+      return
+    }
+
+    startProfile(profile)
+    quickActionManager.clearPendingProfileStart()
+  }
+
   private func refreshAlerts() {
     alertsManager.refreshAlerts(
       profiles: profiles,
@@ -437,6 +478,7 @@ struct HomeView: View {
     .environmentObject(AlertsManager())
     .environmentObject(NavigationManager())
     .environmentObject(StrategyManager())
+    .environmentObject(QuickActionManager())
     .defaultAppStorage(UserDefaults(suiteName: "preview")!)
     .onAppear {
       UserDefaults(suiteName: "preview")!.set(

@@ -34,6 +34,8 @@ struct foqosApp: App {
   @StateObject private var navigationManager = NavigationManager()
   @StateObject private var nfcWriter = NFCWriter()
   @StateObject private var ratingManager = RatingManager()
+  @StateObject private var quickActionManager = QuickActionManager.shared
+  @UIApplicationDelegateAdaptor(FoqosAppDelegate.self) private var appDelegate
 
   // Singletons for shared functionality
   @StateObject private var startegyManager = StrategyManager.shared
@@ -75,6 +77,7 @@ struct foqosApp: App {
         .environmentObject(navigationManager)
         .environmentObject(nfcWriter)
         .environmentObject(ratingManager)
+        .environmentObject(quickActionManager)
         .environmentObject(liveActivityManager)
         .environmentObject(themeManager)
     }
