@@ -7,7 +7,6 @@ final class QuickActionManager: ObservableObject {
 
   static let profileStartActionType = "dev.ambitionsoftware.foqos.start-profile"
   static let profileIDUserInfoKey = "profileID"
-  static let maximumDynamicActions = 4
 
   @Published private(set) var pendingProfileID: UUID?
 
@@ -24,7 +23,7 @@ final class QuickActionManager: ObservableObject {
       return lhs.id.uuidString < rhs.id.uuidString
     }
 
-    return sortedProfiles.prefix(maximumDynamicActions).map { profile in
+    return sortedProfiles.map { profile in
       UIApplicationShortcutItem(
         type: profileStartActionType,
         localizedTitle: "Start \(profile.name)",
