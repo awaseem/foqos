@@ -15,7 +15,6 @@ struct HomeView: View {
   @EnvironmentObject var quickActionManager: QuickActionManager
 
   // Profile management
-  @State private var hasLoadedProfiles = false
   @Query(sort: [
     SortDescriptor(\BlockedProfiles.order, order: .forward),
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
@@ -232,7 +231,6 @@ struct HomeView: View {
       refreshAlerts()
     }
     .onChange(of: profiles) { _, newValue in
-      hasLoadedProfiles = true
       if !newValue.isEmpty {
         loadApp()
       }
@@ -263,7 +261,6 @@ struct HomeView: View {
       showErrorAlert(message: message)
     }
     .onAppear {
-      hasLoadedProfiles = true
       onAppearApp()
       refreshQuickActions()
       consumePendingQuickActionIfReady()
@@ -408,14 +405,21 @@ struct HomeView: View {
   }
 
   private func consumePendingQuickActionIfReady() {
-    guard scenePhase == .active, hasLoadedProfiles,
+    guard scenePhase == .active,
       let profileID = quickActionManager.pendingProfileID
     else {
       return
     }
 
-    guard let profile = profiles.first(where: { $0.id == profileID }) else {
-      quickActionManager.clearPendingProfileStart()
+    let profile: BlockedProfiles
+    do {
+      guard let fetchedProfile = try BlockedProfiles.findProfile(byID: profileID, in: context) else {
+        quickActionManager.clearPendingProfileStart()
+        return
+      }
+      profile = fetchedProfile
+    } catch {
+      // Keep the request so a later lifecycle or profile update can retry it.
       return
     }
 

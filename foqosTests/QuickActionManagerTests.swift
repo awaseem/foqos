@@ -47,6 +47,8 @@ final class QuickActionManagerTests: XCTestCase {
     let shortcut = UIApplicationShortcutItem(
       type: QuickActionManager.profileStartActionType,
       localizedTitle: "Start Work",
+      localizedSubtitle: nil,
+      icon: nil,
       userInfo: [QuickActionManager.profileIDUserInfoKey: "not-a-uuid" as NSString]
     )
 
@@ -59,6 +61,8 @@ final class QuickActionManagerTests: XCTestCase {
     let shortcut = UIApplicationShortcutItem(
       type: QuickActionManager.profileStartActionType,
       localizedTitle: "Start Work",
+      localizedSubtitle: nil,
+      icon: nil,
       userInfo: [QuickActionManager.profileIDUserInfoKey: profileID.uuidString as NSString]
     )
 
