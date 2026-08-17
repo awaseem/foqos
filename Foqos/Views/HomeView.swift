@@ -419,6 +419,11 @@ struct HomeView: View {
       return
     }
 
+    guard activeSessionProfileId != profileID else {
+      quickActionManager.clearPendingProfileStart()
+      return
+    }
+
     startProfile(profile)
     quickActionManager.clearPendingProfileStart()
   }
