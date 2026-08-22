@@ -65,7 +65,7 @@ struct FoqosMacApp: App {
       return "exclamationmark.triangle.fill"
     case .enabled:
       return controller.isBlocking ? "hourglass.circle.fill" : "hourglass"
-    case .installing, .unknown:
+    case .activatingExtension, .configuringFilter, .unknown:
       return "hourglass"
     }
   }

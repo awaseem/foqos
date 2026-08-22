@@ -17,8 +17,12 @@ struct MenuBarContentView: View {
       Divider()
 
       footer
+
+      actions
     }
-    .padding(16)
+    .padding(.horizontal, 16)
+    .padding(.top, 16)
+    .padding(.bottom, 8)
     .frame(width: 360)
     .onAppear {
       filterManager.refreshStatus()
@@ -47,35 +51,6 @@ struct MenuBarContentView: View {
       }
 
       Spacer()
-
-      Button {
-        controller.refreshFromCloud()
-        filterManager.refreshStatus()
-      } label: {
-        Image(systemName: "arrow.clockwise")
-      }
-      .buttonStyle(.borderless)
-      .help("Refresh Foqos status")
-      .accessibilityLabel("Refresh Foqos status")
-
-      Button {
-        updaterController.checkForUpdates()
-      } label: {
-        Image(systemName: "arrow.down.circle")
-      }
-      .buttonStyle(.borderless)
-      .disabled(!updaterController.isConfigured)
-      .help(updaterHelpText)
-      .accessibilityLabel("Check for updates")
-
-      Button {
-        controller.quit()
-      } label: {
-        Image(systemName: "power")
-      }
-      .buttonStyle(.borderless)
-      .help("Quit Foqos")
-      .accessibilityLabel("Quit Foqos")
     }
   }
 
@@ -124,8 +99,31 @@ struct MenuBarContentView: View {
           }
         }
       }
-
     }
+  }
+
+  private var actions: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      MenuActionItem(
+        title: "Check for Updates",
+        isEnabled: updaterController.isConfigured
+      ) {
+        updaterController.checkForUpdates()
+      }
+      .help(updaterHelpText)
+
+      MenuActionItem(title: "Refresh State") {
+        controller.refreshFromCloud()
+        filterManager.refreshStatus()
+      }
+      .help("Refresh Foqos state")
+
+      MenuActionItem(title: "Quit Foqos") {
+        controller.quit()
+      }
+      .help("Quit Foqos")
+    }
+    .padding(.horizontal, -8)
   }
 
   private var updaterHelpText: String {
@@ -171,7 +169,7 @@ struct MenuBarContentView: View {
       return "checkmark.circle.fill"
     case .failed:
       return "xmark.circle.fill"
-    case .installing:
+    case .activatingExtension, .configuringFilter:
       return "arrow.triangle.2.circlepath.circle.fill"
     case .requiresRestart:
       return "arrow.clockwise.circle.fill"
@@ -182,16 +180,18 @@ struct MenuBarContentView: View {
 
   private var filterStatusTitle: String {
     switch filterManager.status {
+    case .activatingExtension:
+      return "Installing website blocking"
     case .approvalRequired:
       return "Approval required"
+    case .configuringFilter:
+      return "Waiting for filter permission"
     case .disabled:
       return "Website blocking is off"
     case .enabled:
       return "Website blocking is ready"
     case .failed:
       return "Website blocking error"
-    case .installing:
-      return "Setting up website blocking"
     case .notConfigured:
       return "Website blocking needs setup"
     case .requiresRestart:
@@ -227,7 +227,7 @@ struct MenuBarContentView: View {
       return .green
     case .failed:
       return .red
-    case .installing:
+    case .activatingExtension, .configuringFilter:
       return .blue
     default:
       return .orange
@@ -236,6 +236,42 @@ struct MenuBarContentView: View {
 
   private var emptyDomainMessage: String {
     "No blocked websites are active."
+  }
+}
+
+private struct MenuActionItem: View {
+  let title: String
+  var isEnabled = true
+  let action: () -> Void
+
+  @State private var isHovered = false
+
+  var body: some View {
+    Button(action: action) {
+      Text(title)
+        .font(.callout)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .foregroundStyle(foregroundColor)
+    .background {
+      RoundedRectangle(cornerRadius: 5, style: .continuous)
+        .fill(isHovered && isEnabled ? Color.accentColor : Color.clear)
+    }
+    .contentShape(Rectangle())
+    .disabled(!isEnabled)
+    .onHover { isHovered = $0 }
+  }
+
+  private var foregroundColor: Color {
+    if !isEnabled {
+      return .secondary
+    }
+
+    return isHovered ? .white : .primary
   }
 }
 

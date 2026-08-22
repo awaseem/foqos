@@ -5,11 +5,12 @@ import SystemExtensions
 
 final class FoqosFilterManager: NSObject, ObservableObject {
   enum Status: Equatable {
+    case activatingExtension
     case approvalRequired
+    case configuringFilter
     case disabled
     case enabled
     case failed(String)
-    case installing
     case notConfigured
     case requiresRestart
     case unknown
@@ -37,16 +38,21 @@ final class FoqosFilterManager: NSObject, ObservableObject {
 
   var statusText: String {
     switch status {
+    case .activatingExtension:
+      return "Installing the Foqos network extension."
     case .approvalRequired:
-      return "Enable Foqos in System Settings › Network › Filters to finish setup."
+      return """
+        In Login Items & Extensions, scroll down to Extensions, choose By Category, then enable \
+        Foqos Website Filter under Network Extensions.
+        """
+    case .configuringFilter:
+      return "Choose Allow when macOS asks Foqos to filter network content."
     case .disabled:
       return "Active profiles cannot block websites while the network filter is disabled."
     case .enabled:
       return "Active profiles can block websites across supported browsers."
     case .failed(let message):
       return message
-    case .installing:
-      return "macOS may ask you to approve the Foqos network filter."
     case .notConfigured:
       return "Set up the network filter to block websites across browsers."
     case .requiresRestart:
@@ -80,7 +86,7 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     }
 
     isBundledExtensionActive = false
-    status = .installing
+    status = .activatingExtension
 
     let request = OSSystemExtensionRequest.activationRequest(
       forExtensionWithIdentifier: Self.extensionIdentifier,
@@ -201,6 +207,8 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   #endif
 
   private func configureFilter() {
+    status = .configuringFilter
+
     let manager = NEFilterManager.shared()
     manager.loadFromPreferences { [weak self] error in
       guard let self, error == nil else {
@@ -380,6 +388,10 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
   }
 
   func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
+    guard request === activationRequest else {
+      return
+    }
+
     status = .approvalRequired
   }
 

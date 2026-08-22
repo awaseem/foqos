@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 struct MacOnboardingView: View {
@@ -22,7 +23,7 @@ struct MacOnboardingView: View {
 
       VStack(spacing: 0) {
         SetupProgressRow(
-          title: "Install the website filter",
+          title: "Install the Foqos network extension",
           symbol: "puzzlepiece.extension",
           state: installationStepState
         )
@@ -31,18 +32,20 @@ struct MacOnboardingView: View {
           .padding(.leading, 42)
 
         SetupProgressRow(
-          title: "Approve Foqos in System Settings",
+          title: "Enable Foqos in Login Items & Extensions",
           symbol: "checkmark.shield",
-          state: approvalStepState
+          state: approvalStepState,
+          detail: approvalStepDetail
         )
 
         Divider()
           .padding(.leading, 42)
 
         SetupProgressRow(
-          title: "Ready for focused sessions",
-          symbol: "sparkles",
-          state: readyStepState
+          title: "Allow network content filtering",
+          symbol: "network.badge.shield.half.filled",
+          state: filterStepState,
+          detail: filterStepDetail
         )
       }
       .frame(maxWidth: 390)
@@ -70,7 +73,7 @@ struct MacOnboardingView: View {
     }
     .padding(.horizontal, 48)
     .padding(.vertical, 38)
-    .frame(minWidth: 480, maxWidth: .infinity, minHeight: 500, maxHeight: .infinity)
+    .frame(minWidth: 480, maxWidth: .infinity, minHeight: 580, maxHeight: .infinity)
     .background {
       Color.white
         .ignoresSafeArea()
@@ -88,9 +91,9 @@ struct MacOnboardingView: View {
 
   private var installationStepState: SetupProgressRow.State {
     switch filterManager.status {
-    case .approvalRequired, .disabled, .enabled, .requiresRestart:
+    case .approvalRequired, .configuringFilter, .disabled, .enabled, .requiresRestart:
       return .complete
-    case .installing:
+    case .activatingExtension:
       return .active
     case .failed, .notConfigured:
       return .active
@@ -101,33 +104,67 @@ struct MacOnboardingView: View {
 
   private var approvalStepState: SetupProgressRow.State {
     switch filterManager.status {
-    case .approvalRequired, .disabled:
+    case .approvalRequired:
       return .active
-    case .enabled, .requiresRestart:
+    case .configuringFilter, .disabled, .enabled, .requiresRestart:
       return .complete
-    case .failed, .installing, .notConfigured, .unknown:
+    case .activatingExtension, .failed, .notConfigured, .unknown:
       return .pending
     }
   }
 
-  private var readyStepState: SetupProgressRow.State {
-    filterManager.status == .enabled ? .complete : .pending
+  private var approvalStepDetail: String? {
+    guard filterManager.status == .approvalRequired else {
+      return nil
+    }
+
+    return """
+      Scroll down to Extensions, choose By Category, open Network Extensions, then turn on Foqos \
+      Website Filter. Return to Foqos when it is enabled.
+      """
+  }
+
+  private var filterStepState: SetupProgressRow.State {
+    switch filterManager.status {
+    case .configuringFilter, .disabled:
+      return .active
+    case .enabled:
+      return .complete
+    case .activatingExtension, .approvalRequired, .failed, .notConfigured, .requiresRestart,
+      .unknown:
+      return .pending
+    }
+  }
+
+  private var filterStepDetail: String? {
+    guard filterManager.status == .configuringFilter else {
+      return nil
+    }
+
+    return "Choose Allow in the macOS permission prompt to enable website blocking."
   }
 
   private var isWorking: Bool {
-    filterManager.status == .installing || filterManager.status == .unknown
+    switch filterManager.status {
+    case .activatingExtension, .configuringFilter, .unknown:
+      return true
+    default:
+      return false
+    }
   }
 
   private var primaryButtonTitle: String {
     switch filterManager.status {
+    case .activatingExtension:
+      return "Installing Extension…"
     case .approvalRequired:
-      return "Open System Settings"
+      return "Open Login Items & Extensions"
+    case .configuringFilter:
+      return "Waiting for Permission…"
     case .enabled:
       return "Complete"
     case .failed:
       return "Try Again"
-    case .installing:
-      return "Completing Setup…"
     case .requiresRestart:
       return "Restart to Complete"
     case .disabled, .notConfigured:
@@ -153,21 +190,16 @@ struct MacOnboardingView: View {
   private func handlePrimaryAction() {
     switch filterManager.status {
     case .approvalRequired:
-      openSystemSettings()
+      SMAppService.openSystemSettingsLoginItems()
     case .disabled, .failed, .notConfigured:
       filterManager.installAndEnable()
     case .enabled:
       onComplete()
     case .requiresRestart:
       onDismiss()
-    case .installing, .unknown:
+    case .activatingExtension, .configuringFilter, .unknown:
       break
     }
-  }
-
-  private func openSystemSettings() {
-    let settingsURL = URL(fileURLWithPath: "/System/Applications/System Settings.app")
-    NSWorkspace.shared.open(settingsURL)
   }
 }
 
@@ -181,6 +213,7 @@ private struct SetupProgressRow: View {
   let title: String
   let symbol: String
   let state: State
+  var detail: String? = nil
 
   var body: some View {
     HStack(spacing: 14) {
@@ -189,9 +222,18 @@ private struct SetupProgressRow: View {
         .foregroundStyle(symbolColor)
         .frame(width: 22)
 
-      Text(title)
-        .font(.body.weight(state == .active ? .semibold : .regular))
-        .foregroundStyle(state == .pending ? Color.secondary : Color.primary)
+      VStack(alignment: .leading, spacing: 5) {
+        Text(title)
+          .font(.body.weight(state == .active ? .semibold : .regular))
+          .foregroundStyle(state == .pending ? Color.secondary : Color.primary)
+
+        if let detail {
+          Text(detail)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+      }
 
       Spacer()
     }
@@ -213,5 +255,5 @@ private struct SetupProgressRow: View {
 #Preview("Onboarding") {
   MacOnboardingView(onComplete: {}, onDismiss: {})
     .environmentObject(FoqosFilterManager())
-    .frame(width: 520, height: 540)
+    .frame(width: 520, height: 620)
 }
