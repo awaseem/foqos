@@ -28,8 +28,12 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    if forceStart == true {
-      return startTimerSession(context: context, profile: profile, forceStart: true)
+    if forceStart == true || !profile.shouldAskForStartSettings {
+      return startTimerSession(
+        context: context,
+        profile: profile,
+        forceStart: forceStart ?? false
+      )
     }
 
     return TimerDurationView(

@@ -104,11 +104,16 @@ struct BlockedProfileStrategySection: View {
           }
         }
         .disabled(disabled)
+
+        CustomToggle(
+          title: "Ask Me Every Time",
+          description: "Turn off to use the saved settings automatically.",
+          isOn: $draft.askForStartSettings,
+          isDisabled: disabled
+        )
       }
     } header: {
       Text("Blocking Strategy")
-    } footer: {
-      Text("Choose how this profile starts and stops.")
     }
   }
 }

@@ -13,6 +13,7 @@ class BlockedProfiles {
   var updatedAt: Date
   var blockingStrategyId: String?
   var strategyData: Data?
+  var askForStartSettings: Bool = true
   var order: Int = 0
 
   var enableLiveActivity: Bool = false
@@ -68,6 +69,10 @@ class BlockedProfiles {
     return StrategyManager.getStrategyFromId(id: strategyId).allowsTimedBreaks
   }
 
+  var shouldAskForStartSettings: Bool {
+    askForStartSettings || strategyData == nil
+  }
+
   // MARK: - Physical Unblock Helpers
 
   /// Checks if a specific NFC tag or QR code can unblock this profile
@@ -101,6 +106,7 @@ class BlockedProfiles {
     updatedAt: Date = Date(),
     blockingStrategyId: String = NFCBlockingStrategy.id,
     strategyData: Data? = nil,
+    askForStartSettings: Bool = true,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String? = nil,
@@ -128,6 +134,7 @@ class BlockedProfiles {
     self.updatedAt = updatedAt
     self.blockingStrategyId = blockingStrategyId
     self.strategyData = strategyData
+    self.askForStartSettings = askForStartSettings
     self.order = order
 
     self.enableLiveActivity = enableLiveActivity
@@ -202,6 +209,7 @@ class BlockedProfiles {
     selection: FamilyActivitySelection? = nil,
     blockingStrategyId: String? = nil,
     strategyData: Data?? = nil,
+    askForStartSettings: Bool? = nil,
     enableLiveActivity: Bool? = nil,
     reminderTime: UInt32? = nil,
     customReminderMessage: String? = nil,
@@ -251,6 +259,10 @@ class BlockedProfiles {
 
     if let strategyData {
       profile.strategyData = strategyData
+    }
+
+    if let newAskForStartSettings = askForStartSettings {
+      profile.askForStartSettings = newAskForStartSettings
     }
 
     if let newEnableLiveActivity = enableLiveActivity {
@@ -438,6 +450,7 @@ class BlockedProfiles {
     selection: FamilyActivitySelection = FamilyActivitySelection(),
     blockingStrategyId: String = NFCBlockingStrategy.id,
     strategyData: Data? = nil,
+    askForStartSettings: Bool = true,
     enableLiveActivity: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String = "",
@@ -464,6 +477,7 @@ class BlockedProfiles {
       selectedActivity: selection,
       blockingStrategyId: blockingStrategyId,
       strategyData: strategyData,
+      askForStartSettings: askForStartSettings,
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeInSeconds,
       customReminderMessage: customReminderMessage,
@@ -507,6 +521,7 @@ class BlockedProfiles {
       selectedActivity: source.selectedActivity,
       blockingStrategyId: source.blockingStrategyId ?? NFCBlockingStrategy.id,
       strategyData: source.strategyData,
+      askForStartSettings: source.askForStartSettings,
       enableLiveActivity: source.enableLiveActivity,
       reminderTimeInSeconds: source.reminderTimeInSeconds,
       customReminderMessage: source.customReminderMessage,

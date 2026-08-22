@@ -29,6 +29,15 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
+    if !profile.shouldAskForStartSettings {
+      startTimerSession(
+        context: context,
+        profile: profile,
+        forceStart: forceStart ?? false
+      )
+      return nil
+    }
+
     return TimerDurationView(
       profileName: profile.name,
       initialConfiguration: StrategyTimerData.decode(profile.strategyData),
@@ -42,18 +51,30 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
           try? context.save()
         }
 
-        let activeSession = BlockedProfileSession.createSession(
-          in: context,
-          withTag: NFCTimerBlockingStrategy.id,
-          withProfile: profile,
+        self.startTimerSession(
+          context: context,
+          profile: profile,
           forceStart: forceStart ?? false
         )
-
-        DeviceActivityCenterUtil.startStrategyTimerActivity(for: profile)
-
-        self.onSessionCreation?(.started(activeSession))
       }
     )
+  }
+
+  private func startTimerSession(
+    context: ModelContext,
+    profile: BlockedProfiles,
+    forceStart: Bool
+  ) {
+    let activeSession = BlockedProfileSession.createSession(
+      in: context,
+      withTag: Self.id,
+      withProfile: profile,
+      forceStart: forceStart
+    )
+
+    DeviceActivityCenterUtil.startStrategyTimerActivity(for: profile)
+
+    onSessionCreation?(.started(activeSession))
   }
 
   func stopBlocking(

@@ -41,6 +41,21 @@ enum StrategyStartSettingsKind: String, Identifiable {
       return [.medium, .large]
     }
   }
+
+  var defaultData: Data? {
+    switch self {
+    case .timer:
+      return StrategyTimerData.toData(from: .defaultConfiguration)
+    case .pauseTimer:
+      return StrategyPauseTimerData.toData(
+        from: StrategyPauseTimerData(
+          pauseDurationInMinutes: StrategyPauseTimerData.defaultPauseDurationInMinutes
+        )
+      )
+    case .temporaryAccess:
+      return SoftUnblockStrategyData.encode(SoftUnblockStrategyData.decode(nil))
+    }
+  }
 }
 
 struct StrategyStartSettingsView: View {
