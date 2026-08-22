@@ -16,6 +16,7 @@ struct SettingsView: View {
 
   @State private var showResetBlockingStateAlert = false
   @State private var showDebugView = false
+  @State private var showCompanionDeviceView = false
 
   private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -58,6 +59,20 @@ struct SettingsView: View {
         }
 
         AppIconPicker(selectionColor: themeManager.themeColor)
+
+        Section("Devices") {
+          HStack {
+            Text("Companion Device")
+              .foregroundColor(.primary)
+            Spacer()
+            Image(systemName: "chevron.right")
+              .foregroundColor(.secondary)
+              .font(.caption)
+          }
+          .onTapGesture {
+            showCompanionDeviceView = true
+          }
+        }
 
         Section("Help") {
           HStack {
@@ -180,6 +195,9 @@ struct SettingsView: View {
       }
       .sheet(isPresented: $showDebugView) {
         DebugView()
+      }
+      .sheet(isPresented: $showCompanionDeviceView) {
+        CompanionDeviceView()
       }
     }
   }

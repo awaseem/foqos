@@ -40,6 +40,7 @@ class StrategyManager: ObservableObject {
     Double = 0
 
   private let liveActivityManager = LiveActivityManager.shared
+  private let companionDeviceManager = CompanionDeviceManager.shared
 
   private let timersUtil = TimersUtil()
   private let appBlocker = AppBlockerUtil()
@@ -91,6 +92,10 @@ class StrategyManager: ObservableObject {
 
     // Reload widget to reflect any changes from extension (e.g., timer expiration)
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+
+    // Reconcile the companion device with the current truth, covering
+    // sessions started or ended while the app was not running
+    companionDeviceManager.pushStatus(session: activeSession, context: context)
   }
 
   func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
@@ -358,6 +363,27 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  // Re-pushes current truth (session + fresh stats) to the companion device;
+  // called after every BLE (re)connection via onStatusRefreshNeeded.
+  func pushCompanionStatus(context: ModelContext) {
+    companionDeviceManager.pushStatus(
+      session: getActiveSession(context: context),
+      context: context
+    )
+  }
+
+  // Toggle requested from the companion device (e.g. a screen tap): stops the
+  // active session if one is running, otherwise starts the configured profile.
+  func toggleSessionFromCompanion(profileId: UUID?, context: ModelContext) {
+    if let activeSession = getActiveSession(context: context) {
+      stopSessionFromBackground(activeSession.blockedProfile.id, context: context)
+    } else if let profileId = profileId {
+      startSessionFromBackground(profileId, context: context)
+    } else {
+      print("companion toggle ignored: no active session and no profile configured")
+    }
+  }
+
   func getRemainingEmergencyUnblocks() -> Int {
     return emergencyUnblocksRemaining
   }
@@ -382,6 +408,7 @@ class StrategyManager: ObservableObject {
 
     // Do end sections for the profile
     self.liveActivityManager.endSessionActivity()
+    self.companionDeviceManager.pushSessionEnded(context: context)
     self.scheduleReminder(profile: activeSession.blockedProfile)
     self.stopTimer()
 
@@ -461,9 +488,9 @@ class StrategyManager: ObservableObject {
       case .paused:
         self.handlePauseStarted(context: context)
       case .started(let session):
-        self.handleSessionStarted(session: session)
+        self.handleSessionStarted(session: session, context: context)
       case .ended(let endedProfile):
-        self.handleSessionEnded(profile: endedProfile)
+        self.handleSessionEnded(profile: endedProfile, context: context)
       }
     }
 
@@ -518,6 +545,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
+    companionDeviceManager.pushStatus(session: session, context: context)
   }
 
   private func stopBreak(context: ModelContext) {
@@ -549,6 +577,7 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
+    companionDeviceManager.pushStatus(session: session, context: context)
   }
 
   private func handlePauseStarted(context: ModelContext) {
@@ -566,7 +595,7 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  private func handleSessionStarted(session: BlockedProfileSession) {
+  private func handleSessionStarted(session: BlockedProfileSession, context: ModelContext) {
     self.dismissView()
 
     // Remove any timers and notifications that were scheduled
@@ -581,12 +610,13 @@ class StrategyManager: ObservableObject {
     self.startTimer()
     self.liveActivityManager
       .startSessionActivity(session: session)
+    self.companionDeviceManager.pushStatus(session: session, context: context)
 
     // Refresh widgets when session starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
-  private func handleSessionEnded(profile: BlockedProfiles) {
+  private func handleSessionEnded(profile: BlockedProfiles, context: ModelContext) {
     self.dismissView()
 
     // Remove any timers and notifications that were scheduled
@@ -594,6 +624,7 @@ class StrategyManager: ObservableObject {
     self.activeSession = nil
     ActiveProfileSyncStore.publish(session: nil)
     self.liveActivityManager.endSessionActivity()
+    self.companionDeviceManager.pushSessionEnded(context: context)
     self.scheduleReminder(profile: profile)
 
     self.stopTimer()
