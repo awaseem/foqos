@@ -31,7 +31,7 @@ struct SoftUnblockGrant: Codable, Equatable, Identifiable {
 
 struct SoftUnblockSessionState: Codable, Equatable {
   static let maximumUnblockCountRange = 1...10
-  static let allowanceResetIntervalsInHours = [6, 12, 24]
+  static let allowanceResetIntervalRangeInHours = 1...24
 
   let sessionId: String
   let profileId: UUID

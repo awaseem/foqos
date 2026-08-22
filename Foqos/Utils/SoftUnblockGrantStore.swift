@@ -201,7 +201,7 @@ enum SoftUnblockGrantStore {
 
   private static func normalizedResetInterval(_ interval: Int?) -> Int? {
     guard let interval,
-      SoftUnblockSessionState.allowanceResetIntervalsInHours.contains(interval)
+      SoftUnblockSessionState.allowanceResetIntervalRangeInHours.contains(interval)
     else {
       return nil
     }

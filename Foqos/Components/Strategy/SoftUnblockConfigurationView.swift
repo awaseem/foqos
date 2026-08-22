@@ -11,6 +11,7 @@ struct SoftUnblockConfigurationView: View {
   @State private var maximumUnblockCount: Int
   @State private var accessDurationInMinutes: Int
   @State private var allowanceResetIntervalInHours: Int?
+  @State private var lastAllowanceResetIntervalInHours: Int
 
   init(
     profileName: String,
@@ -27,6 +28,10 @@ struct SoftUnblockConfigurationView: View {
     )
     _allowanceResetIntervalInHours = State(
       initialValue: initialConfiguration.allowanceResetIntervalInHours
+    )
+    _lastAllowanceResetIntervalInHours = State(
+      initialValue: initialConfiguration.allowanceResetIntervalInHours
+        ?? SoftUnblockStrategyData.defaultEnabledAllowanceResetIntervalInHours
     )
   }
 
@@ -96,17 +101,39 @@ struct SoftUnblockConfigurationView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-              Text("Reset Opens")
-                .font(.headline)
+              HStack {
+                Text("Reset Opens")
+                  .font(.headline)
 
-              Picker("Reset Opens", selection: $allowanceResetIntervalInHours) {
-                Text("Never").tag(Int?.none)
-                ForEach(SoftUnblockStrategyData.allowanceResetIntervalsInHours, id: \.self) {
-                  hours in
-                  Text("\(hours)h").tag(Int?.some(hours))
-                }
+                Spacer()
+
+                Toggle("Reset Opens", isOn: resetEnabledBinding)
+                  .labelsHidden()
+                  .tint(themeManager.themeColor)
               }
-              .pickerStyle(.segmented)
+
+              if allowanceResetIntervalInHours != nil {
+                Text(formattedResetInterval)
+                  .font(.system(size: 40, weight: .bold, design: .rounded))
+                  .contentTransition(.numericText())
+
+                Slider(
+                  value: resetIntervalBinding,
+                  in: resetIntervalRange,
+                  step: 1
+                )
+                .tint(themeManager.themeColor)
+                .sensoryFeedback(.selection, trigger: allowanceResetIntervalInHours)
+                .accessibilityValue(formattedResetInterval)
+
+                HStack {
+                  Text("1h")
+                  Spacer()
+                  Text("24h")
+                }
+                .font(.caption2)
+                .foregroundColor(.secondary)
+              }
 
               Text(resetDescription)
                 .font(.caption)
@@ -159,13 +186,47 @@ struct SoftUnblockConfigurationView: View {
     )
   }
 
+  private var resetEnabledBinding: Binding<Bool> {
+    Binding(
+      get: { allowanceResetIntervalInHours != nil },
+      set: { isEnabled in
+        allowanceResetIntervalInHours = isEnabled ? lastAllowanceResetIntervalInHours : nil
+      }
+    )
+  }
+
+  private var resetIntervalBinding: Binding<Double> {
+    Binding(
+      get: { Double(allowanceResetIntervalInHours ?? lastAllowanceResetIntervalInHours) },
+      set: { value in
+        let interval = Int(value)
+        allowanceResetIntervalInHours = interval
+        lastAllowanceResetIntervalInHours = interval
+      }
+    )
+  }
+
+  private var resetIntervalRange: ClosedRange<Double> {
+    let range = SoftUnblockStrategyData.allowanceResetIntervalRangeInHours
+    return Double(range.lowerBound)...Double(range.upperBound)
+  }
+
   private var formattedDuration: String {
     accessDurationInMinutes == 60 ? "1 hour" : "\(accessDurationInMinutes) minutes"
+  }
+
+  private var formattedResetInterval: String {
+    let interval = allowanceResetIntervalInHours ?? lastAllowanceResetIntervalInHours
+    return interval == 1 ? "1 hour" : "\(interval) hours"
   }
 
   private var resetDescription: String {
     guard let allowanceResetIntervalInHours else {
       return "Your opens do not reset during this session."
+    }
+
+    if allowanceResetIntervalInHours == 1 {
+      return "You get all your opens back every hour."
     }
 
     return "You get all your opens back every \(allowanceResetIntervalInHours) hours."
