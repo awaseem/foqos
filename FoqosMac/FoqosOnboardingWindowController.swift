@@ -42,7 +42,7 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
 
     let hostingController = NSHostingController(rootView: onboardingView)
     let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 520, height: 540),
+      contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
       styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
       backing: .buffered,
       defer: false
@@ -53,9 +53,9 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
     window.isMovableByWindowBackground = true
     window.isReleasedWhenClosed = false
     window.backgroundColor = .clear
-    window.contentMinSize = NSSize(width: 480, height: 500)
+    window.contentMinSize = NSSize(width: 480, height: 580)
     window.contentViewController = hostingController
-    window.setContentSize(NSSize(width: 520, height: 540))
+    window.setContentSize(NSSize(width: 520, height: 620))
     window.center()
     window.standardWindowButton(.zoomButton)?.isHidden = true
 
