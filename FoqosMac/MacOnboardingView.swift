@@ -119,8 +119,8 @@ struct MacOnboardingView: View {
     }
 
     return """
-      Choose By Category, open Network Extensions, then turn on Foqos Website Filter. Return to \
-      Foqos when it is enabled.
+      Scroll down to Extensions, choose By Category, open Network Extensions, then turn on Foqos \
+      Website Filter. Return to Foqos when it is enabled.
       """
   }
 

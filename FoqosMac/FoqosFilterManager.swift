@@ -42,8 +42,8 @@ final class FoqosFilterManager: NSObject, ObservableObject {
       return "Installing the Foqos network extension."
     case .approvalRequired:
       return """
-        In Login Items & Extensions, choose By Category and enable Foqos Website Filter under \
-        Network Extensions.
+        In Login Items & Extensions, scroll down to Extensions, choose By Category, then enable \
+        Foqos Website Filter under Network Extensions.
         """
     case .configuringFilter:
       return "Choose Allow when macOS asks Foqos to filter network content."
