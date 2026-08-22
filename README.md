@@ -189,8 +189,15 @@ The release Mac needs:
 - The `Developer ID Application: Ali Waseem (YR54789JNV)` certificate and private key
 - The `Foqos Mac Developer ID` and `Foqos Filter Developer ID` provisioning profiles
 - GitHub CLI authentication for `awaseem/foqos`
+- [`create-dmg`](https://github.com/create-dmg/create-dmg) for the Finder installation layout
 - The Sparkle private key in the login Keychain under account `ambitionsoftware`
 - A notarytool Keychain profile named `foqos-notary`
+
+Install the DMG layout tool with Homebrew if necessary:
+
+```bash
+brew install create-dmg
+```
 
 Authenticate GitHub CLI if necessary:
 
@@ -228,9 +235,9 @@ make mac-release VERSION=0.1.0 RELEASE_NOTES_FILE=release-notes.md
 
 The command validates the release environment, updates both Mac targets from
 `Config/MacRelease.xcconfig`, builds a universal Developer ID app, notarizes the app and DMG,
-updates the signed Sparkle appcast, and publishes a `mac-vx.y.z` GitHub release. Mac releases are
-not marked as GitHub's repository-wide “Latest” release, so they do not replace the current iOS
-release badge.
+adds the drag-to-Applications Finder layout, updates the signed Sparkle appcast, and publishes a
+`mac-vx.y.z` GitHub release. Mac releases are not marked as GitHub's repository-wide “Latest”
+release, so they do not replace the current iOS release badge.
 
 Release artifacts are retained under `.build/mac-release/`, which is ignored by Git. If the
 command fails before committing the Mac version, it restores the version and appcast source files

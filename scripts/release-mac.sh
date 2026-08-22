@@ -14,6 +14,7 @@ readonly VERSION_CONFIG="$REPO_ROOT/Config/MacRelease.xcconfig"
 readonly EXPORT_OPTIONS="$REPO_ROOT/Config/MacReleaseExportOptions.plist"
 readonly APPCAST_FILE="$REPO_ROOT/appcast-macos.xml"
 readonly INFO_PLIST="$REPO_ROOT/FoqosMac/Info.plist"
+readonly DMG_BACKGROUND="$REPO_ROOT/Config/DMG/background.png"
 readonly TEAM_ID="YR54789JNV"
 readonly DEVELOPER_ID_NAME="Developer ID Application: Ali Waseem ($TEAM_ID)"
 readonly RELEASE_BRANCH="main"
@@ -71,6 +72,7 @@ validate_source_changes() {
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
   fail "VERSION is required and must use x.y.z format, for example VERSION=0.1.0."
 [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || fail "BUILD_NUMBER must be a positive integer."
+[[ -f "$DMG_BACKGROUND" ]] || fail "DMG background was not found at $DMG_BACKGROUND."
 
 readonly TAG="mac-v$VERSION"
 readonly DMG_NAME="Foqos-for-Mac-$VERSION.dmg"
@@ -88,8 +90,8 @@ readonly DMG_ROOT="$RELEASE_DIR/DMG"
 readonly DMG_PATH="$RELEASE_DIR/$DMG_NAME"
 readonly APPCAST_DIR="$RELEASE_DIR/Appcast"
 
-for command_name in awk codesign cut curl date ditto gh git grep hdiutil lipo plutil security \
-  sed spctl xcodebuild xmllint xcrun; do
+for command_name in awk codesign create-dmg cut curl date ditto gh git grep hdiutil lipo plutil \
+  security sed spctl xcodebuild xmllint xcrun; do
   require_command "$command_name"
 done
 
@@ -234,13 +236,19 @@ spctl --assess --type execute --verbose=4 "$APP_PATH"
 step "Creating the DMG"
 mkdir -p "$DMG_ROOT"
 ditto "$APP_PATH" "$DMG_ROOT/Foqos for Mac.app"
-ln -s /Applications "$DMG_ROOT/Applications"
-hdiutil create \
-  -volname "Foqos for Mac" \
-  -srcfolder "$DMG_ROOT" \
-  -format UDZO \
-  -ov \
-  "$DMG_PATH"
+create-dmg \
+  --volname "Foqos for Mac" \
+  --background "$DMG_BACKGROUND" \
+  --window-pos 200 120 \
+  --window-size 660 400 \
+  --icon-size 112 \
+  --text-size 14 \
+  --icon "Foqos for Mac.app" 170 210 \
+  --hide-extension "Foqos for Mac.app" \
+  --app-drop-link 490 210 \
+  --format UDZO \
+  "$DMG_PATH" \
+  "$DMG_ROOT"
 codesign --force --sign "$DEVELOPER_ID_NAME" --timestamp "$DMG_PATH"
 
 step "Notarizing and stapling the DMG"
