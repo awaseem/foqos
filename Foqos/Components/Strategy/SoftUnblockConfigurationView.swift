@@ -53,6 +53,10 @@ struct SoftUnblockConfigurationView: View {
               Text("Allowed Opens")
                 .font(.headline)
 
+              Text("Each time you open a blocked app or category, it uses one.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
               Stepper(
                 value: $maximumUnblockCount,
                 in: SoftUnblockStrategyData.unblockCountRange
@@ -67,10 +71,6 @@ struct SoftUnblockConfigurationView: View {
                 }
               }
               .sensoryFeedback(.selection, trigger: maximumUnblockCount)
-
-              Text("Each time you open a blocked app or category, it uses one.")
-                .font(.caption)
-                .foregroundColor(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 12) {
@@ -112,6 +112,10 @@ struct SoftUnblockConfigurationView: View {
                   .tint(themeManager.themeColor)
               }
 
+              Text(resetDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+
               if allowanceResetIntervalInHours != nil {
                 Text(formattedResetInterval)
                   .font(.system(size: 40, weight: .bold, design: .rounded))
@@ -134,10 +138,6 @@ struct SoftUnblockConfigurationView: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
               }
-
-              Text(resetDescription)
-                .font(.caption)
-                .foregroundColor(.secondary)
             }
           }
           .padding(.horizontal, 24)
