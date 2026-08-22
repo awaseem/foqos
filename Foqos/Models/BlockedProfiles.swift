@@ -201,7 +201,7 @@ class BlockedProfiles {
     name: String? = nil,
     selection: FamilyActivitySelection? = nil,
     blockingStrategyId: String? = nil,
-    strategyData: Data? = nil,
+    strategyData: Data?? = nil,
     enableLiveActivity: Bool? = nil,
     reminderTime: UInt32? = nil,
     customReminderMessage: String? = nil,
@@ -249,8 +249,8 @@ class BlockedProfiles {
       profile.blockingStrategyId = newStrategyId
     }
 
-    if let newStrategyData = strategyData {
-      profile.strategyData = newStrategyData
+    if let strategyData {
+      profile.strategyData = strategyData
     }
 
     if let newEnableLiveActivity = enableLiveActivity {

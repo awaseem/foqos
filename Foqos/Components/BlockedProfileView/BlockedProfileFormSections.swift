@@ -73,9 +73,13 @@ struct BlockedProfileStrategyFields: View {
 }
 
 struct BlockedProfileStrategySection: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   @ObservedObject var draft: BlockedProfileDraft
   @Binding var showingStrategyPicker: Bool
   var disabled: Bool
+  var showsStartSettings: Bool = false
+  var onUpdateStartSettings: ((StrategyStartSettingsKind) -> Void)?
 
   var body: some View {
     Section {
@@ -84,6 +88,23 @@ struct BlockedProfileStrategySection: View {
         showingStrategyPicker: $showingStrategyPicker,
         disabled: disabled
       )
+
+      if showsStartSettings,
+        let settingsKind = StrategyStartSettingsKind(strategy: draft.selectedStrategy)
+      {
+        Button {
+          onUpdateStartSettings?(settingsKind)
+        } label: {
+          HStack {
+            Text("Update Start Settings")
+              .foregroundStyle(themeManager.themeColor)
+            Spacer()
+            Image(systemName: "chevron.right")
+              .foregroundStyle(.secondary)
+          }
+        }
+        .disabled(disabled)
+      }
     } header: {
       Text("Blocking Strategy")
     } footer: {

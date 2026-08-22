@@ -31,6 +31,7 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   ) -> (any View)? {
     return TimerDurationView(
       profileName: profile.name,
+      initialConfiguration: StrategyTimerData.decode(profile.strategyData),
       onDurationSelected: { duration in
         if let strategyTimerData = StrategyTimerData.toData(from: duration) {
           // Store the timer data so that its selected for the next time the profile is started

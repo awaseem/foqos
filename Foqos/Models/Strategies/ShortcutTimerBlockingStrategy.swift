@@ -34,6 +34,7 @@ class ShortcutTimerBlockingStrategy: BlockingStrategy {
 
     return TimerDurationView(
       profileName: profile.name,
+      initialConfiguration: StrategyTimerData.decode(profile.strategyData),
       onDurationSelected: { duration in
         if let strategyTimerData = StrategyTimerData.toData(from: duration) {
           profile.strategyData = strategyTimerData

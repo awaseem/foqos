@@ -5,6 +5,7 @@ struct SoftUnblockConfigurationView: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
   let profileName: String
+  let actionTitle: String
   let onStart: (SoftUnblockStrategyData) -> Void
 
   @State private var maximumUnblockCount: Int
@@ -14,9 +15,11 @@ struct SoftUnblockConfigurationView: View {
   init(
     profileName: String,
     initialConfiguration: SoftUnblockStrategyData,
+    actionTitle: String = "Start Blocking",
     onStart: @escaping (SoftUnblockStrategyData) -> Void
   ) {
     self.profileName = profileName
+    self.actionTitle = actionTitle
     self.onStart = onStart
     _maximumUnblockCount = State(initialValue: initialConfiguration.maximumUnblockCount)
     _accessDurationInMinutes = State(
@@ -134,7 +137,7 @@ struct SoftUnblockConfigurationView: View {
 
   private var startButton: some View {
     ActionButton(
-      title: "Start Blocking",
+      title: actionTitle,
       backgroundColor: themeManager.themeColor,
       iconName: "checkmark.circle.fill"
     ) {

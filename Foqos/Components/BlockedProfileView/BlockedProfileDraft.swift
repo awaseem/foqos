@@ -25,8 +25,16 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var physicalUnblockItems: [PhysicalUnblockItem]
   @Published var schedule: BlockedProfileSchedule
   @Published var selectedActivity: FamilyActivitySelection
+  @Published var strategyData: Data?
   @Published var selectedStrategy: BlockingStrategy? {
     didSet {
+      let oldSettingsKind = StrategyStartSettingsKind(strategy: oldValue)
+      let newSettingsKind = StrategyStartSettingsKind(strategy: selectedStrategy)
+
+      if newSettingsKind == nil || oldSettingsKind != newSettingsKind {
+        strategyData = nil
+      }
+
       enforceStrategyBreaksPolicy()
     }
   }
@@ -55,6 +63,7 @@ final class BlockedProfileDraft: ObservableObject {
     customReminderMessage = profile?.customReminderMessage ?? ""
     domains = profile?.domains ?? []
     physicalUnblockItems = profile?.physicalUnblockItems ?? []
+    strategyData = nil
     schedule =
       profile?.schedule
       ?? BlockedProfileSchedule(
@@ -71,6 +80,9 @@ final class BlockedProfileDraft: ObservableObject {
     } else {
       selectedStrategy = NFCBlockingStrategy()
     }
+
+    // Restore persisted settings after the strategy observer has handled initial selection.
+    strategyData = profile?.strategyData
 
     enforceStrategyBreaksPolicy()
   }
@@ -102,6 +114,7 @@ final class BlockedProfileDraft: ObservableObject {
         name: name,
         selection: selectedActivity,
         blockingStrategyId: selectedStrategy?.getIdentifier(),
+        strategyData: .some(strategyData),
         enableLiveActivity: enableLiveActivity,
         reminderTime: reminderTimeSeconds,
         customReminderMessage: customReminderMessage,
@@ -131,6 +144,7 @@ final class BlockedProfileDraft: ObservableObject {
       name: name,
       selection: selectedActivity,
       blockingStrategyId: selectedStrategy?.getIdentifier() ?? NFCBlockingStrategy.id,
+      strategyData: strategyData,
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeSeconds,
       customReminderMessage: customReminderMessage,
