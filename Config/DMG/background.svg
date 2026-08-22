@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="800" viewBox="0 0 1320 800">
+  <rect width="1320" height="800" fill="#080808"/>
+
+  <text
+    x="660"
+    y="80"
+    fill="#B69CFF"
+    font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif"
+    font-size="22"
+    font-weight="600"
+    letter-spacing="4"
+    text-anchor="middle"
+  >FOQOS FOR MAC</text>
+
+  <text
+    x="660"
+    y="160"
+    fill="#F5F5F3"
+    font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif"
+    font-size="68"
+    font-weight="600"
+    letter-spacing="-2.5"
+    text-anchor="middle"
+  >Install Foqos.</text>
+
+  <text
+    x="660"
+    y="212"
+    fill="#9B9B97"
+    font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif"
+    font-size="28"
+    font-weight="400"
+    text-anchor="middle"
+  >Drag Foqos into your Applications folder.</text>
+
+  <rect x="216" y="536" width="248" height="64" rx="32" fill="#F4F4F1"/>
+  <rect x="856" y="536" width="248" height="64" rx="32" fill="#F4F4F1"/>
+
+  <path
+    d="M592 420H718"
+    fill="none"
+    stroke="#F5F5F3"
+    stroke-linecap="round"
+    stroke-width="12"
+  />
+  <path
+    d="M696 392L728 420L696 448"
+    fill="none"
+    stroke="#F5F5F3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="12"
+  />
+
+  <text
+    x="660"
+    y="696"
+    fill="#73736F"
+    font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif"
+    font-size="24"
+    font-weight="400"
+    text-anchor="middle"
+  >Then open Foqos from Applications to finish setup.</text>
+</svg>
