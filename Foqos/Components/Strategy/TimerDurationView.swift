@@ -188,7 +188,7 @@ struct TimerDurationView: View {
   private var hideStopButtonToggle: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 2) {
-        Text("Hide Stop Button")
+        Text("Disable Stop Button")
           .font(.body)
           .fontWeight(.medium)
 

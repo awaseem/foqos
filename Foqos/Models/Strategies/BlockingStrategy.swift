@@ -60,7 +60,7 @@ enum BlockingStrategyPickerCategory: String, CaseIterable {
     case .timers:
       return "Timers"
     case .forever:
-      return "Forever"
+      return "Advanced"
     case .moreOptions:
       return "More options"
     }

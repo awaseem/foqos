@@ -282,9 +282,14 @@ struct BlockedProfileScheduleSection: View {
 }
 
 struct BlockedProfileBreaksFields: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool
   var showsSeparators: Bool = false
+
+  private let minimumBreakDurationInMinutes = 5
+  private let maximumBreakDurationInMinutes = 60
 
   @ViewBuilder
   var body: some View {
@@ -321,13 +326,42 @@ struct BlockedProfileBreaksFields: View {
   }
 
   private var breakDurationPicker: some View {
-    Picker("Break Duration", selection: $draft.breakTimeInMinutes) {
-      Text("5 minutes").tag(5)
-      Text("10 minutes").tag(10)
-      Text("15 minutes").tag(15)
-      Text("30 minutes").tag(30)
+    VStack(alignment: .leading, spacing: 10) {
+      HStack {
+        Text("Break Duration")
+
+        Spacer()
+
+        Text(DateFormatters.formatMinutes(draft.breakTimeInMinutes))
+          .fontWeight(.semibold)
+          .foregroundStyle(.secondary)
+          .contentTransition(.numericText())
+      }
+
+      Slider(
+        value: breakDurationBinding,
+        in: Double(minimumBreakDurationInMinutes)...Double(maximumBreakDurationInMinutes),
+        step: 5
+      )
+      .tint(themeManager.themeColor)
+      .accessibilityValue(DateFormatters.formatMinutes(draft.breakTimeInMinutes))
+
+      HStack {
+        Text("5m")
+        Spacer()
+        Text("1h")
+      }
+      .font(.caption2)
+      .foregroundStyle(.secondary)
     }
     .disabled(disabled)
+  }
+
+  private var breakDurationBinding: Binding<Double> {
+    Binding(
+      get: { Double(draft.breakTimeInMinutes) },
+      set: { draft.breakTimeInMinutes = Int($0) }
+    )
   }
 }
 
