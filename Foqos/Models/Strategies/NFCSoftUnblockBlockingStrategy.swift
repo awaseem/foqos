@@ -32,7 +32,16 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
-    SoftUnblockConfigurationView(
+    if !profile.shouldAskForStartSettings {
+      startSession(
+        context: context,
+        profile: profile,
+        forceStart: forceStart ?? false
+      )
+      return nil
+    }
+
+    return SoftUnblockConfigurationView(
       profileName: profile.name,
       initialConfiguration: SoftUnblockStrategyData.decode(profile.strategyData),
       onStart: { configuration in
@@ -53,17 +62,29 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
 
         BlockedProfiles.updateSnapshot(for: profile)
 
-        let activeSession = BlockedProfileSession.createSession(
-          in: context,
-          withTag: Self.id,
-          withProfile: profile,
+        self.startSession(
+          context: context,
+          profile: profile,
           forceStart: forceStart ?? false
         )
-
-        self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
-        self.onSessionCreation?(.started(activeSession))
       }
     )
+  }
+
+  private func startSession(
+    context: ModelContext,
+    profile: BlockedProfiles,
+    forceStart: Bool
+  ) {
+    let activeSession = BlockedProfileSession.createSession(
+      in: context,
+      withTag: Self.id,
+      withProfile: profile,
+      forceStart: forceStart
+    )
+
+    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
+    onSessionCreation?(.started(activeSession))
   }
 
   func stopBlocking(

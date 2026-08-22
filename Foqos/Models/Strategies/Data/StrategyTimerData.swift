@@ -1,8 +1,25 @@
 import SwiftUI
 
 struct StrategyTimerData: Codable {
+  static let defaultDurationInMinutes = 60
+
   var durationInMinutes: Int
   var hideStopButton: Bool
+
+  static var defaultConfiguration: StrategyTimerData {
+    StrategyTimerData(
+      durationInMinutes: defaultDurationInMinutes,
+      hideStopButton: false
+    )
+  }
+
+  static func decode(_ data: Data?) -> StrategyTimerData {
+    guard let data else {
+      return defaultConfiguration
+    }
+
+    return toStrategyTimerData(from: data)
+  }
 
   static func toStrategyTimerData(from data: Data) -> StrategyTimerData {
     do {

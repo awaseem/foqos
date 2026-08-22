@@ -5,12 +5,13 @@ struct TimerDurationView: View {
   @Environment(\.dismiss) private var dismiss
 
   let profileName: String
+  let actionTitle: String
   let onDurationSelected: (StrategyTimerData) -> Void
 
   // State for slider-based duration selection
-  @State private var durationMinutes: Double = 60  // Default 1 hour
+  @State private var durationMinutes: Double
   @State private var isSliding = false
-  @State private var hideStopButton = false  // Toggle for hiding stop button
+  @State private var hideStopButton: Bool
 
   // Constants
   private let minMinutes: Double = 15
@@ -21,6 +22,19 @@ struct TimerDurationView: View {
   // Common snap points (in minutes)
   private let snapPoints: [Double] = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720, 1440]
   private let snapThreshold: Double = 10  // How close to snap (in minutes)
+
+  init(
+    profileName: String,
+    initialConfiguration: StrategyTimerData = .defaultConfiguration,
+    actionTitle: String = "Set Duration",
+    onDurationSelected: @escaping (StrategyTimerData) -> Void
+  ) {
+    self.profileName = profileName
+    self.actionTitle = actionTitle
+    self.onDurationSelected = onDurationSelected
+    _durationMinutes = State(initialValue: Double(initialConfiguration.durationInMinutes))
+    _hideStopButton = State(initialValue: initialConfiguration.hideStopButton)
+  }
 
   var body: some View {
     VStack(spacing: 32) {
@@ -49,7 +63,7 @@ struct TimerDurationView: View {
 
       // Confirm button
       ActionButton(
-        title: "Set Duration",
+        title: actionTitle,
         backgroundColor: themeManager.themeColor,
         iconName: "checkmark.circle.fill"
       ) {
@@ -188,7 +202,7 @@ struct TimerDurationView: View {
   private var hideStopButtonToggle: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 2) {
-        Text("Hide Stop Button")
+        Text("Disable Stop Button")
           .font(.body)
           .fontWeight(.medium)
 

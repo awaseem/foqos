@@ -7,10 +7,11 @@ struct PauseDurationView: View {
   let profileName: String
   var title: String = "Pause Duration"
   var description: String? = nil
+  let actionTitle: String
   let onDurationSelected: (Int) -> Void
 
   // State for slider-based duration selection
-  @State private var durationMinutes: Double = 15  // Default 15 minutes
+  @State private var durationMinutes: Double
   @State private var isSliding = false
 
   // Constants - max 1 hour for pause duration
@@ -21,6 +22,22 @@ struct PauseDurationView: View {
   // Common snap points (in minutes)
   private let snapPoints: [Double] = [5, 10, 15, 20, 30, 45, 60]
   private let snapThreshold: Double = 3  // How close to snap (in minutes)
+
+  init(
+    profileName: String,
+    title: String = "Pause Duration",
+    description: String? = nil,
+    initialDurationMinutes: Int = StrategyPauseTimerData.defaultPauseDurationInMinutes,
+    actionTitle: String = "Start Blocking",
+    onDurationSelected: @escaping (Int) -> Void
+  ) {
+    self.profileName = profileName
+    self.title = title
+    self.description = description
+    self.actionTitle = actionTitle
+    self.onDurationSelected = onDurationSelected
+    _durationMinutes = State(initialValue: Double(initialDurationMinutes))
+  }
 
   var body: some View {
     VStack(spacing: 32) {
@@ -46,7 +63,7 @@ struct PauseDurationView: View {
 
       // Confirm button
       ActionButton(
-        title: "Start Blocking",
+        title: actionTitle,
         backgroundColor: themeManager.themeColor,
         iconName: "checkmark.circle.fill"
       ) {

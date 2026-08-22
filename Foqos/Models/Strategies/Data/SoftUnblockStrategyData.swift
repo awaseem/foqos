@@ -4,10 +4,11 @@ struct SoftUnblockStrategyData: Codable, Equatable {
   static let defaultDurationInMinutes = 15
   static let defaultMaximumUnblockCount = 3
   static let defaultAllowanceResetIntervalInHours: Int? = nil
+  static let defaultEnabledAllowanceResetIntervalInHours = 6
   static let durationRange = 5...60
   static let unblockCountRange = SoftUnblockSessionState.maximumUnblockCountRange
-  static let allowanceResetIntervalsInHours =
-    SoftUnblockSessionState.allowanceResetIntervalsInHours
+  static let allowanceResetIntervalRangeInHours =
+    SoftUnblockSessionState.allowanceResetIntervalRangeInHours
 
   var accessDurationInMinutes: Int
   var maximumUnblockCount: Int
@@ -42,7 +43,7 @@ struct SoftUnblockStrategyData: Codable, Equatable {
         Self.unblockCountRange.upperBound
       ),
       allowanceResetIntervalInHours: allowanceResetIntervalInHours.flatMap { interval in
-        Self.allowanceResetIntervalsInHours.contains(interval) ? interval : nil
+        Self.allowanceResetIntervalRangeInHours.contains(interval) ? interval : nil
       }
     )
   }

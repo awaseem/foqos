@@ -60,7 +60,7 @@ enum BlockingStrategyPickerCategory: String, CaseIterable {
     case .timers:
       return "Timers"
     case .forever:
-      return "Forever"
+      return "Advanced"
     case .moreOptions:
       return "More options"
     }
@@ -75,7 +75,7 @@ enum BlockingStrategyPickerCategory: String, CaseIterable {
     case .timers:
       return "Choose a duration first, then let the session end automatically."
     case .forever:
-      return "Sessions that keep going until you intentionally stop."
+      return "Flexible strategies for temporary access and timed pauses."
     case .moreOptions:
       return "Additional ways to control a focus session."
     }

@@ -29,8 +29,22 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
     profile: BlockedProfiles,
     forceStart: Bool?
   ) -> (any View)? {
+    if !profile.shouldAskForStartSettings {
+      startPauseTimerSession(
+        context: context,
+        profile: profile,
+        forceStart: forceStart ?? false
+      )
+      return nil
+    }
+
+    let pauseTimerData = StrategyPauseTimerData.toStrategyPauseTimerData(
+      from: profile.strategyData
+    )
+
     return PauseDurationView(
       profileName: profile.name,
+      initialDurationMinutes: pauseTimerData.pauseDurationInMinutes,
       onDurationSelected: { pauseDurationMinutes in
         // Save the pause duration to the profile
         let pauseTimerData = StrategyPauseTimerData(
@@ -42,19 +56,30 @@ class NFCPauseTimerBlockingStrategy: BlockingStrategy {
           try? context.save()
         }
 
-        // Immediately start blocking (like QRManualBlockingStrategy)
-        self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
-
-        let activeSession = BlockedProfileSession.createSession(
-          in: context,
-          withTag: NFCPauseTimerBlockingStrategy.id,
-          withProfile: profile,
+        self.startPauseTimerSession(
+          context: context,
+          profile: profile,
           forceStart: forceStart ?? false
         )
-
-        self.onSessionCreation?(.started(activeSession))
       }
     )
+  }
+
+  private func startPauseTimerSession(
+    context: ModelContext,
+    profile: BlockedProfiles,
+    forceStart: Bool
+  ) {
+    appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
+
+    let activeSession = BlockedProfileSession.createSession(
+      in: context,
+      withTag: Self.id,
+      withProfile: profile,
+      forceStart: forceStart
+    )
+
+    onSessionCreation?(.started(activeSession))
   }
 
   func stopBlocking(

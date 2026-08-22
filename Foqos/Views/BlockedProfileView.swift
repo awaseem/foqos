@@ -41,6 +41,9 @@ struct BlockedProfileView: View {
   // Sheet for strategy picker
   @State private var showingStrategyPicker = false
 
+  // Sheet for strategy-specific start settings
+  @State private var startSettingsDestination: StrategyStartSettingsKind?
+
   // Alert management
   @State private var alertIdentifier: AlertIdentifier?
 
@@ -92,7 +95,11 @@ struct BlockedProfileView: View {
         BlockedProfileStrategySection(
           draft: draft,
           showingStrategyPicker: $showingStrategyPicker,
-          disabled: isBlocking
+          disabled: isBlocking,
+          showsStartSettings: isEditing,
+          onUpdateStartSettings: { settingsKind in
+            startSettingsDestination = settingsKind
+          }
         )
 
         BlockedProfileAppsSection(
@@ -220,6 +227,13 @@ struct BlockedProfileView: View {
           selectedStrategy: $draft.selectedStrategy,
           isPresented: $showingStrategyPicker
         )
+      }
+      .sheet(item: $startSettingsDestination) { settingsKind in
+        StrategyStartSettingsView(
+          kind: settingsKind,
+          draft: draft
+        )
+        .presentationDetents(settingsKind.presentationDetents)
       }
       .sheet(isPresented: $showingGeneratedQRCode) {
         if let profileToWrite = profile {

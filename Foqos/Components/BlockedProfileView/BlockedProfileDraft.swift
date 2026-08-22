@@ -25,8 +25,18 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var physicalUnblockItems: [PhysicalUnblockItem]
   @Published var schedule: BlockedProfileSchedule
   @Published var selectedActivity: FamilyActivitySelection
+  @Published var strategyData: Data?
+  @Published var askForStartSettings: Bool
   @Published var selectedStrategy: BlockingStrategy? {
     didSet {
+      let oldSettingsKind = StrategyStartSettingsKind(strategy: oldValue)
+      let newSettingsKind = StrategyStartSettingsKind(strategy: selectedStrategy)
+
+      if newSettingsKind == nil || oldSettingsKind != newSettingsKind {
+        strategyData = nil
+        askForStartSettings = true
+      }
+
       enforceStrategyBreaksPolicy()
     }
   }
@@ -55,6 +65,8 @@ final class BlockedProfileDraft: ObservableObject {
     customReminderMessage = profile?.customReminderMessage ?? ""
     domains = profile?.domains ?? []
     physicalUnblockItems = profile?.physicalUnblockItems ?? []
+    strategyData = nil
+    askForStartSettings = true
     schedule =
       profile?.schedule
       ?? BlockedProfileSchedule(
@@ -72,6 +84,10 @@ final class BlockedProfileDraft: ObservableObject {
       selectedStrategy = NFCBlockingStrategy()
     }
 
+    // Restore persisted settings after the strategy observer has handled initial selection.
+    strategyData = profile?.strategyData
+    askForStartSettings = profile?.askForStartSettings ?? true
+
     enforceStrategyBreaksPolicy()
   }
 
@@ -87,6 +103,7 @@ final class BlockedProfileDraft: ObservableObject {
     existingProfile: BlockedProfiles?,
     in context: ModelContext
   ) throws -> BlockedProfiles {
+    ensureSavedStartSettings()
     schedule.updatedAt = Date()
 
     let reminderTimeSeconds: UInt32? =
@@ -102,6 +119,8 @@ final class BlockedProfileDraft: ObservableObject {
         name: name,
         selection: selectedActivity,
         blockingStrategyId: selectedStrategy?.getIdentifier(),
+        strategyData: .some(strategyData),
+        askForStartSettings: askForStartSettings,
         enableLiveActivity: enableLiveActivity,
         reminderTime: reminderTimeSeconds,
         customReminderMessage: customReminderMessage,
@@ -131,6 +150,8 @@ final class BlockedProfileDraft: ObservableObject {
       name: name,
       selection: selectedActivity,
       blockingStrategyId: selectedStrategy?.getIdentifier() ?? NFCBlockingStrategy.id,
+      strategyData: strategyData,
+      askForStartSettings: askForStartSettings,
       enableLiveActivity: enableLiveActivity,
       reminderTimeInSeconds: reminderTimeSeconds,
       customReminderMessage: customReminderMessage,
@@ -162,5 +183,15 @@ final class BlockedProfileDraft: ObservableObject {
 
     enableBreaks = false
     allowMultipleBreaks = false
+  }
+
+  private func ensureSavedStartSettings() {
+    guard !askForStartSettings, strategyData == nil,
+      let settingsKind = StrategyStartSettingsKind(strategy: selectedStrategy)
+    else {
+      return
+    }
+
+    strategyData = settingsKind.defaultData
   }
 }
