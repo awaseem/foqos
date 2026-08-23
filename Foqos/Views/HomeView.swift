@@ -275,11 +275,17 @@ struct HomeView: View {
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
           isCountdownExpired: strategyManager.isCountdownExpired,
+          countdownReloadTime: strategyManager.activeSession.flatMap {
+            SessionTimeCalculator.countdownReloadTime(for: $0)
+          },
           onBreakTapped: {
             strategyManager.toggleBreak(context: context)
           },
           onStopTapped: {
             strategyButtonPress(activeProfile)
+          },
+          onCountdownReload: {
+            strategyManager.loadActiveSession(context: context)
           },
           onExpiredCountdownReset: {
             strategyManager.resetExpiredCountdown(context: context)
