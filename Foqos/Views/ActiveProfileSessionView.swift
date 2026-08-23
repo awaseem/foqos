@@ -14,8 +14,10 @@ struct ActiveProfileSessionView: View {
   let isBreakAvailable: Bool
   let isBreakActive: Bool
   let isPauseActive: Bool
+  let isCountdownExpired: Bool
   let onBreakTapped: () -> Void
   let onStopTapped: () -> Void
+  let onExpiredCountdownReset: () -> Void
 
   @State private var showEmergencyView = false
   @State private var showProfileInsights = false
@@ -251,37 +253,54 @@ struct ActiveProfileSessionView: View {
 
   private var actionSection: some View {
     VStack(spacing: 12) {
-      if !isPauseActive && isBreakAvailable {
-        ActiveSessionActionButton(
-          title: breakButtonTitle,
-          iconName: "cup.and.heat.waves.fill",
-          imageName: "CoffeeStickerIcon",
-          role: isBreakActive ? .warning : .standard,
-          requiresLongPress: true,
-          action: onBreakTapped
-        )
-      }
+      if isCountdownExpired {
+        VStack(spacing: 8) {
+          Text("This timer finished, but the session is still active.")
+            .font(.footnote)
+            .fontWeight(.semibold)
+            .foregroundStyle(supportingTextColor)
+            .multilineTextAlignment(.center)
 
-      HStack(spacing: 12) {
-        if profile.enableEmergencyUnblock {
           ActiveSessionActionButton(
-            title: "Emergency",
-            iconName: "exclamationmark.triangle.fill",
+            title: "Reset Session",
+            iconName: "arrow.counterclockwise",
             role: .destructive,
-            action: {
-              showEmergencyView = true
-            }
+            action: onExpiredCountdownReset
+          )
+        }
+      } else {
+        if !isPauseActive && isBreakAvailable {
+          ActiveSessionActionButton(
+            title: breakButtonTitle,
+            iconName: "cup.and.heat.waves.fill",
+            imageName: "CoffeeStickerIcon",
+            role: isBreakActive ? .warning : .standard,
+            requiresLongPress: true,
+            action: onBreakTapped
           )
         }
 
-        if showStopButton {
-          ActiveSessionActionButton(
-            title: stopButtonAction.title,
-            iconName: stopButtonAction.systemImageName,
-            imageName: stopButtonAction.assetImageName,
-            role: .standard,
-            action: onStopTapped
-          )
+        HStack(spacing: 12) {
+          if profile.enableEmergencyUnblock {
+            ActiveSessionActionButton(
+              title: "Emergency",
+              iconName: "exclamationmark.triangle.fill",
+              role: .destructive,
+              action: {
+                showEmergencyView = true
+              }
+            )
+          }
+
+          if showStopButton {
+            ActiveSessionActionButton(
+              title: stopButtonAction.title,
+              iconName: stopButtonAction.systemImageName,
+              imageName: stopButtonAction.assetImageName,
+              role: .standard,
+              action: onStopTapped
+            )
+          }
         }
       }
     }
@@ -669,8 +688,10 @@ private struct ActiveSessionPressStyle: ButtonStyle {
     isBreakAvailable: true,
     isBreakActive: false,
     isPauseActive: false,
+    isCountdownExpired: false,
     onBreakTapped: {},
-    onStopTapped: {}
+    onStopTapped: {},
+    onExpiredCountdownReset: {}
   )
   .environmentObject(StrategyManager())
   .environmentObject(ThemeManager.shared)

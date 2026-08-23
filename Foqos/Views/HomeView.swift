@@ -274,11 +274,15 @@ struct HomeView: View {
           isBreakAvailable: isBreakAvailable,
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
+          isCountdownExpired: strategyManager.isCountdownExpired,
           onBreakTapped: {
             strategyManager.toggleBreak(context: context)
           },
           onStopTapped: {
             strategyButtonPress(activeProfile)
+          },
+          onExpiredCountdownReset: {
+            strategyManager.resetExpiredCountdown(context: context)
           }
         )
       }
