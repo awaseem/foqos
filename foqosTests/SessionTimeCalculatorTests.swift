@@ -24,6 +24,77 @@ final class SessionTimeCalculatorTests: XCTestCase {
     XCTAssertEqual(displayTime, 45 * 60, accuracy: 0.1)
   }
 
+  func testExpiredBreakCountdownIsDetectedAfterGracePeriod() {
+    let startTime = Date(timeIntervalSinceReferenceDate: 1_000)
+    let profile = makeProfile(
+      strategyId: NFCTimerBlockingStrategy.id,
+      durationInMinutes: 18 * 60,
+      enableBreaks: true,
+      breakTimeInMinutes: 30
+    )
+    let session = BlockedProfileSession(
+      tag: NFCTimerBlockingStrategy.id,
+      blockedProfile: profile
+    )
+    session.startTime = startTime
+    session.breakStartTime = startTime.addingTimeInterval(6 * 60 * 60)
+
+    let breakEndTime = session.breakStartTime!.addingTimeInterval(30 * 60)
+
+    XCTAssertFalse(
+      SessionTimeCalculator.isCountdownReloadDue(
+        for: session,
+        at: breakEndTime.addingTimeInterval(SessionTimeCalculator.countdownReloadDelay - 1)
+      )
+    )
+    XCTAssertTrue(
+      SessionTimeCalculator.isCountdownReloadDue(
+        for: session,
+        at: breakEndTime.addingTimeInterval(SessionTimeCalculator.countdownReloadDelay)
+      )
+    )
+
+    XCTAssertFalse(
+      SessionTimeCalculator.isCountdownExpired(
+        for: session,
+        at: breakEndTime
+      )
+    )
+    XCTAssertFalse(
+      SessionTimeCalculator.isCountdownExpired(
+        for: session,
+        at: breakEndTime.addingTimeInterval(
+          SessionTimeCalculator.countdownResetGracePeriod - 1
+        )
+      )
+    )
+    XCTAssertTrue(
+      SessionTimeCalculator.isCountdownExpired(
+        for: session,
+        at: breakEndTime.addingTimeInterval(
+          SessionTimeCalculator.countdownResetGracePeriod
+        )
+      )
+    )
+  }
+
+  func testManualSessionDoesNotHaveExpiredCountdown() {
+    let startTime = Date(timeIntervalSinceReferenceDate: 1_000)
+    let profile = makeProfile(strategyId: ManualBlockingStrategy.id)
+    let session = BlockedProfileSession(
+      tag: ManualBlockingStrategy.id,
+      blockedProfile: profile
+    )
+    session.startTime = startTime
+
+    XCTAssertFalse(
+      SessionTimeCalculator.isCountdownExpired(
+        for: session,
+        at: startTime.addingTimeInterval(24 * 60 * 60)
+      )
+    )
+  }
+
   func testManualSessionDisplaysElapsedTime() {
     let startTime = Date(timeIntervalSinceReferenceDate: 1_000)
     let profile = makeProfile(strategyId: ManualBlockingStrategy.id)

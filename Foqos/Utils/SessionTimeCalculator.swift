@@ -1,6 +1,9 @@
 import Foundation
 
 enum SessionTimeCalculator {
+  static let countdownReloadDelay: TimeInterval = 30
+  static let countdownResetGracePeriod: TimeInterval = 90
+
   private static let timerStrategyIds: Set<String> = [
     NFCTimerBlockingStrategy.id,
     QRTimerBlockingStrategy.id,
@@ -26,6 +29,28 @@ enum SessionTimeCalculator {
     }
 
     return elapsedFocusTime ?? self.elapsedFocusTime(for: session, at: date)
+  }
+
+  static func isCountdownExpired(
+    for session: BlockedProfileSession,
+    at date: Date = Date()
+  ) -> Bool {
+    guard let expectedEndTime = expectedEndTime(for: session) else {
+      return false
+    }
+
+    return expectedEndTime.addingTimeInterval(countdownResetGracePeriod) <= date
+  }
+
+  static func isCountdownReloadDue(
+    for session: BlockedProfileSession,
+    at date: Date = Date()
+  ) -> Bool {
+    guard let expectedEndTime = expectedEndTime(for: session) else {
+      return false
+    }
+
+    return expectedEndTime.addingTimeInterval(countdownReloadDelay) <= date
   }
 
   static func expectedEndTime(for session: BlockedProfileSession) -> Date? {

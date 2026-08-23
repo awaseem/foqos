@@ -60,6 +60,14 @@ class StrategyManager: ObservableObject {
     return activeSession?.isPauseActive == true
   }
 
+  var isCountdownExpired: Bool {
+    guard let activeSession else {
+      return false
+    }
+
+    return SessionTimeCalculator.isCountdownExpired(for: activeSession)
+  }
+
   func defaultReminderMessage(forProfile profile: BlockedProfiles?) -> String {
     let baseMessage = "Get back to productivity"
     guard let profile else {
@@ -112,6 +120,37 @@ class StrategyManager: ObservableObject {
     } else {
       startBreak(context: context)
     }
+  }
+
+  func resetExpiredCountdown(context: ModelContext) {
+    guard let expiredSession = activeSession,
+      SessionTimeCalculator.isCountdownExpired(for: expiredSession)
+    else {
+      errorMessage = "The session can only be reset after its timer reaches zero."
+      return
+    }
+
+    let profile = expiredSession.blockedProfile
+    let descriptor = FetchDescriptor<BlockedProfileSession>(
+      predicate: #Predicate { $0.endTime == nil }
+    )
+    let unfinishedSessions = (try? context.fetch(descriptor)) ?? [expiredSession]
+
+    for session in unfinishedSessions where session.isActive {
+      session.endSession()
+    }
+
+    do {
+      try context.save()
+    } catch {
+      errorMessage = "The session was reset, but its history could not be saved."
+    }
+
+    SharedData.flushActiveSession()
+    appBlocker.deactivateRestrictions()
+    SoftUnblockGrantScheduler.stopAll()
+    SoftUnblockGrantStore.clearAll()
+    handleSessionEnded(profile: profile, shouldScheduleReminder: false)
   }
 
   func startTimer() {
@@ -586,7 +625,10 @@ class StrategyManager: ObservableObject {
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
-  private func handleSessionEnded(profile: BlockedProfiles) {
+  private func handleSessionEnded(
+    profile: BlockedProfiles,
+    shouldScheduleReminder: Bool = true
+  ) {
     self.dismissView()
 
     // Remove any timers and notifications that were scheduled
@@ -594,7 +636,9 @@ class StrategyManager: ObservableObject {
     self.activeSession = nil
     ActiveProfileSyncStore.publish(session: nil)
     self.liveActivityManager.endSessionActivity()
-    self.scheduleReminder(profile: profile)
+    if shouldScheduleReminder {
+      self.scheduleReminder(profile: profile)
+    }
 
     self.stopTimer()
     self.elapsedTime = 0
