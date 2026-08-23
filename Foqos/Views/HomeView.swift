@@ -85,6 +85,14 @@ struct HomeView: View {
     return strategyManager.isPauseActive
   }
 
+  private var isCountdownReloadDue: Bool {
+    guard let activeSession = strategyManager.activeSession else {
+      return false
+    }
+
+    return SessionTimeCalculator.isCountdownReloadDue(for: activeSession)
+  }
+
   private var canCreateProfiles: Bool {
     return !isBlocking
   }
@@ -238,6 +246,10 @@ struct HomeView: View {
         unloadApp()
       }
     }
+    .onChange(of: isCountdownReloadDue, initial: true) { _, shouldReload in
+      guard shouldReload else { return }
+      strategyManager.loadActiveSession(context: context)
+    }
     .onChange(of: isBlocking) { _, newValue in
       if !newValue {
         showActiveProfileSessionView = false
@@ -275,17 +287,11 @@ struct HomeView: View {
           isBreakActive: isBreakActive,
           isPauseActive: isPauseActive,
           isCountdownExpired: strategyManager.isCountdownExpired,
-          countdownReloadTime: strategyManager.activeSession.flatMap {
-            SessionTimeCalculator.countdownReloadTime(for: $0)
-          },
           onBreakTapped: {
             strategyManager.toggleBreak(context: context)
           },
           onStopTapped: {
             strategyButtonPress(activeProfile)
-          },
-          onCountdownReload: {
-            strategyManager.loadActiveSession(context: context)
           },
           onExpiredCountdownReset: {
             strategyManager.resetExpiredCountdown(context: context)

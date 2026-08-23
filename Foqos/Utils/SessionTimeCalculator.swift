@@ -42,8 +42,15 @@ enum SessionTimeCalculator {
     return expectedEndTime.addingTimeInterval(countdownResetGracePeriod) <= date
   }
 
-  static func countdownReloadTime(for session: BlockedProfileSession) -> Date? {
-    expectedEndTime(for: session)?.addingTimeInterval(countdownReloadDelay)
+  static func isCountdownReloadDue(
+    for session: BlockedProfileSession,
+    at date: Date = Date()
+  ) -> Bool {
+    guard let expectedEndTime = expectedEndTime(for: session) else {
+      return false
+    }
+
+    return expectedEndTime.addingTimeInterval(countdownReloadDelay) <= date
   }
 
   static func expectedEndTime(for session: BlockedProfileSession) -> Date? {

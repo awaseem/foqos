@@ -40,13 +40,18 @@ final class SessionTimeCalculatorTests: XCTestCase {
     session.breakStartTime = startTime.addingTimeInterval(6 * 60 * 60)
 
     let breakEndTime = session.breakStartTime!.addingTimeInterval(30 * 60)
-    let reloadTime = breakEndTime.addingTimeInterval(
-      SessionTimeCalculator.countdownReloadDelay
-    )
 
-    XCTAssertEqual(
-      SessionTimeCalculator.countdownReloadTime(for: session),
-      reloadTime
+    XCTAssertFalse(
+      SessionTimeCalculator.isCountdownReloadDue(
+        for: session,
+        at: breakEndTime.addingTimeInterval(SessionTimeCalculator.countdownReloadDelay - 1)
+      )
+    )
+    XCTAssertTrue(
+      SessionTimeCalculator.isCountdownReloadDue(
+        for: session,
+        at: breakEndTime.addingTimeInterval(SessionTimeCalculator.countdownReloadDelay)
+      )
     )
 
     XCTAssertFalse(

@@ -15,10 +15,8 @@ struct ActiveProfileSessionView: View {
   let isBreakActive: Bool
   let isPauseActive: Bool
   let isCountdownExpired: Bool
-  let countdownReloadTime: Date?
   let onBreakTapped: () -> Void
   let onStopTapped: () -> Void
-  let onCountdownReload: () -> Void
   let onExpiredCountdownReset: () -> Void
 
   @State private var showEmergencyView = false
@@ -111,9 +109,6 @@ struct ActiveProfileSessionView: View {
     }
     .onReceive(focusMessageTimer) { _ in
       rotateFocusMessage()
-    }
-    .task(id: countdownReloadTime) {
-      await reloadSessionAfterCountdown()
     }
     .onReceive(strategyManager.$errorMessage) { errorMessage in
       guard let message = errorMessage else { return }
@@ -316,18 +311,6 @@ struct ActiveProfileSessionView: View {
     withAnimation(.easeInOut(duration: 0.35)) {
       focusMessageIndex = (focusMessageIndex + 1) % FocusMessages.messages.count
     }
-  }
-
-  private func reloadSessionAfterCountdown() async {
-    guard let countdownReloadTime else { return }
-
-    let delay = countdownReloadTime.timeIntervalSinceNow
-    if delay > 0 {
-      try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-    }
-
-    guard !Task.isCancelled else { return }
-    onCountdownReload()
   }
 
   private func dismissAlert() {
@@ -706,10 +689,8 @@ private struct ActiveSessionPressStyle: ButtonStyle {
     isBreakActive: false,
     isPauseActive: false,
     isCountdownExpired: false,
-    countdownReloadTime: nil,
     onBreakTapped: {},
     onStopTapped: {},
-    onCountdownReload: {},
     onExpiredCountdownReset: {}
   )
   .environmentObject(StrategyManager())
