@@ -3,10 +3,8 @@ import SwiftUI
 import UIKit
 
 struct ActiveProfileSessionView: View {
-  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject private var strategyManager: StrategyManager
-  @EnvironmentObject private var themeManager: ThemeManager
 
   let profile: BlockedProfiles
   let elapsedTime: TimeInterval
@@ -20,7 +18,6 @@ struct ActiveProfileSessionView: View {
   let onExpiredCountdownReset: () -> Void
 
   @State private var showEmergencyView = false
-  @State private var showProfileInsights = false
   @State private var showingAlert = false
   @State private var alertMessage = ""
   @State private var focusMessageIndex = Self.initialFocusMessageIndex()
@@ -68,38 +65,28 @@ struct ActiveProfileSessionView: View {
     ].contains(strategyId)
   }
 
-  private var supportingTextColor: Color {
-    colorScheme == .dark ? Color.white.opacity(0.78) : Color.black.opacity(0.66)
-  }
-
   var body: some View {
-    ZStack {
-      background
+    VStack(alignment: .leading, spacing: 0) {
+      topControls
 
-      VStack(alignment: .leading, spacing: 0) {
-        header
+      Spacer(minLength: 24)
 
-        ScrollView {
-          timerSection
-            .padding(.top, 60)
-            .padding(.bottom, 36)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollIndicators(.hidden)
-        .scrollBounceBehavior(.basedOnSize)
+      timer
+        .frame(maxWidth: .infinity)
 
+      Spacer(minLength: 24)
+
+      VStack(alignment: .leading, spacing: 18) {
+        profileDetails
         actionSection
       }
-      .padding(.horizontal, 24)
-      .padding(.top, 18)
-      .padding(.bottom, 20)
     }
+    .padding(.horizontal, 20)
+    .padding(.top, 8)
+    .padding(.bottom, 16)
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350), .large])
-    }
-    .sheet(isPresented: $showProfileInsights) {
-      ProfileInsightsView(profile: profile)
     }
     .sheet(isPresented: $strategyManager.showCustomStrategyView) {
       BlockingStrategyActionView(
@@ -124,72 +111,35 @@ struct ActiveProfileSessionView: View {
     }
   }
 
-  private var background: some View {
-    ZStack {
-      ActiveSessionGradientBackground(baseColor: themeManager.themeColor)
+  private var topControls: some View {
+    HStack {
+      if #available(iOS 26.0, *) {
+        closeButton
+          .buttonStyle(.glass)
+          .buttonBorderShape(.circle)
+      } else {
+        closeButton
+          .background(.ultraThinMaterial, in: Circle())
+          .overlay {
+            Circle()
+              .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
+          }
+          .buttonStyle(ActiveSessionPressStyle())
+      }
 
-      LinearGradient(
-        colors: [
-          Color(.systemBackground).opacity(0.02),
-          Color(.systemBackground).opacity(0.34),
-        ],
-        startPoint: .top,
-        endPoint: .bottom
-      )
-      .ignoresSafeArea()
+      Spacer()
     }
   }
 
-  private var header: some View {
-    HStack(alignment: .top, spacing: 16) {
-      VStack(alignment: .leading, spacing: 8) {
-        Text(profile.name)
-          .font(.largeTitle)
-          .fontWeight(.bold)
-          .lineLimit(2)
-          .minimumScaleFactor(0.72)
-
-        if let statusMessage, let statusIconName {
-          HStack(spacing: 6) {
-            Image(statusIconName)
-              .resizable()
-              .scaledToFit()
-              .frame(width: 18, height: 18)
-
-            Text(statusMessage)
-              .font(.subheadline)
-              .fontWeight(.semibold)
-              .foregroundStyle(.secondary)
-          }
-        }
-      }
-
-      Spacer(minLength: 12)
-
-      HStack(spacing: 10) {
-        Button(action: { showProfileInsights = true }) {
-          Image(systemName: "chart.line.uptrend.xyaxis")
-            .font(.system(size: 16, weight: .semibold))
-            .frame(width: 42, height: 42)
-            .background(.thinMaterial, in: Circle())
-            .contentShape(Circle())
-        }
-        .buttonStyle(ActiveSessionPressStyle())
-        .foregroundStyle(.primary)
-        .accessibilityLabel("Insights")
-
-        Button(action: { dismiss() }) {
-          Image(systemName: "xmark")
-            .font(.system(size: 15, weight: .semibold))
-            .frame(width: 42, height: 42)
-            .background(.thinMaterial, in: Circle())
-            .contentShape(Circle())
-        }
-        .buttonStyle(ActiveSessionPressStyle())
-        .foregroundStyle(.primary)
-        .accessibilityLabel("Close")
-      }
+  private var closeButton: some View {
+    Button(action: { dismiss() }) {
+      Image(systemName: "xmark")
+        .font(.system(size: 18, weight: .semibold))
+        .frame(width: 40, height: 40)
+        .contentShape(Circle())
     }
+    .foregroundStyle(.primary)
+    .accessibilityLabel("Close")
   }
 
   private var statusMessage: String? {
@@ -212,43 +162,67 @@ struct ActiveProfileSessionView: View {
     return nil
   }
 
-  private var timerSection: some View {
-    VStack(spacing: 14) {
-      HStack(spacing: 8) {
-        BlockingStrategyIconImage(strategy: blockingStrategy)
-          .font(.system(size: 20, weight: .semibold))
-          .foregroundStyle(.primary)
-          .frame(width: 50, height: 50)
-          .accessibilityHidden(true)
+  private var timer: some View {
+    Text(DateFormatters.formatDurationClock(displayTime))
+      .font(.system(size: 64, weight: .bold, design: .monospaced))
+      .lineLimit(1)
+      .minimumScaleFactor(0.5)
+      .contentTransition(.numericText())
+      .animation(.default, value: displayTime)
+      .accessibilityLabel("Session time")
+      .accessibilityValue(DateFormatters.formatDurationClock(displayTime))
+  }
 
-        Text(strategyName)
-          .font(.headline)
-          .fontWeight(.bold)
-          .foregroundStyle(supportingTextColor)
+  private var profileDetails: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text(profile.name)
+        .font(.title3)
+        .fontWeight(.bold)
+        .lineLimit(2)
+
+      HStack(spacing: 12) {
+        HStack(spacing: 6) {
+          BlockingStrategyIconImage(strategy: blockingStrategy)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .frame(width: 20, height: 20)
+            .accessibilityHidden(true)
+
+          Text(strategyName)
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+        }
+
+        if let statusMessage, let statusIconName {
+          HStack(spacing: 5) {
+            Image(statusIconName)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 16, height: 16)
+
+            Text(statusMessage)
+              .font(.subheadline)
+              .fontWeight(.semibold)
+              .foregroundStyle(.secondary)
+          }
+        }
       }
 
-      Text(DateFormatters.formatDurationClock(displayTime))
-        .font(.system(size: 58, weight: .bold, design: .monospaced))
-        .lineLimit(1)
-        .minimumScaleFactor(0.55)
-        .contentTransition(.numericText())
-        .animation(.default, value: displayTime)
-
       Text(focusMessage)
-        .font(.headline)
-        .fontWeight(.bold)
-        .foregroundStyle(supportingTextColor)
-        .multilineTextAlignment(.center)
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.leading)
         .lineLimit(2)
         .contentTransition(.opacity)
         .animation(.easeInOut(duration: 0.35), value: focusMessage)
 
       if isSoftUnblockStrategy {
         SoftUnblockActiveGrantsCard(profileId: profile.id)
-          .padding(.top, 16)
+          .padding(.top, 4)
       }
     }
-    .padding(.horizontal, 12)
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 
   private var actionSection: some View {
@@ -258,8 +232,9 @@ struct ActiveProfileSessionView: View {
           Text("This timer finished, but the session is still active.")
             .font(.footnote)
             .fontWeight(.semibold)
-            .foregroundStyle(supportingTextColor)
-            .multilineTextAlignment(.center)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
           ActiveSessionActionButton(
             title: "Reset Session",
@@ -439,147 +414,6 @@ private struct SoftUnblockActiveGrantRow: View {
   }
 }
 
-private struct ActiveSessionGradientBackground: View {
-  let baseColor: Color
-
-  var body: some View {
-    TimelineView(.animation) { timeline in
-      let t = timeline.date.timeIntervalSinceReferenceDate
-
-      ZStack {
-        LinearGradient(
-          colors: [
-            shiftedColor(hue: -0.08, saturation: 1.22, brightness: 0.95),
-            shiftedColor(hue: 0.02, saturation: 1.1, brightness: 0.82),
-            shiftedColor(hue: 0.10, saturation: 1.18, brightness: 0.64),
-          ],
-          startPoint: UnitPoint(
-            x: 0.18 + 0.18 * normalizedSin(t * 0.08),
-            y: 0.02
-          ),
-          endPoint: UnitPoint(
-            x: 0.88,
-            y: 0.92 - 0.16 * normalizedCos(t * 0.07)
-          )
-        )
-
-        animatedBlob(
-          t: t,
-          hue: 0.09,
-          saturation: 1.35,
-          brightness: 1.1,
-          opacity: 0.48,
-          width: 0.86,
-          height: 0.42,
-          x: 0.18 + 0.18 * normalizedCos(t * 0.12),
-          y: 0.62 + 0.08 * normalizedSin(t * 0.10),
-          blur: 34
-        )
-
-        animatedBlob(
-          t: t,
-          hue: -0.12,
-          saturation: 1.18,
-          brightness: 0.92,
-          opacity: 0.42,
-          width: 0.72,
-          height: 0.50,
-          x: 0.84 - 0.20 * normalizedSin(t * 0.09),
-          y: 0.72 + 0.10 * normalizedCos(t * 0.11),
-          blur: 42
-        )
-
-        animatedBlob(
-          t: t,
-          hue: 0.16,
-          saturation: 1.28,
-          brightness: 0.78,
-          opacity: 0.38,
-          width: 0.98,
-          height: 0.46,
-          x: 0.52 + 0.16 * normalizedSin(t * 0.07),
-          y: 0.92 - 0.10 * normalizedCos(t * 0.13),
-          blur: 46
-        )
-
-        Rectangle()
-          .fill(Color.black.opacity(0.10))
-      }
-      .ignoresSafeArea()
-    }
-  }
-
-  private func animatedBlob(
-    t: TimeInterval,
-    hue: Double,
-    saturation: Double,
-    brightness: Double,
-    opacity: Double,
-    width: CGFloat,
-    height: CGFloat,
-    x: CGFloat,
-    y: CGFloat,
-    blur: CGFloat
-  ) -> some View {
-    GeometryReader { geometry in
-      Ellipse()
-        .fill(
-          RadialGradient(
-            colors: [
-              shiftedColor(hue: hue, saturation: saturation, brightness: brightness).opacity(
-                opacity),
-              .clear,
-            ],
-            center: .center,
-            startRadius: 0,
-            endRadius: min(geometry.size.width, geometry.size.height) * 0.42
-          )
-        )
-        .frame(
-          width: geometry.size.width * width,
-          height: geometry.size.height * height
-        )
-        .position(
-          x: geometry.size.width * x,
-          y: geometry.size.height * y
-        )
-        .blur(radius: blur)
-        .scaleEffect(0.94 + 0.10 * normalizedSin(t * 0.18 + Double(width)))
-        .blendMode(.plusLighter)
-    }
-  }
-
-  private func shiftedColor(hue: Double, saturation: Double, brightness: Double) -> Color {
-    let ui = UIColor(baseColor)
-    var h: CGFloat = 0
-    var s: CGFloat = 0
-    var b: CGFloat = 0
-    var a: CGFloat = 0
-
-    if ui.getHue(&h, saturation: &s, brightness: &b, alpha: &a) {
-      let shiftedHue = (h + CGFloat(hue)).truncatingRemainder(dividingBy: 1)
-      return Color(
-        UIColor(
-          hue: shiftedHue < 0 ? shiftedHue + 1 : shiftedHue,
-          saturation: min(1, max(0, s * CGFloat(saturation))),
-          brightness: min(1, max(0, b * CGFloat(brightness))),
-          alpha: a
-        )
-      )
-    }
-
-    return baseColor
-  }
-
-  private func normalizedSin(_ value: Double) -> CGFloat {
-    CGFloat((sin(value) + 1) / 2)
-  }
-
-  private func normalizedCos(_ value: Double) -> CGFloat {
-    CGFloat((cos(value) + 1) / 2)
-  }
-}
-
 private enum ActiveSessionActionRole {
   case standard
   case warning
@@ -604,6 +438,15 @@ private struct ActiveSessionActionButton: View {
       return .orange
     case .destructive:
       return .red
+    }
+  }
+
+  private var backgroundOpacity: Double {
+    switch role {
+    case .standard:
+      return 0.08
+    case .warning, .destructive:
+      return 0.12
     }
   }
 
@@ -634,20 +477,19 @@ private struct ActiveSessionActionButton: View {
       icon
 
       Text(title)
-        .font(.headline)
+        .font(.subheadline)
         .fontWeight(.semibold)
         .lineLimit(1)
         .minimumScaleFactor(0.82)
     }
     .frame(maxWidth: .infinity)
-    .frame(height: 56)
+    .frame(height: 48)
     .foregroundStyle(foregroundColor)
-    .background(.thinMaterial, in: Capsule())
-    .overlay(
-      Capsule()
-        .strokeBorder(foregroundColor.opacity(0.22), lineWidth: 1)
+    .background(
+      foregroundColor.opacity(backgroundOpacity),
+      in: RoundedRectangle(cornerRadius: 14, style: .continuous)
     )
-    .contentShape(Capsule())
+    .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
   }
 
   @ViewBuilder
@@ -694,5 +536,4 @@ private struct ActiveSessionPressStyle: ButtonStyle {
     onExpiredCountdownReset: {}
   )
   .environmentObject(StrategyManager())
-  .environmentObject(ThemeManager.shared)
 }
