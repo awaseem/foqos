@@ -529,6 +529,7 @@ struct BlockedProfileSessionSafeguardsSection: View {
 struct BlockedProfileNotificationsFields: View {
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
+  @FocusState private var isReminderTimeFocused: Bool
 
   @ObservedObject var draft: BlockedProfileDraft
   var profile: BlockedProfiles?
@@ -536,6 +537,11 @@ struct BlockedProfileNotificationsFields: View {
   var showsSeparators: Bool = false
 
   var body: some View {
+    notificationFields
+  }
+
+  @ViewBuilder
+  private var notificationFields: some View {
     CustomToggle(
       title: "Live Activity",
       description:
@@ -566,11 +572,25 @@ struct BlockedProfileNotificationsFields: View {
           format: .number
         )
         .keyboardType(.numberPad)
-        .multilineTextAlignment(.trailing)
-        .frame(width: 50)
+        .multilineTextAlignment(.center)
+        .frame(width: 58)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color.secondary.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: 8, style: .continuous)
+            .stroke(
+              isReminderTimeFocused
+                ? themeManager.themeColor : Color.secondary.opacity(0.4),
+              lineWidth: isReminderTimeFocused ? 2 : 1
+            )
+        }
+        .focused($isReminderTimeFocused)
         .disabled(disabled)
         .font(.subheadline)
-        .foregroundColor(.secondary)
+        .foregroundStyle(disabled ? Color.secondary : Color.primary)
+        .accessibilityLabel("Reminder time in minutes")
 
         Text("minutes")
           .font(.subheadline)
