@@ -5,9 +5,7 @@ struct MonthlySessionChart: View {
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: MonthlyDayAggregate?
   let onDateSelected: ((Date?) -> Void)?
-  @State private var dragDay: MonthlyDayAggregate?
-  @State private var previousDragDay: MonthlyDayAggregate?
-  @State private var isDragging = false
+  @State private var selectionFeedbackTrigger = 0
 
   private var monthlySummary: MonthlySummary {
     viewModel.monthlySummary
@@ -85,14 +83,12 @@ struct MonthlySessionChart: View {
     selectedDay = day
     if let selectedDay = day {
       onDateSelected?(selectedDay.date)
+      selectionFeedbackTrigger += 1
     }
   }
 
   private func clearSelection() {
     selectedDay = nil
-    dragDay = nil
-    previousDragDay = nil
-    isDragging = false
     onDateSelected?(nil)
   }
 
@@ -174,31 +170,6 @@ struct MonthlySessionChart: View {
     }
   }
 
-  private func handleDrag(at location: CGPoint, in geometry: GeometryProxy) {
-    guard isDragging else { return }
-
-    let cellWidth = geometry.size.width / 7
-    let cellHeight = cellWidth  // Square cells
-
-    let column = Int(location.x / cellWidth)
-    let row = Int(location.y / cellHeight)
-
-    guard column >= 0, column < 7, row >= 0, row < weeksInMonth.count else { return }
-
-    let week = weeksInMonth[row]
-    guard column < week.count else { return }
-
-    let day = week[column]
-    guard day.dayOfMonth != 0 else { return }
-
-    if dragDay?.date != day.date {
-      previousDragDay = dragDay
-      dragDay = day
-      selectedDay = day
-      onDateSelected?(day.date)
-    }
-  }
-
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
       // Header
@@ -254,7 +225,7 @@ struct MonthlySessionChart: View {
         .animation(.spring(response: 0.25, dampingFraction: 0.85), value: selectedDay)
       }
 
-      // Grid with drag support
+      // Grid
       GeometryReader { geometry in
         LazyVStack(spacing: 4) {
           ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
@@ -267,18 +238,6 @@ struct MonthlySessionChart: View {
         }
         .frame(maxWidth: .infinity)
         .coordinateSpace(name: "grid")
-        .gesture(
-          DragGesture(minimumDistance: 0, coordinateSpace: .named("grid"))
-            .onChanged { value in
-              isDragging = true
-              handleDrag(at: value.location, in: geometry)
-            }
-            .onEnded { _ in
-              isDragging = false
-              dragDay = nil
-              previousDragDay = nil
-            }
-        )
       }
       .frame(
         height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7
@@ -289,13 +248,10 @@ struct MonthlySessionChart: View {
       legendView()
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: dragDay) { old, new in
-      old == nil && new != nil
-    }
-    .sensoryFeedback(.selection, trigger: previousDragDay) { old, new in
-      guard let oldDay = old, let newDay = new else { return false }
-      return oldDay.date != newDay.date
-    }
+    .sensoryFeedback(
+      .impact(flexibility: .soft, intensity: 0.7),
+      trigger: selectionFeedbackTrigger
+    )
   }
 }
 
