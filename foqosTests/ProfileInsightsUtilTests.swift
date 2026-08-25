@@ -55,6 +55,31 @@ final class ProfileInsightsUtilTests: XCTestCase {
     XCTAssertEqual(metrics.sessionsWithoutBreaks, 0)
   }
 
+  func testEndingSessionDuringBreakCountsFinalPartialBreak() throws {
+    let context = try makeContext()
+    let profile = makeProfile(in: context, allowMultipleBreaks: true, breakTimeInMinutes: 30)
+    let start = Date(timeIntervalSinceReferenceDate: 1_000)
+    let session = makeSession(
+      for: profile,
+      in: context,
+      startingAt: start,
+      breaks: [(60, 10), (120, 10)],
+      endingAfter: 240
+    )
+    session.endTime = nil
+    session.startBreak(at: start.addingTimeInterval(180 * 60))
+    session.endTime = start.addingTimeInterval(185 * 60)
+    try context.save()
+
+    XCTAssertEqual(session.usedBreakDurationInSeconds, 20 * 60, accuracy: 0.1)
+    XCTAssertEqual(session.totalBreakDuration, 25 * 60, accuracy: 0.1)
+
+    let metrics = ProfileInsightsUtil(profile: profile).metrics
+
+    XCTAssertEqual(metrics.totalBreakTime, 25 * 60, accuracy: 0.1)
+    XCTAssertEqual(metrics.sessionsWithBreaks, 1)
+  }
+
   func testTotalBreakTimeIsCappedByTheConfiguredAllowance() throws {
     let context = try makeContext()
     let profile = makeProfile(in: context, allowMultipleBreaks: true, breakTimeInMinutes: 30)

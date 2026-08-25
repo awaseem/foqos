@@ -63,15 +63,27 @@ class BlockedProfileSession {
   /// `breakStartTime` and `breakEndTime` only ever describe the most recent break, because
   /// `startBreak(at:)` clears them whenever multiple breaks are allowed, so reporting has to
   /// read the accumulator and fall back to the timestamps for single-break sessions where it
-  /// stays zero. Deliberately independent of the profile's current `allowMultipleBreaks`
-  /// value, so toggling that setting cannot rewrite sessions that are already recorded.
+  /// stays zero. If a session ends during a break, its end time closes that final partial break
+  /// because the accumulator is only updated by `endBreak(at:)`. Deliberately independent of
+  /// the profile's current `allowMultipleBreaks` value, so toggling that setting cannot rewrite
+  /// sessions that are already recorded.
   var totalBreakDuration: TimeInterval {
-    var lastBreakDuration: TimeInterval = 0
-    if let breakStartTime, let breakEndTime {
-      lastBreakDuration = max(0, breakEndTime.timeIntervalSince(breakStartTime))
+    let accumulatedDuration = max(0, usedBreakDurationInSeconds)
+    guard let breakStartTime else {
+      return accumulatedDuration
     }
 
-    return max(usedBreakDurationInSeconds, lastBreakDuration)
+    if let breakEndTime {
+      let lastBreakDuration = max(0, breakEndTime.timeIntervalSince(breakStartTime))
+      return max(accumulatedDuration, lastBreakDuration)
+    }
+
+    guard let endTime else {
+      return accumulatedDuration
+    }
+
+    let finalPartialBreakDuration = max(0, endTime.timeIntervalSince(breakStartTime))
+    return accumulatedDuration + finalPartialBreakDuration
   }
 
   init(

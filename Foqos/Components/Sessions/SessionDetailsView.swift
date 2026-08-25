@@ -12,7 +12,7 @@ struct SessionDetailsView: View {
         SessionInfoSection(session: session)
         TimingSection(session: session)
 
-        if session.breakStartTime != nil && session.breakEndTime != nil {
+        if session.totalBreakDuration > 0 {
           BreakSection(session: session)
         }
 
