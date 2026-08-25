@@ -454,6 +454,8 @@ struct BlockedProfileSessionSafeguardsFields: View {
   var disabled: Bool
   var showsSeparators: Bool = false
 
+  @State private var showingEmergencyUnblockWarning = false
+
   var body: some View {
     CustomToggle(
       title: "Require Foqos to Stop",
@@ -469,8 +471,35 @@ struct BlockedProfileSessionSafeguardsFields: View {
       title: "Emergency Unblock",
       description:
         "Allow limited emergency unblocks during active sessions.",
-      isOn: $draft.enableEmergencyUnblock,
+      isOn: emergencyUnblockBinding,
       isDisabled: disabled
+    )
+    .alert("You Could Lock Yourself Out", isPresented: $showingEmergencyUnblockWarning) {
+      Button("Cancel", role: .cancel) {}
+      Button("I Understand the Risks", role: .destructive) {
+        draft.enableEmergencyUnblock = false
+      }
+    } message: {
+      Text(
+        "Turning off Emergency Unblock removes your backup way to end an active session. "
+          + "If a required NFC tag, QR code, or barcode is lost, damaged, or unavailable, "
+          + "you may be unable to stop the session and could be locked out of apps and "
+          + "features on this phone."
+      )
+    }
+  }
+
+  private var emergencyUnblockBinding: Binding<Bool> {
+    Binding(
+      get: { draft.enableEmergencyUnblock },
+      set: { newValue in
+        guard !newValue, draft.enableEmergencyUnblock else {
+          draft.enableEmergencyUnblock = newValue
+          return
+        }
+
+        showingEmergencyUnblockWarning = true
+      }
     )
   }
 }
