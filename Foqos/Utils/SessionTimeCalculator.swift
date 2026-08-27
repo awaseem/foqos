@@ -67,6 +67,10 @@ enum SessionTimeCalculator {
       return breakStartTime.addingTimeInterval(session.totalBreakAllowanceInSeconds)
     }
 
+    return expectedSessionEndTime(for: session)
+  }
+
+  static func expectedSessionEndTime(for session: BlockedProfileSession) -> Date? {
     if isScheduledSession(session), let schedule = session.blockedProfile.schedule {
       let durationInSeconds = schedule.totalDurationInSeconds
       guard durationInSeconds > 0 else { return nil }
