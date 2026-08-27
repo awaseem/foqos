@@ -810,8 +810,8 @@ private struct ActiveSessionActionButton: View {
     Group {
       if requiresLongPress {
         label
-          .scaleEffect(isPressed ? 0.97 : 1)
-          .animation(.spring(response: 0.24, dampingFraction: 0.74), value: isPressed)
+          .scaleEffect(isPressed ? 0.95 : 1)
+          .animation(.spring(response: 0.22, dampingFraction: 0.72), value: isPressed)
           .onLongPressGesture(
             minimumDuration: 0.8,
             pressing: { pressing in
@@ -829,23 +829,23 @@ private struct ActiveSessionActionButton: View {
   }
 
   private var label: some View {
-    HStack(spacing: 8) {
+    HStack(spacing: 10) {
       icon
 
       Text(title)
-        .font(.subheadline)
+        .font(.headline)
         .fontWeight(.semibold)
         .lineLimit(1)
-        .minimumScaleFactor(0.82)
+        .minimumScaleFactor(0.76)
     }
     .frame(maxWidth: .infinity)
-    .frame(height: 48)
+    .frame(height: 58)
     .foregroundStyle(foregroundColor)
     .background(
       foregroundColor.opacity(backgroundOpacity),
-      in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+      in: Capsule()
     )
-    .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    .contentShape(Capsule())
   }
 
   @ViewBuilder
@@ -857,7 +857,7 @@ private struct ActiveSessionActionButton: View {
         .frame(width: 24, height: 24)
     } else {
       Image(systemName: iconName)
-        .font(.system(size: 15, weight: .bold))
+        .font(.system(size: 17, weight: .bold))
     }
   }
 
@@ -870,9 +870,9 @@ private struct ActiveSessionActionButton: View {
 private struct ActiveSessionPressStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .scaleEffect(configuration.isPressed ? 0.96 : 1)
+      .scaleEffect(configuration.isPressed ? 0.95 : 1)
       .animation(
-        .spring(response: 0.24, dampingFraction: 0.74),
+        .spring(response: 0.22, dampingFraction: 0.72),
         value: configuration.isPressed
       )
   }
