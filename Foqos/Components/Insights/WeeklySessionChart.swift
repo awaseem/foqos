@@ -6,8 +6,7 @@ struct WeeklySessionChart: View {
   @EnvironmentObject private var themeManager: ThemeManager
   @Binding var selectedDay: WeeklyDayAggregate?
   let onDateSelected: ((Date?) -> Void)?
-  @State private var dragLabel: String?
-  @State private var previousLabel: String?
+  @State private var selectionFeedbackTrigger = 0
 
   private var chartView: some View {
     Chart {
@@ -57,13 +56,12 @@ struct WeeklySessionChart: View {
     selectedDay = viewModel.weeklySummary.days.first { $0.displayLabel == label }
     if let day = selectedDay {
       onDateSelected?(day.date)
+      selectionFeedbackTrigger += 1
     }
   }
 
   private func clearSelection() {
     selectedDay = nil
-    dragLabel = nil
-    previousLabel = nil
     onDateSelected?(nil)
   }
 
@@ -124,29 +122,20 @@ struct WeeklySessionChart: View {
       }
 
       chartView
-        .chartXSelection(value: $dragLabel)
-        .onChange(of: dragLabel) { oldValue, newValue in
-          // Track previous for haptic feedback
-          if let old = oldValue, let new = newValue, old != new {
-            previousLabel = old
-          }
-
-          // Update selection in real-time during drag
-          if let label = newValue {
-            selectDay(label)
-          }
+        .chartGesture { proxy in
+          SpatialTapGesture()
+            .onEnded { value in
+              guard let label: String = proxy.value(atX: value.location.x) else { return }
+              selectDay(label)
+            }
         }
         .onChange(of: viewModel.selectedDate) { _, _ in
           clearSelection()
         }
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: dragLabel) {
-          old, new in
-          old == nil && new != nil
-        }
-        .sensoryFeedback(.selection, trigger: previousLabel) { old, new in
-          guard let oldLabel = old, let newLabel = new else { return false }
-          return oldLabel != newLabel
-        }
+        .sensoryFeedback(
+          .impact(flexibility: .soft, intensity: 0.7),
+          trigger: selectionFeedbackTrigger
+        )
         .frame(maxWidth: .infinity)
         .frame(height: 210)
     }

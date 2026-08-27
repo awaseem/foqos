@@ -177,6 +177,7 @@ struct GuidedBlockedProfileCreationView: View {
               .transition(stepTransition)
           }
         }
+        .scrollDismissesKeyboard(.interactively)
         .animation(stepAnimation, value: currentStep)
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))

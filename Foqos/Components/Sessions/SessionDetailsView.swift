@@ -12,7 +12,7 @@ struct SessionDetailsView: View {
         SessionInfoSection(session: session)
         TimingSection(session: session)
 
-        if session.breakStartTime != nil && session.breakEndTime != nil {
+        if session.totalBreakDuration > 0 {
           BreakSection(session: session)
         }
 
@@ -82,15 +82,6 @@ private struct TimingSection: View {
 private struct BreakSection: View {
   let session: BlockedProfileSession
 
-  var breakDuration: TimeInterval? {
-    guard let breakStartTime = session.breakStartTime,
-      let breakEndTime = session.breakEndTime
-    else {
-      return nil
-    }
-    return breakEndTime.timeIntervalSince(breakStartTime)
-  }
-
   var body: some View {
     Section("Break") {
       if let breakStartTime = session.breakStartTime {
@@ -107,10 +98,10 @@ private struct BreakSection: View {
         )
       }
 
-      if let breakDuration = breakDuration {
+      if session.totalBreakDuration > 0 {
         InfoRow(
-          label: "Duration",
-          value: "\(Int(breakDuration / 60))m"
+          label: "Total Duration",
+          value: "\(Int(session.totalBreakDuration / 60))m"
         )
       }
     }

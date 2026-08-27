@@ -135,6 +135,7 @@ struct BlockedProfileView: View {
         )
 
       }
+      .scrollDismissesKeyboard(.interactively)
       .navigationTitle(isEditing ? "Edit Profile" : "New Profile")
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {

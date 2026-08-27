@@ -454,6 +454,8 @@ struct BlockedProfileSessionSafeguardsFields: View {
   var disabled: Bool
   var showsSeparators: Bool = false
 
+  @State private var showingEmergencyUnblockWarning = false
+
   var body: some View {
     CustomToggle(
       title: "Require Foqos to Stop",
@@ -469,8 +471,35 @@ struct BlockedProfileSessionSafeguardsFields: View {
       title: "Emergency Unblock",
       description:
         "Allow limited emergency unblocks during active sessions.",
-      isOn: $draft.enableEmergencyUnblock,
+      isOn: emergencyUnblockBinding,
       isDisabled: disabled
+    )
+    .alert("You Could Lock Yourself Out", isPresented: $showingEmergencyUnblockWarning) {
+      Button("Cancel", role: .cancel) {}
+      Button("I Understand the Risks", role: .destructive) {
+        draft.enableEmergencyUnblock = false
+      }
+    } message: {
+      Text(
+        "Turning off Emergency Unblock removes your backup way to end an active session. "
+          + "If a required NFC tag, QR code, or barcode is lost, damaged, or unavailable, "
+          + "you may be unable to stop the session and could be locked out of apps and "
+          + "features on this phone."
+      )
+    }
+  }
+
+  private var emergencyUnblockBinding: Binding<Bool> {
+    Binding(
+      get: { draft.enableEmergencyUnblock },
+      set: { newValue in
+        guard !newValue, draft.enableEmergencyUnblock else {
+          draft.enableEmergencyUnblock = newValue
+          return
+        }
+
+        showingEmergencyUnblockWarning = true
+      }
     )
   }
 }
@@ -500,6 +529,7 @@ struct BlockedProfileSessionSafeguardsSection: View {
 struct BlockedProfileNotificationsFields: View {
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
+  @FocusState private var isReminderTimeFocused: Bool
 
   @ObservedObject var draft: BlockedProfileDraft
   var profile: BlockedProfiles?
@@ -507,6 +537,11 @@ struct BlockedProfileNotificationsFields: View {
   var showsSeparators: Bool = false
 
   var body: some View {
+    notificationFields
+  }
+
+  @ViewBuilder
+  private var notificationFields: some View {
     CustomToggle(
       title: "Live Activity",
       description:
@@ -537,11 +572,25 @@ struct BlockedProfileNotificationsFields: View {
           format: .number
         )
         .keyboardType(.numberPad)
-        .multilineTextAlignment(.trailing)
-        .frame(width: 50)
+        .multilineTextAlignment(.center)
+        .frame(width: 58)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color.secondary.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: 8, style: .continuous)
+            .stroke(
+              isReminderTimeFocused
+                ? themeManager.themeColor : Color.secondary.opacity(0.4),
+              lineWidth: isReminderTimeFocused ? 2 : 1
+            )
+        }
+        .focused($isReminderTimeFocused)
         .disabled(disabled)
         .font(.subheadline)
-        .foregroundColor(.secondary)
+        .foregroundStyle(disabled ? Color.secondary : Color.primary)
+        .accessibilityLabel("Reminder time in minutes")
 
         Text("minutes")
           .font(.subheadline)

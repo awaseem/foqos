@@ -104,15 +104,13 @@ class ProfileInsightsUtil: ObservableObject {
       return end.timeIntervalSince(session.startTime)
     }
 
-    // Breaks: assuming one optional break per session in current model
-    let sessionsWithBreaksArray = completed.filter { $0.breakStartTime != nil }
+    // A session can hold several breaks once multiple breaks are allowed, and only the last
+    // one survives on breakStartTime/breakEndTime, so totals come from totalBreakDuration.
+    let sessionsWithBreaksArray = completed.filter { $0.totalBreakDuration > 0 }
     let sessionsWithBreaks = sessionsWithBreaksArray.count
     let sessionsWithoutBreaks = completed.count - sessionsWithBreaks
 
-    let breakDurations: [TimeInterval] = sessionsWithBreaksArray.compactMap { session in
-      guard let start = session.breakStartTime, let end = session.breakEndTime else { return nil }
-      return end.timeIntervalSince(start)
-    }
+    let breakDurations: [TimeInterval] = sessionsWithBreaksArray.map { $0.totalBreakDuration }
 
     let total = durations.reduce(0, +)
     let count = durations.count
@@ -327,13 +325,8 @@ class ProfileInsightsUtil: ObservableObject {
       guard let breakStart = session.breakStartTime else { continue }
       let day = calendar.startOfDay(for: breakStart)
 
-      var breakDuration: TimeInterval = 0
-      if let breakEnd = session.breakEndTime {
-        breakDuration = breakEnd.timeIntervalSince(breakStart)
-      }
-
       let prior = buckets[day] ?? (0, 0)
-      buckets[day] = (prior.count + 1, prior.totalDuration + breakDuration)
+      buckets[day] = (prior.count + 1, prior.totalDuration + session.totalBreakDuration)
     }
 
     var results: [BreakDayAggregate] = []
@@ -379,13 +372,8 @@ class ProfileInsightsUtil: ObservableObject {
       guard let breakStart = session.breakStartTime else { continue }
       let hour = calendar.component(.hour, from: breakStart)
 
-      var breakDuration: TimeInterval = 0
-      if let breakEnd = session.breakEndTime {
-        breakDuration = breakEnd.timeIntervalSince(breakStart)
-      }
-
       countsByHour[hour, default: 0] += 1
-      totalsByHour[hour, default: 0] += breakDuration
+      totalsByHour[hour, default: 0] += session.totalBreakDuration
     }
 
     var results: [BreakHourAggregate] = []
