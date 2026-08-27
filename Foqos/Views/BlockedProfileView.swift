@@ -122,6 +122,11 @@ struct BlockedProfileView: View {
           disabled: isBlocking
         )
 
+        BlockedProfileWiFiSection(
+          draft: draft,
+          disabled: isBlocking
+        )
+
         BlockedProfileBreaksSection(draft: draft, disabled: isBlocking)
 
         BlockedProfileStrictSafeguardsSection(draft: draft, disabled: isBlocking)

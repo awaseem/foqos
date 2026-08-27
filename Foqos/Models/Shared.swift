@@ -52,6 +52,9 @@ enum SharedData {
 
     var disableBackgroundStops: Bool?
     var enableEmergencyUnblock: Bool?
+    var enableWiFiBlocking: Bool?
+    var wifiSSIDs: [String]?
+    var allowManualControl: Bool?
   }
 
   // MARK: – Serializable snapshot of a session (no profile object)

@@ -51,6 +51,10 @@ class BlockedProfiles {
 
   var enableEmergencyUnblock: Bool = true
 
+  var enableWiFiBlocking: Bool = false
+  var wifiSSIDs: [String]? = nil
+  var allowManualControl: Bool = true
+
   var customReminderMessage: String?
 
   @Relationship var sessions: [BlockedProfileSession] = []
@@ -125,7 +129,10 @@ class BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
-    enableEmergencyUnblock: Bool = true
+    enableEmergencyUnblock: Bool = true,
+    enableWiFiBlocking: Bool = false,
+    wifiSSIDs: [String]? = nil,
+    allowManualControl: Bool = true
   ) {
     self.id = id
     self.name = name
@@ -158,6 +165,9 @@ class BlockedProfiles {
 
     self.disableBackgroundStops = disableBackgroundStops
     self.enableEmergencyUnblock = enableEmergencyUnblock
+    self.enableWiFiBlocking = enableWiFiBlocking
+    self.wifiSSIDs = wifiSSIDs
+    self.allowManualControl = allowManualControl
   }
 
   func showStopButton(elapsedTime: TimeInterval) -> Bool {
@@ -228,7 +238,10 @@ class BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]?? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool? = nil,
-    enableEmergencyUnblock: Bool? = nil
+    enableEmergencyUnblock: Bool? = nil,
+    enableWiFiBlocking: Bool? = nil,
+    wifiSSIDs: [String]? = nil,
+    allowManualControl: Bool? = nil
   ) throws -> BlockedProfiles {
     if let newName = name {
       profile.name = newName
@@ -334,6 +347,18 @@ class BlockedProfiles {
       profile.enableEmergencyUnblock = newEnableEmergencyUnblock
     }
 
+    if let newEnableWiFiBlocking = enableWiFiBlocking {
+      profile.enableWiFiBlocking = newEnableWiFiBlocking
+    }
+
+    if let newWifiSSIDs = wifiSSIDs {
+      profile.wifiSSIDs = newWifiSSIDs
+    }
+
+    if let newAllowManualControl = allowManualControl {
+      profile.allowManualControl = newAllowManualControl
+    }
+
     if let physicalUnblockItems {
       profile.physicalUnblockItems = PhysicalUnblockItem.normalizedItems(physicalUnblockItems)
     }
@@ -410,7 +435,10 @@ class BlockedProfiles {
       physicalUnblockItems: profile.physicalUnblockItems,
       schedule: profile.schedule,
       disableBackgroundStops: profile.disableBackgroundStops,
-      enableEmergencyUnblock: profile.enableEmergencyUnblock
+      enableEmergencyUnblock: profile.enableEmergencyUnblock,
+      enableWiFiBlocking: profile.enableWiFiBlocking,
+      wifiSSIDs: profile.wifiSSIDs,
+      allowManualControl: profile.allowManualControl
     )
   }
 
@@ -468,7 +496,10 @@ class BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
-    enableEmergencyUnblock: Bool = true
+    enableEmergencyUnblock: Bool = true,
+    enableWiFiBlocking: Bool = false,
+    wifiSSIDs: [String]? = nil,
+    allowManualControl: Bool = true
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 
@@ -495,7 +526,10 @@ class BlockedProfiles {
       domains: domains,
       physicalUnblockItems: physicalUnblockItems,
       disableBackgroundStops: disableBackgroundStops,
-      enableEmergencyUnblock: enableEmergencyUnblock
+      enableEmergencyUnblock: enableEmergencyUnblock,
+      enableWiFiBlocking: enableWiFiBlocking,
+      wifiSSIDs: wifiSSIDs,
+      allowManualControl: allowManualControl
     )
 
     if let schedule = schedule {
@@ -539,7 +573,10 @@ class BlockedProfiles {
       domains: source.domains,
       physicalUnblockItems: source.physicalUnblockItems,
       schedule: source.schedule,
-      enableEmergencyUnblock: source.enableEmergencyUnblock
+      enableEmergencyUnblock: source.enableEmergencyUnblock,
+      enableWiFiBlocking: source.enableWiFiBlocking,
+      wifiSSIDs: source.wifiSSIDs,
+      allowManualControl: source.allowManualControl
     )
 
     context.insert(cloned)
