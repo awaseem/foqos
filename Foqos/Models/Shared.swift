@@ -54,6 +54,14 @@ enum SharedData {
     var enableEmergencyUnblock: Bool?
   }
 
+  private struct FailableDecodable<Value: Decodable>: Decodable {
+    let value: Value?
+
+    init(from decoder: Decoder) throws {
+      value = try? Value(from: decoder)
+    }
+  }
+
   // MARK: – Serializable snapshot of a session (no profile object)
   struct SessionSnapshot: Codable, Equatable {
     var id: String
@@ -77,7 +85,7 @@ enum SharedData {
   static var profileSnapshots: [String: ProfileSnapshot] {
     get {
       guard let data = suite.data(forKey: Key.profileSnapshots.rawValue) else { return [:] }
-      return (try? JSONDecoder().decode([String: ProfileSnapshot].self, from: data)) ?? [:]
+      return decodeProfileSnapshots(from: data)
     }
     set {
       if let data = try? JSONEncoder().encode(newValue) {
@@ -86,6 +94,14 @@ enum SharedData {
         suite.removeObject(forKey: Key.profileSnapshots.rawValue)
       }
     }
+  }
+
+  static func decodeProfileSnapshots(from data: Data) -> [String: ProfileSnapshot] {
+    let decoded = try? JSONDecoder().decode(
+      [String: FailableDecodable<ProfileSnapshot>].self,
+      from: data
+    )
+    return decoded?.compactMapValues(\.value) ?? [:]
   }
 
   static func snapshot(for profileID: String) -> ProfileSnapshot? {
@@ -224,5 +240,122 @@ enum SharedData {
 
   static func setPauseEndTime(date: Date) {
     activeSharedSession?.pauseEndTime = date
+  }
+}
+
+extension SharedData.ProfileSnapshot {
+  private enum CodingKeys: String, CodingKey {
+    case id
+    case name
+    case selectedActivity
+    case createdAt
+    case updatedAt
+    case blockingStrategyId
+    case strategyData
+    case order
+    case enableLiveActivity
+    case reminderTimeInSeconds
+    case customReminderMessage
+    case enableBreaks
+    case breakTimeInMinutes
+    case allowMultipleBreaks
+    case enableStrictMode
+    case enableBlockAppInstallation
+    case enableAllowMode
+    case enableAllowModeDomains
+    case enableSafariBlocking
+    case enableAdultContentBlocking
+    case enableMacSync
+    case domains
+    case physicalUnblockNFCTagId
+    case physicalUnblockQRCodeId
+    case physicalUnblockItems
+    case schedule
+    case disableBackgroundStops
+    case enableEmergencyUnblock
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+
+    // Later profile settings use their model defaults when decoding snapshots from older releases.
+    self.init(
+      id: try container.decode(UUID.self, forKey: .id),
+      name: try container.decode(String.self, forKey: .name),
+      selectedActivity: try container.decode(
+        FamilyActivitySelection.self,
+        forKey: .selectedActivity
+      ),
+      createdAt: try container.decode(Date.self, forKey: .createdAt),
+      updatedAt: try container.decode(Date.self, forKey: .updatedAt),
+      blockingStrategyId: try container.decodeIfPresent(
+        String.self,
+        forKey: .blockingStrategyId
+      ),
+      strategyData: try container.decodeIfPresent(Data.self, forKey: .strategyData),
+      order: try container.decode(Int.self, forKey: .order),
+      enableLiveActivity: try container.decode(Bool.self, forKey: .enableLiveActivity),
+      reminderTimeInSeconds: try container.decodeIfPresent(
+        UInt32.self,
+        forKey: .reminderTimeInSeconds
+      ),
+      customReminderMessage: try container.decodeIfPresent(
+        String.self,
+        forKey: .customReminderMessage
+      ),
+      enableBreaks: try container.decode(Bool.self, forKey: .enableBreaks),
+      breakTimeInMinutes: try container.decodeIfPresent(
+        Int.self,
+        forKey: .breakTimeInMinutes
+      ) ?? 15,
+      allowMultipleBreaks: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .allowMultipleBreaks
+      ),
+      enableStrictMode: try container.decode(Bool.self, forKey: .enableStrictMode),
+      enableBlockAppInstallation: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .enableBlockAppInstallation
+      ) ?? false,
+      enableAllowMode: try container.decode(Bool.self, forKey: .enableAllowMode),
+      enableAllowModeDomains: try container.decode(
+        Bool.self,
+        forKey: .enableAllowModeDomains
+      ),
+      enableSafariBlocking: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .enableSafariBlocking
+      ) ?? true,
+      enableAdultContentBlocking: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .enableAdultContentBlocking
+      ),
+      enableMacSync: try container.decodeIfPresent(Bool.self, forKey: .enableMacSync),
+      domains: try container.decodeIfPresent([String].self, forKey: .domains),
+      physicalUnblockNFCTagId: try container.decodeIfPresent(
+        String.self,
+        forKey: .physicalUnblockNFCTagId
+      ),
+      physicalUnblockQRCodeId: try container.decodeIfPresent(
+        String.self,
+        forKey: .physicalUnblockQRCodeId
+      ),
+      physicalUnblockItems: try container.decodeIfPresent(
+        [PhysicalUnblockItem].self,
+        forKey: .physicalUnblockItems
+      ),
+      schedule: try container.decodeIfPresent(
+        BlockedProfileSchedule.self,
+        forKey: .schedule
+      ),
+      disableBackgroundStops: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .disableBackgroundStops
+      ),
+      enableEmergencyUnblock: try container.decodeIfPresent(
+        Bool.self,
+        forKey: .enableEmergencyUnblock
+      )
+    )
   }
 }
