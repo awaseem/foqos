@@ -139,7 +139,9 @@ struct BlockedProfileAppsFields: View {
       description:
         "Only selected apps stay available during sessions. Turning this on clears your blocked-app selection.",
       isOn: $draft.enableAllowMode,
-      isDisabled: disabled
+      isDisabled: disabled || !draft.selectedStrategySupportsAllowMode,
+      errorMessage: draft.selectedStrategySupportsAllowMode
+        ? nil : "Allow-only mode isn't supported with Temporary Access."
     )
 
     ProfileFieldDivider(isVisible: showsSeparators)

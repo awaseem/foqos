@@ -37,7 +37,7 @@ final class BlockedProfileDraft: ObservableObject {
         askForStartSettings = true
       }
 
-      enforceStrategyBreaksPolicy()
+      enforceStrategyPolicies()
     }
   }
 
@@ -88,7 +88,7 @@ final class BlockedProfileDraft: ObservableObject {
     strategyData = profile?.strategyData
     askForStartSettings = profile?.askForStartSettings ?? true
 
-    enforceStrategyBreaksPolicy()
+    enforceStrategyPolicies()
   }
 
   var isValid: Bool {
@@ -97,6 +97,10 @@ final class BlockedProfileDraft: ObservableObject {
 
   var selectedStrategyAllowsTimedBreaks: Bool {
     return selectedStrategy?.allowsTimedBreaks ?? true
+  }
+
+  var selectedStrategySupportsAllowMode: Bool {
+    return selectedStrategy?.supportsAllowMode ?? true
   }
 
   func save(
@@ -176,13 +180,16 @@ final class BlockedProfileDraft: ObservableObject {
     return newProfile
   }
 
-  private func enforceStrategyBreaksPolicy() {
-    if selectedStrategyAllowsTimedBreaks {
-      return
+  private func enforceStrategyPolicies() {
+    if !selectedStrategyAllowsTimedBreaks {
+      enableBreaks = false
+      allowMultipleBreaks = false
     }
 
-    enableBreaks = false
-    allowMultipleBreaks = false
+    if !selectedStrategySupportsAllowMode && enableAllowMode {
+      enableAllowMode = false
+      selectedActivity = FamilyActivitySelection()
+    }
   }
 
   private func ensureSavedStartSettings() {
