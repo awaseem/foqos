@@ -234,7 +234,7 @@ final class SessionTimeCalculatorTests: XCTestCase {
     XCTAssertEqual(session.remainingBreakAllowance(), 0, accuracy: 0.1)
   }
 
-  func testReusableBreakAllowanceResetsForNewSession() {
+  func testReusableBreakAllowanceStartsAvailable() {
     let profile = makeProfile(
       strategyId: ManualBlockingStrategy.id,
       enableBreaks: true,

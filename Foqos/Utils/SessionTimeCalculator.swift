@@ -59,7 +59,7 @@ enum SessionTimeCalculator {
     }
 
     if let breakStartTime = session.breakStartTime, session.isBreakActive {
-      if session.blockedProfile.allowMultipleBreaks {
+      if session.blockedProfile.breakAllowanceMode == .cumulative {
         let remainingAllowanceAtBreakStart = session.remainingBreakAllowance(at: breakStartTime)
         return breakStartTime.addingTimeInterval(remainingAllowanceAtBreakStart)
       }
@@ -115,7 +115,7 @@ enum SessionTimeCalculator {
     for session: BlockedProfileSession,
     at date: Date
   ) -> TimeInterval {
-    if session.blockedProfile.allowMultipleBreaks {
+    if session.blockedProfile.permitsMultipleBreaksPerPeriod {
       return session.usedBreakDurationIncludingActiveBreak(at: date)
     }
 

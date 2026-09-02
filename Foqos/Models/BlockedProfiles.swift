@@ -21,6 +21,12 @@ class BlockedProfiles {
   var enableBreaks: Bool = false
   var breakTimeInMinutes: Int = 15
   var allowMultipleBreaks: Bool = false
+  var breakAllowanceModeRawValue: String?
+  var breakCountLimit: Int = 1
+  var isBreakCountUnlimited: Bool = false
+  var breakResetHour: Int = 0
+  var breakResetMinute: Int = 0
+  var breakResetPolicyRawValue: String?
   var enableStrictMode: Bool = false
   var enableBlockAppInstallation: Bool = false
   var enableAllowMode: Bool = false
@@ -69,6 +75,48 @@ class BlockedProfiles {
     return StrategyManager.getStrategyFromId(id: strategyId).allowsTimedBreaks
   }
 
+  var breakAllowanceMode: BreakAllowanceMode {
+    get {
+      guard let breakAllowanceModeRawValue,
+        let mode = BreakAllowanceMode(rawValue: breakAllowanceModeRawValue)
+      else {
+        return allowMultipleBreaks ? .cumulative : .perBreak
+      }
+      return mode
+    }
+    set {
+      breakAllowanceModeRawValue = newValue.rawValue
+      allowMultipleBreaks = newValue == .cumulative || permitsMultipleBreaksPerPeriod
+    }
+  }
+
+  var resolvedBreakCountLimit: Int? {
+    isBreakCountUnlimited ? nil : max(1, breakCountLimit)
+  }
+
+  var permitsMultipleBreaksPerPeriod: Bool {
+    switch breakAllowanceMode {
+    case .perBreak:
+      return resolvedBreakCountLimit.map { $0 > 1 } ?? true
+    case .cumulative:
+      return true
+    }
+  }
+
+  var breakResetPolicy: BreakResetPolicy {
+    get {
+      guard let breakResetPolicyRawValue,
+        let policy = BreakResetPolicy(rawValue: breakResetPolicyRawValue)
+      else {
+        return .daily
+      }
+      return policy
+    }
+    set {
+      breakResetPolicyRawValue = newValue.rawValue
+    }
+  }
+
   var shouldAskForStartSettings: Bool {
     askForStartSettings || strategyData == nil
   }
@@ -113,6 +161,12 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     breakTimeInMinutes: Int = 15,
     allowMultipleBreaks: Bool = false,
+    breakAllowanceMode: BreakAllowanceMode? = nil,
+    breakCountLimit: Int = 1,
+    isBreakCountUnlimited: Bool = false,
+    breakResetHour: Int = 0,
+    breakResetMinute: Int = 0,
+    breakResetPolicy: BreakResetPolicy = .daily,
     enableStrictMode: Bool = false,
     enableBlockAppInstallation: Bool = false,
     enableAllowMode: Bool = false,
@@ -144,6 +198,16 @@ class BlockedProfiles {
     self.enableBreaks = enableBreaks
     self.breakTimeInMinutes = breakTimeInMinutes
     self.allowMultipleBreaks = allowMultipleBreaks
+    self.breakAllowanceModeRawValue = breakAllowanceMode?.rawValue
+    self.breakCountLimit = max(1, breakCountLimit)
+    self.isBreakCountUnlimited = isBreakCountUnlimited
+    self.breakResetHour = min(max(breakResetHour, 0), 23)
+    self.breakResetMinute = min(max(breakResetMinute, 0), 59)
+    self.breakResetPolicyRawValue = breakResetPolicy.rawValue
+    if let breakAllowanceMode {
+      self.allowMultipleBreaks =
+        breakAllowanceMode == .cumulative || isBreakCountUnlimited || breakCountLimit > 1
+    }
     self.enableStrictMode = enableStrictMode
     self.enableBlockAppInstallation = enableBlockAppInstallation
     self.enableAllowMode = enableAllowMode
@@ -216,6 +280,12 @@ class BlockedProfiles {
     enableBreaks: Bool? = nil,
     breakTimeInMinutes: Int? = nil,
     allowMultipleBreaks: Bool? = nil,
+    breakAllowanceMode: BreakAllowanceMode? = nil,
+    breakCountLimit: Int? = nil,
+    isBreakCountUnlimited: Bool? = nil,
+    breakResetHour: Int? = nil,
+    breakResetMinute: Int? = nil,
+    breakResetPolicy: BreakResetPolicy? = nil,
     enableStrictMode: Bool? = nil,
     enableBlockAppInstallation: Bool? = nil,
     enableAllowMode: Bool? = nil,
@@ -280,6 +350,33 @@ class BlockedProfiles {
     if let newAllowMultipleBreaks = allowMultipleBreaks {
       profile.allowMultipleBreaks = newAllowMultipleBreaks
     }
+
+    if let newBreakAllowanceMode = breakAllowanceMode {
+      profile.breakAllowanceMode = newBreakAllowanceMode
+    }
+
+    if let newBreakCountLimit = breakCountLimit {
+      profile.breakCountLimit = max(1, newBreakCountLimit)
+    }
+
+    if let newIsBreakCountUnlimited = isBreakCountUnlimited {
+      profile.isBreakCountUnlimited = newIsBreakCountUnlimited
+    }
+
+    if let newBreakResetHour = breakResetHour {
+      profile.breakResetHour = min(max(newBreakResetHour, 0), 23)
+    }
+
+    if let newBreakResetMinute = breakResetMinute {
+      profile.breakResetMinute = min(max(newBreakResetMinute, 0), 59)
+    }
+
+    if let newBreakResetPolicy = breakResetPolicy {
+      profile.breakResetPolicy = newBreakResetPolicy
+    }
+
+    profile.allowMultipleBreaks =
+      profile.breakAllowanceMode == .cumulative || profile.permitsMultipleBreaksPerPeriod
 
     if let newEnableStrictMode = enableStrictMode {
       profile.enableStrictMode = newEnableStrictMode
@@ -368,6 +465,7 @@ class BlockedProfiles {
 
     // Delete the snapshot
     deleteSnapshot(for: profile)
+    SharedData.resetBreakAllowanceUsage(for: profile.id)
 
     // Remove the schedule restrictions
     DeviceActivityCenterUtil.removeScheduleTimerActivities(for: profile)
@@ -397,6 +495,12 @@ class BlockedProfiles {
       enableBreaks: profile.enableBreaks,
       breakTimeInMinutes: profile.breakTimeInMinutes,
       allowMultipleBreaks: profile.allowMultipleBreaks,
+      breakAllowanceModeRawValue: profile.breakAllowanceMode.rawValue,
+      breakCountLimit: profile.breakCountLimit,
+      isBreakCountUnlimited: profile.isBreakCountUnlimited,
+      breakResetHour: profile.breakResetHour,
+      breakResetMinute: profile.breakResetMinute,
+      breakResetPolicyRawValue: profile.breakResetPolicy.rawValue,
       enableStrictMode: profile.enableStrictMode,
       enableBlockAppInstallation: profile.enableBlockAppInstallation,
       enableAllowMode: profile.enableAllowMode,
@@ -457,6 +561,12 @@ class BlockedProfiles {
     enableBreaks: Bool = false,
     breakTimeInMinutes: Int = 15,
     allowMultipleBreaks: Bool = false,
+    breakAllowanceMode: BreakAllowanceMode? = nil,
+    breakCountLimit: Int = 1,
+    isBreakCountUnlimited: Bool = false,
+    breakResetHour: Int = 0,
+    breakResetMinute: Int = 0,
+    breakResetPolicy: BreakResetPolicy = .daily,
     enableStrictMode: Bool = false,
     enableBlockAppInstallation: Bool = false,
     enableAllowMode: Bool = false,
@@ -484,6 +594,12 @@ class BlockedProfiles {
       enableBreaks: enableBreaks,
       breakTimeInMinutes: breakTimeInMinutes,
       allowMultipleBreaks: allowMultipleBreaks,
+      breakAllowanceMode: breakAllowanceMode,
+      breakCountLimit: breakCountLimit,
+      isBreakCountUnlimited: isBreakCountUnlimited,
+      breakResetHour: breakResetHour,
+      breakResetMinute: breakResetMinute,
+      breakResetPolicy: breakResetPolicy,
       enableStrictMode: enableStrictMode,
       enableBlockAppInstallation: enableBlockAppInstallation,
       enableAllowMode: enableAllowMode,
@@ -528,6 +644,12 @@ class BlockedProfiles {
       enableBreaks: source.enableBreaks,
       breakTimeInMinutes: source.breakTimeInMinutes,
       allowMultipleBreaks: source.allowMultipleBreaks,
+      breakAllowanceMode: source.breakAllowanceMode,
+      breakCountLimit: source.breakCountLimit,
+      isBreakCountUnlimited: source.isBreakCountUnlimited,
+      breakResetHour: source.breakResetHour,
+      breakResetMinute: source.breakResetMinute,
+      breakResetPolicy: source.breakResetPolicy,
       enableStrictMode: source.enableStrictMode,
       enableBlockAppInstallation: source.enableBlockAppInstallation,
       enableAllowMode: source.enableAllowMode,
@@ -557,7 +679,7 @@ class BlockedProfiles {
     }
 
     let newDomains = domains + [domain]
-    try updateProfile(profile, in: context, domains: newDomains)
+    _ = try updateProfile(profile, in: context, domains: newDomains)
   }
 
   static func removeDomain(from profile: BlockedProfiles, context: ModelContext, domain: String)
@@ -568,6 +690,6 @@ class BlockedProfiles {
     }
 
     let newDomains = domains.filter { $0 != domain }
-    try updateProfile(profile, in: context, domains: newDomains)
+    _ = try updateProfile(profile, in: context, domains: newDomains)
   }
 }

@@ -272,6 +272,13 @@ struct ActiveProfileSessionView: View {
         }
       }
 
+      if let breakAllowanceStatus {
+        Label(breakAllowanceStatus, systemImage: "cup.and.heat.waves")
+          .font(.subheadline)
+          .fontWeight(.semibold)
+          .foregroundStyle(.secondary)
+      }
+
       Text(focusMessage)
         .font(.subheadline)
         .foregroundStyle(.secondary)
@@ -286,6 +293,26 @@ struct ActiveProfileSessionView: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  private var breakAllowanceStatus: String? {
+    guard profile.enableBreaks,
+      let session = strategyManager.activeSession,
+      session.blockedProfile.id == profile.id
+    else {
+      return nil
+    }
+
+    switch profile.breakAllowanceMode {
+    case .perBreak:
+      guard let remainingCount = session.remainingBreakCount() else {
+        return "Unlimited breaks"
+      }
+      return remainingCount == 1 ? "1 break remaining" : "\(remainingCount) breaks remaining"
+    case .cumulative:
+      let remainingMinutes = Int(ceil(session.remainingBreakAllowance() / 60))
+      return "\(DateFormatters.formatMinutes(remainingMinutes)) of break time remaining"
+    }
   }
 
   private var actionSection: some View {

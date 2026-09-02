@@ -1,6 +1,42 @@
 import FamilyControls
 import Foundation
 
+enum BreakAllowanceMode: String, CaseIterable, Codable {
+  case perBreak
+  case cumulative
+
+  var title: String {
+    switch self {
+    case .perBreak:
+      return "Per Break"
+    case .cumulative:
+      return "Shared Daily Budget"
+    }
+  }
+}
+
+enum BreakResetPolicy: String, CaseIterable, Codable {
+  case daily
+  case never
+
+  var title: String {
+    switch self {
+    case .daily:
+      return "Daily"
+    case .never:
+      return "Never"
+    }
+  }
+}
+
+struct BreakAllowanceUsage: Codable, Equatable {
+  var periodStart: Date
+  var breaksStarted: Int
+  var usedDurationInSeconds: TimeInterval
+  var lastRecordedBreakStart: Date? = nil
+  var resetPolicyRawValue: String? = nil
+}
+
 enum SharedData {
   private static let suite = UserDefaults(
     suiteName: "group.dev.ambitionsoftware.foqos"
@@ -11,6 +47,7 @@ enum SharedData {
     case profileSnapshots
     case activeScheduleSession
     case completedScheduleSessions
+    case breakAllowanceUsage
   }
 
   // MARK: – Serializable snapshot of a profile (no sessions)
@@ -30,6 +67,12 @@ enum SharedData {
     var enableBreaks: Bool
     var breakTimeInMinutes: Int = 15
     var allowMultipleBreaks: Bool? = nil
+    var breakAllowanceModeRawValue: String? = nil
+    var breakCountLimit: Int? = nil
+    var isBreakCountUnlimited: Bool? = nil
+    var breakResetHour: Int? = nil
+    var breakResetMinute: Int? = nil
+    var breakResetPolicyRawValue: String? = nil
     var enableStrictMode: Bool
     var enableBlockAppInstallation: Bool = false
     var enableAllowMode: Bool
@@ -52,6 +95,36 @@ enum SharedData {
 
     var disableBackgroundStops: Bool?
     var enableEmergencyUnblock: Bool?
+
+    var breakAllowanceMode: BreakAllowanceMode {
+      if let breakAllowanceModeRawValue,
+        let mode = BreakAllowanceMode(rawValue: breakAllowanceModeRawValue)
+      {
+        return mode
+      }
+      return allowMultipleBreaks == true ? .cumulative : .perBreak
+    }
+
+    var resolvedBreakCountLimit: Int? {
+      isBreakCountUnlimited == true ? nil : max(1, breakCountLimit ?? 1)
+    }
+
+    var resolvedBreakResetHour: Int {
+      min(max(breakResetHour ?? 0, 0), 23)
+    }
+
+    var resolvedBreakResetMinute: Int {
+      min(max(breakResetMinute ?? 0, 0), 59)
+    }
+
+    var breakResetPolicy: BreakResetPolicy {
+      guard let breakResetPolicyRawValue,
+        let policy = BreakResetPolicy(rawValue: breakResetPolicyRawValue)
+      else {
+        return .daily
+      }
+      return policy
+    }
   }
 
   // MARK: – Serializable snapshot of a session (no profile object)
@@ -86,6 +159,213 @@ enum SharedData {
         suite.removeObject(forKey: Key.profileSnapshots.rawValue)
       }
     }
+  }
+
+  private static var breakAllowanceUsageByProfile: [String: BreakAllowanceUsage] {
+    get {
+      guard let data = suite.data(forKey: Key.breakAllowanceUsage.rawValue) else { return [:] }
+      return (try? JSONDecoder().decode([String: BreakAllowanceUsage].self, from: data)) ?? [:]
+    }
+    set {
+      guard let data = try? JSONEncoder().encode(newValue) else { return }
+      suite.set(data, forKey: Key.breakAllowanceUsage.rawValue)
+    }
+  }
+
+  static func breakAllowanceUsage(
+    for profileID: UUID,
+    at date: Date = Date(),
+    resetHour: Int,
+    resetMinute: Int,
+    resetPolicy: BreakResetPolicy = .daily,
+    calendar: Calendar = .current
+  ) -> BreakAllowanceUsage {
+    let periodStart =
+      resetPolicy == .daily
+      ? breakAllowancePeriodStart(
+        containing: date,
+        resetHour: resetHour,
+        resetMinute: resetMinute,
+        calendar: calendar
+      ) : Date(timeIntervalSinceReferenceDate: 0)
+    let key = profileID.uuidString
+    var allUsage = breakAllowanceUsageByProfile
+
+    if var usage = allUsage[key] {
+      let storedPolicy =
+        usage.resetPolicyRawValue.flatMap(BreakResetPolicy.init(rawValue:)) ?? .daily
+
+      if storedPolicy != resetPolicy {
+        usage.periodStart = periodStart
+        usage.resetPolicyRawValue = resetPolicy.rawValue
+        allUsage[key] = usage
+        breakAllowanceUsageByProfile = allUsage
+        return usage
+      }
+
+      if resetPolicy == .never || usage.periodStart == periodStart {
+        return usage
+      }
+
+      if usage.periodStart > periodStart {
+        return BreakAllowanceUsage(
+          periodStart: periodStart,
+          breaksStarted: 0,
+          usedDurationInSeconds: 0,
+          resetPolicyRawValue: resetPolicy.rawValue
+        )
+      }
+    }
+
+    let usage = BreakAllowanceUsage(
+      periodStart: periodStart,
+      breaksStarted: 0,
+      usedDurationInSeconds: 0,
+      resetPolicyRawValue: resetPolicy.rawValue
+    )
+    allUsage[key] = usage
+    breakAllowanceUsageByProfile = allUsage
+    return usage
+  }
+
+  static func beginBreak(
+    for profileID: UUID,
+    mode: BreakAllowanceMode,
+    breakCountLimit: Int?,
+    totalAllowanceInSeconds: TimeInterval,
+    at date: Date = Date(),
+    resetHour: Int,
+    resetMinute: Int,
+    resetPolicy: BreakResetPolicy = .daily,
+    calendar: Calendar = .current
+  ) -> Bool {
+    var usage = breakAllowanceUsage(
+      for: profileID,
+      at: date,
+      resetHour: resetHour,
+      resetMinute: resetMinute,
+      resetPolicy: resetPolicy,
+      calendar: calendar
+    )
+
+    switch mode {
+    case .perBreak:
+      guard breakCountLimit.map({ usage.breaksStarted < $0 }) ?? true else {
+        return false
+      }
+      if breakCountLimit != nil {
+        usage.breaksStarted += 1
+      }
+    case .cumulative:
+      guard usage.usedDurationInSeconds < totalAllowanceInSeconds else {
+        return false
+      }
+    }
+
+    var allUsage = breakAllowanceUsageByProfile
+    allUsage[profileID.uuidString] = usage
+    breakAllowanceUsageByProfile = allUsage
+    return true
+  }
+
+  static func recordCumulativeBreakDuration(
+    for profileID: UUID,
+    breakStart: Date,
+    breakEnd: Date,
+    totalAllowanceInSeconds: TimeInterval,
+    resetHour: Int,
+    resetMinute: Int,
+    resetPolicy: BreakResetPolicy = .daily,
+    calendar: Calendar = .current
+  ) {
+    guard breakEnd > breakStart else {
+      return
+    }
+
+    let breakPeriodStart =
+      resetPolicy == .daily
+      ? breakAllowancePeriodStart(
+        containing: breakEnd,
+        resetHour: resetHour,
+        resetMinute: resetMinute,
+        calendar: calendar
+      ) : Date(timeIntervalSinceReferenceDate: 0)
+    let key = profileID.uuidString
+    var allUsage = breakAllowanceUsageByProfile
+    let storedUsage = allUsage[key]
+
+    guard storedUsage?.periodStart ?? breakPeriodStart <= breakPeriodStart else {
+      return
+    }
+
+    var usage: BreakAllowanceUsage
+    if let storedUsage,
+      storedUsage.periodStart == breakPeriodStart,
+      (storedUsage.resetPolicyRawValue.flatMap(BreakResetPolicy.init(rawValue:)) ?? .daily)
+        == resetPolicy
+    {
+      usage = storedUsage
+    } else {
+      usage = BreakAllowanceUsage(
+        periodStart: breakPeriodStart,
+        breaksStarted: 0,
+        usedDurationInSeconds: 0,
+        resetPolicyRawValue: resetPolicy.rawValue
+      )
+    }
+
+    guard usage.lastRecordedBreakStart != breakStart else {
+      return
+    }
+
+    let durationStart = max(breakStart, breakPeriodStart)
+    usage.usedDurationInSeconds = min(
+      totalAllowanceInSeconds,
+      usage.usedDurationInSeconds + breakEnd.timeIntervalSince(durationStart)
+    )
+    usage.lastRecordedBreakStart = breakStart
+    allUsage[key] = usage
+    breakAllowanceUsageByProfile = allUsage
+  }
+
+  static func resetBreakAllowanceUsage(for profileID: UUID) {
+    var allUsage = breakAllowanceUsageByProfile
+    allUsage.removeValue(forKey: profileID.uuidString)
+    breakAllowanceUsageByProfile = allUsage
+  }
+
+  static func breakAllowancePeriodStart(
+    containing date: Date,
+    resetHour: Int,
+    resetMinute: Int,
+    calendar: Calendar = .current
+  ) -> Date {
+    let startOfDay = calendar.startOfDay(for: date)
+    let resetComponents = DateComponents(
+      hour: min(max(resetHour, 0), 23),
+      minute: min(max(resetMinute, 0), 59)
+    )
+    let resetToday =
+      calendar.nextDate(
+        after: startOfDay.addingTimeInterval(-1),
+        matching: resetComponents,
+        matchingPolicy: .nextTime,
+        repeatedTimePolicy: .first,
+        direction: .forward
+      ) ?? startOfDay
+
+    if date >= resetToday {
+      return resetToday
+    }
+
+    let previousDay = calendar.date(byAdding: .day, value: -1, to: startOfDay) ?? startOfDay
+    return calendar.nextDate(
+      after: previousDay.addingTimeInterval(-1),
+      matching: resetComponents,
+      matchingPolicy: .nextTime,
+      repeatedTimePolicy: .first,
+      direction: .forward
+    ) ?? previousDay
   }
 
   static func snapshot(for profileID: String) -> ProfileSnapshot? {
@@ -192,17 +472,16 @@ enum SharedData {
     activeSharedSession?.usedBreakDurationInSeconds = duration
   }
 
-  static func endBreak(date: Date, allowMultipleBreaks: Bool, totalAllowanceInSeconds: TimeInterval)
-  {
+  static func endBreak(
+    date: Date,
+    allowsMultipleBreaks: Bool
+  ) {
     guard var session = activeSharedSession else { return }
 
-    if allowMultipleBreaks, let breakStartTime = session.breakStartTime {
+    if allowsMultipleBreaks, let breakStartTime = session.breakStartTime {
       let activeBreakDuration = max(0, date.timeIntervalSince(breakStartTime))
       let existingUsedDuration = session.usedBreakDurationInSeconds ?? 0
-      session.usedBreakDurationInSeconds = min(
-        totalAllowanceInSeconds,
-        existingUsedDuration + activeBreakDuration
-      )
+      session.usedBreakDurationInSeconds = existingUsedDuration + activeBreakDuration
     }
 
     session.breakEndTime = date

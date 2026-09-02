@@ -9,7 +9,12 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var enableReminder: Bool
   @Published var enableBreaks: Bool
   @Published var breakTimeInMinutes: Int
-  @Published var allowMultipleBreaks: Bool
+  @Published var breakAllowanceMode: BreakAllowanceMode
+  @Published var breakCountLimit: Int
+  @Published var isBreakCountUnlimited: Bool
+  @Published var breakResetHour: Int
+  @Published var breakResetMinute: Int
+  @Published var breakResetPolicy: BreakResetPolicy
   @Published var enableStrictMode: Bool
   @Published var enableBlockAppInstallation: Bool
   @Published var reminderTimeInMinutes: Int
@@ -49,7 +54,12 @@ final class BlockedProfileDraft: ObservableObject {
     enableLiveActivity = profile?.enableLiveActivity ?? false
     enableBreaks = profile?.enableBreaks ?? false
     breakTimeInMinutes = profile?.breakTimeInMinutes ?? 15
-    allowMultipleBreaks = profile?.allowMultipleBreaks ?? false
+    breakAllowanceMode = profile?.breakAllowanceMode ?? .perBreak
+    breakCountLimit = profile?.breakCountLimit ?? 1
+    isBreakCountUnlimited = profile?.isBreakCountUnlimited ?? false
+    breakResetHour = profile?.breakResetHour ?? 0
+    breakResetMinute = profile?.breakResetMinute ?? 0
+    breakResetPolicy = profile?.breakResetPolicy ?? .daily
     enableStrictMode = profile?.enableStrictMode ?? false
     enableBlockAppInstallation = profile?.enableBlockAppInstallation ?? false
     enableAllowMode = profile?.enableAllowMode ?? false
@@ -130,7 +140,13 @@ final class BlockedProfileDraft: ObservableObject {
         customReminderMessage: customReminderMessage,
         enableBreaks: enableTimedBreaksToSave,
         breakTimeInMinutes: breakTimeInMinutes,
-        allowMultipleBreaks: enableTimedBreaksToSave && allowMultipleBreaks,
+        allowMultipleBreaks: enableTimedBreaksToSave && permitsMultipleBreaksPerPeriod,
+        breakAllowanceMode: breakAllowanceMode,
+        breakCountLimit: breakCountLimit,
+        isBreakCountUnlimited: isBreakCountUnlimited,
+        breakResetHour: breakResetHour,
+        breakResetMinute: breakResetMinute,
+        breakResetPolicy: breakResetPolicy,
         enableStrictMode: enableStrictMode,
         enableBlockAppInstallation: enableBlockAppInstallation,
         enableAllowMode: enableAllowMode,
@@ -161,7 +177,13 @@ final class BlockedProfileDraft: ObservableObject {
       customReminderMessage: customReminderMessage,
       enableBreaks: enableTimedBreaksToSave,
       breakTimeInMinutes: breakTimeInMinutes,
-      allowMultipleBreaks: enableTimedBreaksToSave && allowMultipleBreaks,
+      allowMultipleBreaks: enableTimedBreaksToSave && permitsMultipleBreaksPerPeriod,
+      breakAllowanceMode: breakAllowanceMode,
+      breakCountLimit: breakCountLimit,
+      isBreakCountUnlimited: isBreakCountUnlimited,
+      breakResetHour: breakResetHour,
+      breakResetMinute: breakResetMinute,
+      breakResetPolicy: breakResetPolicy,
       enableStrictMode: enableStrictMode,
       enableBlockAppInstallation: enableBlockAppInstallation,
       enableAllowMode: enableAllowMode,
@@ -183,12 +205,20 @@ final class BlockedProfileDraft: ObservableObject {
   private func enforceStrategyPolicies() {
     if !selectedStrategyAllowsTimedBreaks {
       enableBreaks = false
-      allowMultipleBreaks = false
     }
 
     if !selectedStrategySupportsAllowMode && enableAllowMode {
       enableAllowMode = false
       selectedActivity = FamilyActivitySelection()
+    }
+  }
+
+  private var permitsMultipleBreaksPerPeriod: Bool {
+    switch breakAllowanceMode {
+    case .perBreak:
+      return isBreakCountUnlimited || breakCountLimit > 1
+    case .cumulative:
+      return true
     }
   }
 

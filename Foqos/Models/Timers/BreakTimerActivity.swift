@@ -37,7 +37,9 @@ class BreakTimerActivity: TimerActivity {
     appBlocker.deactivateRestrictionsForBreak(for: profile)
 
     if activeSession.breakStartTime == nil || activeSession.breakEndTime != nil {
-      if profile.allowMultipleBreaks == true {
+      if profile.breakAllowanceMode == .cumulative
+        || (profile.resolvedBreakCountLimit.map { $0 > 1 } ?? true)
+      {
         SharedData.resetBreak()
       }
 
@@ -70,10 +72,21 @@ class BreakTimerActivity: TimerActivity {
 
       // Set the break end time
       let now = Date()
+      if profile.breakAllowanceMode == .cumulative, let breakStart = activeSession.breakStartTime {
+        SharedData.recordCumulativeBreakDuration(
+          for: profile.id,
+          breakStart: breakStart,
+          breakEnd: now,
+          totalAllowanceInSeconds: TimeInterval(profile.breakTimeInMinutes * 60),
+          resetHour: profile.resolvedBreakResetHour,
+          resetMinute: profile.resolvedBreakResetMinute,
+          resetPolicy: profile.breakResetPolicy
+        )
+      }
       SharedData.endBreak(
         date: now,
-        allowMultipleBreaks: profile.allowMultipleBreaks == true,
-        totalAllowanceInSeconds: TimeInterval(profile.breakTimeInMinutes * 60)
+        allowsMultipleBreaks: profile.breakAllowanceMode == .cumulative
+          || (profile.resolvedBreakCountLimit.map { $0 > 1 } ?? true)
       )
     }
   }

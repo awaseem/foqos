@@ -24,6 +24,16 @@ struct ProfileDebugCard: View {
         DebugRow(label: "Enable Breaks", value: "\(profile.enableBreaks)")
         DebugRow(label: "Break Time (minutes)", value: "\(profile.breakTimeInMinutes)")
         DebugRow(label: "Allow Multiple Breaks", value: "\(profile.allowMultipleBreaks)")
+        DebugRow(label: "Break Allowance Mode", value: profile.breakAllowanceMode.title)
+        DebugRow(
+          label: "Break Count Limit",
+          value: profile.resolvedBreakCountLimit.map { "\($0)" } ?? "Unlimited"
+        )
+        DebugRow(
+          label: "Break Reset Time",
+          value: String(format: "%02d:%02d", profile.breakResetHour, profile.breakResetMinute)
+        )
+        DebugRow(label: "Break Reset Policy", value: profile.breakResetPolicy.title)
         DebugRow(label: "Enable Strict Mode", value: "\(profile.enableStrictMode)")
         DebugRow(label: "Enable Allow Mode", value: "\(profile.enableAllowMode)")
         DebugRow(

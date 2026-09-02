@@ -203,6 +203,12 @@ struct DebugView: View {
         markdown += "- **Breaks:** \(profile.enableBreaks ? "Enabled" : "Disabled")\n"
         markdown +=
           "- **Allow Multiple Breaks:** \(profile.allowMultipleBreaks ? "Enabled" : "Disabled")\n"
+        markdown += "- **Break Allowance Mode:** \(profile.breakAllowanceMode.title)\n"
+        markdown +=
+          "- **Break Count Limit:** \(profile.resolvedBreakCountLimit.map { "\($0)" } ?? "Unlimited")\n"
+        markdown +=
+          "- **Break Reset Time:** \(String(format: "%02d:%02d", profile.breakResetHour, profile.breakResetMinute))\n"
+        markdown += "- **Break Reset Policy:** \(profile.breakResetPolicy.title)\n"
         markdown += "- **Strict Mode:** \(profile.enableStrictMode ? "Enabled" : "Disabled")\n"
         markdown +=
           "- **Prevent App Installation:** \(profile.enableBlockAppInstallation ? "Enabled" : "Disabled")\n"

@@ -25,17 +25,35 @@ class BlockedProfileSession {
   }
 
   var isBreakAvailable: Bool {
+    isBreakAvailable(at: Date())
+  }
+
+  func isBreakAvailable(at date: Date) -> Bool {
     guard blockedProfile.enableBreaks == true,
       blockedProfile.allowsTimedBreaks
     else {
       return false
     }
 
-    if blockedProfile.allowMultipleBreaks {
-      return remainingBreakAllowance() > 0
+    if isBreakActive {
+      return true
     }
 
-    return breakEndTime == nil
+    let usage = breakAllowanceUsage(at: date)
+    switch blockedProfile.breakAllowanceMode {
+    case .perBreak:
+      if blockedProfile.breakAllowanceModeRawValue == nil,
+        !blockedProfile.allowMultipleBreaks,
+        breakEndTime != nil
+      {
+        return false
+      }
+      return blockedProfile.resolvedBreakCountLimit.map {
+        usage.breaksStarted < $0
+      } ?? true
+    case .cumulative:
+      return remainingBreakAllowance(at: date) > 0
+    }
   }
 
   var isBreakActive: Bool {
@@ -60,12 +78,12 @@ class BlockedProfileSession {
 
   /// Break time this session consumed, across every break it contained.
   ///
-  /// `breakStartTime` and `breakEndTime` only ever describe the most recent break, because
-  /// `startBreak(at:)` clears them whenever multiple breaks are allowed, so reporting has to
+  /// `breakStartTime` and `breakEndTime` only ever describe the most recent break when a
+  /// profile permits repeated breaks, so reporting has to
   /// read the accumulator and fall back to the timestamps for single-break sessions where it
   /// stays zero. If a session ends during a break, its end time closes that final partial break
   /// because the accumulator is only updated by `endBreak(at:)`. Deliberately independent of
-  /// the profile's current `allowMultipleBreaks` value, so toggling that setting cannot rewrite
+  /// the profile's current allowance configuration, so toggling settings cannot rewrite
   /// sessions that are already recorded.
   var totalBreakDuration: TimeInterval {
     let accumulatedDuration = max(0, usedBreakDurationInSeconds)
@@ -110,24 +128,64 @@ class BlockedProfileSession {
   }
 
   func usedBreakDurationIncludingActiveBreak(at date: Date = Date()) -> TimeInterval {
-    if blockedProfile.allowMultipleBreaks {
-      return min(
-        totalBreakAllowanceInSeconds,
-        usedBreakDurationInSeconds + activeBreakElapsedTime(at: date)
-      )
+    if blockedProfile.permitsMultipleBreaksPerPeriod {
+      return usedBreakDurationInSeconds + activeBreakElapsedTime(at: date)
     }
 
     return completedSingleBreakDuration(at: date)
   }
 
   func remainingBreakAllowance(at date: Date = Date()) -> TimeInterval {
-    max(0, totalBreakAllowanceInSeconds - usedBreakDurationIncludingActiveBreak(at: date))
+    switch blockedProfile.breakAllowanceMode {
+    case .perBreak:
+      return max(0, totalBreakAllowanceInSeconds - activeBreakElapsedTime(at: date))
+    case .cumulative:
+      let usageDate = isBreakActive ? breakStartTime ?? date : date
+      let persistedUsage = breakAllowanceUsage(at: usageDate).usedDurationInSeconds
+      let completedUsage =
+        blockedProfile.breakAllowanceModeRawValue == nil
+        ? max(persistedUsage, usedBreakDurationInSeconds) : persistedUsage
+      return max(
+        0,
+        totalBreakAllowanceInSeconds - completedUsage - activeBreakElapsedTime(at: date)
+      )
+    }
   }
 
-  func startBreak(at date: Date = Date()) {
+  func remainingBreakCount(at date: Date = Date()) -> Int? {
+    guard blockedProfile.breakAllowanceMode == .perBreak,
+      let breakCountLimit = blockedProfile.resolvedBreakCountLimit
+    else {
+      return nil
+    }
+
+    return max(0, breakCountLimit - breakAllowanceUsage(at: date).breaksStarted)
+  }
+
+  @discardableResult
+  func startBreak(at date: Date = Date()) -> Bool {
+    guard !isBreakActive else {
+      return false
+    }
+
+    guard
+      SharedData.beginBreak(
+        for: blockedProfile.id,
+        mode: blockedProfile.breakAllowanceMode,
+        breakCountLimit: blockedProfile.resolvedBreakCountLimit,
+        totalAllowanceInSeconds: totalBreakAllowanceInSeconds,
+        at: date,
+        resetHour: blockedProfile.breakResetHour,
+        resetMinute: blockedProfile.breakResetMinute,
+        resetPolicy: blockedProfile.breakResetPolicy
+      )
+    else {
+      return false
+    }
+
     let breakStartTime = date
 
-    if blockedProfile.allowMultipleBreaks {
+    if blockedProfile.permitsMultipleBreaksPerPeriod {
       SharedData.resetBreak()
       self.breakStartTime = nil
       self.breakEndTime = nil
@@ -135,23 +193,47 @@ class BlockedProfileSession {
 
     SharedData.setBreakStartTime(date: breakStartTime)
     self.breakStartTime = breakStartTime
+    return true
   }
 
   func endBreak(at date: Date = Date()) {
     let breakEndTime = date
 
-    if blockedProfile.allowMultipleBreaks {
-      let completedDuration = activeBreakElapsedTime(at: breakEndTime)
-      let updatedUsedDuration = min(
-        totalBreakAllowanceInSeconds,
-        usedBreakDurationInSeconds + completedDuration
+    if blockedProfile.permitsMultipleBreaksPerPeriod {
+      let availableDuration = remainingBreakAllowance(at: breakStartTime ?? breakEndTime)
+      let completedDuration = min(
+        availableDuration,
+        activeBreakElapsedTime(at: breakEndTime)
       )
+      let updatedUsedDuration = usedBreakDurationInSeconds + completedDuration
       usedBreakDurationInSeconds = updatedUsedDuration
       SharedData.setUsedBreakDurationInSeconds(updatedUsedDuration)
     }
 
+    if blockedProfile.breakAllowanceMode == .cumulative, let breakStartTime {
+      SharedData.recordCumulativeBreakDuration(
+        for: blockedProfile.id,
+        breakStart: breakStartTime,
+        breakEnd: breakEndTime,
+        totalAllowanceInSeconds: totalBreakAllowanceInSeconds,
+        resetHour: blockedProfile.breakResetHour,
+        resetMinute: blockedProfile.breakResetMinute,
+        resetPolicy: blockedProfile.breakResetPolicy
+      )
+    }
+
     SharedData.setBreakEndTime(date: breakEndTime)
     self.breakEndTime = breakEndTime
+  }
+
+  private func breakAllowanceUsage(at date: Date) -> BreakAllowanceUsage {
+    SharedData.breakAllowanceUsage(
+      for: blockedProfile.id,
+      at: date,
+      resetHour: blockedProfile.breakResetHour,
+      resetMinute: blockedProfile.breakResetMinute,
+      resetPolicy: blockedProfile.breakResetPolicy
+    )
   }
 
   private func completedSingleBreakDuration(at date: Date) -> TimeInterval {
@@ -186,6 +268,10 @@ class BlockedProfileSession {
 
   func endSession() {
     let endTime = Date()
+
+    if isBreakActive {
+      endBreak(at: endTime)
+    }
 
     BlockingSessionLifecycleRegistry.sessionDidEnd(
       BlockingSessionLifecycleContext(

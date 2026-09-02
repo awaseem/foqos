@@ -313,93 +313,486 @@ struct BlockedProfileBreaksFields: View {
   @EnvironmentObject private var themeManager: ThemeManager
 
   @ObservedObject var draft: BlockedProfileDraft
+  var profile: BlockedProfiles? = nil
   var disabled: Bool
   var showsSeparators: Bool = false
 
-  private let minimumBreakDurationInMinutes = 5
-  private let maximumBreakDurationInMinutes = 60
+  @State private var showingCustomBreakLimit = false
+  @State private var showingResetConfirmation = false
 
   @ViewBuilder
   var body: some View {
-    if draft.selectedStrategyAllowsTimedBreaks {
-      CustomToggle(
-        title: "Allow Timed Breaks",
-        description:
-          "Take a break during your session. The break will automatically end after the selected duration.",
-        isOn: $draft.enableBreaks,
-        isDisabled: disabled
-      )
-
-      if draft.enableBreaks {
-        ProfileFieldDivider(isVisible: showsSeparators)
-
-        breakDurationPicker
-
-        ProfileFieldDivider(isVisible: showsSeparators)
-
+    Group {
+      if draft.selectedStrategyAllowsTimedBreaks {
         CustomToggle(
-          title: "Allow Multiple Breaks",
-          description: "Take multiple breaks until your total break duration is used.",
-          isOn: $draft.allowMultipleBreaks,
+          title: "Allow Timed Breaks",
+          description:
+            "Take a break during your session. The break will automatically end after the selected duration.",
+          isOn: $draft.enableBreaks,
           isDisabled: disabled
         )
+
+        if draft.enableBreaks {
+          ProfileFieldDivider(isVisible: showsSeparators)
+
+          allowanceModePicker
+
+          ProfileFieldDivider(isVisible: showsSeparators)
+
+          durationRow
+
+          if draft.breakAllowanceMode == .perBreak {
+            ProfileFieldDivider(isVisible: showsSeparators)
+
+            breakLimitRow
+          }
+
+          if showsResetControls {
+            ProfileFieldDivider(isVisible: showsSeparators)
+
+            resetPolicyPicker
+
+            if draft.breakResetPolicy == .daily {
+              ProfileFieldDivider(isVisible: showsSeparators)
+
+              DatePicker(
+                "Reset Time",
+                selection: breakResetTimeBinding,
+                displayedComponents: .hourAndMinute
+              )
+              .disabled(disabled)
+            } else if profile != nil {
+              ProfileFieldDivider(isVisible: showsSeparators)
+
+              Button("Reset Break Usage Now") {
+                showingResetConfirmation = true
+              }
+              .disabled(disabled)
+            }
+
+            Text(resetDescription)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
+      } else {
+        ProfileFieldNotice(
+          title: "Breaks are off for Temporary Access",
+          message:
+            "This strategy already gives short opens for blocked apps and categories, so timed breaks are not needed for this profile."
+        )
       }
-    } else {
-      ProfileFieldNotice(
-        title: "Breaks are off for Temporary Access",
-        message:
-          "This strategy already gives short opens for blocked apps and categories, so timed breaks are not needed for this profile."
-      )
+    }
+    .navigationDestination(isPresented: $showingCustomBreakLimit) {
+      BreakCountPickerView(breakCountLimit: $draft.breakCountLimit) {
+        draft.isBreakCountUnlimited = false
+      }
+    }
+    .alert("Reset Break Usage?", isPresented: $showingResetConfirmation) {
+      Button("Cancel", role: .cancel) {}
+      Button("Reset") {
+        if let profile {
+          SharedData.resetBreakAllowanceUsage(for: profile.id)
+        }
+      }
+    } message: {
+      Text("This immediately restores the full configured break allowance.")
     }
   }
 
-  private var breakDurationPicker: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      HStack {
-        Text("Break Duration")
+  private var allowanceModePicker: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Text("Allowance Mode")
+        .font(.subheadline)
+        .fontWeight(.semibold)
+        .padding(.bottom, 4)
 
-        Spacer()
-
-        Text(DateFormatters.formatMinutes(draft.breakTimeInMinutes))
-          .fontWeight(.semibold)
-          .foregroundStyle(.secondary)
-          .contentTransition(.numericText())
+      selectionButton(
+        title: "Per Break",
+        description: "Each break receives the configured duration.",
+        isSelected: draft.breakAllowanceMode == .perBreak
+      ) {
+        draft.breakAllowanceMode = .perBreak
       }
 
-      Slider(
-        value: breakDurationBinding,
-        in: Double(minimumBreakDurationInMinutes)...Double(maximumBreakDurationInMinutes),
-        step: 5
-      )
-      .tint(themeManager.themeColor)
-      .accessibilityValue(DateFormatters.formatMinutes(draft.breakTimeInMinutes))
+      Divider()
 
-      HStack {
-        Text("5m")
-        Spacer()
-        Text("1h")
+      selectionButton(
+        title: "Shared Budget",
+        description: "All breaks consume one pool of time.",
+        isSelected: draft.breakAllowanceMode == .cumulative
+      ) {
+        draft.breakAllowanceMode = .cumulative
       }
-      .font(.caption2)
-      .foregroundStyle(.secondary)
     }
     .disabled(disabled)
   }
 
-  private var breakDurationBinding: Binding<Double> {
+  private var durationRow: some View {
+    NavigationLink {
+      BreakDurationSelectionView(
+        mode: draft.breakAllowanceMode,
+        durationInMinutes: $draft.breakTimeInMinutes
+      )
+    } label: {
+      HStack {
+        Text(draft.breakAllowanceMode == .perBreak ? "Duration Per Break" : "Total Break Budget")
+
+        Spacer()
+
+        Text(DateFormatters.formatMinutes(draft.breakTimeInMinutes))
+          .foregroundStyle(.secondary)
+          .contentTransition(.numericText())
+      }
+    }
+    .disabled(disabled)
+  }
+
+  private var breakLimitRow: some View {
+    HStack {
+      Text(breakLimitTitle)
+
+      Spacer()
+
+      Menu {
+        ForEach([1, 3, 5, 10], id: \.self) { count in
+          Button {
+            draft.breakCountLimit = count
+            draft.isBreakCountUnlimited = false
+          } label: {
+            menuLabel(
+              title: "\(count)",
+              isSelected: !draft.isBreakCountUnlimited && draft.breakCountLimit == count
+            )
+          }
+        }
+
+        Divider()
+
+        Button {
+          showingCustomBreakLimit = true
+        } label: {
+          Label("Custom…", systemImage: "number")
+        }
+
+        Button {
+          draft.isBreakCountUnlimited = true
+        } label: {
+          menuLabel(title: "Unlimited", isSelected: draft.isBreakCountUnlimited)
+        }
+      } label: {
+        HStack(spacing: 4) {
+          Text(breakLimitValue)
+          Image(systemName: "chevron.up.chevron.down")
+            .font(.caption2)
+        }
+        .foregroundStyle(themeManager.themeColor)
+      }
+      .disabled(disabled)
+    }
+  }
+
+  private var resetPolicyPicker: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Text("Reset Schedule")
+        .font(.subheadline)
+        .fontWeight(.semibold)
+        .padding(.bottom, 4)
+
+      selectionButton(
+        title: "Daily",
+        description: "Restore the allowance at a selected local time.",
+        isSelected: draft.breakResetPolicy == .daily
+      ) {
+        draft.breakResetPolicy = .daily
+      }
+
+      Divider()
+
+      selectionButton(
+        title: "Never",
+        description: "Preserve usage until it is manually reset.",
+        isSelected: draft.breakResetPolicy == .never
+      ) {
+        draft.breakResetPolicy = .never
+      }
+    }
+    .disabled(disabled)
+  }
+
+  private func selectionButton(
+    title: String,
+    description: String,
+    isSelected: Bool,
+    action: @escaping () -> Void
+  ) -> some View {
+    Button(action: action) {
+      HStack(alignment: .top, spacing: 12) {
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+          .foregroundStyle(isSelected ? themeManager.themeColor : Color.secondary)
+          .padding(.top, 2)
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(title)
+            .foregroundStyle(.primary)
+          Text(description)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.leading)
+        }
+
+        Spacer()
+      }
+      .padding(.vertical, 8)
+    }
+    .buttonStyle(.plain)
+    .accessibilityAddTraits(isSelected ? .isSelected : [])
+  }
+
+  @ViewBuilder
+  private func menuLabel(title: String, isSelected: Bool) -> some View {
+    if isSelected {
+      Label(title, systemImage: "checkmark")
+    } else {
+      Text(title)
+    }
+  }
+
+  private var breakLimitTitle: String {
+    draft.breakResetPolicy == .daily ? "Breaks Per Day" : "Total Break Limit"
+  }
+
+  private var breakLimitValue: String {
+    draft.isBreakCountUnlimited ? "Unlimited" : "\(draft.breakCountLimit)"
+  }
+
+  private var showsResetControls: Bool {
+    draft.breakAllowanceMode == .cumulative || !draft.isBreakCountUnlimited
+  }
+
+  private var resetDescription: String {
+    switch draft.breakResetPolicy {
+    case .daily:
+      return "The allowance renews every day at the selected local time."
+    case .never:
+      return "Used break time or break counts remain consumed until manually reset."
+    }
+  }
+
+  private var breakResetTimeBinding: Binding<Date> {
     Binding(
-      get: { Double(draft.breakTimeInMinutes) },
-      set: { draft.breakTimeInMinutes = Int($0) }
+      get: {
+        Calendar.current.date(
+          bySettingHour: draft.breakResetHour,
+          minute: draft.breakResetMinute,
+          second: 0,
+          of: Date()
+        ) ?? Date()
+      },
+      set: { date in
+        draft.breakResetHour = Calendar.current.component(.hour, from: date)
+        draft.breakResetMinute = Calendar.current.component(.minute, from: date)
+      }
     )
+  }
+}
+
+private struct BreakDurationSelectionView: View {
+  @Environment(\.dismiss) private var dismiss
+
+  let mode: BreakAllowanceMode
+  @Binding var durationInMinutes: Int
+
+  var body: some View {
+    List {
+      Section("Recommended") {
+        ForEach(durationPresets, id: \.self) { duration in
+          Button {
+            durationInMinutes = duration
+            dismiss()
+          } label: {
+            HStack {
+              Text(DateFormatters.formatMinutes(duration))
+                .foregroundStyle(.primary)
+              Spacer()
+              if durationInMinutes == duration {
+                Image(systemName: "checkmark")
+              }
+            }
+          }
+        }
+      }
+
+      Section {
+        NavigationLink {
+          BreakDurationPickerView(
+            title: mode == .perBreak ? "Duration Per Break" : "Total Break Budget",
+            durationInMinutes: $durationInMinutes
+          )
+        } label: {
+          HStack {
+            Text("Custom Duration")
+            Spacer()
+            if !durationPresets.contains(durationInMinutes) {
+              Text(DateFormatters.formatMinutes(durationInMinutes))
+                .foregroundStyle(.secondary)
+            }
+          }
+        }
+      } footer: {
+        if durationInMinutes > 4 * 60 {
+          Text("Long breaks leave blocked apps available for most or all of the allowance period.")
+        } else {
+          Text("Custom durations can range from 5 minutes to 24 hours.")
+        }
+      }
+    }
+    .navigationTitle(mode == .perBreak ? "Break Duration" : "Break Budget")
+  }
+
+  private var durationPresets: [Int] {
+    switch mode {
+    case .perBreak:
+      return [5, 10, 15, 30, 45, 60]
+    case .cumulative:
+      return [15, 30, 45, 60, 120, 240, 480, 720, 1_440]
+    }
+  }
+}
+
+private struct BreakCountPickerView: View {
+  @Environment(\.dismiss) private var dismiss
+
+  @Binding var breakCountLimit: Int
+  let onSave: () -> Void
+
+  @State private var selectedCount: Int
+
+  init(breakCountLimit: Binding<Int>, onSave: @escaping () -> Void) {
+    _breakCountLimit = breakCountLimit
+    self.onSave = onSave
+    _selectedCount = State(initialValue: min(max(breakCountLimit.wrappedValue, 1), 100))
+  }
+
+  var body: some View {
+    Form {
+      Section {
+        Stepper(value: $selectedCount, in: 1...100) {
+          HStack {
+            Text("Break Limit")
+            Spacer()
+            Text("\(selectedCount)")
+              .foregroundStyle(.secondary)
+          }
+        }
+      } footer: {
+        Text("Choose how many breaks are available before the allowance resets.")
+      }
+    }
+    .navigationTitle("Custom Break Limit")
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .confirmationAction) {
+        Button("Done") {
+          breakCountLimit = selectedCount
+          onSave()
+          dismiss()
+        }
+      }
+    }
+  }
+}
+
+private struct BreakDurationPickerView: View {
+  @Environment(\.dismiss) private var dismiss
+
+  let title: String
+  @Binding var durationInMinutes: Int
+
+  @State private var hours: Int
+  @State private var minutes: Int
+
+  init(title: String, durationInMinutes: Binding<Int>) {
+    self.title = title
+    _durationInMinutes = durationInMinutes
+
+    let initialDuration = min(max(durationInMinutes.wrappedValue, 5), 24 * 60)
+    _hours = State(initialValue: initialDuration / 60)
+    _minutes = State(initialValue: initialDuration % 60 / 5 * 5)
+  }
+
+  var body: some View {
+    VStack(spacing: 12) {
+      HStack(spacing: 0) {
+        durationColumn(title: "Hours", selection: $hours, values: Array(0...24))
+        durationColumn(title: "Minutes", selection: $minutes, values: availableMinutes)
+      }
+      .frame(height: 190)
+
+      if selectedDurationInMinutes < 5 {
+        Text("Choose a duration of at least 5 minutes.")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
+
+      Spacer()
+    }
+    .padding(.horizontal)
+    .navigationTitle(title)
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .confirmationAction) {
+        Button("Done") {
+          durationInMinutes = selectedDurationInMinutes
+          dismiss()
+        }
+        .disabled(selectedDurationInMinutes < 5)
+      }
+    }
+    .onChange(of: hours) { _, newValue in
+      if newValue == 24 {
+        minutes = 0
+      }
+    }
+  }
+
+  private var selectedDurationInMinutes: Int {
+    hours * 60 + minutes
+  }
+
+  private var availableMinutes: [Int] {
+    hours == 24 ? [0] : Array(stride(from: 0, through: 55, by: 5))
+  }
+
+  private func durationColumn(
+    title: String,
+    selection: Binding<Int>,
+    values: [Int]
+  ) -> some View {
+    VStack(spacing: 0) {
+      Text(title)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+
+      Picker(title, selection: selection) {
+        ForEach(values, id: \.self) { value in
+          Text("\(value)").tag(value)
+        }
+      }
+      .pickerStyle(.wheel)
+    }
+    .frame(maxWidth: .infinity)
   }
 }
 
 struct BlockedProfileBreaksSection: View {
   @ObservedObject var draft: BlockedProfileDraft
+  var profile: BlockedProfiles? = nil
   var disabled: Bool
 
   var body: some View {
     Section("Breaks") {
-      BlockedProfileBreaksFields(draft: draft, disabled: disabled)
+      BlockedProfileBreaksFields(draft: draft, profile: profile, disabled: disabled)
     }
   }
 }

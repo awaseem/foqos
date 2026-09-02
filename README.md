@@ -40,7 +40,7 @@ Foqos is not affiliated with Brick, Unpluq, Blok, or Opal.
 - NFC tag blocking for physical start and stop flows
 - QR code and barcode blocking, including generated profile QR codes
 - Timer-based sessions that end automatically after a chosen duration
-- Optional reusable break allowance that can be split across multiple breaks in a session
+- Configurable daily breaks with per-break limits or a shared time budget and custom reset time
 - Physical unlock rules for profiles that should only stop with approved tags or codes
 - Temporary Access strategies for limited, short opens without ending the full session
 - Pause Timer strategies for a short pause before blocking resumes
@@ -48,6 +48,14 @@ Foqos is not affiliated with Brick, Unpluq, Blok, or Opal.
 - Live Activities for Lock Screen and Dynamic Island status
 - Widgets and App Intents for faster profile control
 - Local-first privacy with no cloud sync or analytics
+
+### Configurable Break Allowances
+
+Profiles with timed breaks can use either a per-break allowance or a shared daily budget.
+Per-break allowances apply the selected duration to every break and can limit the number of
+breaks to 1–100 or allow unlimited breaks. Shared budgets let any number of breaks consume one
+pool of time. Both modes support durations from 5 minutes to 24 hours. Allowances can reset every
+day at a configured local time or preserve their usage until manually reset.
 
 ## Blocking Strategies
 

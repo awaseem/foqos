@@ -34,4 +34,15 @@ final class BlockedProfileDraftTests: XCTestCase {
     XCTAssertTrue(draft.enableAllowMode)
     XCTAssertTrue(draft.selectedStrategySupportsAllowMode)
   }
+
+  func testLoadingProfilePreservesNeverResetPolicy() {
+    let profile = BlockedProfiles(
+      name: "Focus",
+      breakResetPolicy: .never
+    )
+
+    let draft = BlockedProfileDraft(profile: profile)
+
+    XCTAssertEqual(draft.breakResetPolicy, .never)
+  }
 }

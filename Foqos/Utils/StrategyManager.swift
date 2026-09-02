@@ -532,7 +532,10 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    session.startBreak()
+    guard session.startBreak() else {
+      errorMessage = "Your break allowance is used up until the next daily reset."
+      return
+    }
     ActiveProfileSyncStore.publish(session: session)
     appBlocker.deactivateRestrictionsForBreak(
       for: BlockedProfiles.getSnapshot(for: session.blockedProfile))

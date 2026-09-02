@@ -523,11 +523,17 @@ private struct GuidedProfileReviewContent: View {
       return "Disabled"
     }
 
-    if draft.allowMultipleBreaks {
-      return "\(draft.breakTimeInMinutes) minutes, reusable"
+    if draft.breakAllowanceMode == .cumulative {
+      let reset = draft.breakResetPolicy == .daily ? "daily" : "no automatic reset"
+      return "\(DateFormatters.formatMinutes(draft.breakTimeInMinutes)) budget, \(reset)"
     }
 
-    return "\(draft.breakTimeInMinutes) minutes"
+    let count =
+      draft.isBreakCountUnlimited ? "unlimited" : "\(draft.breakCountLimit)"
+    let reset =
+      draft.isBreakCountUnlimited
+      ? "" : draft.breakResetPolicy == .daily ? ", daily" : ", no automatic reset"
+    return "\(count) × \(DateFormatters.formatMinutes(draft.breakTimeInMinutes))\(reset)"
   }
 
   private var safeguardsSummary: String {

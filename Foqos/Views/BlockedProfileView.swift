@@ -122,7 +122,7 @@ struct BlockedProfileView: View {
           disabled: isBlocking
         )
 
-        BlockedProfileBreaksSection(draft: draft, disabled: isBlocking)
+        BlockedProfileBreaksSection(draft: draft, profile: profile, disabled: isBlocking)
 
         BlockedProfileStrictSafeguardsSection(draft: draft, disabled: isBlocking)
 
