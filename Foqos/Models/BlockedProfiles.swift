@@ -516,6 +516,9 @@ class BlockedProfiles {
     newName: String
   ) throws -> BlockedProfiles {
     let nextOrder = getNextOrder(in: context)
+    var clonedSchedule = source.schedule
+    clonedSchedule?.updatedAt = Date()
+
     let cloned = BlockedProfiles(
       name: newName,
       selectedActivity: source.selectedActivity,
@@ -538,12 +541,14 @@ class BlockedProfiles {
       order: nextOrder,
       domains: source.domains,
       physicalUnblockItems: source.physicalUnblockItems,
-      schedule: source.schedule,
+      schedule: clonedSchedule,
+      disableBackgroundStops: source.disableBackgroundStops,
       enableEmergencyUnblock: source.enableEmergencyUnblock
     )
 
     context.insert(cloned)
     try context.save()
+    updateSnapshot(for: cloned)
     return cloned
   }
 
