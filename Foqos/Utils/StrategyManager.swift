@@ -318,7 +318,7 @@ class StrategyManager: ObservableObject {
     let profile = session.blockedProfile
     let profileName = profile.name
     let strategy = StrategyManager.availableStrategies.first {
-      $0.getIdentifier() == session.tag
+      $0.getIdentifier() == profile.blockingStrategyId
     }
 
     guard strategy?.hasPauseMode == true else {

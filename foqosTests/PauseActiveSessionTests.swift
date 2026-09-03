@@ -40,6 +40,25 @@ final class PauseActiveSessionTests: XCTestCase {
     XCTAssertEqual(scheduledProfileId, profile.id)
   }
 
+  func testShortcutStartedNFCPauseStrategySchedulesPause() throws {
+    let context = try makeContext()
+    let profile = try makeActiveSession(
+      strategyId: NFCPauseTimerBlockingStrategy.id,
+      sessionTag: ManualBlockingStrategy.id,
+      forceStart: true,
+      context: context
+    ).blockedProfile
+    var scheduledProfileId: UUID?
+
+    let profileName = try StrategyManager().pauseActiveSessionFromBackground(
+      context: context,
+      schedulePause: { scheduledProfileId = $0.id }
+    )
+
+    XCTAssertEqual(profileName, profile.name)
+    XCTAssertEqual(scheduledProfileId, profile.id)
+  }
+
   func testQRPauseStrategySchedulesPause() throws {
     let context = try makeContext()
     let profile = try makeActiveSession(
@@ -203,6 +222,8 @@ final class PauseActiveSessionTests: XCTestCase {
 
   private func makeActiveSession(
     strategyId: String,
+    sessionTag: String? = nil,
+    forceStart: Bool = false,
     includePauseConfiguration: Bool = true,
     enableBreaks: Bool = false,
     context: ModelContext
@@ -222,8 +243,9 @@ final class PauseActiveSessionTests: XCTestCase {
 
     let session = BlockedProfileSession.createSession(
       in: context,
-      withTag: strategyId,
-      withProfile: profile
+      withTag: sessionTag ?? strategyId,
+      withProfile: profile,
+      forceStart: forceStart
     )
     try context.save()
     return session
