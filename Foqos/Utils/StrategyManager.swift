@@ -77,6 +77,14 @@ class StrategyManager: ObservableObject {
   }
 
   func loadActiveSession(context: ModelContext) {
+    // Start Wi-Fi network monitoring if not already started
+    WiFiMonitorManager.shared.startMonitoring()
+    WiFiMonitorManager.shared.onSSIDChanged = { [weak self] _ in
+      DispatchQueue.main.async {
+        self?.evaluateWiFiBlocking(context: context)
+      }
+    }
+
     activeSession = getActiveSession(context: context)
     ActiveProfileSyncStore.publish(session: activeSession)
 
@@ -97,8 +105,53 @@ class StrategyManager: ObservableObject {
       liveActivityManager.endSessionActivity()
     }
 
+    // Evaluate Wi-Fi blocking rules
+    evaluateWiFiBlocking(context: context)
+
     // Reload widget to reflect any changes from extension (e.g., timer expiration)
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+  }
+
+  func evaluateWiFiBlocking(context: ModelContext) {
+    guard let profiles = try? BlockedProfiles.fetchProfiles(in: context) else { return }
+    let currentSSID = WiFiMonitorManager.shared.currentSSID
+
+    for profile in profiles where profile.enableWiFiBlocking {
+      let ssids = profile.wifiSSIDs ?? []
+      let isSSIDMatch = currentSSID != nil && ssids.contains(where: { $0.caseInsensitiveCompare(currentSSID!) == .orderedSame })
+
+      let isScheduleActive: Bool
+      if let schedule = profile.schedule, schedule.isActive {
+        isScheduleActive = schedule.isCurrentlyActiveWindow()
+      } else {
+        isScheduleActive = true
+      }
+
+      let shouldBlockBeActive = isSSIDMatch && isScheduleActive
+      let profileID = profile.id
+
+      if let currentActive = activeSession, currentActive.blockedProfile.id == profileID {
+        if shouldBlockBeActive {
+          // Cancel any pending disconnect stop timer if Wi-Fi reconnected
+          WiFiMonitorManager.shared.cancelDisconnectStop(for: profileID)
+        } else {
+          // Schedule 1-minute grace period before stopping blocking session if not already scheduled
+          if !WiFiMonitorManager.shared.isDisconnectTimerPending(for: profileID) {
+            WiFiMonitorManager.shared.scheduleDisconnectStop(for: profileID) { [weak self] in
+              DispatchQueue.main.async {
+                guard let self = self, let session = self.activeSession, session.blockedProfile.id == profileID else { return }
+                let manualStrategy = self.getStrategy(id: ManualBlockingStrategy.id, context: context)
+                _ = manualStrategy.stopBlocking(context: context, session: session)
+              }
+            }
+          }
+        }
+      } else if shouldBlockBeActive && activeSession == nil {
+        // Automatically start blocking session for matching Wi-Fi
+        let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
+        _ = manualStrategy.startBlocking(context: context, profile: profile, forceStart: true)
+      }
+    }
   }
 
   func toggleBlocking(context: ModelContext, activeProfile: BlockedProfiles?) {
@@ -720,6 +773,11 @@ class StrategyManager: ObservableObject {
       return
     }
 
+    if definedProfile.enableWiFiBlocking && !definedProfile.allowManualControl {
+      self.errorMessage = "Manual control is disabled for this profile because Wi-Fi blocking is active."
+      return
+    }
+
     if let strategyId = definedProfile.blockingStrategyId {
       let strategy = getStrategy(id: strategyId, context: context)
       let view = strategy.startBlocking(
@@ -742,6 +800,11 @@ class StrategyManager: ObservableObject {
       print(
         "No active session found, calling stop blocking with no session"
       )
+      return
+    }
+
+    if session.blockedProfile.enableWiFiBlocking && !session.blockedProfile.allowManualControl {
+      self.errorMessage = "Manual control is disabled for this profile because Wi-Fi blocking is active."
       return
     }
 
