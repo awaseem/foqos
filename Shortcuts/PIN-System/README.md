@@ -55,4 +55,5 @@ This prevents one person's PIN generator from being used with the other color's 
 - The approximately 10-minute interval is built into the Shortcut's time-based PIN generation logic and is not intended to be user-configurable.
 - PIN generation uses UTC, so the devices do not need to be in the same time zone.
 - Neither shortcut will work if you have both the PIN generator and the PIN entry shortcut on the same device at the same time.
+- **Do not rename any of the PIN System Shortcuts.** The system relies on their expected names (to prevent bypass), and changing them will cause an error. To fix this error, revert the shortcut's name.
 - These Shortcuts are intended as an optional accountability tool for Foqos.
