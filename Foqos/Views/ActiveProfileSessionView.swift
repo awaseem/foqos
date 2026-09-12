@@ -1,3 +1,4 @@
+import Combine
 import FamilyControls
 import SwiftUI
 import UIKit
@@ -75,20 +76,24 @@ struct ActiveProfileSessionView: View {
     VStack(alignment: .leading, spacing: 0) {
       topControls
 
-      Spacer(minLength: 24)
-
-      timerPresentation
-
-      Spacer(minLength: 24)
-
-      VStack(alignment: .leading, spacing: 18) {
-        profileDetails
-        actionSection
+      GeometryReader { geometry in
+        ScrollView {
+          VStack(alignment: .leading, spacing: 0) {
+            Spacer(minLength: 24)
+            timerPresentation
+            Spacer(minLength: 24)
+            VStack(alignment: .leading, spacing: 18) {
+              profileDetails
+              actionSection
+            }
+          }
+          .frame(minHeight: max(0, geometry.size.height - 16))
+          .padding(.bottom, 16)
+        }
       }
     }
     .padding(.horizontal, 20)
     .padding(.top, 8)
-    .padding(.bottom, 16)
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350), .large])

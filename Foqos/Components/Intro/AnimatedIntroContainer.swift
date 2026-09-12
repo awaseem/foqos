@@ -11,26 +11,34 @@ struct AnimatedIntroContainer: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      // Content area
-      Group {
-        switch currentStep {
-        case 0:
-          WelcomeIntroScreen()
-        case 1:
-          FeaturesIntroScreen()
-        case 2:
-          PermissionsIntroScreen(showPasscodeMessage: showPasscodeMessage)
-        default:
-          WelcomeIntroScreen()
+      GeometryReader { geometry in
+        ScrollView {
+          Group {
+            switch currentStep {
+            case 0:
+              WelcomeIntroScreen()
+            case 1:
+              FeaturesIntroScreen()
+            case 2:
+              PermissionsIntroScreen(showPasscodeMessage: showPasscodeMessage)
+            default:
+              WelcomeIntroScreen()
+            }
+          }
+          .transition(
+            .asymmetric(
+              insertion: .move(edge: .trailing).combined(with: .opacity),
+              removal: .move(edge: .leading).combined(with: .opacity)
+            )
+          )
+          .animation(.easeInOut(duration: 0.3), value: currentStep)
+          .frame(maxWidth: 600)
+          .frame(minHeight: geometry.size.height)
+          .frame(maxWidth: .infinity)
         }
+        .defaultScrollAnchor(.top)
+        .id(currentStep)
       }
-      .transition(
-        .asymmetric(
-          insertion: .move(edge: .trailing).combined(with: .opacity),
-          removal: .move(edge: .leading).combined(with: .opacity)
-        )
-      )
-      .animation(.easeInOut(duration: 0.3), value: currentStep)
 
       // Stepper
       IntroStepper(

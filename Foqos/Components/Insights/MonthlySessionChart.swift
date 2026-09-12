@@ -110,10 +110,7 @@ struct MonthlySessionChart: View {
   }
 
   private func daySquareView(
-    for day: MonthlyDayAggregate,
-    weekIndex: Int,
-    dayIndex: Int,
-    geometry: GeometryProxy
+    for day: MonthlyDayAggregate
   ) -> some View {
     let hours = day.totalSessionTime / 3600
     let isSelected = selectedDay?.date == day.date
@@ -154,18 +151,11 @@ struct MonthlySessionChart: View {
   }
 
   private func weekRowView(
-    for week: [MonthlyDayAggregate],
-    weekIndex: Int,
-    geometry: GeometryProxy
+    for week: [MonthlyDayAggregate]
   ) -> some View {
     HStack(spacing: 4) {
-      ForEach(Array(week.enumerated()), id: \.element.id) { dayIndex, day in
-        daySquareView(
-          for: day,
-          weekIndex: weekIndex,
-          dayIndex: dayIndex,
-          geometry: geometry
-        )
+      ForEach(week) { day in
+        daySquareView(for: day)
       }
     }
   }
@@ -226,23 +216,13 @@ struct MonthlySessionChart: View {
       }
 
       // Grid
-      GeometryReader { geometry in
-        LazyVStack(spacing: 4) {
-          ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
-            weekRowView(
-              for: weeksInMonth[weekIndex],
-              weekIndex: weekIndex,
-              geometry: geometry
-            )
-          }
+      VStack(spacing: 4) {
+        ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
+          weekRowView(for: weeksInMonth[weekIndex])
         }
-        .frame(maxWidth: .infinity)
-        .coordinateSpace(name: "grid")
       }
-      .frame(
-        height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7
-          + CGFloat(
-            weeksInMonth.count - 1))
+      .frame(maxWidth: .infinity)
+      .coordinateSpace(name: "grid")
 
       // Legend
       legendView()
