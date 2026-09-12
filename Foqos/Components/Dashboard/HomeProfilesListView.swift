@@ -62,6 +62,9 @@ struct HomeProfilesListView: View {
 }
 
 private struct HomeProfileRow: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @State private var hasRoomForMiniChart = false
+
   let profile: BlockedProfiles
   let isBlocking: Bool
   let isActive: Bool
@@ -73,7 +76,7 @@ private struct HomeProfileRow: View {
   let onStatsTapped: () -> Void
 
   private var showsMiniChart: Bool {
-    !DeviceLayoutUtil.hasCompactEffectiveWidth
+    hasRoomForMiniChart && !dynamicTypeSize.isAccessibilitySize
   }
 
   private var canStart: Bool {
@@ -126,6 +129,13 @@ private struct HomeProfileRow: View {
       actionMenu
     }
     .padding(16)
+    .frame(maxWidth: .infinity)
+    .onGeometryChange(for: Bool.self) { geometry in
+      // Reserve room for profile details, the chart, the action menu, and padding.
+      geometry.size.width > 343
+    } action: { hasRoom in
+      hasRoomForMiniChart = hasRoom
+    }
   }
 
   private var actionMenu: some View {

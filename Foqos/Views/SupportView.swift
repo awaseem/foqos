@@ -8,6 +8,7 @@ private let linkedinURL = URL(string: "https://www.linkedin.com/in/aliw")!
 private let donateURL = URL(string: "https://www.buymeacoffee.com/ambitionsoftware")!
 
 struct SupportView: View {
+  @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var donationManager: TipManager
   @EnvironmentObject var themeManager: ThemeManager
 
@@ -24,7 +25,34 @@ struct SupportView: View {
   }
 
   var body: some View {
-    // Thank you stamp image and header
+    NavigationStack {
+      GeometryReader { geometry in
+        ScrollView {
+          supportContent
+            .frame(maxWidth: 600)
+            .frame(minHeight: max(0, geometry.size.height - 40))
+            .frame(maxWidth: .infinity)
+            .padding(20)
+        }
+      }
+      .navigationTitle("Support")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Close", systemImage: "xmark") { dismiss() }
+        }
+      }
+    }
+    .task {
+      guard isUnitedStatesStorefrontOverride == nil else { return }
+      isUnitedStatesStorefront = await Storefront.current?.countryCode == "USA"
+      for await storefront in Storefront.updates {
+        isUnitedStatesStorefront = storefront.countryCode == "USA"
+      }
+    }
+  }
+
+  private var supportContent: some View {
     VStack(alignment: .leading, spacing: 24) {
       Spacer()
 
@@ -135,33 +163,17 @@ struct SupportView: View {
       }
       .fadeInSlide(delay: 0.6)
     }
-    .padding(.horizontal, 20)
-    .task {
-      guard isUnitedStatesStorefrontOverride == nil else {
-        return
-      }
-
-      isUnitedStatesStorefront = await Storefront.current?.countryCode == "USA"
-
-      for await storefront in Storefront.updates {
-        isUnitedStatesStorefront = storefront.countryCode == "USA"
-      }
-    }
   }
 }
 
 #Preview("United States") {
-  NavigationView {
-    SupportView(isUnitedStatesStorefrontOverride: true)
-      .environmentObject(TipManager())
-      .environmentObject(ThemeManager.shared)
-  }
+  SupportView(isUnitedStatesStorefrontOverride: true)
+    .environmentObject(TipManager())
+    .environmentObject(ThemeManager.shared)
 }
 
 #Preview("Outside United States") {
-  NavigationView {
-    SupportView(isUnitedStatesStorefrontOverride: false)
-      .environmentObject(TipManager())
-      .environmentObject(ThemeManager.shared)
-  }
+  SupportView(isUnitedStatesStorefrontOverride: false)
+    .environmentObject(TipManager())
+    .environmentObject(ThemeManager.shared)
 }
