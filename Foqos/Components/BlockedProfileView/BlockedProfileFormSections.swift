@@ -11,6 +11,114 @@ private struct ProfileFieldDivider: View {
   }
 }
 
+struct BlockedProfileWiFiFields: View {
+  @EnvironmentObject private var themeManager: ThemeManager
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+  var showsSeparators: Bool = false
+
+  @State private var newSSID: String = ""
+  @StateObject private var wifiMonitor = WiFiMonitorManager.shared
+
+  var body: some View {
+    CustomToggle(
+      title: "Enable Wi-Fi Blocking",
+      description: "Automatically start blocking when connected to specific Wi-Fi networks.",
+      isOn: $draft.enableWiFiBlocking,
+      isDisabled: disabled
+    )
+
+    if draft.enableWiFiBlocking {
+      ProfileFieldDivider(isVisible: showsSeparators)
+
+      VStack(alignment: .leading, spacing: 8) {
+        HStack {
+          TextField("Enter Wi-Fi Network Name (SSID)", text: $newSSID)
+            .textFieldStyle(.roundedBorder)
+            .disabled(disabled)
+
+          Button("Add") {
+            let trimmed = newSSID.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && !draft.wifiSSIDs.contains(trimmed) {
+              draft.wifiSSIDs.append(trimmed)
+              newSSID = ""
+            }
+          }
+          .disabled(disabled || newSSID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+          .buttonStyle(.borderedProminent)
+          .tint(themeManager.themeColor)
+        }
+
+        if let current = wifiMonitor.currentSSID, !current.isEmpty {
+          Button("Use Current Wi-Fi (\(current))") {
+            if !draft.wifiSSIDs.contains(current) {
+              draft.wifiSSIDs.append(current)
+            }
+          }
+          .font(.caption)
+          .foregroundStyle(themeManager.themeColor)
+          .disabled(disabled)
+        }
+
+        if draft.wifiSSIDs.isEmpty {
+          Text("No Wi-Fi networks added yet.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.top, 2)
+        } else {
+          ForEach(draft.wifiSSIDs, id: \.self) { ssid in
+            HStack {
+              Image(systemName: "wifi")
+                .foregroundStyle(themeManager.themeColor)
+              Text(ssid)
+              Spacer()
+              Button(role: .destructive) {
+                draft.wifiSSIDs.removeAll { $0 == ssid }
+              } label: {
+                Image(systemName: "trash")
+                  .foregroundStyle(.red)
+              }
+              .buttonStyle(.plain)
+              .disabled(disabled)
+            }
+            .padding(.vertical, 4)
+          }
+        }
+      }
+      .padding(.vertical, 4)
+
+      ProfileFieldDivider(isVisible: showsSeparators)
+
+      CustomToggle(
+        title: "Allow Manual Start/Stop",
+        description: "When turned off, session start and stop are strictly controlled by Wi-Fi status.",
+        isOn: $draft.allowManualControl,
+        isDisabled: disabled
+      )
+
+      if !wifiMonitor.isLocationAuthorized {
+        ProfileFieldDivider(isVisible: showsSeparators)
+        Button("Grant Location Access for Wi-Fi Detection") {
+          wifiMonitor.requestLocationAuthorization()
+        }
+        .font(.caption)
+        .foregroundStyle(themeManager.themeColor)
+      }
+    }
+  }
+}
+
+struct BlockedProfileWiFiSection: View {
+  @ObservedObject var draft: BlockedProfileDraft
+  var disabled: Bool
+
+  var body: some View {
+    Section("Wi-Fi Blocking") {
+      BlockedProfileWiFiFields(draft: draft, disabled: disabled)
+    }
+  }
+}
+
 struct BlockedProfileNameFields: View {
   @ObservedObject var draft: BlockedProfileDraft
   var disabled: Bool

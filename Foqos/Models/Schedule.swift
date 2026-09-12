@@ -74,6 +74,21 @@ struct BlockedProfileSchedule: Codable, Equatable {
     return days.contains(today)
   }
 
+  func isCurrentlyActiveWindow(now: Date = Date(), calendar: Calendar = .current) -> Bool {
+    guard isActive, isTodayScheduled(now: now, calendar: calendar) else { return false }
+    let currentHour = calendar.component(.hour, from: now)
+    let currentMinute = calendar.component(.minute, from: now)
+    let currentTotalMinutes = currentHour * 60 + currentMinute
+    let startTotalMinutes = startHour * 60 + startMinute
+    let endTotalMinutes = endHour * 60 + endMinute
+
+    if startTotalMinutes <= endTotalMinutes {
+      return currentTotalMinutes >= startTotalMinutes && currentTotalMinutes < endTotalMinutes
+    } else {
+      return currentTotalMinutes >= startTotalMinutes || currentTotalMinutes < endTotalMinutes
+    }
+  }
+
   func olderThan15Minutes(now: Date = Date()) -> Bool {
     return now.timeIntervalSince(updatedAt) > 15 * 60
   }

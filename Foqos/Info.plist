@@ -21,5 +21,7 @@
 		<string>fetch</string>
 		<string>processing</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Foqos requires location access to detect your connected Wi-Fi network name for Wi-Fi-based app blocking.</string>
 </dict>
 </plist>

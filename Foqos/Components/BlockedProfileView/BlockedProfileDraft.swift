@@ -21,6 +21,9 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var enableMacSync: Bool
   @Published var disableBackgroundStops: Bool
   @Published var enableEmergencyUnblock: Bool
+  @Published var enableWiFiBlocking: Bool
+  @Published var wifiSSIDs: [String]
+  @Published var allowManualControl: Bool
   @Published var domains: [String]
   @Published var physicalUnblockItems: [PhysicalUnblockItem]
   @Published var schedule: BlockedProfileSchedule
@@ -61,6 +64,9 @@ final class BlockedProfileDraft: ObservableObject {
     enableReminder = profile?.reminderTimeInSeconds != nil
     disableBackgroundStops = profile?.disableBackgroundStops ?? false
     enableEmergencyUnblock = profile?.enableEmergencyUnblock ?? true
+    enableWiFiBlocking = profile?.enableWiFiBlocking ?? false
+    wifiSSIDs = profile?.wifiSSIDs ?? []
+    allowManualControl = profile?.allowManualControl ?? true
     reminderTimeInMinutes = Int(profile?.reminderTimeInSeconds ?? 900) / 60
     customReminderMessage = profile?.customReminderMessage ?? ""
     domains = profile?.domains ?? []
@@ -142,7 +148,10 @@ final class BlockedProfileDraft: ObservableObject {
         physicalUnblockItems: .some(physicalUnblockItemsToSave),
         schedule: schedule,
         disableBackgroundStops: disableBackgroundStops,
-        enableEmergencyUnblock: enableEmergencyUnblock
+        enableEmergencyUnblock: enableEmergencyUnblock,
+        enableWiFiBlocking: enableWiFiBlocking,
+        wifiSSIDs: wifiSSIDs,
+        allowManualControl: allowManualControl
       )
 
       DeviceActivityCenterUtil.scheduleTimerActivity(for: updatedProfile)
@@ -173,7 +182,10 @@ final class BlockedProfileDraft: ObservableObject {
       physicalUnblockItems: physicalUnblockItemsToSave,
       schedule: schedule,
       disableBackgroundStops: disableBackgroundStops,
-      enableEmergencyUnblock: enableEmergencyUnblock
+      enableEmergencyUnblock: enableEmergencyUnblock,
+      enableWiFiBlocking: enableWiFiBlocking,
+      wifiSSIDs: wifiSSIDs,
+      allowManualControl: allowManualControl
     )
 
     DeviceActivityCenterUtil.scheduleTimerActivity(for: newProfile)
