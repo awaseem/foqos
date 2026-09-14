@@ -1,17 +1,9 @@
-//
-//  ProfileControlWidget.swift
-//  FoqosWidget
-//
-//  Created by Ali Waseem on 2025-03-11.
-//
-
 import AppIntents
 import SwiftUI
 import WidgetKit
 
-// MARK: - Widget Configuration
 struct ProfileControlWidget: Widget {
-  let kind: String = "ProfileControlWidget"
+  let kind = "ProfileControlWidget"
 
   var body: some WidgetConfiguration {
     AppIntentConfiguration(
@@ -19,20 +11,15 @@ struct ProfileControlWidget: Widget {
     ) { entry in
       ProfileWidgetEntryView(entry: entry)
         .containerBackground(for: .widget) {
-          // Use the entry's background color or clear if inactive
-          if entry.isSessionActive {
-            if entry.isPauseActive {
-              Color(red: 0.9, green: 0.7, blue: 0.0)
-            } else if entry.isBreakActive {
-              Color.orange
-            } else {
-              Color.green
-            }
-          }
+          ProfileWidgetBackground()
         }
     }
     .configurationDisplayName("Foqos Profile")
-    .description("Monitor and control your selected focus profile")
-    .supportedFamilies([.systemSmall, .accessoryRectangular, .accessoryInline])
+    .description(
+      "Your focus, at a glance. Weekly charts, a monthly activity grid, and your profile in your theme."
+    )
+    .supportedFamilies([
+      .systemSmall, .systemMedium, .accessoryRectangular, .accessoryInline,
+    ])
   }
 }

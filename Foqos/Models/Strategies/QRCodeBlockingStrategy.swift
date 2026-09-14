@@ -8,7 +8,6 @@ class QRCodeBlockingStrategy: BlockingStrategy {
   var name: String = "QR Code/Barcode"
   var description: String =
     "Start by scanning a QR code or barcode. To stop, scan the same code again."
-  var iconAssetName: String = "QRStickerLogo"
   var color: Color = .pink
   var pickerCategory: BlockingStrategyPickerCategory = .mostPopular
 
