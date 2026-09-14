@@ -37,7 +37,7 @@ class AlertsManager: ObservableObject {
             title: "Schedule needs repair",
             message: "\(profile.name)'s schedule is not running.",
             detailMessage:
-              "\(profile.name)'s schedule is saved, but iOS is no longer monitoring it. This usually can happen when you combine foqos with other blocking apps, recommended to turn those apps off.",
+              "\(profile.name)'s schedule is saved, but iOS is no longer monitoring it. This usually can happen when you combine foqos with other blocking apps, it is recommended to turn those apps off.",
             primaryActionTitle: "Fix Schedule",
             iconName: "calendar.badge.exclamationmark"
           )
