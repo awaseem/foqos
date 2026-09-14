@@ -44,9 +44,9 @@ struct ProfileWidgetEntryView: View {
   private var small: some View {
     VStack(alignment: .leading, spacing: 6) {
       profileHeader(compact: true)
-      metric(size: 29)
+      metric(size: 29, showsCaption: false)
       if isMonthly {
-        WidgetMonthGrid(entry: entry, showsNumbers: false, showsWeekdays: false)
+        WidgetMonthGrid(entry: entry, showsNumbers: false, showsWeekdays: false, usesCircles: true)
       } else {
         WidgetWeekChart(entry: entry)
       }
@@ -78,10 +78,15 @@ struct ProfileWidgetEntryView: View {
 
   private func profileHeader(compact: Bool) -> some View {
     HStack(spacing: 6) {
-      Image(systemName: "scope")
-        .font(.system(size: compact ? 13 : 15, weight: .semibold))
-        .foregroundStyle(entry.themeColor)
-        .widgetAccentable()
+      Image(
+        entry.profileInfo.map { BlockingStrategyArtwork.assetName(for: $0.strategyID) }
+          ?? "FoqosStickerLogo"
+      )
+      .resizable()
+      .widgetAccentedRenderingMode(.fullColor)
+      .scaledToFit()
+      .frame(width: compact ? 22 : 26, height: compact ? 22 : 26)
+      .accessibilityHidden(true)
       Text(entry.profileName ?? "Your focus")
         .font(.system(size: compact ? 12 : 14, weight: .semibold))
         .lineLimit(1)
@@ -103,7 +108,7 @@ struct ProfileWidgetEntryView: View {
     return "\(profile.selectedItemCount) selected"
   }
 
-  private func metric(size: CGFloat) -> some View {
+  private func metric(size: CGFloat, showsCaption: Bool = true) -> some View {
     VStack(alignment: .leading, spacing: 1) {
       Text(
         WidgetActivitySummary.durationLabel(
@@ -114,11 +119,16 @@ struct ProfileWidgetEntryView: View {
       .minimumScaleFactor(0.65)
       .lineLimit(1)
       .foregroundStyle(.primary)
-      Text(isMonthly ? "focused this month" : "focused this week")
-        .font(.system(size: 10, weight: .medium))
-        .foregroundStyle(.secondary)
+      if showsCaption {
+        Text(isMonthly ? "focused this month" : "focused this week")
+          .font(.system(size: 10, weight: .medium))
+          .foregroundStyle(.secondary)
+      }
     }
     .accessibilityElement(children: .combine)
+    .accessibilityLabel(
+      "\(WidgetActivitySummary.durationLabel(duration)), \(isMonthly ? "focused this month" : "focused this week")"
+    )
   }
 
   private var statusSymbol: String {
@@ -194,6 +204,7 @@ struct WidgetMonthGrid: View {
   let entry: ProfileWidgetEntry
   let showsNumbers: Bool
   let showsWeekdays: Bool
+  var usesCircles = false
   @Environment(\.colorScheme) private var colorScheme
 
   private var cellCount: Int {
@@ -206,6 +217,7 @@ struct WidgetMonthGrid: View {
       let headerHeight: CGFloat = showsWeekdays ? 13 : 0
       let cellHeight = max(
         0, (geometry.size.height - headerHeight - CGFloat(rows - 1) * 3) / CGFloat(rows))
+      let dotDiameter = max(0, min(10, cellHeight, (geometry.size.width - 18) / 7))
       VStack(spacing: 3) {
         if showsWeekdays {
           HStack(spacing: 3) {
@@ -224,8 +236,14 @@ struct WidgetMonthGrid: View {
             ForEach(0..<7) { column in
               let index = row * 7 + column - entry.activity.monthLeadingDays
               if entry.activity.month.indices.contains(index) {
-                dayCell(entry.activity.month[index])
-                  .frame(maxWidth: .infinity)
+                if usesCircles {
+                  dayCell(entry.activity.month[index], shape: Circle())
+                    .frame(width: dotDiameter, height: dotDiameter)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                  dayCell(entry.activity.month[index], shape: RoundedRectangle(cornerRadius: 3))
+                    .frame(maxWidth: .infinity)
+                }
               } else {
                 Color.clear.frame(maxWidth: .infinity)
               }
@@ -239,11 +257,12 @@ struct WidgetMonthGrid: View {
     .accessibilityLabel("Monthly focus. Darker cells show more time focused.")
   }
 
-  private func dayCell(_ day: WidgetActivityDay) -> some View {
+  private func dayCell<S: InsettableShape>(_ day: WidgetActivityDay, shape: S) -> some View {
     let isToday = Calendar.current.isDate(day.date, inSameDayAs: entry.date)
     let isFuture = day.date > entry.date
     let level = day.duration == 0 ? 0 : min(0.8, 0.2 + day.duration / (6 * 3600) * 0.6)
-    return RoundedRectangle(cornerRadius: 3)
+    return
+      shape
       .fill(
         day.duration == 0
           ? Color.primary.opacity(isFuture ? 0.025 : 0.055)
@@ -257,8 +276,7 @@ struct WidgetMonthGrid: View {
         }
       }
       .overlay {
-        RoundedRectangle(cornerRadius: 3)
-          .strokeBorder(isToday ? entry.themeColor : .clear, lineWidth: 1.5)
+        shape.strokeBorder(isToday ? entry.themeColor : .clear, lineWidth: 1.5)
       }
       .widgetAccentable()
       .accessibilityLabel(

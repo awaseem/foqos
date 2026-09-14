@@ -4,6 +4,7 @@ struct WidgetProfileInfo {
   let enableStrictMode: Bool
   let enableAllowMode: Bool
   let selectedItemCount: Int
+  var strategyID: String? = nil
 }
 
 struct WidgetSessionInfo {

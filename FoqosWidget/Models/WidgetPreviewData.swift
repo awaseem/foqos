@@ -23,7 +23,8 @@ enum WidgetPreviewData {
       profileName: "Deep work",
       activeSession: nil,
       profileInfo: WidgetProfileInfo(
-        enableStrictMode: true, enableAllowMode: false, selectedItemCount: 8),
+        enableStrictMode: true, enableAllowMode: false, selectedItemCount: 8,
+        strategyID: "NFCBlockingStrategy"),
       deepLinkURL: URL(string: "foqos://"), focusMessage: "Make room for what matters.",
       useProfileURL: false,
       activity: .make(sessions: sessions, at: date), activityPeriod: period,

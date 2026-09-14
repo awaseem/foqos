@@ -82,7 +82,8 @@ enum WidgetDataStore {
           enableStrictMode: $0.enableStrictMode, enableAllowMode: $0.enableAllowMode,
           selectedItemCount: $0.selectedActivity.applications.count
             + $0.selectedActivity.categories.count
-            + $0.selectedActivity.webDomains.count + ($0.domains?.count ?? 0)
+            + $0.selectedActivity.webDomains.count + ($0.domains?.count ?? 0),
+          strategyID: $0.blockingStrategyId
         )
       },
       deepLinkURL: url,
