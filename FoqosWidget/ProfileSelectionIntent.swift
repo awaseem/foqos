@@ -32,18 +32,12 @@ struct WidgetProfileEntity: AppEntity {
 // MARK: - Profile Query for Widget Configuration
 struct WidgetProfileQuery: EntityQuery {
   func entities(for identifiers: [WidgetProfileEntity.ID]) async throws -> [WidgetProfileEntity] {
-    let profileSnapshots = SharedData.profileSnapshots
-    return identifiers.compactMap { id in
-      guard let snapshot = profileSnapshots[id] else { return nil }
-      return WidgetProfileEntity(id: id, name: snapshot.name)
-    }
+    let profiles = try await WidgetDataStore.profiles()
+    return identifiers.compactMap { id in profiles.first { $0.id == id } }
   }
 
   func suggestedEntities() async throws -> [WidgetProfileEntity] {
-    let profileSnapshots = SharedData.profileSnapshots
-    return profileSnapshots.map { (id, snapshot) in
-      WidgetProfileEntity(id: id, name: snapshot.name)
-    }.sorted { $0.name < $1.name }
+    try await WidgetDataStore.profiles()
   }
 
   func defaultResult() async -> WidgetProfileEntity? {
@@ -51,10 +45,24 @@ struct WidgetProfileQuery: EntityQuery {
   }
 }
 
+enum WidgetActivityPeriod: String, AppEnum {
+  case week
+  case month
+
+  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Activity view")
+  static var caseDisplayRepresentations: [Self: DisplayRepresentation] = [
+    .week: "Weekly chart",
+    .month: "Monthly grid",
+  ]
+}
+
 // MARK: - Widget Configuration Intent
 struct ProfileSelectionIntent: WidgetConfigurationIntent {
   static var title: LocalizedStringResource = "Select Profile"
   static var description = IntentDescription("Choose which profile to display in the widget")
+
+  @Parameter(title: "Activity view", default: .week)
+  var activityPeriod: WidgetActivityPeriod
 
   @Parameter(title: "Profile", description: "The profile to monitor in the widget")
   var profile: WidgetProfileEntity?

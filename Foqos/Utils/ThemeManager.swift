@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 class ThemeManager: ObservableObject {
   static let shared = ThemeManager()
@@ -37,6 +38,7 @@ class ThemeManager: ObservableObject {
     set {
       themeColorName = newValue
       objectWillChange.send()
+      WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
     }
   }
 

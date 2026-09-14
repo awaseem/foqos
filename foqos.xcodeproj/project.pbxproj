@@ -140,7 +140,7 @@
 		F0A300012F80000300000001 /* FilterRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterRules.swift; sourceTree = "<group>"; };
 		F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveProfileSyncRecord.swift; sourceTree = "<group>"; };
 		F0A400012F80000400000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Foqos/Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		F0A400032F80000400000001 /* foqos-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = foqos-icon.icon; path = Foqos/foqos-icon.icon; sourceTree = SOURCE_ROOT; };
+		F0A400032F80000400000001 /* foqos-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = "foqos-icon.icon"; path = "Foqos/foqos-icon.icon"; sourceTree = SOURCE_ROOT; };
 		F0B100052F90000100000001 /* MacRelease.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MacRelease.xcconfig; sourceTree = "<group>"; };
 		F0B100072F90000100000001 /* MacReleaseExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MacReleaseExportOptions.plist; sourceTree = "<group>"; };
 		F0C100022FA0000100000001 /* TLSClientHelloParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TLSClientHelloParser.swift; path = FoqosFilter/TLSClientHelloParser.swift; sourceTree = SOURCE_ROOT; };
@@ -174,12 +174,16 @@
 		801C99CE2E9C9B9D000E07CD /* Exceptions for "Foqos" folder in "FoqosWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/BlockedProfiles.swift,
+				Models/BlockedProfileSessions.swift,
+				Models/FoqosModelContainer.swift,
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
 				Models/SoftUnblockGrant.swift,
 				Utils/AppBlockerUtil.swift,
 				Utils/SoftUnblockGrantStore.swift,
+				Utils/ThemeManager.swift,
 			);
 			target = 80FF388C2D80DB540032BC5E /* FoqosWidgetExtension */;
 		};
@@ -454,16 +458,8 @@
 				F0A300032F80000300000001 /* FoqosShared */,
 				80DBF6122CB776D100EEA8A6 /* Frameworks */,
 				801B20962CB363A10073E9E2 /* Products */,
+				809D554D30559E0500174B41 /* Recovered References */,
 			);
-			sourceTree = "<group>";
-		};
-		F0B100062F90000100000001 /* Config */ = {
-			isa = PBXGroup;
-			children = (
-				F0B100052F90000100000001 /* MacRelease.xcconfig */,
-				F0B100072F90000100000001 /* MacReleaseExportOptions.plist */,
-			);
-			path = Config;
 			sourceTree = "<group>";
 		};
 		801B20962CB363A10073E9E2 /* Products */ = {
@@ -481,6 +477,14 @@
 				F0C100032FA0000100000001 /* FoqosMacTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		809D554D30559E0500174B41 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F0C100022FA0000100000001 /* TLSClientHelloParser.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		80DBF6122CB776D100EEA8A6 /* Frameworks */ = {
@@ -509,6 +513,15 @@
 				F0A400032F80000400000001 /* foqos-icon.icon */,
 			);
 			path = FoqosShared;
+			sourceTree = "<group>";
+		};
+		F0B100062F90000100000001 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F0B100052F90000100000001 /* MacRelease.xcconfig */,
+				F0B100072F90000100000001 /* MacReleaseExportOptions.plist */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

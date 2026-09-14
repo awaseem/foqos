@@ -1,790 +1,274 @@
-//
-//  ProfileWidgetEntryView.swift
-//  FoqosWidget
-//
-//  Created by Ali Waseem on 2025-03-11.
-//
-
-import AppIntents
-import FamilyControls
 import SwiftUI
 import WidgetKit
 
-// MARK: - Widget View
 struct ProfileWidgetEntryView: View {
-    var entry: ProfileControlProvider.Entry
-    @Environment(\.widgetFamily) var widgetFamily: WidgetFamily   
+  let entry: ProfileWidgetEntry
+  var previewFamily: WidgetFamily? = nil
+  @Environment(\.widgetFamily) private var widgetFamily
+  private var family: WidgetFamily { previewFamily ?? widgetFamily }
 
-  // Computed property to determine if we should use white text
-  private var shouldUseWhiteText: Bool {
-    return entry.isBreakActive || entry.isPauseActive || entry.isSessionActive
+  private var isMonthly: Bool { entry.activityPeriod == .month }
+  private var duration: TimeInterval {
+    isMonthly ? entry.activity.monthlyDuration : entry.activity.weeklyDuration
   }
 
-  // Computed property to determine if the widget should show as unavailable
-  private var isUnavailable: Bool {
-    guard let selectedProfileId = entry.selectedProfileId,
-      let activeSession = entry.activeSession
-    else {
-      return false
-    }
-
-    // Check if the active session's profile ID matches the widget's selected profile ID
-    return activeSession.blockedProfileId.uuidString != selectedProfileId
-  }
-
-  private var quickLaunchEnabled: Bool {
-    return entry.useProfileURL == true
-  }
-
-  private var linkToOpen: URL {
-    // Don't open the app via profile to stop the session
-    if entry.isBreakActive || entry.isSessionActive {
-      return URL(string: "https://foqos.app")!
-    }
-
-    return entry.deepLinkURL ?? URL(string: "foqos://")!
-  }
-
-    var body: some View {
-        
-        switch widgetFamily {
-
-        //Lockscreen: Inline widget above clock
-        case .accessoryInline:
-            if entry.isPauseActive {
-                Label(
-                    title: { Text("Paused") },
-                    icon: { stickerIcon("PauseStickerIcon", size: 14) }
-                )
-            } else if entry.isBreakActive {
-                Label(
-                    title: { Text("On a Break") },
-                    icon: { stickerIcon("CoffeeStickerIcon", size: 14) }
-                )
-            } else if entry.isSessionActive, let startTime = entry.sessionStartTime {
-                Label(
-                    title: { Text(startTime, style: .timer) },
-                    icon: { Image(systemName: "clock.fill") }
-                )
-            } else {
-                Label(entry.profileName ?? "No Profile", systemImage: "hourglass")
-            }
-
-        //Lockscreen: Regular rectangular widget
-        case .accessoryRectangular:
-            // Top section with profile name
-            VStack(alignment: .leading, spacing: 2) {
-                Text(entry.profileName ?? "No Profile")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .lineLimit(1)
-                // Status section with break (one line), pause (one line), or session timer with info (two lines)
-                if entry.isBreakActive {
-                    HStack(spacing: 4) {
-                        stickerIcon("CoffeeStickerIcon", size: 14)
-                        Text("On a Break")
-                            .font(.caption2)
-                    }
-                } else if entry.isPauseActive {
-                    HStack(spacing: 4) {
-                        stickerIcon("PauseStickerIcon", size: 14)
-                        Text("Paused")
-                            .font(.caption2)
-                    }
-                // Session info (Blocked count + enabled options count)
-                } else if entry.isSessionActive, let startTime = entry.sessionStartTime {
-                    if let profile = entry.profileSnapshot {
-                        Text("\(getBlockedCount(from: profile)) Blocked | \(getEnabledOptionsCount(from: profile)) Options")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                    // Bottom section: Timer
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock.fill")
-                            .font(.caption2)
-                        Text(startTime, style: .timer)
-                            .font(.system(size: 16).bold())
-                    }
-                } else {
-                    Text("Tap to start")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            
-            //Homescreen widget
-            default:
-                ZStack {
-                    // Main content
-                    VStack(spacing: 8) {
-                        // Top section: Profile name (left) and hourglass (right)
-                        HStack {
-                            Text(entry.profileName ?? "No Profile")
-                                .font(.system(size: 14))
-                                .fontWeight(.bold)
-                                .foregroundColor(shouldUseWhiteText ? .white : .primary)
-                                .lineLimit(1)
-
-                            Spacer()
-
-                            Image(systemName: "hourglass")
-                                .font(.body)
-                                .foregroundColor(shouldUseWhiteText ? .white : .purple)
-                        }
-                        .padding(.top, 8)
-
-                        // Middle section: Blocked count + enabled options count
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                if let profile = entry.profileSnapshot {
-                                    let blockedCount = getBlockedCount(from: profile)
-                                    let enabledOptionsCount = getEnabledOptionsCount(from: profile)
-
-                                    Text("\(blockedCount) Blocked")
-                                        .font(.system(size: 10))
-                                        .fontWeight(.medium)
-                                        .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-
-                                    Text("with \(enabledOptionsCount) Options")
-                                        .font(.system(size: 8))
-                                        .fontWeight(.regular)
-                                        .foregroundColor(shouldUseWhiteText ? .white : .green)
-                                } else {
-                                    Text("No profile selected")
-                                        .font(.system(size: 8))
-                                        .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-                                }
-                            }
-
-                            Spacer()
-                        }
-
-                        // Bottom section: Status message or timer (takes up most space)
-                        VStack {
-                            if entry.isBreakActive {
-                                HStack(spacing: 4) {
-                                    stickerIcon("CoffeeStickerIcon", size: 24)
-                                    Text("On a Break")
-                                        .font(.body)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
-                                }
-                            } else if entry.isPauseActive {
-                                HStack(spacing: 4) {
-                                    stickerIcon("PauseStickerIcon", size: 24)
-                                    Text("Paused")
-                                        .font(.body)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
-                                }
-                            } else if entry.isSessionActive {
-                                if let startTime = entry.sessionStartTime {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "clock.fill")
-                                            .font(.body)
-                                            .foregroundColor(.white)
-                                        Text(
-                                            Date(
-                                                timeIntervalSinceNow: startTime.timeIntervalSince1970
-                                                    - Date().timeIntervalSince1970
-                                            ),
-                                            style: .timer
-                                        )
-                                        .font(.system(size: 22))
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
-                                    }
-                                }
-                            } else {
-                                Link(destination: linkToOpen) {
-                                    Text(quickLaunchEnabled ? "Tap to launch" : "Tap to open")
-                                        .font(.body)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(shouldUseWhiteText ? .white : .secondary)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(.bottom, 8)
-                    }
-                    .blur(radius: isUnavailable ? 3 : 0)
-
-                    // Unavailable overlay
-                    if isUnavailable {
-                        VStack(spacing: 4) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.title2)
-                                .foregroundColor(.orange)
-
-                            Text("Unavailable")
-                                .font(.system(size: 16))
-                                .fontWeight(.bold)
-                                .foregroundColor(.primary)
-
-                            Text("Different profile active")
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color(UIColor.systemBackground).opacity(0.9))
-                        .cornerRadius(8)
-                    }
-                }
-            }
+  var body: some View {
+    Group {
+      switch family {
+      case .accessoryInline:
+        Label {
+          if let start = entry.sessionStartTime, !entry.isPauseActive, !entry.isBreakActive {
+            Text(start, style: .timer)
+          } else {
+            Text(entry.isSessionActive ? entry.statusLabel : entry.profileName ?? "Foqos")
+          }
+        } icon: {
+          Image(systemName: statusSymbol)
         }
+      case .accessoryRectangular:
+        VStack(alignment: .leading, spacing: 3) {
+          Text(entry.profileName ?? "Foqos").font(.headline).lineLimit(1)
+          Text("\(WidgetActivitySummary.durationLabel(entry.activity.weeklyDuration)) this week")
+            .font(.caption)
+          status(compact: false)
+        }
+      case .systemMedium:
+        medium
+      default:
+        small
+      }
     }
-
-  private func stickerIcon(_ assetName: String, size: CGFloat) -> some View {
-    Image(assetName)
-      .resizable()
-      .scaledToFit()
-      .frame(width: size, height: size)
+    .widgetURL(entry.destination)
   }
 
-  // Helper function to count total blocked items
-  private func getBlockedCount(from profile: SharedData.ProfileSnapshot) -> Int {
-    let appCount =
-      profile.selectedActivity.categories.count + profile.selectedActivity.applications.count
-    let webDomainCount = profile.selectedActivity.webDomains.count
-    let customDomainCount = profile.domains?.count ?? 0
-    return appCount + webDomainCount + customDomainCount
+  private var small: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      profileHeader(compact: true)
+      metric(size: 29)
+      if isMonthly {
+        WidgetMonthGrid(entry: entry, showsNumbers: false, showsWeekdays: false)
+      } else {
+        WidgetWeekChart(entry: entry)
+      }
+      status(compact: true)
+    }
   }
 
-  // Helper function to count enabled options
-  private func getEnabledOptionsCount(from profile: SharedData.ProfileSnapshot) -> Int {
-    var count = 0
-    if profile.enableLiveActivity { count += 1 }
-    if profile.enableBreaks { count += 1 }
-    if profile.enableStrictMode { count += 1 }
-    if profile.enableAllowMode { count += 1 }
-    if profile.enableAllowModeDomains { count += 1 }
-    if profile.reminderTimeInSeconds != nil { count += 1 }
-    if profile.physicalUnblockItems?.isEmpty == false { count += 1 }
-    if profile.schedule != nil { count += 1 }
-    if profile.disableBackgroundStops == true { count += 1 }
-    return count
+  private var medium: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      profileHeader(compact: false)
+      HStack(alignment: .top, spacing: 20) {
+        VStack(alignment: .leading, spacing: 7) {
+          metric(size: 32)
+          Spacer(minLength: 0)
+          status(compact: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+          if isMonthly {
+            WidgetMonthGrid(entry: entry, showsNumbers: false, showsWeekdays: true)
+          } else {
+            WidgetWeekChart(entry: entry)
+          }
+        }
+        .frame(maxWidth: .infinity)
+      }
+    }
   }
 
-#Preview(as: .systemSmall) {
-  ProfileControlWidget()
-} timeline: {
-  // Preview 1: No active session
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: "test-id",
-    profileName: "Focus Session",
-    activeSession: nil,
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: UUID(),
-      name: "Focus Session",
-      selectedActivity: {
-        var selection = FamilyActivitySelection()
-        // Simulate some selected apps and domains for preview
-        return selection
-      }(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: true,
-      enableAllowModeDomains: true,
-      enableSafariBlocking: true,
-      domains: ["facebook.com", "twitter.com", "instagram.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/test-id"),
-    focusMessage: "Stay focused and avoid distractions",
-    useProfileURL: true
-  )
+  private func profileHeader(compact: Bool) -> some View {
+    HStack(spacing: 6) {
+      Image(systemName: "scope")
+        .font(.system(size: compact ? 13 : 15, weight: .semibold))
+        .foregroundStyle(entry.themeColor)
+        .widgetAccentable()
+      Text(entry.profileName ?? "Your focus")
+        .font(.system(size: compact ? 12 : 14, weight: .semibold))
+        .lineLimit(1)
+      Spacer(minLength: 0)
+      if !compact {
+        Text(profileDetail)
+          .font(.system(size: 10, weight: .medium))
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+          .layoutPriority(-1)
+      }
+    }
+  }
 
-  // Preview 2: Active session matching widget profile
-  let activeProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: activeProfileId.uuidString,
-    profileName: "Deep Work Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "test-session",
-      tag: "test-tag",
-      blockedProfileId: activeProfileId,  // Matches selectedProfileId
-      startTime: Date(timeIntervalSinceNow: -300),  // Started 5 minutes ago
-      endTime: nil,
-      breakStartTime: nil,  // No break active
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: activeProfileId,
-      name: "Deep Work Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: false,
-      enableAllowMode: true,
-      enableAllowModeDomains: true,
-      enableSafariBlocking: true,
-      domains: ["youtube.com", "reddit.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(activeProfileId.uuidString)"),
-    focusMessage: "Deep focus time",
-    useProfileURL: true
-  )
+  private var profileDetail: String {
+    guard let profile = entry.profileInfo else { return "FOQOS" }
+    if profile.enableStrictMode { return "Strict mode" }
+    if profile.enableAllowMode { return "Allow mode" }
+    return "\(profile.selectedItemCount) selected"
+  }
 
-  // Preview 3: Active session with break matching widget profile
-  let breakProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: breakProfileId.uuidString,
-    profileName: "Study Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "test-session-break",
-      tag: "test-tag-break",
-      blockedProfileId: breakProfileId,  // Matches selectedProfileId
-      startTime: Date(timeIntervalSinceNow: -600),  // Started 10 minutes ago
-      endTime: nil,
-      breakStartTime: Date(timeIntervalSinceNow: -60),  // Break started 1 minute ago
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: breakProfileId,
-      name: "Study Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["tiktok.com", "instagram.com", "snapchat.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(breakProfileId.uuidString)"),
-    focusMessage: "Take a well-deserved break",
-    useProfileURL: true
-  )
+  private func metric(size: CGFloat) -> some View {
+    VStack(alignment: .leading, spacing: 1) {
+      Text(
+        WidgetActivitySummary.durationLabel(
+          duration)
+      )
+      .font(.system(size: size, weight: .semibold, design: .rounded))
+      .tracking(-1.2)
+      .minimumScaleFactor(0.65)
+      .lineLimit(1)
+      .foregroundStyle(.primary)
+      Text(isMonthly ? "focused this month" : "focused this week")
+        .font(.system(size: 10, weight: .medium))
+        .foregroundStyle(.secondary)
+    }
+    .accessibilityElement(children: .combine)
+  }
 
-  // Preview 4: Active session with pause matching widget profile
-  let pauseProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: pauseProfileId.uuidString,
-    profileName: "Work Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "test-session-pause",
-      tag: "test-tag-pause",
-      blockedProfileId: pauseProfileId,  // Matches selectedProfileId
-      startTime: Date(timeIntervalSinceNow: -900),  // Started 15 minutes ago
-      endTime: nil,
-      breakStartTime: nil,
-      breakEndTime: nil,
-      pauseStartTime: Date(timeIntervalSinceNow: -120),  // Pause started 2 minutes ago
-      pauseEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: pauseProfileId,
-      name: "Work Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["facebook.com", "twitter.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(pauseProfileId.uuidString)"),
-    focusMessage: "Session is paused",
-    useProfileURL: true
-  )
+  private var statusSymbol: String {
+    if entry.isPauseActive { return "pause.fill" }
+    if entry.isBreakActive { return "cup.and.saucer.fill" }
+    if entry.isSessionActive { return "circle.fill" }
+    return "arrow.up.right"
+  }
 
-  // Preview 5: No profile selected
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: nil,
-    profileName: "No Profile Selected",
-    activeSession: nil,
-    profileSnapshot: nil,
-    deepLinkURL: URL(string: "foqos://"),
-    focusMessage: "Select a profile to get started",
-    useProfileURL: false
-  )
-
-  // Preview 6: Unavailable state - different profile active
-  let unavailableProfileId = UUID()
-  let differentActiveProfileId = UUID()  // Different from unavailableProfileId
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: unavailableProfileId.uuidString,
-    profileName: "Work Focus",
-    activeSession: SharedData.SessionSnapshot(
-      id: "different-session",
-      tag: "different-tag",
-      blockedProfileId: differentActiveProfileId,  // Different UUID than selectedProfileId
-      startTime: Date(timeIntervalSinceNow: -180),  // Started 3 minutes ago
-      endTime: nil,
-      breakStartTime: nil,
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: unavailableProfileId,
-      name: "Work Focus",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["linkedin.com", "slack.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(unavailableProfileId.uuidString)"),
-    focusMessage: "Different profile is currently active",
-    useProfileURL: true
-  )
+  private func status(compact: Bool) -> some View {
+    HStack(spacing: 5) {
+      Image(systemName: statusSymbol)
+        .font(.system(size: entry.isSessionActive ? 7 : 9, weight: .bold))
+        .foregroundStyle(entry.themeColor)
+        .widgetAccentable()
+      if let start = entry.sessionStartTime, !entry.isBreakActive, !entry.isPauseActive {
+        if !compact { Text("Focusing").foregroundStyle(.secondary) }
+        Text(start, style: .timer).monospacedDigit()
+          .frame(maxWidth: .infinity, alignment: .leading)
+      } else {
+        Text(entry.statusLabel).lineLimit(1).minimumScaleFactor(0.75)
+      }
+      if !compact {
+        Spacer(minLength: 0)
+        Text("foqos").font(.system(size: 11, weight: .bold, design: .rounded))
+          .foregroundStyle(.tertiary)
+      }
+    }
+    .font(.system(size: 10, weight: .medium))
+  }
 }
 
-// Lock Screen Rectangular Previews
-#Preview(as: .accessoryRectangular) {
-  ProfileControlWidget()
-} timeline: {
-  // Preview 1: No active session
-  let idleProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: idleProfileId.uuidString,
-    profileName: "Focus Session",
-    activeSession: nil,
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: idleProfileId,
-      name: "Focus Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: true,
-      enableAllowModeDomains: true,
-      enableSafariBlocking: true,
-      domains: ["facebook.com", "twitter.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(idleProfileId.uuidString)"),
-    focusMessage: "Stay focused",
-    useProfileURL: true
-  )
+struct WidgetWeekChart: View {
+  let entry: ProfileWidgetEntry
 
-  // Preview 2: Active session
-  let activeProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: activeProfileId.uuidString,
-    profileName: "Deep Work",
-    activeSession: SharedData.SessionSnapshot(
-      id: "rect-session",
-      tag: "rect-tag",
-      blockedProfileId: activeProfileId,
-      startTime: Date(timeIntervalSinceNow: -300),
-      endTime: nil,
-      breakStartTime: nil,
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: activeProfileId,
-      name: "Deep Work",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["youtube.com", "reddit.com", "twitter.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(activeProfileId.uuidString)"),
-    focusMessage: "Deep focus time",
-    useProfileURL: true
-  )
-
-  // Preview 3: Break state
-  let breakProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: breakProfileId.uuidString,
-    profileName: "Study Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "rect-break-session",
-      tag: "rect-break-tag",
-      blockedProfileId: breakProfileId,
-      startTime: Date(timeIntervalSinceNow: -600),
-      endTime: nil,
-      breakStartTime: Date(timeIntervalSinceNow: -60),
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: breakProfileId,
-      name: "Study Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: false,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["tiktok.com", "instagram.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(breakProfileId.uuidString)"),
-    focusMessage: "Take a break",
-    useProfileURL: true
-  )
-
-  // Preview 4: No profile selected
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: nil,
-    profileName: "No Profile Selected",
-    activeSession: nil,
-    profileSnapshot: nil,
-    deepLinkURL: URL(string: "foqos://"),
-    focusMessage: "Select a profile to get started",
-    useProfileURL: false
-  )
-
-  // Preview 5: Paused state
-  let pauseProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: pauseProfileId.uuidString,
-    profileName: "Work Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "rect-pause-session",
-      tag: "rect-pause-tag",
-      blockedProfileId: pauseProfileId,
-      startTime: Date(timeIntervalSinceNow: -900),
-      endTime: nil,
-      breakStartTime: nil,
-      breakEndTime: nil,
-      pauseStartTime: Date(timeIntervalSinceNow: -120),
-      pauseEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: pauseProfileId,
-      name: "Work Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["facebook.com", "twitter.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(pauseProfileId.uuidString)"),
-    focusMessage: "Session paused",
-    useProfileURL: true
-  )
+  var body: some View {
+    GeometryReader { geometry in
+      let maxDuration = max(entry.activity.week.map(\.duration).max() ?? 0, 3600)
+      let plotHeight = max(0, geometry.size.height - 16)
+      HStack(alignment: .bottom, spacing: 5) {
+        ForEach(entry.activity.week) { day in
+          let isToday = Calendar.current.isDate(day.date, inSameDayAs: entry.date)
+          VStack(spacing: 5) {
+            ZStack(alignment: .bottom) {
+              RoundedRectangle(cornerRadius: 4)
+                .fill(entry.themeColor.opacity(0.07))
+              if day.duration > 0 {
+                RoundedRectangle(cornerRadius: 4)
+                  .fill(entry.themeColor.opacity(isToday ? 1 : 0.55))
+                  .frame(height: max(3, plotHeight * day.duration / maxDuration))
+                  .widgetAccentable()
+              }
+            }
+            .frame(height: plotHeight)
+            Text(day.date.formatted(.dateTime.weekday(.narrow)))
+              .font(.system(size: 9, weight: isToday ? .bold : .medium))
+              .foregroundStyle(isToday ? .primary : .secondary)
+          }
+          .frame(maxWidth: .infinity)
+          .accessibilityElement(children: .ignore)
+          .accessibilityLabel(
+            "\(day.date.formatted(.dateTime.weekday(.wide))), \(WidgetActivitySummary.durationLabel(day.duration))"
+          )
+        }
+      }
+    }
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Weekly focus")
+  }
 }
 
-// Lock Screen Inline Previews
-#Preview(as: .accessoryInline) {
-  ProfileControlWidget()
-} timeline: {
-  // Preview 1: No active session
-  let idleProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: idleProfileId.uuidString,
-    profileName: "Focus Session",
-    activeSession: nil,
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: idleProfileId,
-      name: "Focus Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: true,
-      enableAllowModeDomains: true,
-      enableSafariBlocking: true,
-      domains: ["facebook.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(idleProfileId.uuidString)"),
-    focusMessage: "Stay focused",
-    useProfileURL: true
-  )
+struct WidgetMonthGrid: View {
+  let entry: ProfileWidgetEntry
+  let showsNumbers: Bool
+  let showsWeekdays: Bool
+  @Environment(\.colorScheme) private var colorScheme
 
-  // Preview 2: Active session
-  let activeProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: activeProfileId.uuidString,
-    profileName: "Deep Work",
-    activeSession: SharedData.SessionSnapshot(
-      id: "inline-session",
-      tag: "inline-tag",
-      blockedProfileId: activeProfileId,
-      startTime: Date(timeIntervalSinceNow: -300),
-      endTime: nil,
-      breakStartTime: nil,
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: activeProfileId,
-      name: "Deep Work",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: true,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["youtube.com", "reddit.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(activeProfileId.uuidString)"),
-    focusMessage: "Deep focus",
-    useProfileURL: true
-  )
-    
-    // Preview 3: No profile selected
-    ProfileWidgetEntry(
-      date: .now,
-      selectedProfileId: nil,
-      profileName: "No Profile Selected",
-      activeSession: nil,
-      profileSnapshot: nil,
-      deepLinkURL: URL(string: "foqos://"),
-      focusMessage: "Select a profile to get started",
-      useProfileURL: false
-    )
+  private var cellCount: Int {
+    ((entry.activity.monthLeadingDays + entry.activity.month.count + 6) / 7) * 7
+  }
 
-  // Preview 4: Break state
-  let breakProfileId = UUID()
-  ProfileWidgetEntry(
-    date: .now,
-    selectedProfileId: breakProfileId.uuidString,
-    profileName: "Study Session",
-    activeSession: SharedData.SessionSnapshot(
-      id: "inline-break-session",
-      tag: "inline-break-tag",
-      blockedProfileId: breakProfileId,
-      startTime: Date(timeIntervalSinceNow: -600),
-      endTime: nil,
-      breakStartTime: Date(timeIntervalSinceNow: -60),
-      breakEndTime: nil,
-      forceStarted: true
-    ),
-    profileSnapshot: SharedData.ProfileSnapshot(
-      id: breakProfileId,
-      name: "Study Session",
-      selectedActivity: FamilyActivitySelection(),
-      createdAt: Date(),
-      updatedAt: Date(),
-      blockingStrategyId: nil,
-      order: 0,
-      enableLiveActivity: true,
-      reminderTimeInSeconds: nil,
-      customReminderMessage: nil,
-      enableBreaks: true,
-      enableStrictMode: false,
-      enableAllowMode: false,
-      enableAllowModeDomains: false,
-      enableSafariBlocking: true,
-      domains: ["tiktok.com"],
-      schedule: nil,
-      disableBackgroundStops: nil
-    ),
-    deepLinkURL: URL(string: "https://foqos.app/profile/\(breakProfileId.uuidString)"),
-    focusMessage: "Take a break",
-    useProfileURL: true
-  )
+  var body: some View {
+    GeometryReader { geometry in
+      let rows = max(1, cellCount / 7)
+      let headerHeight: CGFloat = showsWeekdays ? 13 : 0
+      let cellHeight = max(
+        0, (geometry.size.height - headerHeight - CGFloat(rows - 1) * 3) / CGFloat(rows))
+      VStack(spacing: 3) {
+        if showsWeekdays {
+          HStack(spacing: 3) {
+            ForEach(0..<7) { index in
+              let symbols = Calendar.current.veryShortStandaloneWeekdaySymbols
+              Text(symbols[(index + Calendar.current.firstWeekday - 1) % 7])
+                .font(.system(size: 8, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+            }
+          }
+          .frame(height: 10)
+        }
+        ForEach(0..<rows, id: \.self) { row in
+          HStack(spacing: 3) {
+            ForEach(0..<7) { column in
+              let index = row * 7 + column - entry.activity.monthLeadingDays
+              if entry.activity.month.indices.contains(index) {
+                dayCell(entry.activity.month[index])
+                  .frame(maxWidth: .infinity)
+              } else {
+                Color.clear.frame(maxWidth: .infinity)
+              }
+            }
+          }
+          .frame(height: cellHeight)
+        }
+      }
+    }
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Monthly focus. Darker cells show more time focused.")
+  }
+
+  private func dayCell(_ day: WidgetActivityDay) -> some View {
+    let isToday = Calendar.current.isDate(day.date, inSameDayAs: entry.date)
+    let isFuture = day.date > entry.date
+    let level = day.duration == 0 ? 0 : min(0.8, 0.2 + day.duration / (6 * 3600) * 0.6)
+    return RoundedRectangle(cornerRadius: 3)
+      .fill(
+        day.duration == 0
+          ? Color.primary.opacity(isFuture ? 0.025 : 0.055)
+          : entry.themeColor.opacity(level * (colorScheme == .dark ? 0.5 : 1))
+      )
+      .overlay {
+        if showsNumbers {
+          Text(day.date.formatted(.dateTime.day()))
+            .font(.system(size: 8, weight: isToday ? .bold : .medium))
+            .foregroundStyle(.primary.opacity(isFuture ? 0.25 : 0.9))
+        }
+      }
+      .overlay {
+        RoundedRectangle(cornerRadius: 3)
+          .strokeBorder(isToday ? entry.themeColor : .clear, lineWidth: 1.5)
+      }
+      .widgetAccentable()
+      .accessibilityLabel(
+        "\(day.date.formatted(.dateTime.month().day())), \(WidgetActivitySummary.durationLabel(day.duration))"
+      )
+  }
+}
+
+struct ProfileWidgetBackground: View {
+  var body: some View {
+    Color(uiColor: .systemBackground)
+  }
 }

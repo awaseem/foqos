@@ -12,10 +12,7 @@ import SwiftUI
 
 @MainActor private let container: ModelContainer = {
   do {
-    let container = try ModelContainer(
-      for: BlockedProfileSession.self,
-      BlockedProfiles.self
-    )
+    let container = try FoqosModelContainer.make()
     // Temporary backfill for users upgrading from the legacy NFC/QR fields.
     // Remove this in the next app version once the installed base has migrated.
     try PhysicalUnblockMigrationHelper.migrateOldPhysicalUnblockFields(
