@@ -70,6 +70,10 @@ struct MacOnboardingView: View {
       .tint(filterManager.status == .enabled ? .green : .indigo)
       .disabled(isWorking)
       .frame(maxWidth: 390)
+
+      DiagnosticsExportButton()
+        .buttonStyle(.link)
+        .padding(.top, 12)
     }
     .padding(.horizontal, 48)
     .padding(.vertical, 38)
@@ -85,6 +89,10 @@ struct MacOnboardingView: View {
     .onReceive(
       NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
     ) { _ in
+      MacDiagnostics.shared.record(
+        "onboarding.app_active",
+        "Foqos became active while onboarding was visible; rechecking filter status."
+      )
       filterManager.refreshStatus()
     }
   }
@@ -188,6 +196,10 @@ struct MacOnboardingView: View {
   }
 
   private func handlePrimaryAction() {
+    MacDiagnostics.shared.record(
+      "onboarding.primary_action", "User selected the onboarding action.",
+      fields: ["status": filterManager.status.diagnosticName, "action": primaryButtonTitle]
+    )
     switch filterManager.status {
     case .approvalRequired:
       SMAppService.openSystemSettingsLoginItems()
