@@ -106,12 +106,28 @@ Open Foqos once after installing or updating it to register its App Shortcuts. W
 - "Start a profile in Foqos" (Siri asks which profile)
 - "Stop my session in Foqos"
 - "Pause my session in Foqos"
+- "Start a break in Foqos"
+- "End my break in Foqos"
 - "Is my session active in Foqos"
 - "What profile is active in Foqos"
 
 Siri uses the existing Shortcuts actions: starting without a duration starts a manual session,
 stopping respects the profile's background-stop setting, and pausing requires a Pause Timer strategy.
 Profile names refresh after saved changes. No manually created shortcut is required for these phrases.
+
+### Break automations
+
+Use **Start Foqos Break** and **End Foqos Break** in Shortcuts to control the active session's break
+without opening Foqos. Starting uses the remaining allowance configured on the profile. Starting an
+already active break leaves its timer unchanged; ending when no break is active does nothing.
+
+To stop consuming break time when leaving an app, create a Shortcuts automation with the **App →
+Is Closed** trigger for that app and add **End Foqos Break**. Apple's
+[App trigger documentation](https://support.apple.com/guide/shortcuts/apde31e9638b/ios)
+explains that this also triggers when switching away from the app. Enable **Allow Multiple Breaks**
+on the Foqos profile to reuse the unused allowance later. With that option off, ending a break uses
+the session's single break opportunity. These actions control timed breaks; **Pause Active Foqos
+Session** continues to control Pause Timer strategies separately.
 
 For iOS 27, these commands use App Shortcuts and `EntityStringQuery`. Apple's SDK does not currently
 provide an App Schema for app-blocking sessions, so this integration does not promise arbitrary
@@ -120,7 +136,9 @@ conversational commands or cross-app Siri actions. See Apple's
 
 When validating a release, test the phrases on a physical iPhone with Siri enabled, including after
 renaming or deleting a profile, with duplicate profile names, and with background stops disabled.
-Compilation and entity-query tests do not verify Siri's speech recognition or Screen Time enforcement.
+Also test starting and ending a break through Siri and an App Is Closed automation, including a
+second break using the remaining allowance. Compilation and regression tests do not verify Siri's
+speech recognition or Screen Time enforcement.
 
 ## iOS Shortcuts Setup
 

@@ -31,6 +31,24 @@ struct FoqosShortcutsProvider: AppShortcutsProvider {
       systemImageName: "pause.circle"
     )
     AppShortcut(
+      intent: StartBreakIntent(),
+      phrases: [
+        "Start a break in \(.applicationName)",
+        "Take a break with \(.applicationName)",
+      ],
+      shortTitle: "Start Break",
+      systemImageName: "cup.and.saucer"
+    )
+    AppShortcut(
+      intent: EndBreakIntent(),
+      phrases: [
+        "End my break in \(.applicationName)",
+        "Stop my break in \(.applicationName)",
+      ],
+      shortTitle: "End Break",
+      systemImageName: "play.circle"
+    )
+    AppShortcut(
       intent: CheckSessionActiveIntent(),
       phrases: [
         "Am I blocking apps with \(.applicationName)",
