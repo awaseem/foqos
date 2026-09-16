@@ -48,6 +48,12 @@ struct BlockedSessionsHabitTracker: View {
 
   @AppStorage("showHabitTracker") private var showHabitTracker = true
   @AppStorage("habitChartType") private var chartTypeRaw = HabitChartType.fourWeek.rawValue
+  @AppStorage("heatmapLowHourThreshold") private var heatmapLowHourThreshold =
+    HeatmapThresholds.defaultLowHours
+  @AppStorage("heatmapMediumHourThreshold") private var heatmapMediumHourThreshold =
+    HeatmapThresholds.defaultMediumHours
+  @AppStorage("heatmapHighHourThreshold") private var heatmapHighHourThreshold =
+    HeatmapThresholds.defaultHighHours
   @State private var showingConfiguration = false
 
   private var chartType: HabitChartType {
@@ -59,6 +65,24 @@ struct BlockedSessionsHabitTracker: View {
     Binding(
       get: { chartType },
       set: { chartTypeRaw = $0.rawValue }
+    )
+  }
+
+  private var heatmapThresholdsBinding: Binding<HeatmapThresholds> {
+    Binding(
+      get: {
+        HeatmapThresholds(
+          lowHours: heatmapLowHourThreshold,
+          mediumHours: heatmapMediumHourThreshold,
+          highHours: heatmapHighHourThreshold
+        ).normalized
+      },
+      set: { thresholds in
+        let normalizedThresholds = thresholds.normalized
+        heatmapLowHourThreshold = normalizedThresholds.lowHours
+        heatmapMediumHourThreshold = normalizedThresholds.mediumHours
+        heatmapHighHourThreshold = normalizedThresholds.highHours
+      }
     )
   }
 
@@ -125,6 +149,7 @@ struct BlockedSessionsHabitTracker: View {
       FourWeekHeatmapView(
         sessions: sessions,
         selectedDate: selectedDate,
+        thresholds: heatmapThresholdsBinding.wrappedValue,
         onDateSelected: handleDateSelection
       )
     case .weekly:
@@ -194,6 +219,7 @@ struct BlockedSessionsHabitTracker: View {
         ChartConfigurationSheet(
           showHabitTracker: $showHabitTracker,
           chartType: chartTypeBinding,
+          heatmapThresholds: heatmapThresholdsBinding,
           onDismiss: { showingConfiguration = false }
         )
         .presentationDetents([.medium, .large])
