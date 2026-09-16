@@ -37,6 +37,9 @@
 		F0D100022FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */; };
 		F0E100012FC0000100000001 /* FilterExtensionBundleLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E100032FC0000100000001 /* FilterExtensionBundleLocator.swift */; };
 		F0E100022FC0000100000001 /* FilterExtensionBundleLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E100032FC0000100000001 /* FilterExtensionBundleLocator.swift */; };
+		F0F100012FD0000100000001 /* FoqosMac/MacDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F100022FD0000100000001 /* FoqosMac/MacDiagnostics.swift */; };
+		F0F100032FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F100042FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift */; };
+		F0F100052FD0000100000001 /* ActiveProfileSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -147,6 +150,8 @@
 		F0C100032FA0000100000001 /* FoqosMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FoqosMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0D100032FB0000100000001 /* FilterExtensionVersionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterExtensionVersionPolicy.swift; sourceTree = "<group>"; };
 		F0E100032FC0000100000001 /* FilterExtensionBundleLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterExtensionBundleLocator.swift; sourceTree = "<group>"; };
+		F0F100022FD0000100000001 /* FoqosMac/MacDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoqosMac/MacDiagnostics.swift; sourceTree = SOURCE_ROOT; };
+		F0F100042FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoqosMac/ProfileSyncDiagnostics.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -485,6 +490,8 @@
 			isa = PBXGroup;
 			children = (
 				F0C100022FA0000100000001 /* TLSClientHelloParser.swift */,
+				F0F100022FD0000100000001 /* FoqosMac/MacDiagnostics.swift */,
+				F0F100042FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -983,6 +990,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0F100012FD0000100000001 /* FoqosMac/MacDiagnostics.swift in Sources */,
+				F0F100032FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift in Sources */,
+				F0F100052FD0000100000001 /* ActiveProfileSyncRecord.swift in Sources */,
 				F0E100022FC0000100000001 /* FilterExtensionBundleLocator.swift in Sources */,
 				F0D100022FB0000100000001 /* FilterExtensionVersionPolicy.swift in Sources */,
 				F0C1000C2FA0000100000001 /* FilterRules.swift in Sources */,

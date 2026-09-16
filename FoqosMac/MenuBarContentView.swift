@@ -118,6 +118,8 @@ struct MenuBarContentView: View {
       }
       .help("Refresh Foqos state")
 
+      DiagnosticsExportButton(isMenuItem: true)
+
       MenuActionItem(title: "Quit Foqos") {
         controller.quit()
       }
@@ -239,7 +241,7 @@ struct MenuBarContentView: View {
   }
 }
 
-private struct MenuActionItem: View {
+struct MenuActionItem: View {
   let title: String
   var isEnabled = true
   let action: () -> Void

@@ -11,6 +11,14 @@ struct FoqosMacApp: App {
   @StateObject private var updaterController: FoqosUpdaterController
 
   init() {
+    let appFields = [
+      "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
+      "build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown",
+      "macOS": ProcessInfo.processInfo.operatingSystemVersionString,
+    ]
+    MacDiagnostics.shared.record(
+      "app.launched", "Foqos Mac launched; local diagnostics are active.", fields: appFields)
+    MacDiagnostics.shared.updateState("app", fields: appFields)
     let filterManager = FoqosFilterManager()
     let onboardingController = FoqosOnboardingWindowController(filterManager: filterManager)
     _filterManager = StateObject(wrappedValue: filterManager)
