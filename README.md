@@ -99,8 +99,8 @@ Scanning a QR code with that link can toggle the profile. If the profile is inac
 
 ## Siri
 
-Open Foqos once after installing or updating it to register its App Shortcuts. With a profile named
-"Work", try these phrases:
+Open Foqos once after installing or updating it, then ask Siri to control your sessions.
+For a profile named "Work", try:
 
 - "Start Work in Foqos"
 - "Start a profile in Foqos" (Siri asks which profile)
@@ -111,20 +111,9 @@ Open Foqos once after installing or updating it to register its App Shortcuts. W
 - "Is my session active in Foqos"
 - "What profile is active in Foqos"
 
-Siri uses the existing Shortcuts actions: starting without a duration starts a manual session,
-stopping respects the profile's background-stop setting, and pausing requires a Pause Timer strategy.
-Profile names refresh after saved changes. No manually created shortcut is required for these phrases.
-
-For iOS 27, these commands use App Shortcuts and `EntityStringQuery`. Apple's SDK does not currently
-provide an App Schema for app-blocking sessions, so this integration does not promise arbitrary
-conversational commands or cross-app Siri actions. See Apple's
-[App Schemas guidance](https://developer.apple.com/videos/play/wwdc2026/240/).
-
-When validating a release, test the phrases on a physical iPhone with Siri enabled, including after
-renaming or deleting a profile, with duplicate profile names, and with background stops disabled.
-Also test starting and ending a break through Siri and an App Is Closed automation, including a
-second break using the remaining allowance. Compilation and regression tests do not verify Siri's
-speech recognition or Screen Time enforcement.
+Replace "Work" with your profile's name. These commands are available automatically—no shortcut
+setup is needed. Enable breaks in your profile to use the break commands, or choose a Pause Timer
+strategy to use the pause command.
 
 ## iOS Shortcuts Setup
 
