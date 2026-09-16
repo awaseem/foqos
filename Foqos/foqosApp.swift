@@ -49,11 +49,19 @@ struct foqosApp: App {
       key: "ModelContainer",
       dependency: asyncDependency
     )
+    FoqosShortcutsProvider.updateAppShortcutParameters()
   }
 
   var body: some Scene {
     WindowGroup {
       HomeView()
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) {
+          notification in
+          guard let context = notification.object as? ModelContext,
+            context === container.mainContext
+          else { return }
+          FoqosShortcutsProvider.updateAppShortcutParameters()
+        }
         .onOpenURL { url in
           handleUniversalLink(url)
         }

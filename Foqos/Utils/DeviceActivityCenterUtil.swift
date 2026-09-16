@@ -47,6 +47,17 @@ class DeviceActivityCenterUtil {
     for profile: BlockedProfiles,
     durationInSeconds: TimeInterval
   ) {
+    do {
+      try scheduleBreakTimerActivity(for: profile, durationInSeconds: durationInSeconds)
+    } catch {
+      print("Failed to start break timer activity: \(error.localizedDescription)")
+    }
+  }
+
+  static func scheduleBreakTimerActivity(
+    for profile: BlockedProfiles,
+    durationInSeconds: TimeInterval
+  ) throws {
     let center = DeviceActivityCenter()
     let breakTimerActivity = BreakTimerActivity()
     let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
@@ -58,14 +69,8 @@ class DeviceActivityCenterUtil {
       repeats: false,
     )
 
-    do {
-      // Remove any existing schedule and create a new one
-      stopActivities(for: [deviceActivityName], with: center)
-      try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
-      print("Scheduled break timer activity from \(intervalStart) to \(intervalEnd) daily")
-    } catch {
-      print("Failed to start break timer activity: \(error.localizedDescription)")
-    }
+    stopActivities(for: [deviceActivityName], with: center)
+    try center.startMonitoring(deviceActivityName, during: deviceActivitySchedule)
   }
 
   static func startStrategyTimerActivity(for profile: BlockedProfiles) {

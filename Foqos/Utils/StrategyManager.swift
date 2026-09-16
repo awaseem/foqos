@@ -110,15 +110,14 @@ class StrategyManager: ObservableObject {
   }
 
   func toggleBreak(context: ModelContext) {
-    guard let session = activeSession else {
-      print("active session does not exist")
-      return
-    }
-
-    if session.isBreakActive {
-      stopBreak(context: context)
-    } else {
-      startBreak(context: context)
+    do {
+      if getActiveSession(context: context)?.isBreakActive == true {
+        _ = try endBreakFromBackground(context: context)
+      } else {
+        _ = try startBreakFromBackground(context: context)
+      }
+    } catch {
+      errorMessage = error.localizedDescription
     }
   }
 
@@ -515,34 +514,57 @@ class StrategyManager: ObservableObject {
     return strategy
   }
 
-  private func startBreak(context: ModelContext) {
+  func startBreakFromBackground(
+    context: ModelContext,
+    scheduleBreak: (BlockedProfiles, TimeInterval) throws -> Void =
+      DeviceActivityCenterUtil.scheduleBreakTimerActivity
+  ) throws -> (profileName: String, didChange: Bool) {
+    activeSession = getActiveSession(context: context)
     guard let session = activeSession else {
-      print("Breaks only available in active session")
-      return
+      throw BreakSessionError.noActiveSession
     }
-
-    if !session.isBreakAvailable {
-      print("Breaks is not availble")
-      return
+    let profileName = session.blockedProfile.name
+    guard !session.isPauseActive else {
+      throw BreakSessionError.pauseActive(profileName: profileName)
+    }
+    if session.isBreakActive {
+      return (profileName, false)
+    }
+    guard session.blockedProfile.enableBreaks, session.blockedProfile.allowsTimedBreaks else {
+      throw BreakSessionError.breaksUnavailable(profileName: profileName)
     }
 
     let remainingBreakAllowance = session.remainingBreakAllowance()
     guard remainingBreakAllowance > 0 else {
-      print("No break allowance remaining")
-      return
+      throw BreakSessionError.allowanceExhausted(profileName: profileName)
+    }
+    guard session.isBreakAvailable else {
+      throw BreakSessionError.breaksUnavailable(profileName: profileName)
     }
 
+    // Ensure blocking can resume automatically before releasing restrictions.
+    do {
+      try scheduleBreak(session.blockedProfile, remainingBreakAllowance)
+    } catch {
+      throw BreakSessionError.schedulingFailed(reason: error.localizedDescription)
+    }
+
+    let previousStart = session.breakStartTime
+    let previousEnd = session.breakEndTime
     session.startBreak()
+    do {
+      try context.save()
+    } catch {
+      session.breakStartTime = previousStart
+      session.breakEndTime = previousEnd
+      SharedData.createActiveSharedSession(for: session.toSnapshot())
+      DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
+      appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
+      throw error
+    }
     ActiveProfileSyncStore.publish(session: session)
     appBlocker.deactivateRestrictionsForBreak(
       for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
-    try? context.save()
-
-    // Start the break timer activity
-    DeviceActivityCenterUtil.startBreakTimerActivity(
-      for: session.blockedProfile,
-      durationInSeconds: remainingBreakAllowance
-    )
 
     // Schedule a reminder to get back to the profile after the break
     scheduleBreakReminder(
@@ -557,23 +579,22 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break state
     liveActivityManager.updateBreakState(session: session)
+    return (profileName, true)
   }
 
-  private func stopBreak(context: ModelContext) {
+  func endBreakFromBackground(context: ModelContext) throws -> String? {
+    activeSession = getActiveSession(context: context)
     guard let session = activeSession else {
-      print("Breaks only available in active session")
-      return
+      return nil
     }
 
     if !session.isBreakActive {
-      print("Breaks is not availble")
-      return
+      return nil
     }
 
     session.endBreak()
     ActiveProfileSyncStore.publish(session: session)
     appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
-    try? context.save()
 
     // Remove the break timer activity
     DeviceActivityCenterUtil.removeBreakTimerActivity(for: session.blockedProfile)
@@ -588,6 +609,8 @@ class StrategyManager: ObservableObject {
 
     // Update live activity to show break has ended
     liveActivityManager.updateBreakState(session: session)
+    try context.save()
+    return session.blockedProfile.name
   }
 
   private func handlePauseStarted(context: ModelContext) {

@@ -97,6 +97,24 @@ https://foqos.app/profile/<PROFILE_UUID>
 
 Scanning a QR code with that link can toggle the profile. If the profile is inactive, Foqos starts it. If it is active, Foqos stops it when the profile's strategy and unlock rules allow that stop.
 
+## Siri
+
+Open Foqos once after installing or updating it, then ask Siri to control your sessions.
+For a profile named "Work", try:
+
+- "Start Work in Foqos"
+- "Start a profile in Foqos" (Siri asks which profile)
+- "Stop my session in Foqos"
+- "Pause my session in Foqos"
+- "Start a break in Foqos"
+- "End my break in Foqos"
+- "Is my session active in Foqos"
+- "What profile is active in Foqos"
+
+Replace "Work" with your profile's name. These commands are available automatically—no shortcut
+setup is needed. Enable breaks in your profile to use the break commands, or choose a Pause Timer
+strategy to use the pause command.
+
 ## iOS Shortcuts Setup
 
 You can trigger Foqos profiles through iOS Shortcuts. For NFC automations, create one automation per NFC tag.

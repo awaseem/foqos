@@ -16,6 +16,12 @@ struct StartProfileIntent: LiveActivityIntent {
 
   static var title: LocalizedStringResource = "Start Foqos Profile"
 
+  static var parameterSummary: some ParameterSummary {
+    Summary("Start \(\.$profile)") {
+      \.$durationInMinutes
+    }
+  }
+
   static var description = IntentDescription(
     "Start a Foqos blocking profile. Optionally specify a timer duration in minutes (15-1440)."
   )
