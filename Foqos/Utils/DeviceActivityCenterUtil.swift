@@ -225,15 +225,6 @@ class DeviceActivityCenterUtil {
   private static func getTimeIntervalStartAndEnd(from durationInSeconds: TimeInterval) -> (
     intervalStart: DateComponents, intervalEnd: DateComponents
   ) {
-    let intervalStart = DateComponents(hour: 0, minute: 0, second: 0)
-
-    let now = Date()
-    let safeDuration = max(1, durationInSeconds)
-    let endDate = min(
-      now.addingTimeInterval(safeDuration),
-      Calendar.current.startOfDay(for: now).addingTimeInterval((24 * 60 * 60) - 1)
-    )
-    let intervalEnd = Calendar.current.dateComponents([.hour, .minute, .second], from: endDate)
-    return (intervalStart: intervalStart, intervalEnd: intervalEnd)
+    return TimerIntervalCalculator.interval(durationInSeconds: durationInSeconds)
   }
 }
