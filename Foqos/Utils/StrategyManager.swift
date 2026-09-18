@@ -249,7 +249,8 @@ class StrategyManager: ObservableObject {
   func startSessionFromBackground(
     _ profileId: UUID,
     context: ModelContext,
-    durationInMinutes: Int? = nil
+    durationInMinutes: Int? = nil,
+    hideStopButton: Bool = false
   ) {
     do {
       guard
@@ -277,7 +278,7 @@ class StrategyManager: ObservableObject {
         }
 
         if let strategyTimerData = StrategyTimerData.toData(
-          from: StrategyTimerData(durationInMinutes: duration, hideStopButton: false)
+          from: StrategyTimerData(durationInMinutes: duration, hideStopButton: hideStopButton)
         ) {
           profile.strategyData = strategyTimerData
           profile.updatedAt = Date()
