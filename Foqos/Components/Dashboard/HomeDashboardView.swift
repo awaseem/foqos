@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct HomeDashboardView: View {
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @EnvironmentObject private var strategyManager: StrategyManager
 
   let profiles: [BlockedProfiles]
@@ -21,31 +22,46 @@ struct HomeDashboardView: View {
   let onLauncherTapped: () -> Void
   let onActiveSessionTapped: () -> Void
 
+  @State private var selectedProfileId: UUID?
+  @State private var preferredCompactColumn: NavigationSplitViewColumn = .sidebar
+
+  private var showsProfileInsights: Bool {
+    horizontalSizeClass == .regular
+  }
+
+  private var selectedProfile: BlockedProfiles? {
+    profiles.first { $0.id == selectedProfileId } ?? profiles.first
+  }
+
   var body: some View {
-    ScrollView(showsIndicators: false) {
-      VStack(alignment: .leading, spacing: 30) {
-        HomeHeaderView(
-          onSupportTapped: onSupportTapped,
-          onSettingsTapped: onSettingsTapped
-        )
-
-        HomeAlertsView(alerts: alerts, onAlertTapped: onAlertTapped)
-          .padding(.horizontal, 16)
-
-        if profiles.isEmpty {
-          Welcome(
-            onGuidedTap: createGuidedProfile,
-            onAdvancedTap: createAdvancedProfile
+    HomeDashboardLayout(preferredCompactColumn: $preferredCompactColumn) {
+      ScrollView(showsIndicators: false) {
+        VStack(alignment: .leading, spacing: 30) {
+          HomeHeaderView(
+            onSupportTapped: onSupportTapped,
+            onSettingsTapped: onSettingsTapped,
+            showsSupportTitle: !showsProfileInsights
           )
-          .padding(.horizontal, 16)
-        } else {
-          HomeDashboardLayout {
-            BlockedSessionsHabitTracker(
-              sessions: sessions,
-              profiles: profiles,
-              onInsightsTapped: onInsightsTapped
+
+          HomeAlertsView(alerts: alerts, onAlertTapped: onAlertTapped)
+            .padding(.horizontal, 16)
+
+          if profiles.isEmpty {
+            Welcome(
+              onGuidedTap: createGuidedProfile,
+              onAdvancedTap: createAdvancedProfile
             )
-          } profiles: {
+            .padding(.horizontal, 16)
+          } else {
+            if !showsProfileInsights {
+              BlockedSessionsHabitTracker(
+                sessions: sessions,
+                profiles: profiles,
+                onInsightsTapped: onInsightsTapped
+              )
+              .padding(.horizontal, 16)
+            }
+
             HomeProfilesListView(
               profiles: profiles,
               isBlocking: strategyManager.isBlocking,
@@ -56,34 +72,62 @@ struct HomeDashboardView: View {
               onStartTapped: onStartProfile,
               onStopTapped: onStopProfile,
               onEditTapped: onEditProfile,
-              onStatsTapped: onProfileInsightsTapped
+              onStatsTapped: showProfileInsights,
+              selectedProfileId: showsProfileInsights ? selectedProfile?.id : nil,
+              onSelectProfile: showsProfileInsights ? selectProfile : nil
             )
+            .padding(.horizontal, 16)
           }
-          .padding(.horizontal, 16)
         }
       }
+      .safeAreaInset(edge: .bottom) {
+        if !profiles.isEmpty {
+          HomeProfileLauncher(
+            activeProfile: strategyManager.isBlocking
+              ? strategyManager.activeSession?.blockedProfile : nil,
+            displayTime: strategyManager.sessionDisplayTime,
+            isBreakActive: strategyManager.isBreakActive,
+            isPauseActive: strategyManager.isPauseActive,
+            onStartTapped: onLauncherTapped,
+            onActiveTapped: onActiveSessionTapped
+          )
+        }
+      }
+      .padding(.top, 1)
+      .navigationTitle("Home")
+      .toolbar(.hidden, for: .navigationBar)
+    } insights: {
+      profileInsights
+        .toolbar(.visible, for: .navigationBar)
     }
-    .safeAreaInset(edge: .bottom) {
-      if !profiles.isEmpty {
-        HomeProfileLauncher(
-          activeProfile: strategyManager.isBlocking
-            ? strategyManager.activeSession?.blockedProfile : nil,
-          displayTime: strategyManager.sessionDisplayTime,
-          isBreakActive: strategyManager.isBreakActive,
-          isPauseActive: strategyManager.isPauseActive,
-          onStartTapped: onLauncherTapped,
-          onActiveTapped: onActiveSessionTapped
+  }
+
+  private var profileInsights: some View {
+    Group {
+      if let selectedProfile {
+        ProfileInsightsContent(profile: selectedProfile)
+          .id(selectedProfile.id)
+      } else {
+        ContentUnavailableView(
+          "No Profiles",
+          systemImage: "chart.line.uptrend.xyaxis",
+          description: Text("Create a profile to see its focus insights here.")
         )
       }
     }
-    .padding(.top, 1)
-    .frame(
-      minWidth: 0,
-      maxWidth: .infinity,
-      minHeight: 0,
-      maxHeight: .infinity,
-      alignment: .topLeading
-    )
+  }
+
+  private func selectProfile(_ profile: BlockedProfiles) {
+    selectedProfileId = profile.id
+    preferredCompactColumn = .detail
+  }
+
+  private func showProfileInsights(_ profile: BlockedProfiles) {
+    if showsProfileInsights {
+      selectProfile(profile)
+    } else {
+      onProfileInsightsTapped(profile)
+    }
   }
 
   private func createGuidedProfile() {

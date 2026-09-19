@@ -1,34 +1,41 @@
 import SwiftUI
 
-struct HomeDashboardLayout<Insights: View, Profiles: View>: View {
+struct HomeDashboardLayout<Profiles: View, Insights: View>: View {
+  @Binding private var preferredCompactColumn: NavigationSplitViewColumn
+
   private let insights: Insights
   private let profiles: Profiles
 
   init(
-    @ViewBuilder insights: () -> Insights,
-    @ViewBuilder profiles: () -> Profiles
+    preferredCompactColumn: Binding<NavigationSplitViewColumn>,
+    @ViewBuilder profiles: () -> Profiles,
+    @ViewBuilder insights: () -> Insights
   ) {
+    _preferredCompactColumn = preferredCompactColumn
     self.insights = insights()
     self.profiles = profiles()
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 30) {
-      insights
+    NavigationSplitView(preferredCompactColumn: $preferredCompactColumn) {
       profiles
+    } detail: {
+      insights
     }
+    .navigationSplitViewStyle(.balanced)
   }
 }
 
 #Preview {
-  HomeDashboardLayout {
-    Text("Activity")
-      .frame(maxWidth: .infinity, minHeight: 200)
-      .background(.quaternary, in: RoundedRectangle(cornerRadius: 24))
-  } profiles: {
-    Text("Profiles")
-      .frame(maxWidth: .infinity, minHeight: 160)
-      .background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
+  @Previewable @State var preferredColumn: NavigationSplitViewColumn = .sidebar
+
+  HomeDashboardLayout(preferredCompactColumn: $preferredColumn) {
+    List {
+      Button("Deep Work") { preferredColumn = .detail }
+    }
+    .navigationTitle("Profiles")
+  } insights: {
+    Text("Deep Work Insights")
+      .navigationTitle("Insights")
   }
-  .padding(16)
 }
