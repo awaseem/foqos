@@ -26,6 +26,19 @@ struct ProfileInsightsFilterMenu: View {
   var body: some View {
     Menu {
       Button {
+        onSelectFilter(.thisMonth)
+      } label: {
+        Label("This Month", systemImage: selectedFilter == .thisMonth ? "checkmark" : "calendar")
+      }
+      Button {
+        onSelectFilter(.lastMonth)
+      } label: {
+        Label("Last Month", systemImage: selectedFilter == .lastMonth ? "checkmark" : "arrow.left")
+      }
+
+      Divider()
+
+      Button {
         onSelectFilter(.thisWeek)
       } label: {
         Label(
@@ -40,19 +53,6 @@ struct ProfileInsightsFilterMenu: View {
           "Last Week",
           systemImage: selectedFilter == .lastWeek
             ? "checkmark" : "calendar.day.timeline.right")
-      }
-
-      Divider()
-
-      Button {
-        onSelectFilter(.thisMonth)
-      } label: {
-        Label("This Month", systemImage: selectedFilter == .thisMonth ? "checkmark" : "calendar")
-      }
-      Button {
-        onSelectFilter(.lastMonth)
-      } label: {
-        Label("Last Month", systemImage: selectedFilter == .lastMonth ? "checkmark" : "arrow.left")
       }
 
       Divider()

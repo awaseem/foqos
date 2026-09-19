@@ -25,7 +25,7 @@ struct ProfileInsightsContent: View {
   @State private var showingWeekPicker = false
   @State private var showingMonthPicker = false
   @State private var showDeleteAllConfirmation = false
-  @State private var selectedFilter: InsightsFilter = .thisWeek
+  @State private var selectedFilter: InsightsFilter = .thisMonth
 
   @Query(sort: \BlockedProfileSession.startTime, order: .reverse)
   private var allSessions: [BlockedProfileSession]

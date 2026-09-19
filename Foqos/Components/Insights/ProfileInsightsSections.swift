@@ -19,23 +19,30 @@ struct ProfileInsightsSections: View {
   var body: some View {
     if viewMode != .allSessions {
       Section {
-        if viewMode == .week {
-          WeeklySessionChart(
-            viewModel: weeklyViewModel, selectedDay: $selectedWeekDay, onDateSelected: nil
-          )
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.vertical, 8)
-          .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-          .listRowBackground(Color.clear)
-        } else {
-          MonthlySessionChart(
-            viewModel: monthlyViewModel, selectedDay: $selectedMonthDay, onDateSelected: nil
-          )
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.vertical, 8)
-          .listRowInsets(EdgeInsets(top: 12, leading: 4, bottom: 0, trailing: 4))
-          .listRowBackground(Color.clear)
+        Group {
+          if viewMode == .week {
+            WeeklySessionChart(
+              viewModel: weeklyViewModel, selectedDay: $selectedWeekDay, onDateSelected: nil
+            )
+          } else {
+            MonthlySessionChart(
+              viewModel: monthlyViewModel, selectedDay: $selectedMonthDay, onDateSelected: nil
+            )
+          }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background {
+          RoundedRectangle(cornerRadius: 24)
+            .fill(Color(.systemBackground))
+        }
+        .overlay {
+          RoundedRectangle(cornerRadius: 24)
+            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            .allowsHitTesting(false)
+        }
+        .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 0, trailing: 0))
+        .listRowBackground(Color.clear)
       }
     }
 
