@@ -4,10 +4,12 @@ struct HomeHeaderView: View {
   let onSupportTapped: () -> Void
   let onSettingsTapped: () -> Void
   var showsSupportTitle = true
+  var titleFont: Font = .largeTitle
 
   var body: some View {
     HStack(alignment: .center) {
-      AppTitle()
+      AppTitle(font: titleFont)
+        .lineLimit(1)
       Spacer()
       HStack(spacing: 8) {
         RoundedButton(
@@ -27,4 +29,11 @@ struct HomeHeaderView: View {
 
 #Preview {
   HomeHeaderView(onSupportTapped: {}, onSettingsTapped: {})
+}
+
+#Preview("Sidebar") {
+  HomeHeaderView(
+    onSupportTapped: {}, onSettingsTapped: {}, showsSupportTitle: false, titleFont: .title2
+  )
+  .frame(width: 280)
 }

@@ -5,48 +5,55 @@ struct HomeDashboardLayout<Profiles: View, Insights: View>: View {
   @Binding private var preferredCompactColumn: NavigationSplitViewColumn
 
   private let insights: Insights
-  private let profiles: Profiles
+  private let profiles: (Bool) -> Profiles
 
   init(
     preferredCompactColumn: Binding<NavigationSplitViewColumn>,
-    @ViewBuilder profiles: () -> Profiles,
+    @ViewBuilder profiles: @escaping (Bool) -> Profiles,
     @ViewBuilder insights: () -> Insights
   ) {
     _preferredCompactColumn = preferredCompactColumn
     self.insights = insights()
-    self.profiles = profiles()
+    self.profiles = profiles
   }
 
   var body: some View {
-    NavigationSplitView(preferredCompactColumn: $preferredCompactColumn) {
-      profiles
-        .background {
-          if horizontalSizeClass == .regular {
-            Color(uiColor: .systemGroupedBackground)
-              .ignoresSafeArea()
-          }
+    GeometryReader { geometry in
+      let showsProfileInsights =
+        horizontalSizeClass == .regular && geometry.size.width > geometry.size.height
+
+      if showsProfileInsights {
+        NavigationSplitView(preferredCompactColumn: $preferredCompactColumn) {
+          profiles(true)
+            .background {
+              Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
+            }
+            .overlay(alignment: .trailing) {
+              Rectangle()
+                .fill(.primary.opacity(0.35))
+                .frame(width: 2)
+                .ignoresSafeArea(edges: .vertical)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+        } detail: {
+          insights
         }
-        .overlay(alignment: .trailing) {
-          if horizontalSizeClass == .regular {
-            Rectangle()
-              .fill(.primary.opacity(0.35))
-              .frame(width: 2)
-              .ignoresSafeArea(edges: .vertical)
-              .allowsHitTesting(false)
-              .accessibilityHidden(true)
-          }
+        .navigationSplitViewStyle(.balanced)
+      } else {
+        NavigationStack {
+          profiles(false)
         }
-    } detail: {
-      insights
+      }
     }
-    .navigationSplitViewStyle(.balanced)
   }
 }
 
 #Preview {
   @Previewable @State var preferredColumn: NavigationSplitViewColumn = .sidebar
 
-  HomeDashboardLayout(preferredCompactColumn: $preferredColumn) {
+  HomeDashboardLayout(preferredCompactColumn: $preferredColumn) { _ in
     List {
       Button("Deep Work") { preferredColumn = .detail }
     }
