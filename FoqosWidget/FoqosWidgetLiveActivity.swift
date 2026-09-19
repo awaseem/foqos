@@ -125,7 +125,17 @@ struct FoqosWidgetLiveActivity: Widget {
         foqosLogo(size: compactLogoSize)
           .frame(width: compactLogoSize, height: compactLogoSize)
       } compactTrailing: {
-        compactIslandStatusView(for: context.state)
+        #if compiler(>=6.4)
+          if #available(iOS 27.0, *) {
+            WidthAwareCompactIslandContent { isWidthLimited in
+              compactIslandStatusView(for: context.state, isWidthLimited: isWidthLimited)
+            }
+          } else {
+            compactIslandStatusView(for: context.state)
+          }
+        #else
+          compactIslandStatusView(for: context.state)
+        #endif
       } minimal: {
         foqosLogo(size: minimalLogoSize)
           .frame(width: minimalLogoSize, height: minimalLogoSize)
@@ -178,14 +188,26 @@ struct FoqosWidgetLiveActivity: Widget {
 
   @ViewBuilder
   private func compactIslandStatusView(
-    for state: FoqosWidgetAttributes.ContentState
+    for state: FoqosWidgetAttributes.ContentState,
+    isWidthLimited: Bool = false
   ) -> some View {
     if state.isPauseActive {
       stickerStatusView(assetName: "PauseStickerIcon", size: 20)
-        .frame(width: compactTimerWidth, alignment: .center)
+        .frame(width: isWidthLimited ? 20 : compactTimerWidth, alignment: .center)
+        .accessibilityLabel("Paused")
     } else if state.isBreakActive {
       stickerStatusView(assetName: "CoffeeStickerIcon", size: 20)
-        .frame(width: compactTimerWidth, alignment: .center)
+        .frame(width: isWidthLimited ? 20 : compactTimerWidth, alignment: .center)
+        .accessibilityLabel("On a break")
+    } else if isWidthLimited {
+      Image(systemName: "timer")
+        .font(.system(size: 18, weight: .semibold))
+        .foregroundStyle(.purple)
+        .frame(width: 20, height: 20)
+        .accessibilityLabel("Focus session active")
+        .accessibilityValue(
+          Text(Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()), style: .timer)
+        )
     } else {
       compactElapsedTimerText(for: state)
     }
@@ -296,6 +318,19 @@ struct FoqosWidgetLiveActivity: Widget {
     }
   }
 }
+
+// The width environment value requires the iOS 27 SDK bundled with Xcode 27 / Swift 6.4.
+#if compiler(>=6.4)
+  @available(iOS 27.0, *)
+  private struct WidthAwareCompactIslandContent<Content: View>: View {
+    @Environment(\.isDynamicIslandLimitedInWidth) private var isWidthLimited
+    @ViewBuilder let content: (Bool) -> Content
+
+    var body: some View {
+      content(isWidthLimited)
+    }
+  }
+#endif
 
 extension FoqosWidgetAttributes {
   fileprivate static var preview: FoqosWidgetAttributes {

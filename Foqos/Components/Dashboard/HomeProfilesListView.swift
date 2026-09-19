@@ -11,6 +11,8 @@ struct HomeProfilesListView: View {
   let onStopTapped: (BlockedProfiles) -> Void
   let onEditTapped: (BlockedProfiles) -> Void
   let onStatsTapped: (BlockedProfiles) -> Void
+  var selectedProfileId: UUID? = nil
+  var onSelectProfile: ((BlockedProfiles) -> Void)? = nil
 
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
@@ -29,6 +31,11 @@ struct HomeProfilesListView: View {
             isActive: profile.id == activeSessionProfileId,
             elapsedTime: elapsedTime,
             isPauseActive: isPauseActive,
+            isSelected: profile.id == selectedProfileId,
+            selectsInsights: onSelectProfile != nil,
+            onSelected: {
+              onSelectProfile?(profile)
+            },
             onStartTapped: {
               onStartTapped(profile)
             },
@@ -63,6 +70,7 @@ struct HomeProfilesListView: View {
 
 private struct HomeProfileRow: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @EnvironmentObject private var themeManager: ThemeManager
   @State private var hasRoomForMiniChart = false
 
   let profile: BlockedProfiles
@@ -70,6 +78,9 @@ private struct HomeProfileRow: View {
   let isActive: Bool
   let elapsedTime: TimeInterval
   let isPauseActive: Bool
+  let isSelected: Bool
+  let selectsInsights: Bool
+  let onSelected: () -> Void
   let onStartTapped: () -> Void
   let onStopTapped: () -> Void
   let onEditTapped: () -> Void
@@ -101,7 +112,7 @@ private struct HomeProfileRow: View {
 
   var body: some View {
     HStack(spacing: 12) {
-      Button(action: onEditTapped) {
+      Button(action: selectsInsights ? onSelected : onEditTapped) {
         ProfileSummaryContent(
           profile: profile,
           isActive: false,
@@ -114,7 +125,10 @@ private struct HomeProfileRow: View {
         .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .accessibilityLabel("Edit \(profile.name)")
+      .accessibilityLabel(
+        selectsInsights ? "Show \(profile.name) insights" : "Edit \(profile.name)"
+      )
+      .accessibilityAddTraits(isSelected ? [.isSelected] : [])
 
       if showsMiniChart {
         Button(action: onStatsTapped) {
@@ -130,6 +144,10 @@ private struct HomeProfileRow: View {
     }
     .padding(16)
     .frame(maxWidth: .infinity)
+    .background(
+      isSelected ? themeManager.themeColor.opacity(0.4) : Color.clear,
+      in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+    )
     .onGeometryChange(for: Bool.self) { geometry in
       // Reserve room for profile details, the chart, the action menu, and padding.
       geometry.size.width > 343

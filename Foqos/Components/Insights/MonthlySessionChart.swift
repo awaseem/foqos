@@ -167,19 +167,19 @@ struct MonthlySessionChart: View {
         HStack {
           VStack(alignment: .leading, spacing: 2) {
             Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
-              .font(.caption)
+              .font(.subheadline)
               .fontWeight(.semibold)
               .foregroundStyle(.secondary)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
               Text(DateFormatters.formatDurationHoursMinutes(selectedDay.totalSessionTime))
-                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .font(.system(size: 48, weight: .bold, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundStyle(.primary)
                 .contentTransition(.numericText())
 
               Text("total")
-                .font(.title3)
+                .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
             }
@@ -202,12 +202,12 @@ struct MonthlySessionChart: View {
       } else {
         VStack(alignment: .leading, spacing: 2) {
           Text("Avg Focus Session")
-            .font(.caption)
+            .font(.subheadline)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
 
           Text(DateFormatters.formatDurationHoursMinutes(monthlySummary.averageSessionDuration))
-            .font(.system(size: 40, weight: .bold, design: .rounded))
+            .font(.system(size: 48, weight: .bold, design: .rounded))
             .fontWeight(.bold)
             .foregroundStyle(.primary)
             .contentTransition(.numericText())
