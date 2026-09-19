@@ -125,13 +125,17 @@ struct FoqosWidgetLiveActivity: Widget {
         foqosLogo(size: compactLogoSize)
           .frame(width: compactLogoSize, height: compactLogoSize)
       } compactTrailing: {
-        if #available(iOS 27.0, *) {
-          WidthAwareCompactIslandContent { isWidthLimited in
-            compactIslandStatusView(for: context.state, isWidthLimited: isWidthLimited)
+        #if compiler(>=6.4)
+          if #available(iOS 27.0, *) {
+            WidthAwareCompactIslandContent { isWidthLimited in
+              compactIslandStatusView(for: context.state, isWidthLimited: isWidthLimited)
+            }
+          } else {
+            compactIslandStatusView(for: context.state)
           }
-        } else {
+        #else
           compactIslandStatusView(for: context.state)
-        }
+        #endif
       } minimal: {
         foqosLogo(size: minimalLogoSize)
           .frame(width: minimalLogoSize, height: minimalLogoSize)
@@ -315,15 +319,18 @@ struct FoqosWidgetLiveActivity: Widget {
   }
 }
 
-@available(iOS 27.0, *)
-private struct WidthAwareCompactIslandContent<Content: View>: View {
-  @Environment(\.isDynamicIslandLimitedInWidth) private var isWidthLimited
-  @ViewBuilder let content: (Bool) -> Content
+// The width environment value requires the iOS 27 SDK bundled with Xcode 27 / Swift 6.4.
+#if compiler(>=6.4)
+  @available(iOS 27.0, *)
+  private struct WidthAwareCompactIslandContent<Content: View>: View {
+    @Environment(\.isDynamicIslandLimitedInWidth) private var isWidthLimited
+    @ViewBuilder let content: (Bool) -> Content
 
-  var body: some View {
-    content(isWidthLimited)
+    var body: some View {
+      content(isWidthLimited)
+    }
   }
-}
+#endif
 
 extension FoqosWidgetAttributes {
   fileprivate static var preview: FoqosWidgetAttributes {
