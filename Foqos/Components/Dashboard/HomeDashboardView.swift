@@ -23,6 +23,7 @@ struct HomeDashboardView: View {
   let onActiveSessionTapped: () -> Void
 
   @State private var selectedProfileId: UUID?
+  // Profile selection updates the expanded detail; closing the screen keeps Home on top.
   @State private var preferredCompactColumn: NavigationSplitViewColumn = .sidebar
 
   private var showsProfileInsights: Bool {
@@ -119,7 +120,6 @@ struct HomeDashboardView: View {
 
   private func selectProfile(_ profile: BlockedProfiles) {
     selectedProfileId = profile.id
-    preferredCompactColumn = .detail
   }
 
   private func showProfileInsights(_ profile: BlockedProfiles) {

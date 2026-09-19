@@ -70,6 +70,7 @@ struct HomeProfilesListView: View {
 
 private struct HomeProfileRow: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @EnvironmentObject private var themeManager: ThemeManager
   @State private var hasRoomForMiniChart = false
 
   let profile: BlockedProfiles
@@ -144,7 +145,7 @@ private struct HomeProfileRow: View {
     .padding(16)
     .frame(maxWidth: .infinity)
     .background(
-      isSelected ? Color.accentColor.opacity(0.12) : Color.clear,
+      isSelected ? themeManager.themeColor.opacity(0.4) : Color.clear,
       in: RoundedRectangle(cornerRadius: 16, style: .continuous)
     )
     .onGeometryChange(for: Bool.self) { geometry in

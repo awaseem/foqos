@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeDashboardLayout<Profiles: View, Insights: View>: View {
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Binding private var preferredCompactColumn: NavigationSplitViewColumn
 
   private let insights: Insights
@@ -19,6 +20,22 @@ struct HomeDashboardLayout<Profiles: View, Insights: View>: View {
   var body: some View {
     NavigationSplitView(preferredCompactColumn: $preferredCompactColumn) {
       profiles
+        .background {
+          if horizontalSizeClass == .regular {
+            Color(uiColor: .systemGroupedBackground)
+              .ignoresSafeArea()
+          }
+        }
+        .overlay(alignment: .trailing) {
+          if horizontalSizeClass == .regular {
+            Rectangle()
+              .fill(.primary.opacity(0.35))
+              .frame(width: 2)
+              .ignoresSafeArea(edges: .vertical)
+              .allowsHitTesting(false)
+              .accessibilityHidden(true)
+          }
+        }
     } detail: {
       insights
     }
