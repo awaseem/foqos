@@ -75,7 +75,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../foqos/Tip for developer.storekit">
+         identifier = "../../Foqos/Tip for developer.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

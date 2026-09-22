@@ -1,150 +1,98 @@
 import StoreKit
 
+@MainActor
 class TipManager: ObservableObject {
-  @Published var products: [Product] = []
-  @Published var purchasedProductIDs = Set<String>()
-  @Published var purchaseError: String?
+  static let productIDs = [
+    "tip_developer_support",
+    "tip_developer_support_5",
+    "tip_developer_support_10",
+  ]
 
-  @Published var loadingTip = false
+  @Published private(set) var products: [Product] = []
+  @Published private(set) var isLoadingProducts = false
+  @Published private(set) var loadingTip = false
+  @Published private(set) var productLoadingError: String?
+  @Published private(set) var purchaseError: String?
+  @Published private(set) var purchaseMessage: String?
 
-  private let productID = "tip_developer_support"
-
-  // Computed property to check if tip has been purchased
-  var hasPurchasedTip: Bool {
-    return purchasedProductIDs.contains(productID)
-  }
+  private var transactionListener: Task<Void, Never>?
 
   init() {
-    Task {
-      await loadProducts()
-      await setupTransactionListener()
-    }
-  }
-
-  @MainActor
-  private func setupTransactionListener() async {
-    // Start a transaction listener as soon as the app launches
-    let updates = Transaction.updates
-    for await result in updates {
-      do {
-        switch result {
-        case .verified(let transaction):
-          // Handle a verified transaction
-          await handleVerifiedTransaction(transaction)
-        case .unverified(let transaction, let error):
-          // Log the unverified transaction for debugging
-          purchaseError =
-            "Verification failed: \(error.localizedDescription)"
-          print(
-            "Unverified transaction: \(transaction.id), Error: \(error)"
-          )
-        }
+    transactionListener = Task { [weak self] in
+      for await result in Transaction.updates {
+        guard let self else { return }
+        await self.handleTransaction(result)
       }
     }
   }
 
-  @MainActor
-  private func handleVerifiedTransaction(_ transaction: Transaction) async {
-    // Add the purchased product identifier to the purchased set
-    purchasedProductIDs.insert(transaction.productID)
-
-    // Clear any previous error since the purchase was successful
-    purchaseError = nil
-
-    // Always finish a transaction once you've delivered the content
-    await transaction.finish()
-
-    // Update any UI or app state based on the purchase
-    NotificationCenter.default.post(
-      name: NSNotification.Name("PurchaseSuccessful"),
-      object: nil
-    )
+  deinit {
+    transactionListener?.cancel()
   }
 
-  @MainActor
   func loadProducts() async {
+    guard !isLoadingProducts else { return }
+    isLoadingProducts = true
+    productLoadingError = nil
+    defer { isLoadingProducts = false }
+
     do {
-      // Request products from the App Store
-      products = try await Product.products(for: [productID])
+      products = try await Product.products(for: Self.productIDs)
+        .sorted { $0.price < $1.price }
 
-      // Check current entitlements
-      await checkEntitlements()
-
-      // Debug logging
-      print(
-        "Available products: \(products.map { $0.id }.joined(separator: ", "))"
-      )
+      if products.isEmpty {
+        productLoadingError = "Tips are unavailable right now. Please try again later."
+      }
     } catch {
-      purchaseError =
-        "Failed to load products: \(error.localizedDescription)"
-      print("Product loading error: \(error)")
+      products = []
+      productLoadingError = "Couldn't load tips. Please check your connection and try again."
     }
   }
 
-  @MainActor
-  private func checkEntitlements() async {
-    // Verify existing purchases
-    for await result in Transaction.currentEntitlements {
-      switch result {
-      case .verified(let transaction):
-        purchasedProductIDs.insert(transaction.productID)
-      case .unverified:
-        continue
+  func tip(_ product: Product) async {
+    guard !loadingTip, !isLoadingProducts,
+      products.contains(where: { $0.id == product.id })
+    else { return }
+
+    loadingTip = true
+    purchaseError = nil
+    purchaseMessage = nil
+    defer { loadingTip = false }
+
+    do {
+      switch try await product.purchase() {
+      case .success(let result):
+        await handleTransaction(result)
+      case .userCancelled:
+        break
+      case .pending:
+        purchaseMessage = "Your tip is awaiting approval. Thank you for your support!"
+      @unknown default:
+        purchaseError = "Couldn't complete your tip. Please try again."
       }
+    } catch StoreKitError.userCancelled {
+      return
+    } catch {
+      purchaseError = "Purchase failed: \(error.localizedDescription)"
     }
   }
 
-  @MainActor
-  func purchase() async throws {
-    guard let product = products.first else {
-      throw StoreError.noProduct
-    }
-
-    // Begin a purchase
-    let result = try await product.purchase()
-
+  private func handleTransaction(_ result: VerificationResult<Transaction>) async {
     switch result {
-    case .success(let verificationResult):
-      switch verificationResult {
-      case .verified(let transaction):
-        // Handle successful purchase
-        purchasedProductIDs.insert(transaction.productID)
-        purchaseError = nil  // Clear error on successful purchase
-        Task {
-          await transaction.finish()
-        }
-      case .unverified(_, let error):
-        purchaseError =
-          "Purchase verification failed: \(error.localizedDescription)"
-      }
-    case .userCancelled:
-      purchaseError = "Purchase was cancelled"
-    case .pending:
-      purchaseError = "Purchase is pending"
-    @unknown default:
-      purchaseError = "Unknown purchase result"
-    }
-  }
+    case .verified(let transaction):
+      guard Self.productIDs.contains(transaction.productID) else { return }
 
-  @MainActor
-  func tip() {
-    Task {
-      loadingTip = true
-      purchaseError = nil  // Clear any previous error
-
-      do {
-        try await purchase()
-      } catch StoreError.noProduct {
-        purchaseError = "No product available for purchase"
-      } catch {
-        purchaseError = "Purchase failed: \(error.localizedDescription)"
+      if transaction.revocationDate != nil {
+        await transaction.finish()
+        return
       }
 
-      loadingTip = false
+      purchaseError = nil
+      purchaseMessage = "Thank you for supporting Foqos ♥"
+      await transaction.finish()
+    case .unverified(let transaction, let error):
+      guard Self.productIDs.contains(transaction.productID) else { return }
+      purchaseError = "Couldn't verify your tip: \(error.localizedDescription)"
     }
   }
-}
-
-enum StoreError: Error {
-  case noProduct
 }
