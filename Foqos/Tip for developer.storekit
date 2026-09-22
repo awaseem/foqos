@@ -30,7 +30,7 @@
       "type" : "Consumable"
     },
     {
-      "displayPrice" : "5.00",
+      "displayPrice" : "4.99",
       "familyShareable" : false,
       "internalID" : "A6C93B25",
       "localizations" : [
@@ -41,11 +41,11 @@
         }
       ],
       "productID" : "tip_developer_support_5",
-      "referenceName" : "Developer Tip - 5 USD",
+      "referenceName" : "Developer Tip - 4.99 USD",
       "type" : "Consumable"
     },
     {
-      "displayPrice" : "10.00",
+      "displayPrice" : "9.99",
       "familyShareable" : false,
       "internalID" : "B7D04C36",
       "localizations" : [
@@ -56,7 +56,7 @@
         }
       ],
       "productID" : "tip_developer_support_10",
-      "referenceName" : "Developer Tip - 10 USD",
+      "referenceName" : "Developer Tip - 9.99 USD",
       "type" : "Consumable"
     }
   ],

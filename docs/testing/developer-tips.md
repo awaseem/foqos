@@ -9,8 +9,8 @@ The checked-in `.storekit` file configures local testing only. Keep the existing
 | Product ID | Type | US base price | Display name |
 | --- | --- | --- | --- |
 | `tip_developer_support` | Existing approved consumable; preserve | $1.99 | Small Tip |
-| `tip_developer_support_5` | Consumable | $5.00 | Generous Tip |
-| `tip_developer_support_10` | Consumable | $10.00 | Extra Generous Tip |
+| `tip_developer_support_5` | Consumable | $4.99 | Generous Tip |
+| `tip_developer_support_10` | Consumable | $9.99 | Extra Generous Tip |
 
 For the two new products, select the United States as the base country, set the exact USD prices, review Apple's generated regional prices, select availability, add localizations and App Review information, and submit them for review. All three products are consumable and allow repeat tips, including the existing approved `tip_developer_support`. Completing a tip does not remove or disable its amount in the picker.
 

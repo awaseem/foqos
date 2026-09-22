@@ -27,7 +27,9 @@ final class TipManagerTests: XCTestCase {
 
     XCTAssertNil(manager.productLoadingError)
     XCTAssertEqual(manager.products.map(\.id), TipManager.productIDs)
-    XCTAssertEqual(manager.products.map(\.price), [Decimal(string: "1.99")!, 5, 10])
+    XCTAssertEqual(
+      manager.products.map(\.price),
+      [Decimal(string: "1.99")!, Decimal(string: "4.99")!, Decimal(string: "9.99")!])
     XCTAssertEqual(manager.products.map(\.type), [.consumable, .consumable, .consumable])
     XCTAssertFalse(manager.isLoadingProducts)
   }
