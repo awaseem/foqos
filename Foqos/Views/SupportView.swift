@@ -193,7 +193,7 @@ struct SupportView: View {
       }
 
       ActionButton(
-        title: selectedProduct.map { "\(selectedTipEmoji) Tip \($0.displayPrice)" }
+        title: selectedProduct.map { "Tip \($0.displayPrice) \(selectedTipEmoji)" }
           ?? "Leave a tip",
         backgroundColor: themeManager.themeColor,
         isLoading: donationManager.loadingTip,
