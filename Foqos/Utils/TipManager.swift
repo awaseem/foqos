@@ -14,8 +14,10 @@ class TipManager: ObservableObject {
   @Published private(set) var productLoadingError: String?
   @Published private(set) var purchaseError: String?
   @Published private(set) var purchaseMessage: String?
+  @Published private(set) var completedTipCount = 0
 
   private var transactionListener: Task<Void, Never>?
+  private var celebratedTransactionIDs = Set<UInt64>()
 
   init() {
     transactionListener = Task { [weak self] in
@@ -88,8 +90,12 @@ class TipManager: ObservableObject {
       }
 
       purchaseError = nil
-      purchaseMessage = "Thank you for supporting Foqos ♥"
+      purchaseMessage = nil
+      let isNewTip = celebratedTransactionIDs.insert(transaction.id).inserted
       await transaction.finish()
+      if isNewTip {
+        completedTipCount += 1
+      }
     case .unverified(let transaction, let error):
       guard Self.productIDs.contains(transaction.productID) else { return }
       purchaseError = "Couldn't verify your tip: \(error.localizedDescription)"

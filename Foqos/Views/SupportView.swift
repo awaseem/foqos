@@ -10,6 +10,7 @@ struct SupportView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.scenePhase) private var scenePhase
   @EnvironmentObject var donationManager: TipManager
   @EnvironmentObject var themeManager: ThemeManager
 
@@ -17,6 +18,8 @@ struct SupportView: View {
   @State private var stampRotation: Double = 0
   @State private var stampOpacity: Double = 0.0
   @State private var selectedProductID: String?
+  @State private var celebrationStart: Date?
+  @State private var hasPendingCelebration = false
 
   private var selectedProduct: Product? {
     donationManager.products.first { $0.id == selectedProductID } ?? donationManager.products.first
@@ -49,11 +52,44 @@ struct SupportView: View {
         }
       }
     }
+    .overlay {
+      if let celebrationStart, !reduceMotion {
+        TipConfettiView(startDate: celebrationStart)
+          .ignoresSafeArea()
+          .allowsHitTesting(false)
+          .accessibilityHidden(true)
+      }
+    }
+    .onChange(of: donationManager.completedTipCount) {
+      hasPendingCelebration = true
+      celebrateIfReady()
+    }
+    .onChange(of: scenePhase) {
+      celebrateIfReady()
+    }
+    .sensoryFeedback(.success, trigger: donationManager.completedTipCount)
+    .task(id: celebrationStart) {
+      guard celebrationStart != nil else { return }
+      do {
+        try await Task.sleep(for: .seconds(5))
+        celebrationStart = nil
+      } catch {
+        return
+      }
+    }
     .task {
       await donationManager.loadProducts()
       for await _ in Storefront.updates {
         await donationManager.loadProducts()
       }
+    }
+  }
+
+  private func celebrateIfReady() {
+    guard hasPendingCelebration, scenePhase == .active else { return }
+    hasPendingCelebration = false
+    if !reduceMotion {
+      celebrationStart = Date()
     }
   }
 

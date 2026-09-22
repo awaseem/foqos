@@ -45,7 +45,7 @@ final class TipManagerTests: XCTestCase {
         try await waitForPurchaseCount(purchaseCount, productID: product.id)
 
         XCTAssertNil(manager.purchaseError, product.id)
-        XCTAssertNotNil(manager.purchaseMessage, product.id)
+        XCTAssertNil(manager.purchaseMessage, product.id)
         XCTAssertFalse(manager.loadingTip)
         XCTAssertEqual(
           session.allTransactions().filter {
@@ -55,6 +55,7 @@ final class TipManagerTests: XCTestCase {
       }
     }
     XCTAssertEqual(session.allTransactions().count, 6)
+    XCTAssertEqual(manager.completedTipCount, 6)
     XCTAssertEqual(manager.products.map(\.id), TipManager.productIDs)
   }
 
@@ -93,11 +94,12 @@ final class TipManagerTests: XCTestCase {
 
     XCTAssertNil(manager.purchaseError)
     XCTAssertNil(manager.purchaseMessage)
+    XCTAssertEqual(manager.completedTipCount, 0)
     XCTAssertFalse(manager.loadingTip)
     XCTAssertTrue(session.allTransactions().allSatisfy { $0.state == .failed })
   }
 
-  func testGivenAskToBuy_WhenTipping_ThenApprovalIsPending() async throws {
+  func testGivenAskToBuy_WhenTipping_ThenCelebrationWaitsForApproval() async throws {
     session.askToBuyEnabled = true
     let manager = TipManager()
     await manager.loadProducts()
@@ -107,7 +109,17 @@ final class TipManagerTests: XCTestCase {
 
     XCTAssertNil(manager.purchaseError)
     XCTAssertTrue(manager.purchaseMessage?.contains("awaiting approval") == true)
+    XCTAssertEqual(manager.completedTipCount, 0)
     XCTAssertFalse(manager.loadingTip)
+
+    let pending = try XCTUnwrap(session.allTransactions().first)
+    try session.approveAskToBuyTransaction(identifier: pending.identifier)
+    for _ in 0..<100 {
+      if manager.completedTipCount == 1 { break }
+      try await Task.sleep(for: .milliseconds(20))
+    }
+    XCTAssertEqual(manager.completedTipCount, 1)
+    XCTAssertNil(manager.purchaseMessage)
   }
 
   func testGivenExistingSupporter_WhenReloading_ThenOriginalTipCanBePurchasedAgain() async throws {
@@ -120,6 +132,7 @@ final class TipManagerTests: XCTestCase {
     await manager.tip(product)
     await manager.loadProducts()
     await manager.tip(product)
+    try await waitForPurchaseCount(3, productID: product.id)
 
     XCTAssertEqual(
       session.allTransactions().map(\.productIdentifier), Array(repeating: product.id, count: 3))
@@ -155,6 +168,7 @@ final class TipManagerTests: XCTestCase {
     await manager.tip(product)
 
     XCTAssertNotNil(manager.purchaseError)
+    XCTAssertEqual(manager.completedTipCount, 0)
     XCTAssertFalse(manager.loadingTip)
     XCTAssertTrue(session.allTransactions().allSatisfy { $0.state == .failed })
 
@@ -163,6 +177,7 @@ final class TipManagerTests: XCTestCase {
     await manager.tip(product)
 
     XCTAssertNil(manager.purchaseError)
+    XCTAssertEqual(manager.completedTipCount, 1)
     XCTAssertEqual(
       session.allTransactions().filter { $0.state == .purchased }.map(\.productIdentifier),
       [product.id])

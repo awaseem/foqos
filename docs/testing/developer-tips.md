@@ -26,4 +26,6 @@ Validated on iOS 18.6. The installed iOS 26.4.1 runtime rejects command-line `SK
 
 For manual testing, use the foqos scheme's "Tip for developer" StoreKit configuration. On Support, change the selected amount and verify the button and Apple confirmation sheet agree. Cancel a purchase, complete a purchase, and test Ask to Buy approval. Test a different storefront and locale in the StoreKit configuration; verify the picker and button match Apple's price formatting. Check larger accessibility text sizes and light/dark appearance.
 
+Each verified tip should trigger one brief confetti shower after returning from Apple's purchase sheet, without a thank-you message below the button. Cancellation and failure must not trigger confetti; pending tips celebrate only after approval. With Reduce Motion enabled, skip the confetti animation.
+
 Before shipping, disable the local StoreKit configuration and verify the real catalog and regional prices with an App Store sandbox account or TestFlight. Local test prices do not validate App Store Connect price equalization or product availability.
