@@ -22,6 +22,14 @@ struct SupportView: View {
     donationManager.products.first { $0.id == selectedProductID } ?? donationManager.products.first
   }
 
+  private var selectedTipEmoji: String {
+    switch selectedProduct?.id {
+    case "tip_developer_support_5": "🤑"
+    case "tip_developer_support_10": "😱"
+    default: "❤️"
+    }
+  }
+
   var body: some View {
     NavigationStack {
       GeometryReader { geometry in
@@ -185,9 +193,9 @@ struct SupportView: View {
       }
 
       ActionButton(
-        title: selectedProduct.map { "Tip \($0.displayPrice)" } ?? "Leave a tip",
+        title: selectedProduct.map { "\(selectedTipEmoji) Tip \($0.displayPrice)" }
+          ?? "Leave a tip",
         backgroundColor: themeManager.themeColor,
-        iconName: "heart.fill",
         isLoading: donationManager.loadingTip,
         isDisabled: selectedProduct == nil || donationManager.isLoadingProducts
       ) {
