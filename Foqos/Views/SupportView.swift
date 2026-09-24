@@ -20,6 +20,7 @@ struct SupportView: View {
   @State private var selectedProductID: String?
   @State private var celebrationStart: Date?
   @State private var hasPendingCelebration = false
+  @State private var isShowingThankYou = false
 
   private var selectedProduct: Product? {
     donationManager.products.first { $0.id == selectedProductID } ?? donationManager.products.first
@@ -42,6 +43,17 @@ struct SupportView: View {
             .frame(minHeight: max(0, geometry.size.height - 40))
             .frame(maxWidth: .infinity)
             .padding(20)
+        }
+        .opacity(isShowingThankYou ? 0 : 1)
+        .allowsHitTesting(!isShowingThankYou)
+        .accessibilityHidden(isShowingThankYou)
+        .overlay {
+          if isShowingThankYou {
+            TipThankYouView()
+              .id(celebrationStart)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .transition(.opacity)
+          }
         }
       }
       .navigationTitle("Support")
@@ -71,7 +83,11 @@ struct SupportView: View {
     .task(id: celebrationStart) {
       guard celebrationStart != nil else { return }
       do {
-        try await Task.sleep(for: .seconds(5))
+        try await Task.sleep(for: .seconds(4))
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+          isShowingThankYou = false
+        }
+        try await Task.sleep(for: .seconds(1))
         celebrationStart = nil
       } catch {
         return
@@ -88,8 +104,9 @@ struct SupportView: View {
   private func celebrateIfReady() {
     guard hasPendingCelebration, scenePhase == .active else { return }
     hasPendingCelebration = false
-    if !reduceMotion {
-      celebrationStart = Date()
+    celebrationStart = Date()
+    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+      isShowingThankYou = true
     }
   }
 
