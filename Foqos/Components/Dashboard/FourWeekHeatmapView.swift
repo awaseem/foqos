@@ -1,17 +1,83 @@
 import FamilyControls
+import Foundation
 import SwiftUI
+
+struct HeatmapThresholds: Equatable {
+  static let defaultLowHours = 1.0
+  static let defaultMediumHours = 3.0
+  static let defaultHighHours = 5.0
+  static let minimumHours = 0.5
+  static let maximumHours = 24.0
+  static let minimumGapHours = 0.5
+
+  var lowHours: Double
+  var mediumHours: Double
+  var highHours: Double
+
+  static var defaults: HeatmapThresholds {
+    HeatmapThresholds(
+      lowHours: defaultLowHours,
+      mediumHours: defaultMediumHours,
+      highHours: defaultHighHours
+    )
+  }
+
+  var normalized: HeatmapThresholds {
+    let lowMaximum = Self.maximumHours - (Self.minimumGapHours * 2)
+    let mediumMaximum = Self.maximumHours - Self.minimumGapHours
+
+    let low = min(max(lowHours, Self.minimumHours), lowMaximum)
+    let medium = min(max(mediumHours, low + Self.minimumGapHours), mediumMaximum)
+    let high = min(max(highHours, medium + Self.minimumGapHours), Self.maximumHours)
+
+    return HeatmapThresholds(lowHours: low, mediumHours: medium, highHours: high)
+  }
+
+  var legendData: [(String, Double)] {
+    [
+      ("<\(Self.formattedHours(lowHours))", 0.3),
+      ("\(Self.formattedHours(lowHours))-\(Self.formattedHours(mediumHours))", 0.5),
+      ("\(Self.formattedHours(mediumHours))-\(Self.formattedHours(highHours))", 0.7),
+      (">\(Self.formattedHours(highHours))", 0.9),
+    ]
+  }
+
+  func opacity(for hours: Double) -> Double {
+    switch hours {
+    case 0:
+      return 0.15
+    case 0..<lowHours:
+      return 0.3
+    case lowHours..<mediumHours:
+      return 0.5
+    case mediumHours..<highHours:
+      return 0.7
+    default:
+      return 0.9
+    }
+  }
+
+  static func formattedHours(_ hours: Double) -> String {
+    if hours.rounded(.towardZero) == hours {
+      return "\(Int(hours))h"
+    }
+
+    return String(format: "%.1fh", hours)
+  }
+}
 
 struct FourWeekHeatmapView: View {
   @EnvironmentObject var themeManager: ThemeManager
 
   let sessions: [BlockedProfileSession]
   let selectedDate: Date?
+  let thresholds: HeatmapThresholds
   let onDateSelected: (Date) -> Void
 
   private let daysToShow = 28
 
   private var legendData: [(String, Double)] {
-    [("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)]
+    thresholds.normalized.legendData
   }
 
   private var dates: [Date] {
@@ -27,18 +93,11 @@ struct FourWeekHeatmapView: View {
   }
 
   private func colorForHours(_ hours: Double) -> Color {
-    switch hours {
-    case 0:
+    if hours == 0 {
       return Color.gray.opacity(0.15)
-    case 0..<1:
-      return themeManager.themeColor.opacity(0.3)
-    case 1..<3:
-      return themeManager.themeColor.opacity(0.5)
-    case 3..<5:
-      return themeManager.themeColor.opacity(0.7)
-    default:
-      return themeManager.themeColor.opacity(0.9)
     }
+
+    return themeManager.themeColor.opacity(thresholds.normalized.opacity(for: hours))
   }
 
   private var legendView: some View {
@@ -137,6 +196,7 @@ struct FourWeekHeatmapView: View {
       FourWeekHeatmapView(
         sessions: sessions,
         selectedDate: nil,
+        thresholds: .defaults,
         onDateSelected: { _ in }
       )
       .environmentObject(ThemeManager.shared)
