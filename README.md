@@ -136,6 +136,14 @@ You can trigger Foqos profiles through iOS Shortcuts. For NFC automations, creat
 <img width="250" alt="iOS Shortcuts If block setup" src="/images/shortcut-instructions-3.png" />
 <img width="250" alt="iOS Shortcuts If block configuration" src="/images/shortcut-instructions-4.png" />
 
+### PIN System Shortcuts
+
+An optional PIN-based accountability system is available through Apple Shortcuts.
+
+The system uses paired **Foqos PIN** and **Foqos Unlock** Shortcuts, allowing another person to control the PIN required to end an active Foqos session.
+
+[View the PIN System Shortcuts and setup instructions](Shortcuts/PIN-System/)
+
 ## 3D Printable NFC Accessories
 
 Foqos also has a printable NFC brick and keychain design for 25 mm NFC tags:
