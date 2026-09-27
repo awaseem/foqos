@@ -84,6 +84,20 @@ enum SessionTimeCalculator {
     return nil
   }
 
+  static func scheduledEndTime(for session: BlockedProfileSession) -> Date? {
+    guard UUID(uuidString: session.tag) == session.blockedProfile.id,
+      let schedule = session.blockedProfile.schedule,
+      schedule.isActive
+    else { return nil }
+
+    return Calendar.current.date(
+      bySettingHour: schedule.endHour,
+      minute: schedule.endMinute,
+      second: 0,
+      of: session.startTime
+    )
+  }
+
   static func isTimerSession(_ session: BlockedProfileSession) -> Bool {
     Self.timerStrategyIds.contains(session.tag)
       || Self.timerStrategyIds.contains(session.blockedProfile.blockingStrategyId ?? "")
