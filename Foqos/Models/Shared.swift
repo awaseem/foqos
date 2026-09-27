@@ -1,5 +1,6 @@
 import FamilyControls
 import Foundation
+import WidgetKit
 
 enum SharedData {
   private static let suite = UserDefaults(
@@ -85,6 +86,7 @@ enum SharedData {
       } else {
         suite.removeObject(forKey: Key.profileSnapshots.rawValue)
       }
+      reloadControls()
     }
   }
 
@@ -131,7 +133,17 @@ enum SharedData {
       } else {
         suite.removeObject(forKey: Key.activeScheduleSession.rawValue)
       }
+      reloadControls()
     }
+  }
+
+  private static func reloadControls() {
+    #if os(iOS)
+      if #available(iOS 18.0, *) {
+        ControlCenter.shared.reloadControls(ofKind: "FoqosProfileSessionControl")
+        ControlCenter.shared.reloadControls(ofKind: "FoqosBreakSessionControl")
+      }
+    #endif
   }
 
   @discardableResult

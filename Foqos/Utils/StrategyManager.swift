@@ -305,6 +305,61 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  func setProfileActiveFromControl(
+    _ isActive: Bool, profileID: UUID, context: ModelContext
+  ) throws {
+    guard let profile = try BlockedProfiles.findProfile(byID: profileID, in: context) else {
+      throw FoqosControlError.profileUnavailable
+    }
+    let session = getActiveSession(context: context)
+    if isActive {
+      if let session {
+        guard session.blockedProfile.id == profileID else {
+          throw FoqosControlError.anotherProfileActive
+        }
+        return
+      }
+    } else {
+      guard let session, session.blockedProfile.id == profileID else { return }
+      guard !profile.disableBackgroundStops else {
+        throw FoqosControlError.backgroundStopDisabled
+      }
+    }
+
+    errorMessage = nil
+    if isActive {
+      startSessionFromBackground(profileID, context: context)
+    } else {
+      stopSessionFromBackground(profileID, context: context)
+    }
+    if let errorMessage {
+      throw FoqosControlError.actionFailed(errorMessage)
+    }
+    try context.save()
+    let isNowActive = getActiveSession(context: context)?.blockedProfile.id == profileID
+    guard isNowActive == isActive else {
+      throw FoqosControlError.actionFailed("Foqos could not update the profile. Try again.")
+    }
+  }
+
+  func setBreakActiveFromControl(
+    _ isActive: Bool, sessionID: String, context: ModelContext,
+    scheduleBreak: (BlockedProfiles, TimeInterval) throws -> Void =
+      DeviceActivityCenterUtil.scheduleBreakTimerActivity
+  ) throws {
+    guard let session = getActiveSession(context: context) else {
+      if isActive { throw BreakSessionError.noActiveSession }
+      return
+    }
+    // A stale control must not start or end a break in a replacement session.
+    guard session.id == sessionID else { throw FoqosControlError.sessionChanged }
+    if isActive {
+      _ = try startBreakFromBackground(context: context, scheduleBreak: scheduleBreak)
+    } else {
+      _ = try endBreakFromBackground(context: context)
+    }
+  }
+
   func pauseActiveSessionFromBackground(
     context: ModelContext,
     schedulePause: (BlockedProfiles) throws -> Void =

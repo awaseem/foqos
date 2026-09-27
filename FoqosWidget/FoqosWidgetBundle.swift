@@ -13,5 +13,7 @@ struct FoqosWidgetBundle: WidgetBundle {
   var body: some Widget {
     ProfileControlWidget()
     FoqosWidgetLiveActivity()
+    ProfileSessionControl()
+    BreakSessionControl()
   }
 }
