@@ -225,6 +225,14 @@ struct ActiveProfileSessionView: View {
       .accessibilityValue(DateFormatters.formatDurationClock(displayTime))
   }
 
+  private var scheduledEndTime: Date? {
+    guard let session = strategyManager.activeSession,
+      session.blockedProfile.id == profile.id
+    else { return nil }
+
+    return SessionTimeCalculator.scheduledEndTime(for: session)
+  }
+
   private var timerPresentation: some View {
     ZStack {
       ActiveSessionPetalAnimation(
@@ -234,8 +242,16 @@ struct ActiveProfileSessionView: View {
       )
       .frame(maxWidth: 360, maxHeight: 300)
 
-      timer
-        .padding(.horizontal, 16)
+      VStack(spacing: 8) {
+        timer
+
+        if let scheduledEndTime {
+          Text("Ends at \(scheduledEndTime, style: .time)")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+      }
+      .padding(.horizontal, 16)
     }
     .frame(maxWidth: .infinity)
     .frame(height: 300)
