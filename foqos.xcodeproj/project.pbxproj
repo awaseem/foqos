@@ -40,6 +40,8 @@
 		F0F100012FD0000100000001 /* FoqosMac/MacDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F100022FD0000100000001 /* FoqosMac/MacDiagnostics.swift */; };
 		F0F100032FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F100042FD0000100000001 /* FoqosMac/ProfileSyncDiagnostics.swift */; };
 		F0F100052FD0000100000001 /* ActiveProfileSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */; };
+		F0F200012FD0000200000001 /* ActiveProfileSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300022F80000300000001 /* ActiveProfileSyncRecord.swift */; };
+		F0F200022FD0000200000001 /* FilterRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A300012F80000300000001 /* FilterRules.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -228,6 +230,7 @@
 				Models/Timers/StrategyTimerActivity.swift,
 				Models/Timers/TimerActivity.swift,
 				Models/Timers/TimerActivityUtil.swift,
+				Utils/ActiveProfileSyncStore.swift,
 				Utils/AppBlockerUtil.swift,
 				Utils/SoftUnblockGrantScheduler.swift,
 				Utils/SoftUnblockGrantStore.swift,
@@ -924,6 +927,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0F200012FD0000200000001 /* ActiveProfileSyncRecord.swift in Sources */,
+				F0F200022FD0000200000001 /* FilterRules.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
