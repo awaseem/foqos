@@ -19,9 +19,15 @@ struct StartProfileIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Start Foqos Profile"
 
   static var parameterSummary: some ParameterSummary {
-    Summary("Start \(\.$profile)") {
-      \.$durationInMinutes
-      \.$hideStopButton
+    When(\.$durationInMinutes, .hasAnyValue) {
+      Summary("Start \(\.$profile)") {
+        \.$durationInMinutes
+        \.$hideStopButton
+      }
+    } otherwise: {
+      Summary("Start \(\.$profile)") {
+        \.$durationInMinutes
+      }
     }
   }
 
