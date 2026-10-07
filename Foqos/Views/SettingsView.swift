@@ -14,7 +14,7 @@ struct SettingsView: View {
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
   @EnvironmentObject var strategyManager: StrategyManager
 
-  @State private var showResetBlockingStateAlert = false
+  @State private var showResetBlockingAlert = false
   @State private var showDebugView = false
 
   private var appVersion: String {
@@ -84,10 +84,15 @@ struct SettingsView: View {
 
           if !strategyManager.isBlocking {
             Button {
-              showResetBlockingStateAlert = true
+              showResetBlockingAlert = true
             } label: {
-              Text("Reset Blocking State")
-                .foregroundColor(themeManager.themeColor)
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Reset Blocking")
+                  .foregroundColor(themeManager.themeColor)
+                Text("Clear stuck restrictions on your iPhone and synced Mac.")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
             }
           }
         }
@@ -168,14 +173,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking State", isPresented: $showResetBlockingStateAlert) {
+      .alert("Reset Blocking?", isPresented: $showResetBlockingAlert) {
         Button("Cancel", role: .cancel) {}
-        Button("Reset", role: .destructive) {
+        Button("Reset Blocking", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
         Text(
-          "This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active."
+          "Use this if apps or websites are still blocked when no profile is active. This clears leftover restrictions and timers on this iPhone and sends a reset to your Mac through iCloud. Your profiles and session history are kept."
         )
       }
       .sheet(isPresented: $showDebugView) {
