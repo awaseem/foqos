@@ -34,9 +34,12 @@ class ManualBlockingStrategy: BlockingStrategy {
         in: context,
         withTag: ManualBlockingStrategy.id,
         withProfile: profile,
-        forceStart: forceStart ?? false
+        forceStart: forceStart ?? false,
+        minimumDurationInSeconds: profile.blockingStrategyId == Self.id
+          ? ManualMinimumDuration.decode(profile.strategyData).seconds : 0
       )
 
+    try? context.save()
     self.onSessionCreation?(.started(activeSession))
 
     return nil
@@ -46,6 +49,11 @@ class ManualBlockingStrategy: BlockingStrategy {
     context: ModelContext,
     session: BlockedProfileSession
   ) -> (any View)? {
+    if let message = session.minimumDurationStopMessage {
+      onErrorMessage?(message)
+      return nil
+    }
+
     session.endSession()
     try? context.save()
     self.appBlocker.deactivateRestrictions()

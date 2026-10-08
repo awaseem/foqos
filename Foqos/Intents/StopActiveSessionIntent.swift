@@ -38,11 +38,16 @@ struct StopActiveSessionIntent: AppIntent {
       return .result(value: false, dialog: "Background stop disabled for profile: \(profileName)")
     }
 
+    strategyManager.errorMessage = nil
     // Stop the session using the manual strategy
     strategyManager.stopSessionFromBackground(
       blockedProfile.id,
       context: modelContext
     )
+
+    if let message = strategyManager.errorMessage {
+      return .result(value: false, dialog: "\(message)")
+    }
 
     return .result(value: true, dialog: "Stopped profile: \(profileName)")
   }

@@ -18,6 +18,8 @@ class BlockedProfileSession {
   var pauseStartTime: Date?
   var pauseEndTime: Date?
 
+  var minimumDurationInSeconds: TimeInterval = 0
+
   var forceStarted: Bool = false
 
   init(

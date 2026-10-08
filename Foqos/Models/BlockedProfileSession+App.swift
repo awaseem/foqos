@@ -3,6 +3,16 @@ import SwiftData
 
 // App behavior is separate so the widget can share the same persistent model schema.
 extension BlockedProfileSession {
+  func minimumDurationRemaining(at date: Date = Date()) -> TimeInterval {
+    ManualMinimumDuration.remaining(
+      startTime: startTime, duration: minimumDurationInSeconds, at: date)
+  }
+
+  var minimumDurationStopMessage: String? {
+    guard minimumDurationRemaining() > 0 else { return nil }
+    return "The minimum duration has not elapsed. Try stopping this session later."
+  }
+
   var isActive: Bool {
     return endTime == nil
   }
@@ -181,7 +191,8 @@ extension BlockedProfileSession {
       usedBreakDurationInSeconds: usedBreakDurationInSeconds,
       pauseStartTime: pauseStartTime,
       pauseEndTime: pauseEndTime,
-      forceStarted: forceStarted
+      forceStarted: forceStarted,
+      minimumDurationInSeconds: minimumDurationInSeconds
     )
   }
 
@@ -201,7 +212,8 @@ extension BlockedProfileSession {
     in context: ModelContext,
     withTag tag: String,
     withProfile profile: BlockedProfiles,
-    forceStart: Bool = false
+    forceStart: Bool = false,
+    minimumDurationInSeconds: TimeInterval = 0
   ) -> BlockedProfileSession {
     let newSession = BlockedProfileSession(
       tag: tag,
@@ -209,6 +221,7 @@ extension BlockedProfileSession {
       forceStarted: forceStart
     )
 
+    newSession.minimumDurationInSeconds = minimumDurationInSeconds
     let sessionSnapshot = newSession.toSnapshot()
     let profileSnapshot = BlockedProfiles.getSnapshot(for: profile)
 
@@ -247,6 +260,7 @@ extension BlockedProfileSession {
       existingSession.pauseStartTime = snapshot.pauseStartTime
       existingSession.pauseEndTime = snapshot.pauseEndTime
       existingSession.forceStarted = snapshot.forceStarted
+      existingSession.minimumDurationInSeconds = snapshot.minimumDurationInSeconds ?? 0
 
       // manually save to ensure changes are persisted
       try? context.save()
@@ -262,6 +276,7 @@ extension BlockedProfileSession {
     // Override auto-generated values with snapshot-provided ones
     newSession.id = snapshot.id
     newSession.startTime = snapshot.startTime
+    newSession.minimumDurationInSeconds = snapshot.minimumDurationInSeconds ?? 0
     newSession.endTime = snapshot.endTime
     newSession.breakStartTime = snapshot.breakStartTime
     newSession.breakEndTime = snapshot.breakEndTime

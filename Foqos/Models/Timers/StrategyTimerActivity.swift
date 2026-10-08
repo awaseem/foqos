@@ -44,6 +44,8 @@ class StrategyTimerActivity: TimerActivity {
       return
     }
 
+    guard (activeSession.minimumDurationInSeconds ?? 0) == 0 else { return }
+
     // Check to make sure the active session is the same as the profile before disabling restrictions
     if activeSession.blockedProfileId != profile.id {
       log.info(

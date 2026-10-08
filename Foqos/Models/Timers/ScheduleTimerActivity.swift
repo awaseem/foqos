@@ -50,6 +50,7 @@ class ScheduleTimerActivity: TimerActivity {
     log.info("Start schedule timer activity for \(profileId), profile: \(profileId)")
 
     if let existingSession = SharedData.getActiveSharedSession() {
+      guard (existingSession.minimumDurationInSeconds ?? 0) == 0 else { return }
       if existingSession.blockedProfileId == profile.id {
         log.info(
           "Start schedule timer activity for \(profileId), existing session profile matches device activity profile, continuing active session"
@@ -83,6 +84,8 @@ class ScheduleTimerActivity: TimerActivity {
       log.info("Stop schedule timer activity for \(profileId), no active session found")
       return
     }
+
+    guard (activeSession.minimumDurationInSeconds ?? 0) == 0 else { return }
 
     // Check to make sure the active session is the same as the profile before disabling restrictions
     if activeSession.blockedProfileId != profile.id {
