@@ -5,7 +5,7 @@ import XCTest
 @testable import foqos
 
 final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
-  func testPreRefactorStoreOpensWithoutSchemaMigrationAndRetainsAllData() throws {
+  func testLegacyStoreMigratesMinimumDurationAndRetainsAllData() throws {
     let fixture = try XCTUnwrap(
       Bundle(for: Self.self).url(forResource: "pre-refactor-models", withExtension: "store"))
     let directory = URL.temporaryDirectory.appendingPathComponent(
@@ -18,9 +18,9 @@ final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
 
     try openVerifyAndUpdateStore(at: url)
 
-    XCTAssertEqual(
+    XCTAssertNotEqual(
       try modelHashes(at: url), originalHashes,
-      "Moving methods must not change the persistent schema")
+      "The new minimum-duration field requires a lightweight schema migration")
     // Open a new container, not just a new context, to verify a durable post-upgrade write.
     let reopened = try diskContainer(at: url)
     let reader = ModelContext(reopened)
@@ -54,6 +54,8 @@ final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
     XCTAssertNil(active.endTime)
     XCTAssertEqual(active.usedBreakDurationInSeconds, 0)
     XCTAssertFalse(active.forceStarted)
+    XCTAssertEqual(active.minimumDurationInSeconds, 0)
+    XCTAssertEqual(ended.minimumDurationInSeconds, 0)
     _ = try BlockedProfiles.updateProfile(profile, in: reader, name: "Updated after upgrade")
   }
 

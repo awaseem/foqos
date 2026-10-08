@@ -68,6 +68,29 @@ struct BlockedProfileStrategyFields: View {
         accessoryStyle: .none
       )
       .allowsHitTesting(false)
+
+      if selectedStrategy.getIdentifier() == ManualBlockingStrategy.id {
+        Picker(
+          "Minimum Duration",
+          selection: Binding(
+            get: { ManualMinimumDuration.decode(draft.strategyData).minimumDurationInMinutes },
+            set: {
+              draft.strategyData = ManualMinimumDuration(minimumDurationInMinutes: $0).encode()
+            }
+          )
+        ) {
+          ForEach(ManualMinimumDuration.presets, id: \.self) { minutes in
+            Text(minutes == 0 ? "Off" : "\(minutes) minutes").tag(minutes)
+          }
+        }
+        .disabled(disabled)
+
+        Text(
+          "For manual starts, stopping (including Emergency Unblock) is unavailable until this duration passes. The session then continues until you stop it. Breaks count toward the minimum; scheduled starts are unchanged."
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      }
     }
   }
 }

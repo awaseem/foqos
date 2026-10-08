@@ -55,7 +55,7 @@ Foqos includes several ways to start and stop a blocking session. All strategies
 
 | Strategy | Best for | How it works |
 | --- | --- | --- |
-| `ManualBlockingStrategy` | Simple in-app blocking | Start and stop directly in Foqos. |
+| `ManualBlockingStrategy` | Simple in-app blocking | Start and stop directly in Foqos, optionally requiring a minimum duration before stopping. |
 | `NFCBlockingStrategy` | Physical NFC app blocking | Scan an NFC tag to start. Scan the same tag again to stop, unless strict unlock rules are configured. |
 | `QRCodeBlockingStrategy` | QR code or barcode blocking | Scan a QR code or barcode to start. Scan the same code again to stop, unless strict unlock rules are configured. |
 | `NFCManualBlockingStrategy` | Easy start, physical stop | Start in the app. Stop by scanning an NFC tag. |
