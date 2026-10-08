@@ -192,7 +192,7 @@ extension BlockedProfileSession {
       pauseStartTime: pauseStartTime,
       pauseEndTime: pauseEndTime,
       forceStarted: forceStarted,
-      minimumDurationInSeconds: minimumDurationInSeconds
+      minimumDurationInSeconds: minimumDurationInSeconds > 0 ? minimumDurationInSeconds : nil
     )
   }
 
