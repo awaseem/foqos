@@ -4,6 +4,9 @@ import SwiftData
 // Keep the existing configuration so the app continues opening the same store.
 enum FoqosModelContainer {
   static func make() throws -> ModelContainer {
-    try ModelContainer(for: BlockedProfileSession.self, BlockedProfiles.self)
+    // Partner sharing uses separate CloudKit records; never sync the existing local models.
+    let configuration = ModelConfiguration(cloudKitDatabase: .none)
+    return try ModelContainer(
+      for: BlockedProfileSession.self, BlockedProfiles.self, configurations: configuration)
   }
 }

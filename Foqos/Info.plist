@@ -21,5 +21,11 @@
 	<array>
 		<string>A0000006472F0001</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Choose a place to start family focus when you arrive or leave.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Start family focus at your chosen boundary even when Foqos is in the background.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Optionally start family focus when walking, running or cycling.</string>
 </dict>
 </plist>

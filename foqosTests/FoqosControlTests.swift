@@ -20,9 +20,11 @@ final class FoqosControlTests: ModelRegressionTestCase {
 
   func testStartAndStopPersistAndRepeatedValuesAreIdempotent() throws {
     let profile = try makeProfile()
-    try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context)
+    XCTAssertTrue(
+      try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context))
     let session = try XCTUnwrap(BlockedProfileSession.mostRecentActiveSession(in: context))
-    try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context)
+    XCTAssertFalse(
+      try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context))
     XCTAssertEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, session.id)
     XCTAssertTrue(controlState.isProfileActive(profile.id.uuidString))
     XCTAssertNotNil(try BlockedProfileSession.findSession(byID: session.id, in: freshContext()))
@@ -59,6 +61,19 @@ final class FoqosControlTests: ModelRegressionTestCase {
     ) { XCTAssertEqual($0 as? FoqosControlError, .backgroundStopDisabled) }
     XCTAssertNil(session.endTime)
     XCTAssertTrue(session.isBreakActive)
+  }
+
+  func testStaleFamilyStopCannotEndReplacementSessionForSameProfile() throws {
+    let session = try makeSession()
+    XCTAssertThrowsError(
+      try manager.setProfileActiveFromControl(
+        false, profileID: session.blockedProfile.id, context: context,
+        expectedSessionID: "old-family-session")
+    ) { XCTAssertEqual($0 as? FoqosControlError, .sessionChanged) }
+    XCTAssertNil(session.endTime)
+    try manager.setProfileActiveFromControl(
+      false, profileID: session.blockedProfile.id, context: context, expectedSessionID: session.id)
+    XCTAssertNotNil(session.endTime)
   }
 
   func testDeletedProfileReturnsAnError() {
