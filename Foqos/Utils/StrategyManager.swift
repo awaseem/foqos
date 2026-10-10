@@ -933,6 +933,9 @@ class StrategyManager: ObservableObject {
     // Remove all strategy timer activities
     DeviceActivityCenterUtil.removeAllStrategyTimerActivities()
 
+    // Publish an inactive state through iCloud so the synced Mac also clears stuck website restrictions.
+    ActiveProfileSyncStore.publish(session: nil)
+
     print("Blocking state reset complete")
   }
 }

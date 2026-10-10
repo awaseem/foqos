@@ -14,7 +14,7 @@ struct SettingsView: View {
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
   @EnvironmentObject var strategyManager: StrategyManager
 
-  @State private var showResetBlockingStateAlert = false
+  @State private var showResetBlockingAlert = false
   @State private var showDebugView = false
 
   private var appVersion: String {
@@ -84,7 +84,7 @@ struct SettingsView: View {
 
           if !strategyManager.isBlocking {
             Button {
-              showResetBlockingStateAlert = true
+              showResetBlockingAlert = true
             } label: {
               Text("Reset Blocking")
                 .foregroundColor(themeManager.themeColor)
@@ -168,14 +168,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking?", isPresented: $showResetBlockingStateAlert) {
+      .alert("Reset Blocking?", isPresented: $showResetBlockingAlert) {
         Button("Cancel", role: .cancel) {}
         Button("Reset", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
         Text(
-          "Clear stuck app restrictions and inactive schedules. Your profiles will be kept."
+          "Clear stuck restrictions on this iPhone and your synced Mac. Your profiles and history will be kept."
         )
       }
       .sheet(isPresented: $showDebugView) {
