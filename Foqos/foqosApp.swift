@@ -26,6 +26,9 @@ import SwiftUI
 
 @main
 struct foqosApp: App {
+  @Environment(\.scenePhase) private var scenePhase
+  @StateObject private var familyOuting = FamilyOutingManager(context: container.mainContext)
+  @StateObject private var familyPartner = FamilyPartnerStore()
   @StateObject private var requestAuthorizer = RequestAuthorizer()
   @StateObject private var donationManager = TipManager()
   @StateObject private var navigationManager = NavigationManager()
@@ -55,11 +58,23 @@ struct foqosApp: App {
   var body: some Scene {
     WindowGroup {
       HomeView()
+        // shortcut: partner requests refresh while active, add push reconciliation before field use.
+        .task(id: scenePhase) {
+          guard scenePhase == .active else { return }
+          while !Task.isCancelled {
+            familyOuting.observeSession()
+            await familyPartner.refresh(outing: familyOuting)
+            do { try await Task.sleep(for: .seconds(20)) } catch { return }
+          }
+        }
+        .environmentObject(familyOuting)
+        .environmentObject(familyPartner)
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) {
           notification in
           guard let context = notification.object as? ModelContext,
             context === container.mainContext
           else { return }
+          familyOuting.observeSession()
           FoqosShortcutsProvider.updateAppShortcutParameters()
         }
         .onOpenURL { url in

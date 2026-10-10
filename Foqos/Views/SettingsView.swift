@@ -59,6 +59,10 @@ struct SettingsView: View {
 
         AppIconPicker(selectionColor: themeManager.themeColor)
 
+        Section("Family") {
+          NavigationLink("Family time (prototype)") { FamilyOutingView() }
+        }
+
         Section("Help") {
           HStack {
             Text("Debug Mode")

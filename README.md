@@ -25,7 +25,7 @@
 
 Foqos helps you put friction between yourself and the apps or websites you want to avoid. You create blocking profiles for work, study, bedtime, or any other routine, choose the apps and domains to block, then decide how that profile starts and stops.
 
-Unlike hardware-first blockers, Foqos works with cheap NFC tags, printable QR codes, barcodes, iOS Shortcuts, and in-app controls. Your data stays on your device. There is no account requirement, no tracking, no ads, and no subscription.
+Unlike hardware-first blockers, Foqos works with cheap NFC tags, printable QR codes, barcodes, iOS Shortcuts, and in-app controls. Profiles and session history are stored locally, with optional status sharing for Mac sync and the partner prototype. There is no app account requirement, no tracking, no ads, and no subscription.
 
 ## Free Alternative to Brick, Unpluq, Blok, and Opal
 
@@ -47,7 +47,14 @@ Foqos is not affiliated with Brick, Unpluq, Blok, or Opal.
 - Smart breaks, session history, focus streaks, and profile insights
 - Live Activities for Lock Screen and Dynamic Island status
 - Widgets and App Intents for faster profile control
-- Local-first privacy with no cloud sync or analytics
+- Local-first privacy; optional Mac sync and opt-in prototype partner sharing, with no analytics
+
+## Family Outings Prototype
+
+An opt-in prototype in Settings → Family time adds place and motion starts, plus
+private iCloud partner requests, reminders and a recent status log. Remote exchange
+currently requires the apps to be open and developer CloudKit setup. See the
+[setup, platform investigation and limits](docs/family-outings-prototype.md).
 
 ## Blocking Strategies
 
