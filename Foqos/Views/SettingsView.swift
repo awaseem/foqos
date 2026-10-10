@@ -86,7 +86,7 @@ struct SettingsView: View {
             Button {
               showResetBlockingAlert = true
             } label: {
-              Text("Reset Blocking")
+              Text("Fix Stuck Blocking")
                 .foregroundColor(themeManager.themeColor)
             }
           }
@@ -168,9 +168,9 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking?", isPresented: $showResetBlockingAlert) {
+      .alert("Fix Stuck Blocking?", isPresented: $showResetBlockingAlert) {
         Button("Cancel", role: .cancel) {}
-        Button("Reset", role: .destructive) {
+        Button("Fix Blocking", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
