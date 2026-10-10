@@ -57,7 +57,7 @@ struct SettingsView: View {
           }
         }
 
-        AppIconPicker(selectionColor: themeManager.themeColor)
+        AppIconPicker()
 
         Section("Help") {
           HStack {
@@ -86,13 +86,8 @@ struct SettingsView: View {
             Button {
               showResetBlockingAlert = true
             } label: {
-              VStack(alignment: .leading, spacing: 2) {
-                Text("Reset Blocking")
-                  .foregroundColor(themeManager.themeColor)
-                Text("Clear stuck restrictions on your iPhone and synced Mac.")
-                  .font(.caption)
-                  .foregroundStyle(.secondary)
-              }
+              Text("Fix Stuck Blocking")
+                .foregroundColor(themeManager.themeColor)
             }
           }
         }
@@ -173,14 +168,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking?", isPresented: $showResetBlockingAlert) {
+      .alert("Fix Stuck Blocking?", isPresented: $showResetBlockingAlert) {
         Button("Cancel", role: .cancel) {}
-        Button("Reset Blocking", role: .destructive) {
+        Button("Fix Blocking", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
         Text(
-          "Use this if apps or websites are still blocked when no profile is active. This clears leftover restrictions and timers on this iPhone and sends a reset to your Mac through iCloud. Your profiles and session history are kept."
+          "Clear stuck restrictions on this iPhone and your synced Mac. Your profiles and history will be kept."
         )
       }
       .sheet(isPresented: $showDebugView) {
