@@ -88,14 +88,26 @@ should end. Cloud data remains until the owner removes the share/records in iClo
 
 ## Validation and device checklist
 
-Validated with Xcode 26.6: unsigned simulator app/extension build and all **119**
-`foqosTests` passed on iPhone Air / iOS 26.5 (serial testing). `swift-format lint`
-completed with five existing naming warnings and none in the new files. Plists
-and `git diff --check` passed. Native UI inspection was blocked by the host's
-screen-capture service; no visual or two-device CloudKit verification is claimed.
-The project paths were corrected from `foqos/` to `Foqos/` for this case-sensitive
-volume. Sparkle's existing download needed a checksum-verified local cache fill.
+Validated with Xcode 26.6: all **119** `foqosTests` passed again on iPhone Air /
+iOS 26.5 after hands-on testing. Unsigned and Xcode ad-hoc signed simulator builds
+passed. A separate local copy with a development team's own bundle/app-group/
+CloudKit identifiers also passed an automatically provisioned, signed iPhone build;
+those team-specific changes are not part of this PR. No physical iPhone was connected.
 
+Simulator UI checks covered creating/selecting a Manual profile, saving a synthetic
+place, enabling automation, granting Always location, and restoring the profile,
+place and enabled setting after restart. Start correctly refused missing Screen
+Time access; motion reported unavailable hardware. Signed Invite displayed the
+missing-iCloud-account error. No invitation was sent. Testing found and fixed an
+unwanted Motion permission prompt before opt-in; launch after resetting that
+permission no longer prompted. Automation was switched off after testing.
+
+CloudKit UI testing requires a signed build: an unsigned simulator cannot exercise
+the CloudKit container. Real shields, motion updates and cross-account sharing
+remain unverified. `swift-format lint` completed with five existing naming warnings
+and none in new files. Plists and `git diff --check` passed. The project paths were
+corrected from `foqos/` to `Foqos/` for this case-sensitive volume. Sparkle's existing
+download needed a checksum-verified local cache fill.
 
 Unit coverage includes region input bounds, command expiry/length/round-trip,
 family session ownership and restart, manual-strategy/Screen Time checks, and a

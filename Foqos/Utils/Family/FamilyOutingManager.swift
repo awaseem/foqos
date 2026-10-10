@@ -18,7 +18,7 @@ final class FamilyOutingManager: NSObject, ObservableObject, CLLocationManagerDe
   private let isScreenTimeAuthorized: () -> Bool
   private let defaults: UserDefaults
   private let location = CLLocationManager()
-  private let motion = CMMotionActivityManager()
+  private var motion: CMMotionActivityManager?
   private let regionID = "foqos.family.region"
   private var isSettingLocation = false
   private var ownedSessionID: String?
@@ -71,7 +71,7 @@ final class FamilyOutingManager: NSObject, ObservableObject, CLLocationManagerDe
     for region in location.monitoredRegions where region.identifier == regionID {
       location.stopMonitoring(for: region)
     }
-    motion.stopActivityUpdates()
+    motion?.stopActivityUpdates()
     guard settings.isEnabled else {
       status = "Family automation is off. Existing blocks stay active until stopped."
       return
@@ -106,6 +106,8 @@ final class FamilyOutingManager: NSObject, ObservableObject, CLLocationManagerDe
     }
     if settings.blockWhileMoving && CMMotionActivityManager.isActivityAvailable() {
       // shortcut: motion updates resume with the app, use geofences for background starts.
+      let motion = self.motion ?? CMMotionActivityManager()
+      self.motion = motion
       motion.startActivityUpdates(to: .main) { [weak self] update in
         Task { @MainActor in
           guard let self, let update, self.settings.isEnabled, self.settings.blockWhileMoving else {
