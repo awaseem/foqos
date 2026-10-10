@@ -57,7 +57,7 @@ struct SettingsView: View {
           }
         }
 
-        AppIconPicker(selectionColor: themeManager.themeColor)
+        AppIconPicker()
 
         Section("Help") {
           HStack {
@@ -86,7 +86,7 @@ struct SettingsView: View {
             Button {
               showResetBlockingStateAlert = true
             } label: {
-              Text("Reset Blocking State")
+              Text("Reset Blocking")
                 .foregroundColor(themeManager.themeColor)
             }
           }
@@ -168,14 +168,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking State", isPresented: $showResetBlockingStateAlert) {
+      .alert("Reset Blocking?", isPresented: $showResetBlockingStateAlert) {
         Button("Cancel", role: .cancel) {}
         Button("Reset", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
         Text(
-          "This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active."
+          "Clear stuck app restrictions and inactive schedules. Your profiles will be kept."
         )
       }
       .sheet(isPresented: $showDebugView) {
