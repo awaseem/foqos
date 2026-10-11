@@ -28,6 +28,7 @@ final class IntentionalAccessTests: XCTestCase {
     XCTAssertTrue(profile.showStopButton(elapsedTime: 0))
     let strategy = StrategyManager.getStrategyFromId(id: IntentionalAccessBlockingStrategy.id)
     XCTAssertEqual(strategy.getIdentifier(), IntentionalAccessBlockingStrategy.id)
+    XCTAssertTrue(strategy.supportsSessionControls)
     XCTAssertFalse(strategy.usesNFC)
     XCTAssertFalse(strategy.usesQRCode)
     XCTAssertFalse(strategy.allowsTimedBreaks)

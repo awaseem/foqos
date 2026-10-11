@@ -9,6 +9,7 @@ final class IntentionalAccessBlockingStrategy: BlockingStrategy {
   var color: Color = .blue
   var pickerCategory: BlockingStrategyPickerCategory = .easyToStart
   var startsManually: Bool = true
+  var supportsSessionControls: Bool = true
   var allowsTimedBreaks: Bool = false
   var supportsAllowMode: Bool = false
   var startViewPresentationDetents: Set<PresentationDetent> = [.large]
