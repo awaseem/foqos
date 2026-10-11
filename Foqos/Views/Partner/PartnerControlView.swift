@@ -22,16 +22,22 @@ struct PartnerControlView: View {
       }
       if !partner.isPartner {
         Section("Family phone") {
-          Picker("Manual profile", selection: $outing.profileID) {
+          Picker("Profile", selection: $outing.profileID) {
             Text("Choose a profile").tag(nil as UUID?)
-            ForEach(profiles.filter { $0.blockingStrategyId == ManualBlockingStrategy.id }) {
+            ForEach(
+              profiles.filter {
+                $0.blockingStrategyId.map {
+                  StrategyManager.getStrategyFromId(id: $0).supportsSessionControls
+                } == true
+              }
+            ) {
               profile in
               Text(profile.name).tag(Optional(profile.id))
             }
           }
           .disabled(outing.isActive)
           Text(
-            "Choose a Manual profile with distracting apps selected. Leave calls, maps and camera accessible."
+            "Choose a compatible profile with distracting apps selected. Leave calls, maps and camera accessible."
           )
           .font(.caption).foregroundStyle(.secondary)
           Button("Start family time") { outing.apply(.start, source: "Family phone") }
