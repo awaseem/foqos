@@ -102,7 +102,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     let accessMinutes = configuration.accessDurationInMinutes
-    let buttonText = "Open for \(accessMinutes)m"
+    let needsChallenge = snapshot.blockingStrategyId == "IntentionalAccessBlockingStrategy"
+    let buttonText = needsChallenge ? "Complete challenge in Foqos" : "Open for \(accessMinutes)m"
     let randomMessage = getFunBlockMessage(
       for: .app,
       title: application.localizedDisplayName ?? presentation.resourceName
@@ -114,7 +115,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     if let resetDescription = allowanceResetDescription(for: session) {
       allowanceLines.append(resetDescription)
     }
-    let subtitle = [randomMessage.subtitle, allowanceLines.joined(separator: "\n")]
+    let reminder = needsChallenge
+      ? "You said you only wanted to check \(application.localizedDisplayName ?? presentation.resourceName) if it was genuinely not getting in the way of family time. Are you sure? Open Foqos, tap the active session, then request temporary app access. You can also stop the session."
+      : randomMessage.subtitle
+    let subtitle = [reminder, allowanceLines.joined(separator: "\n")]
       .joined(separator: "\n\n")
 
     return ShieldConfiguration(

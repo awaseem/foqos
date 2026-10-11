@@ -53,6 +53,12 @@ class ShieldActionExtension: ShieldActionDelegate {
       return
     }
 
+    if snapshot.blockingStrategyId == "IntentionalAccessBlockingStrategy" {
+      if #available(iOS 26.5, *) { completionHandler(.openParentalControlsApp) }
+      else { completionHandler(.close) }
+      return
+    }
+
     if snapshot.enableAllowMode, case .category = resource {
       completionHandler(.close)
       return

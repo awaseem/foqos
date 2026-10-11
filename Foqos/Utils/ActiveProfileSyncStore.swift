@@ -61,6 +61,7 @@ enum ActiveProfileSyncStore {
     }
 
     if profile.enableBreaks,
+      profile.blockingStrategyId != "IntentionalAccessBlockingStrategy",
       profile.blockingStrategyId != SoftUnblockSessionLifecycleHandler.nfcStrategyId,
       profile.blockingStrategyId != SoftUnblockSessionLifecycleHandler.qrStrategyId,
       session.breakStartTime != nil && session.breakEndTime == nil

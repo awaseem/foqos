@@ -9,6 +9,7 @@ class StrategyManager: ObservableObject {
     NFCSoftUnblockBlockingStrategy(),
     QRSoftUnblockBlockingStrategy(),
     ManualBlockingStrategy(),
+    IntentionalAccessBlockingStrategy(),
     NFCBlockingStrategy(),
     NFCManualBlockingStrategy(),
     NFCTimerBlockingStrategy(),

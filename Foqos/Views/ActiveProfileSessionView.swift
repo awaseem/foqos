@@ -19,6 +19,7 @@ struct ActiveProfileSessionView: View {
   let onStopTapped: () -> Void
   let onExpiredCountdownReset: () -> Void
 
+  @State private var showAccessChallenge = false
   @State private var showEmergencyView = false
   @State private var showingAlert = false
   @State private var alertMessage = ""
@@ -67,6 +68,7 @@ struct ActiveProfileSessionView: View {
   private var isSoftUnblockStrategy: Bool {
     guard let strategyId = profile.blockingStrategyId else { return false }
     return [
+      IntentionalAccessBlockingStrategy.id,
       NFCSoftUnblockBlockingStrategy.id,
       QRSoftUnblockBlockingStrategy.id,
     ].contains(strategyId)
@@ -94,6 +96,11 @@ struct ActiveProfileSessionView: View {
     }
     .padding(.horizontal, 20)
     .padding(.top, 8)
+    .sheet(isPresented: $showAccessChallenge) {
+      if let session = SoftUnblockGrantStore.activeSession, session.profileId == profile.id {
+        IntentionalAccessView(profile: profile, sessionID: session.sessionId)
+      }
+    }
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350), .large])
@@ -301,6 +308,9 @@ struct ActiveProfileSessionView: View {
         .contentTransition(.opacity)
         .animation(.easeInOut(duration: 0.35), value: focusMessage)
 
+      if profile.blockingStrategyId == IntentionalAccessBlockingStrategy.id {
+        Button("Request temporary app access") { showAccessChallenge = true }
+      }
       if isSoftUnblockStrategy {
         SoftUnblockActiveGrantsCard(profileId: profile.id)
           .padding(.top, 4)

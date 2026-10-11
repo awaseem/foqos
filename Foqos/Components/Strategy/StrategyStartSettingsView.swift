@@ -3,6 +3,7 @@ import SwiftUI
 enum StrategyStartSettingsKind: String, Identifiable {
   case timer
   case pauseTimer
+  case intentionalAccess
   case temporaryAccess
 
   var id: String { rawValue }
@@ -10,6 +11,11 @@ enum StrategyStartSettingsKind: String, Identifiable {
   init?(strategy: BlockingStrategy?) {
     guard let strategy else {
       return nil
+    }
+
+    if strategy.getIdentifier() == IntentionalAccessBlockingStrategy.id {
+      self = .intentionalAccess
+      return
     }
 
     if strategy.hasTimer {
@@ -35,7 +41,7 @@ enum StrategyStartSettingsKind: String, Identifiable {
 
   var presentationDetents: Set<PresentationDetent> {
     switch self {
-    case .temporaryAccess:
+    case .temporaryAccess, .intentionalAccess:
       return [.large]
     case .timer, .pauseTimer:
       return [.medium, .large]
@@ -52,6 +58,8 @@ enum StrategyStartSettingsKind: String, Identifiable {
           pauseDurationInMinutes: StrategyPauseTimerData.defaultPauseDurationInMinutes
         )
       )
+    case .intentionalAccess:
+      return try? JSONEncoder().encode(IntentionalAccessConfiguration())
     case .temporaryAccess:
       return SoftUnblockStrategyData.encode(SoftUnblockStrategyData.decode(nil))
     }
@@ -94,6 +102,11 @@ struct StrategyStartSettingsView: View {
           )
         )
       }
+
+    case .intentionalAccess:
+      IntentionalAccessSettingsView(
+        configuration: IntentionalAccessConfiguration.decode(draft.strategyData) ?? .init()
+      ) { draft.strategyData = try? JSONEncoder().encode($0) }
 
     case .temporaryAccess:
       SoftUnblockConfigurationView(

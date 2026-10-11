@@ -49,5 +49,6 @@ struct SoftUnblockSessionLifecycleHandler: BlockingSessionLifecycleHandler {
 
   private func supports(_ strategyId: String?) -> Bool {
     strategyId == Self.nfcStrategyId || strategyId == Self.qrStrategyId
+      || strategyId == "IntentionalAccessBlockingStrategy"
   }
 }

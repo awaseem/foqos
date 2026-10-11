@@ -50,6 +50,7 @@ extension BlockedProfiles {
   }
 
   func showStopButton(elapsedTime: TimeInterval) -> Bool {
+    if blockingStrategyId == IntentionalAccessBlockingStrategy.id { return true }
     guard let strategyData = self.strategyData else { return true }
     let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
 

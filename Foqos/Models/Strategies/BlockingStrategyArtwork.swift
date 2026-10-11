@@ -2,6 +2,7 @@
 enum BlockingStrategyArtwork {
   static func assetName(for strategyID: String?) -> String {
     switch strategyID {
+    case "IntentionalAccessBlockingStrategy": return "ManualLogoSticker"
     case "ManualBlockingStrategy": return "ManualLogoSticker"
     case "NFCBlockingStrategy": return "NFCStickerLogo"
     case "NFCManualBlockingStrategy": return "Manual+NFCSticker"
