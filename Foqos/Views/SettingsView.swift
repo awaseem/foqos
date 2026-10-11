@@ -59,6 +59,10 @@ struct SettingsView: View {
 
         AppIconPicker(selectionColor: themeManager.themeColor)
 
+        Section("Movement") {
+          NavigationLink("Activity starts (prototype)") { ActivityStartView() }
+        }
+
         Section("Help") {
           HStack {
             Text("Debug Mode")

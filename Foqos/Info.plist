@@ -21,5 +21,7 @@
 	<array>
 		<string>A0000006472F0001</string>
 	</array>
+	<key>NSMotionUsageDescription</key>
+	<string>Optionally start your selected profile when walking, running or cycling.</string>
 </dict>
 </plist>

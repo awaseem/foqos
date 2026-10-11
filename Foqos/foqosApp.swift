@@ -27,6 +27,7 @@ import SwiftUI
 @main
 struct foqosApp: App {
   @StateObject private var requestAuthorizer = RequestAuthorizer()
+  @StateObject private var activityStarts = ActivityStartManager(context: container.mainContext)
   @StateObject private var donationManager = TipManager()
   @StateObject private var navigationManager = NavigationManager()
   @StateObject private var nfcWriter = NFCWriter()
@@ -74,6 +75,7 @@ struct foqosApp: App {
 
         }
         .environmentObject(requestAuthorizer)
+        .environmentObject(activityStarts)
         .environmentObject(donationManager)
         .environmentObject(alertsManager)
         .environmentObject(startegyManager)
