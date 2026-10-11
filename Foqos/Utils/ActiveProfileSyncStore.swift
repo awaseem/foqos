@@ -12,7 +12,8 @@ enum ActiveProfileSyncStore {
     let record: ActiveProfileSyncRecord
 
     if let session, session.endTime == nil,
-      let profile, profile.id == session.blockedProfileId, profile.enableMacSync == true
+      let profile, profile.id == session.blockedProfileId, profile.enableMacSync == true,
+      profile.blockingStrategyId != "IntentionalAccessBlockingStrategy"
     {
       record = ActiveProfileSyncRecord(
         profileId: profile.id,
