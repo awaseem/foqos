@@ -271,6 +271,14 @@ class StrategyManager: ObservableObject {
         return
       }
 
+      if profile.blockingStrategyId == IntentionalAccessBlockingStrategy.id {
+        guard durationInMinutes == nil else {
+          self.errorMessage = "Intentional access uses its saved challenge duration."
+          return
+        }
+        try IntentionalAccessBlockingStrategy.prepareForStart(profile: profile, context: context)
+      }
+
       if let duration = durationInMinutes {
         if duration < 15 || duration > 1440 {
           self.errorMessage = "Duration must be between 15 and 1440 minutes"
@@ -302,7 +310,7 @@ class StrategyManager: ObservableObject {
         )
       }
     } catch {
-      self.errorMessage = "Something went wrong fetching profile"
+      self.errorMessage = error.localizedDescription
     }
   }
 

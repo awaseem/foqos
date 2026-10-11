@@ -2,7 +2,7 @@ import XCTest
 
 @testable import foqos
 
-final class IntentionalAccessTests: XCTestCase {
+final class IntentionalAccessTests: ModelRegressionTestCase {
   func testConfigurationRoundTripAndRejectInvalidSettings() throws {
     var config = IntentionalAccessConfiguration()
     XCTAssertTrue(config.isValid)
@@ -61,4 +61,55 @@ final class IntentionalAccessTests: XCTestCase {
     handler.sessionDidEnd(context)
     XCTAssertNil(SoftUnblockGrantStore.activeSession)
   }
+  func testBackgroundStartPersistsDefaultsBeforeInitializingAllowance() throws {
+    let profile = BlockedProfiles(
+      name: "Intentional", blockingStrategyId: IntentionalAccessBlockingStrategy.id)
+    context.insert(profile)
+    try context.save()
+    let manager = StrategyManager()
+    defer { manager.stopTimer() }
+    XCTAssertTrue(
+      try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context))
+    XCTAssertNotNil(profile.strategyData)
+    XCTAssertEqual(SoftUnblockGrantStore.activeSession?.maximumUnblockCount, 10)
+    XCTAssertEqual(SoftUnblockGrantStore.activeSession?.allowanceResetIntervalInHours, 6)
+    XCTAssertTrue(
+      try manager.setProfileActiveFromControl(false, profileID: profile.id, context: context))
+  }
+
+  func testBackgroundStartRejectsInvalidSettingsAndTimerOverride() throws {
+    let profile = BlockedProfiles(
+      name: "Intentional", blockingStrategyId: IntentionalAccessBlockingStrategy.id,
+      strategyData: Data("invalid".utf8))
+    context.insert(profile)
+    try context.save()
+    let manager = StrategyManager()
+    defer { manager.stopTimer() }
+    XCTAssertThrowsError(
+      try manager.setProfileActiveFromControl(true, profileID: profile.id, context: context))
+    XCTAssertNil(BlockedProfileSession.mostRecentActiveSession(in: context))
+    profile.strategyData = nil
+    manager.startSessionFromBackground(profile.id, context: context, durationInMinutes: 30)
+    XCTAssertNotNil(manager.errorMessage)
+    XCTAssertNil(profile.strategyData)
+    XCTAssertNil(BlockedProfileSession.mostRecentActiveSession(in: context))
+  }
+
+  func testDirectStartRequiresSettingsThenUsesPreparedAllowance() throws {
+    let profile = BlockedProfiles(
+      name: "Intentional", blockingStrategyId: IntentionalAccessBlockingStrategy.id,
+      askForStartSettings: false)
+    context.insert(profile)
+    try context.save()
+    let strategy = IntentionalAccessBlockingStrategy()
+    XCTAssertNotNil(strategy.startBlocking(context: context, profile: profile, forceStart: false))
+    XCTAssertNil(BlockedProfileSession.mostRecentActiveSession(in: context))
+    try IntentionalAccessBlockingStrategy.prepareForStart(profile: profile, context: context)
+    _ = strategy.startBlocking(context: context, profile: profile, forceStart: false)
+    XCTAssertNotNil(profile.strategyData)
+    XCTAssertEqual(SoftUnblockGrantStore.activeSession?.maximumUnblockCount, 10)
+    let session = try XCTUnwrap(BlockedProfileSession.mostRecentActiveSession(in: context))
+    _ = strategy.stopBlocking(context: context, session: session)
+  }
+
 }
