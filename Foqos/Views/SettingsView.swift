@@ -59,6 +59,10 @@ struct SettingsView: View {
 
         AppIconPicker(selectionColor: themeManager.themeColor)
 
+        Section("Places") {
+          NavigationLink("Geofencing (prototype)") { GeofenceView() }
+        }
+
         Section("Help") {
           HStack {
             Text("Debug Mode")

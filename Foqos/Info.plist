@@ -21,5 +21,9 @@
 	<array>
 		<string>A0000006472F0001</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Save a place for optional profile geofencing.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Start or stop your selected profile when you cross its boundary.</string>
 </dict>
 </plist>

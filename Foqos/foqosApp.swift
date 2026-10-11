@@ -26,6 +26,7 @@ import SwiftUI
 
 @main
 struct foqosApp: App {
+  @StateObject private var geofence = GeofenceManager(context: container.mainContext)
   @StateObject private var requestAuthorizer = RequestAuthorizer()
   @StateObject private var donationManager = TipManager()
   @StateObject private var navigationManager = NavigationManager()
@@ -73,6 +74,7 @@ struct foqosApp: App {
           handleUniversalLink(url)
 
         }
+        .environmentObject(geofence)
         .environmentObject(requestAuthorizer)
         .environmentObject(donationManager)
         .environmentObject(alertsManager)
