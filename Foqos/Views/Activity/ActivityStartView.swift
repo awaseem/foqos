@@ -8,9 +8,15 @@ struct ActivityStartView: View {
   var body: some View {
     Form {
       Section("Activity starts") {
-        Picker("Manual profile", selection: $activityStarts.profileID) {
+        Picker("Profile", selection: $activityStarts.profileID) {
           Text("Choose a profile").tag(nil as UUID?)
-          ForEach(profiles.filter { $0.blockingStrategyId == ManualBlockingStrategy.id }) {
+          ForEach(
+            profiles.filter {
+              $0.blockingStrategyId.map {
+                StrategyManager.getStrategyFromId(id: $0).supportsSessionControls
+              } == true
+            }
+          ) {
             profile in
             Text(profile.name).tag(Optional(profile.id))
           }
