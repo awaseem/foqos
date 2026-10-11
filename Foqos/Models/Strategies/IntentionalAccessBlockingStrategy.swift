@@ -40,7 +40,25 @@ final class IntentionalAccessBlockingStrategy: BlockingStrategy {
     return nil
   }
 
+  static func prepareForStart(profile: BlockedProfiles, context: ModelContext) throws {
+    guard !profile.enableAllowMode,
+      let configuration = IntentionalAccessConfiguration.decode(profile.strategyData)
+    else {
+      throw FoqosControlError.actionFailed("Save valid challenge settings before starting.")
+    }
+    // Persist defaults before the shared lifecycle reads the allowance configuration.
+    if profile.strategyData == nil {
+      profile.strategyData = try JSONEncoder().encode(configuration)
+      try context.save()
+      BlockedProfiles.updateSnapshot(for: profile)
+    }
+  }
+
   private func start(context: ModelContext, profile: BlockedProfiles, force: Bool) {
+    do { try Self.prepareForStart(profile: profile, context: context) } catch {
+      onErrorMessage?(error.localizedDescription)
+      return
+    }
     let session = BlockedProfileSession.createSession(
       in: context,
       withTag: Self.id, withProfile: profile, forceStart: force)

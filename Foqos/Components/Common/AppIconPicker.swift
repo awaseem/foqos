@@ -1,43 +1,38 @@
 import SwiftUI
 
 struct AppIconPicker: View {
-  let selectionColor: Color
+  @EnvironmentObject private var themeManager: ThemeManager
 
   @State private var selectedIconName = UIApplication.shared.alternateIconName
   @State private var isChangingIcon = false
   @State private var showError = false
   @State private var errorMessage = ""
 
-  private let columns = Array(
-    repeating: GridItem(.flexible(), spacing: 12),
-    count: 3
-  )
-
   var body: some View {
     Section("App Icon") {
-      LazyVGrid(columns: columns, spacing: 12) {
+      HStack(spacing: 6) {
         ForEach(AppIconOption.allCases) { icon in
           Button {
             select(icon)
           } label: {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
               Image(icon.previewAssetName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .frame(width: 44, height: 44)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .overlay {
-                  RoundedRectangle(cornerRadius: 14, style: .continuous)
+                  RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(
-                      isSelected(icon) ? selectionColor : .clear,
-                      lineWidth: 3
+                      isSelected(icon) ? themeManager.themeColor : .clear,
+                      lineWidth: 2
                     )
                 }
                 .overlay(alignment: .topTrailing) {
                   if isSelected(icon) {
                     Image(systemName: "checkmark.circle.fill")
                       .symbolRenderingMode(.palette)
-                      .foregroundStyle(.white, selectionColor)
+                      .foregroundStyle(.white, themeManager.themeColor)
                       .background(Circle().fill(.background))
                       .offset(x: 6, y: -6)
                   }
@@ -57,7 +52,7 @@ struct AppIconPicker: View {
           .accessibilityAddTraits(isSelected(icon) ? .isSelected : [])
         }
       }
-      .padding(.vertical, 8)
+      .padding(.vertical, 4)
 
       if !UIApplication.shared.supportsAlternateIcons {
         Text("Alternate app icons are not available on this device.")
@@ -147,6 +142,7 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
 
 #Preview {
   Form {
-    AppIconPicker(selectionColor: .purple)
+    AppIconPicker()
   }
+  .environmentObject(ThemeManager.shared)
 }
