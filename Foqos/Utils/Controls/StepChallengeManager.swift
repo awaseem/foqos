@@ -22,7 +22,7 @@ final class StepChallengeManager: ObservableObject {
       return
     }
     let start = Date()
-    startedAt = start
+    begin(at: start)
     status = "Counting new steps…"
     let pedometer = self.pedometer ?? CMPedometer()
     self.pedometer = pedometer
@@ -37,6 +37,11 @@ final class StepChallengeManager: ObservableObject {
         self.accept(steps: data.numberOfSteps.intValue, for: start)
       }
     }
+  }
+
+  func begin(at date: Date) {
+    steps = 0
+    startedAt = date
   }
 
   func stop() {
