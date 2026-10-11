@@ -25,7 +25,7 @@
 
 Foqos helps you put friction between yourself and the apps or websites you want to avoid. You create blocking profiles for work, study, bedtime, or any other routine, choose the apps and domains to block, then decide how that profile starts and stops.
 
-Unlike hardware-first blockers, Foqos works with cheap NFC tags, printable QR codes, barcodes, iOS Shortcuts, and in-app controls. Your data stays on your device. There is no account requirement, no tracking, no ads, and no subscription.
+Unlike hardware-first blockers, Foqos works with cheap NFC tags, printable QR codes, barcodes, iOS Shortcuts, and in-app controls. Profile data stays on your device by default. Optional partner sharing uses your Apple ID and a private iCloud share for recent session status and requests. There is no tracking, no ads, and no subscription.
 
 ## Free Alternative to Brick, Unpluq, Blok, and Opal
 
@@ -47,7 +47,7 @@ Foqos is not affiliated with Brick, Unpluq, Blok, or Opal.
 - Smart breaks, session history, focus streaks, and profile insights
 - Live Activities for Lock Screen and Dynamic Island status
 - Widgets and App Intents for faster profile control
-- Local-first privacy with no cloud sync or analytics
+- Local-first profile storage with optional private iCloud partner sharing and no analytics
 
 ## Blocking Strategies
 
