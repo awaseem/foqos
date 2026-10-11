@@ -23,6 +23,26 @@ struct IntentionalAccessSettingsView: View {
           "Opens per six hours: \(configuration.maximumUnblockCount)",
           value: $configuration.maximumUnblockCount, in: 1...10)
       }
+      if configuration.kind == .questions {
+        Section("Your questions") {
+          ForEach(configuration.questions ?? []) { question in
+            Text(question.question.isEmpty ? "New question" : question.question)
+            TextField(
+              "Question", text: questionBinding(question.id, answer: false), axis: .vertical)
+            TextField("Accepted answer", text: questionBinding(question.id, answer: true))
+            Button("Remove question", role: .destructive) {
+              configuration.questions?.removeAll { $0.id == question.id }
+            }
+          }
+          Button("Add question") {
+            configuration.questions = (configuration.questions ?? []) + [AccessQuestion()]
+          }.disabled((configuration.questions?.count ?? 0) >= 10)
+          Text(
+            "Every answer must match, ignoring letter case and surrounding spaces. Answers stay on this phone; this is voluntary friction, not a secret or secure quiz."
+          )
+          .font(.caption)
+        }
+      }
       Section {
         Text(
           "Select individual apps in the profile. Each successful challenge opens one app temporarily. You can always stop the whole session without completing a challenge."
@@ -34,5 +54,18 @@ struct IntentionalAccessSettingsView: View {
       }
     }
     .navigationTitle("Intentional access")
+  }
+  private func questionBinding(_ id: UUID, answer: Bool) -> Binding<String> {
+    Binding {
+      guard let question = configuration.questions?.first(where: { $0.id == id }) else { return "" }
+      return answer ? question.answer : question.question
+    } set: { value in
+      guard let index = configuration.questions?.firstIndex(where: { $0.id == id }) else { return }
+      if answer {
+        configuration.questions?[index].answer = value
+      } else {
+        configuration.questions?[index].question = value
+      }
+    }
   }
 }

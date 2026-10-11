@@ -10,6 +10,7 @@ struct IntentionalAccessView: View {
   @State private var isConfirmed = false
   @State private var first = Int.random(in: 10...49)
   @State private var second = Int.random(in: 2...9)
+  @State private var responses: [UUID: String] = [:]
   @State private var answer = ""
   @State private var errorMessage: String?
 
@@ -17,7 +18,15 @@ struct IntentionalAccessView: View {
     IntentionalAccessConfiguration.decode(profile.strategyData)
   }
 
-  private var isSolved: Bool { isConfirmed && Int(answer) == first + second }
+  private var isSolved: Bool {
+    guard isConfirmed, let configuration else { return false }
+    switch configuration.kind {
+    case .confirmation: return Int(answer) == first + second
+    case .questions:
+      guard let questions = configuration.questions, !questions.isEmpty else { return false }
+      return questions.allSatisfy { $0.accepts(responses[$0.id] ?? "") }
+    }
+  }
 
   var body: some View {
     NavigationStack {
@@ -29,6 +38,7 @@ struct IntentionalAccessView: View {
                 selectedApp = token
                 isConfirmed = false
                 answer = ""
+                responses = [:]
               } label: {
                 HStack {
                   Label(token)
@@ -49,11 +59,27 @@ struct IntentionalAccessView: View {
               }
               Toggle("Yes, this fits my intention", isOn: $isConfirmed)
             }
-            Section("Deliberate pause") {
-              Text("What is \(first) + \(second)?")
-              TextField("Answer", text: $answer).keyboardType(.numberPad)
-              Text("A small local puzzle, not bot detection. No third-party CAPTCHA service.")
-                .font(.caption)
+            switch configuration.kind {
+            case .confirmation:
+              Section("Deliberate pause") {
+                Text("What is \(first) + \(second)?")
+                TextField("Answer", text: $answer).keyboardType(.numberPad)
+                Text("A small local puzzle, not bot detection. No third-party CAPTCHA service.")
+                  .font(.caption)
+              }
+            case .questions:
+              Section("Your questions") {
+                ForEach(configuration.questions ?? []) { question in
+                  Text(question.question)
+                  TextField(
+                    "Your answer",
+                    text: Binding(
+                      get: { responses[question.id] ?? "" },
+                      set: { responses[question.id] = $0 }
+                    ))
+                }
+                Text("All answers must match the answers you set.").font(.caption)
+              }
             }
             Button("Open for \(configuration.accessDurationInMinutes) minutes") {
               do {
