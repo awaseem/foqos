@@ -8,9 +8,15 @@ struct GeofenceView: View {
   var body: some View {
     Form {
       Section("Profile") {
-        Picker("Manual profile", selection: $geofence.settings.profileID) {
+        Picker("Profile", selection: $geofence.settings.profileID) {
           Text("Choose a profile").tag(nil as UUID?)
-          ForEach(profiles.filter { $0.blockingStrategyId == ManualBlockingStrategy.id }) {
+          ForEach(
+            profiles.filter {
+              $0.blockingStrategyId.map {
+                StrategyManager.getStrategyFromId(id: $0).supportsSessionControls
+              } == true
+            }
+          ) {
             profile in
             Text(profile.name).tag(Optional(profile.id))
           }
