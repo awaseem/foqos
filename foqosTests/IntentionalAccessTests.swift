@@ -35,6 +35,17 @@ final class IntentionalAccessTests: XCTestCase {
     XCTAssertEqual(StrategyStartSettingsKind(strategy: strategy), .intentionalAccess)
   }
 
+  func testIntentionalProfileCannotEnableUnsupportedMacSync() {
+    let draft = BlockedProfileDraft()
+    draft.enableMacSync = true
+    draft.selectedStrategy = IntentionalAccessBlockingStrategy()
+    XCTAssertFalse(draft.enableMacSync)
+    let profile = BlockedProfiles(
+      name: "Intentional",
+      blockingStrategyId: IntentionalAccessBlockingStrategy.id, enableMacSync: true)
+    XCTAssertFalse(BlockedProfileDraft(profile: profile).enableMacSync)
+  }
+
   func testLifecycleInitializesAndEndsTemporaryAllowance() throws {
     let handler = SoftUnblockSessionLifecycleHandler(
       stopAllScheduledGrants: {}, stopScheduledGrantsForSession: { _ in })

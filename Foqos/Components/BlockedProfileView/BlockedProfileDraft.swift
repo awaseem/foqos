@@ -181,6 +181,9 @@ final class BlockedProfileDraft: ObservableObject {
   }
 
   private func enforceStrategyPolicies() {
+    if selectedStrategy?.getIdentifier() == IntentionalAccessBlockingStrategy.id {
+      enableMacSync = false
+    }
     if !selectedStrategyAllowsTimedBreaks {
       enableBreaks = false
       allowMultipleBreaks = false

@@ -194,9 +194,12 @@ struct BlockedProfileDomainsFields: View {
     CustomToggle(
       title: "Sync to Mac",
       description:
-        "Block the same selected domains on your Mac with the Foqos for Mac app.",
+        draft.selectedStrategy?.getIdentifier() == IntentionalAccessBlockingStrategy.id
+        ? "Intentional access works on this iPhone only. Temporary app access does not sync to Mac."
+        : "Block the same selected domains on your Mac with the Foqos for Mac app.",
       isOn: $draft.enableMacSync,
-      isDisabled: disabled,
+      isDisabled: disabled
+        || draft.selectedStrategy?.getIdentifier() == IntentionalAccessBlockingStrategy.id,
       learnMoreURL: URL(string: "https://www.foqos.app/mac.html")
     )
     .onChange(of: draft.enableMacSync) { _, newValue in
