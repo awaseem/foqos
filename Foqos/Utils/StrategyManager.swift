@@ -305,9 +305,10 @@ class StrategyManager: ObservableObject {
     }
   }
 
+  @discardableResult
   func setProfileActiveFromControl(
-    _ isActive: Bool, profileID: UUID, context: ModelContext
-  ) throws {
+    _ isActive: Bool, profileID: UUID, context: ModelContext, expectedSessionID: String? = nil
+  ) throws -> Bool {
     guard let profile = try BlockedProfiles.findProfile(byID: profileID, in: context) else {
       throw FoqosControlError.profileUnavailable
     }
@@ -317,10 +318,13 @@ class StrategyManager: ObservableObject {
         guard session.blockedProfile.id == profileID else {
           throw FoqosControlError.anotherProfileActive
         }
-        return
+        return false
       }
     } else {
-      guard let session, session.blockedProfile.id == profileID else { return }
+      guard let session, session.blockedProfile.id == profileID else { return false }
+      if let expectedSessionID, session.id != expectedSessionID {
+        throw FoqosControlError.sessionChanged
+      }
       guard !profile.disableBackgroundStops else {
         throw FoqosControlError.backgroundStopDisabled
       }
@@ -340,6 +344,7 @@ class StrategyManager: ObservableObject {
     guard isNowActive == isActive else {
       throw FoqosControlError.actionFailed("Foqos could not update the profile. Try again.")
     }
+    return true
   }
 
   func setBreakActiveFromControl(
