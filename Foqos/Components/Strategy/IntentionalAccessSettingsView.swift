@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct IntentionalAccessSettingsView: View {
+  @Environment(\.dismiss) private var dismiss
   @State var configuration: IntentionalAccessConfiguration
   let onSave: (IntentionalAccessConfiguration) -> Void
 
@@ -26,7 +27,10 @@ struct IntentionalAccessSettingsView: View {
         Text(
           "Select individual apps in the profile. Each successful challenge opens one app temporarily. You can always stop the whole session without completing a challenge."
         )
-        Button("Save challenge") { onSave(configuration) }.disabled(!configuration.isValid)
+        Button("Save challenge") {
+          onSave(configuration)
+          dismiss()
+        }.disabled(!configuration.isValid)
       }
     }
     .navigationTitle("Intentional access")
