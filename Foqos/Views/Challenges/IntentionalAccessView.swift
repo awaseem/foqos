@@ -6,6 +6,7 @@ struct IntentionalAccessView: View {
   @Environment(\.dismiss) private var dismiss
   let profile: BlockedProfiles
   let sessionID: String
+  @StateObject private var stepCounter = StepChallengeManager()
   @State private var selectedApp: ApplicationToken?
   @State private var isConfirmed = false
   @State private var first = Int.random(in: 10...49)
@@ -17,7 +18,15 @@ struct IntentionalAccessView: View {
     IntentionalAccessConfiguration.decode(profile.strategyData)
   }
 
-  private var isSolved: Bool { isConfirmed && Int(answer) == first + second }
+  private var isSolved: Bool {
+    guard isConfirmed, let configuration else { return false }
+    switch configuration.kind {
+    case .confirmation: return Int(answer) == first + second
+    case .steps:
+      return StepChallengeManager.isComplete(
+        steps: stepCounter.steps, goal: configuration.stepGoal ?? 0)
+    }
+  }
 
   var body: some View {
     NavigationStack {
@@ -29,6 +38,7 @@ struct IntentionalAccessView: View {
                 selectedApp = token
                 isConfirmed = false
                 answer = ""
+                stepCounter.stop()
               } label: {
                 HStack {
                   Label(token)
@@ -49,11 +59,16 @@ struct IntentionalAccessView: View {
               }
               Toggle("Yes, this fits my intention", isOn: $isConfirmed)
             }
-            Section("Deliberate pause") {
-              Text("What is \(first) + \(second)?")
-              TextField("Answer", text: $answer).keyboardType(.numberPad)
-              Text("A small local puzzle, not bot detection. No third-party CAPTCHA service.")
-                .font(.caption)
+            switch configuration.kind {
+            case .confirmation:
+              Section("Deliberate pause") {
+                Text("What is \(first) + \(second)?")
+                TextField("Answer", text: $answer).keyboardType(.numberPad)
+                Text("A small local puzzle, not bot detection. No third-party CAPTCHA service.")
+                  .font(.caption)
+              }
+            case .steps:
+              StepChallengeView(counter: stepCounter, goal: configuration.stepGoal ?? 100)
             }
             Button("Open for \(configuration.accessDurationInMinutes) minutes") {
               do {
@@ -68,6 +83,7 @@ struct IntentionalAccessView: View {
         }
         if let error = errorMessage { Text(error).foregroundStyle(.red) }
       }
+      .onDisappear { stepCounter.stop() }
       .navigationTitle("Intentional access")
       .toolbar { Button("Cancel") { dismiss() } }
     }

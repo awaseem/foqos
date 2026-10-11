@@ -23,6 +23,21 @@ struct IntentionalAccessSettingsView: View {
           "Opens per six hours: \(configuration.maximumUnblockCount)",
           value: $configuration.maximumUnblockCount, in: 1...10)
       }
+      if configuration.kind == .steps {
+        Section("Step target") {
+          Stepper(
+            "New steps: \(configuration.stepGoal ?? 100)",
+            value: Binding(
+              get: { configuration.stepGoal ?? 100 },
+              set: { configuration.stepGoal = $0 }
+            ), in: 10...10_000, step: 10)
+          Button("Use 100 steps") { configuration.stepGoal = 100 }
+          Text(
+            "Requires step-counting hardware and Motion permission. You can always stop without walking."
+          )
+          .font(.caption)
+        }
+      }
       Section {
         Text(
           "Select individual apps in the profile. Each successful challenge opens one app temporarily. You can always stop the whole session without completing a challenge."
@@ -34,5 +49,8 @@ struct IntentionalAccessSettingsView: View {
       }
     }
     .navigationTitle("Intentional access")
+    .onChange(of: configuration.kind) { _, kind in
+      if kind == .steps && configuration.stepGoal == nil { configuration.stepGoal = 100 }
+    }
   }
 }

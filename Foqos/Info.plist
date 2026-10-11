@@ -21,5 +21,7 @@
 	<array>
 		<string>A0000006472F0001</string>
 	</array>
+	<key>NSMotionUsageDescription</key>
+	<string>Count new steps for the optional temporary app-access challenge.</string>
 </dict>
 </plist>
