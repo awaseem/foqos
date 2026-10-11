@@ -20,6 +20,7 @@ protocol BlockingStrategy {
   var hasTimer: Bool { get }
   var hasPauseMode: Bool { get }
   var startsManually: Bool { get }
+  var supportsSessionControls: Bool { get }
   var requiresSameCodeToStop: Bool { get }
   var allowsTimedBreaks: Bool { get }
   var supportsAllowMode: Bool { get }
@@ -133,6 +134,7 @@ extension BlockingStrategy {
   var hasTimer: Bool { false }
   var hasPauseMode: Bool { false }
   var startsManually: Bool { false }
+  var supportsSessionControls: Bool { false }
   var requiresSameCodeToStop: Bool { false }
   var allowsTimedBreaks: Bool { true }
   var supportsAllowMode: Bool { true }

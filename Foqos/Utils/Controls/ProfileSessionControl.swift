@@ -39,7 +39,8 @@ final class ProfileSessionControl: ObservableObject {
     do {
       guard let profileID,
         let profile = try BlockedProfiles.findProfile(byID: profileID, in: context),
-        profile.blockingStrategyId == ManualBlockingStrategy.id
+        let strategyID = profile.blockingStrategyId,
+        StrategyManager.getStrategyFromId(id: strategyID).supportsSessionControls
       else { throw ProfileSessionControlError.manualProfileRequired }
       let current = BlockedProfileSession.mostRecentActiveSession(in: context)
       if active {
@@ -70,7 +71,7 @@ enum ProfileSessionControlError: LocalizedError {
 
   var errorDescription: String? {
     switch self {
-    case .manualProfileRequired: return "Choose a Manual profile for this control."
+    case .manualProfileRequired: return "Choose a profile that supports session controls."
     case .screenTimeRequired: return "Grant Screen Time access in Foqos first."
     }
   }

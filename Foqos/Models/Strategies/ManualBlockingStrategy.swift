@@ -10,6 +10,7 @@ class ManualBlockingStrategy: BlockingStrategy {
   var pickerCategory: BlockingStrategyPickerCategory = .easyToStart
 
   var startsManually: Bool = true
+  var supportsSessionControls: Bool = true
 
   var onSessionCreation: ((SessionStatus) -> Void)?
   var onErrorMessage: ((String) -> Void)?
