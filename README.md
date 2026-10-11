@@ -334,3 +334,6 @@ Foqos is released under the MIT License. See [LICENSE](LICENSE) for details.
 <p align="center">
   Made in Calgary, AB by <a href="https://github.com/awaseem">Ali Waseem</a>.
 </p>
+
+Optional partner sharing uploads recent session status and requests to a private iCloud share.
+See [partner setup and privacy](docs/features/partner-controls.md).
