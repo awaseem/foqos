@@ -17,12 +17,6 @@ struct HomeView: View {
   ]) private
     var profiles: [BlockedProfiles]
 
-  @Query(
-    filter: #Predicate<BlockedProfileSession> { $0.endTime != nil },
-    sort: \BlockedProfileSession.endTime,
-    order: .reverse
-  ) private var recentCompletedSessions: [BlockedProfileSession]
-
   @State private var presentation = HomePresentationState()
   @AppStorage("showIntroScreen") private var showIntroScreen = true
 
@@ -41,7 +35,6 @@ struct HomeView: View {
   var body: some View {
     HomeDashboardView(
       profiles: profiles,
-      sessions: recentCompletedSessions,
       alerts: alertsManager.alerts,
       onSupportTapped: { presentation.showDonationView = true },
       onSettingsTapped: { presentation.showSettingsView = true },

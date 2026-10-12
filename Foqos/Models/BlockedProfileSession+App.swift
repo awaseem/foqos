@@ -283,6 +283,17 @@ extension BlockedProfileSession {
     return try context.fetch(descriptor).first
   }
 
+  static func completedSessionsDescriptor(after windowStart: Date)
+    -> FetchDescriptor<BlockedProfileSession>
+  {
+    FetchDescriptor<BlockedProfileSession>(
+      predicate: #Predicate { session in
+        session.endTime != nil && (session.endTime ?? windowStart) > windowStart
+      },
+      sortBy: [SortDescriptor(\.endTime, order: .reverse)]
+    )
+  }
+
   static func recentInactiveSessions(
     in context: ModelContext,
     limit: Int = 50

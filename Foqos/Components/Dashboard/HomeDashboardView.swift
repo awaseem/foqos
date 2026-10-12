@@ -5,7 +5,6 @@ struct HomeDashboardView: View {
   @EnvironmentObject private var strategyManager: StrategyManager
 
   let profiles: [BlockedProfiles]
-  let sessions: [BlockedProfileSession]
   let alerts: [HomeAlert]
   let onSupportTapped: () -> Void
   let onSettingsTapped: () -> Void
@@ -60,7 +59,6 @@ struct HomeDashboardView: View {
         } else {
           if !showsProfileInsights {
             BlockedSessionsHabitTracker(
-              sessions: sessions,
               profiles: profiles,
               onInsightsTapped: onInsightsTapped
             )
@@ -165,7 +163,6 @@ private struct HomeDashboardPreview: View {
   var body: some View {
     HomeDashboardView(
       profiles: hasProfiles ? [profile] : [],
-      sessions: hasProfiles ? [session] : [],
       alerts: [],
       onSupportTapped: {},
       onSettingsTapped: {},

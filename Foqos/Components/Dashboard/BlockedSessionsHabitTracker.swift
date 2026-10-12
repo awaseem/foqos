@@ -33,7 +33,6 @@ enum HabitChartType: String, CaseIterable {
 struct BlockedSessionsHabitTracker: View {
   @EnvironmentObject var themeManager: ThemeManager
 
-  let sessions: [BlockedProfileSession]
   let profiles: [BlockedProfiles]
   let onInsightsTapped: (DashboardInsightsContext) -> Void
 
@@ -63,11 +62,9 @@ struct BlockedSessionsHabitTracker: View {
   }
 
   init(
-    sessions: [BlockedProfileSession],
     profiles: [BlockedProfiles],
     onInsightsTapped: @escaping (DashboardInsightsContext) -> Void
   ) {
-    self.sessions = sessions
     self.profiles = profiles
     self.onInsightsTapped = onInsightsTapped
     _weeklyViewModel = StateObject(wrappedValue: WeeklyInsightsUtil(profiles: profiles))
@@ -122,8 +119,7 @@ struct BlockedSessionsHabitTracker: View {
   private var chartContent: some View {
     switch chartType {
     case .fourWeek:
-      FourWeekHeatmapView(
-        sessions: sessions,
+      FourWeekActivityView(
         selectedDate: selectedDate,
         onDateSelected: handleDateSelection
       )
@@ -229,10 +225,22 @@ struct BlockedSessionsHabitTracker: View {
   let exampleSessions = [session1, session2, session3]
   let exampleProfiles = [profile1, profile2, profile3]
 
+  let container = try! ModelContainer(
+    for: BlockedProfiles.self, BlockedProfileSession.self,
+    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+  )
+  for profile in exampleProfiles {
+    container.mainContext.insert(profile)
+  }
+  for session in exampleSessions {
+    container.mainContext.insert(session)
+  }
+  try! container.mainContext.save()
+
   return BlockedSessionsHabitTracker(
-    sessions: exampleSessions,
     profiles: exampleProfiles,
     onInsightsTapped: { _ in }
   )
+  .modelContainer(container)
   .environmentObject(ThemeManager.shared)
 }

@@ -5,17 +5,12 @@ struct FourWeekHeatmapView: View {
   @EnvironmentObject var themeManager: ThemeManager
 
   let sessions: [BlockedProfileSession]
+  let dates: [Date]
   let selectedDate: Date?
   let onDateSelected: (Date) -> Void
 
-  private let daysToShow = 28
-
   private var legendData: [(String, Double)] {
     [("<1h", 0.3), ("1-3h", 0.5), ("3-5h", 0.7), (">5h", 0.9)]
-  }
-
-  private var dates: [Date] {
-    DashboardActivityUtil.dates(forDays: daysToShow)
   }
 
   private var weeklyDates: [[Date]] {
@@ -136,6 +131,7 @@ struct FourWeekHeatmapView: View {
     var body: some View {
       FourWeekHeatmapView(
         sessions: sessions,
+        dates: DashboardActivityUtil.dates(forDays: 28),
         selectedDate: nil,
         onDateSelected: { _ in }
       )
