@@ -208,10 +208,6 @@ struct ProfileUsageMiniBarChart: View {
     aggregation.dailyDurations
   }
 
-  private var maxValue: TimeInterval {
-    max(values.max() ?? 0, 1)
-  }
-
   private var dayLabels: [String] {
     let calendar = Calendar.current
 
@@ -225,7 +221,10 @@ struct ProfileUsageMiniBarChart: View {
   }
 
   var body: some View {
-    VStack(spacing: 3) {
+    let values = values
+    let maxValue = max(values.max() ?? 0, 1)
+
+    return VStack(spacing: 3) {
       HStack(alignment: .bottom, spacing: 4) {
         ForEach(Array(values.enumerated()), id: \.offset) { _, value in
           let normalizedValue = CGFloat(value / maxValue)

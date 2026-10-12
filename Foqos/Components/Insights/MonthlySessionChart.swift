@@ -217,8 +217,9 @@ struct MonthlySessionChart: View {
 
       // Grid
       VStack(spacing: 4) {
-        ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
-          weekRowView(for: weeksInMonth[weekIndex])
+        let weeks = weeksInMonth
+        ForEach(weeks.indices, id: \.self) { weekIndex in
+          weekRowView(for: weeks[weekIndex])
         }
       }
       .frame(maxWidth: .infinity)
