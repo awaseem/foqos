@@ -3,17 +3,27 @@ import CoreNFC
 import SwiftUI
 
 class PhysicalReader {
-  private let nfcScanner: NFCScannerUtil = NFCScannerUtil()
+  private let nfcScanner: NFCScannerUtil
+
+  init(nfcScanner: NFCScannerUtil = NFCScannerUtil()) {
+    self.nfcScanner = nfcScanner
+  }
 
   func readNFCTag(
     onSuccess: @escaping (String) -> Void,
     onFailure: @escaping (String) -> Void = { _ in }
   ) {
-    nfcScanner.onTagScanned = { result in
+    nfcScanner.onTagScanned = { [weak nfcScanner] result in
+      nfcScanner?.onTagScanned = nil
+      nfcScanner?.onError = nil
       let tagId = result.url ?? result.id
       onSuccess(tagId)
     }
-    nfcScanner.onError = onFailure
+    nfcScanner.onError = { [weak nfcScanner] error in
+      nfcScanner?.onTagScanned = nil
+      nfcScanner?.onError = nil
+      onFailure(error)
+    }
 
     nfcScanner.scan(profileName: "")
   }
