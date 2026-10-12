@@ -187,13 +187,6 @@ class TimersUtil {
             )
             completion(.failure(error))
           } else {
-            // Also schedule as background task for resilience when app is killed
-            let taskId = UUID().uuidString
-            self.scheduleBackgroundTask(
-              taskId: taskId,
-              executionTime: Date().addingTimeInterval(seconds),
-              notificationId: notificationId
-            )
             completion(.success)
           }
         }
@@ -216,25 +209,6 @@ class TimersUtil {
   func cancelAll() {
     cancelAllNotifications()
     cancelAllBackgroundTasks()
-  }
-
-  // Schedule a background task
-  private func scheduleBackgroundTask(
-    taskId: String,
-    executionTime: Date,
-    notificationId: String? = nil
-  ) {
-    // Store task information in UserDefaults
-    var tasks = backgroundTasks
-    var taskInfo: [String: Any] = ["executionTime": executionTime]
-    if let notificationId = notificationId {
-      taskInfo["notificationId"] = notificationId
-    }
-    tasks[taskId] = taskInfo
-    backgroundTasks = tasks
-
-    // Schedule the background processing task
-    scheduleBackgroundProcessing()
   }
 
   // Request authorization to send notifications
