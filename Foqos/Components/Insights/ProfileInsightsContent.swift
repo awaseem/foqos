@@ -83,9 +83,15 @@ struct ProfileInsightsContent: View {
   }
 
   private var weekSessions: [BlockedProfileSession] {
-    allSessions.filter { session in
-      guard let profileId = weeklyViewModel.profiles.first?.id,
-        session.blockedProfile.id == profileId,
+    guard let profileId = weeklyViewModel.profiles.first?.id else { return [] }
+    let summary = weekSummary
+    let weekStart = summary.weekStartDate
+    let weekEndExclusive =
+      Calendar.current.date(byAdding: .day, value: 1, to: summary.weekEndDate)
+      ?? summary.weekEndDate
+
+    return allSessions.filter { session in
+      guard session.blockedProfile.id == profileId,
         let endTime = session.endTime
       else {
         return false
@@ -95,9 +101,15 @@ struct ProfileInsightsContent: View {
   }
 
   private var monthSessions: [BlockedProfileSession] {
-    allSessions.filter { session in
-      guard let profileId = monthlyViewModel.profiles.first?.id,
-        session.blockedProfile.id == profileId,
+    guard let profileId = monthlyViewModel.profiles.first?.id else { return [] }
+    let summary = monthSummary
+    let monthStart = summary.monthStartDate
+    let monthEndExclusive =
+      Calendar.current.date(byAdding: .day, value: 1, to: summary.monthEndDate)
+      ?? summary.monthEndDate
+
+    return allSessions.filter { session in
+      guard session.blockedProfile.id == profileId,
         let endTime = session.endTime
       else {
         return false
@@ -150,24 +162,6 @@ struct ProfileInsightsContent: View {
       guard let endTime = session.endTime else { return false }
       return session.startTime < dayEnd && endTime > dayStart
     }
-  }
-
-  private var weekStart: Date {
-    weekSummary.weekStartDate
-  }
-
-  private var weekEndExclusive: Date {
-    Calendar.current.date(byAdding: .day, value: 1, to: weekSummary.weekEndDate)
-      ?? weekSummary.weekEndDate
-  }
-
-  private var monthStart: Date {
-    monthSummary.monthStartDate
-  }
-
-  private var monthEndExclusive: Date {
-    Calendar.current.date(byAdding: .day, value: 1, to: monthSummary.monthEndDate)
-      ?? monthSummary.monthEndDate
   }
 
   private var sessionsSectionTitle: String {
