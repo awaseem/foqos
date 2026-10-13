@@ -55,6 +55,9 @@ struct foqosApp: App {
   var body: some Scene {
     WindowGroup {
       HomeView()
+        .onChange(of: themeManager.selectedColorName) { _, _ in
+          updateLiveActivityAppearance()
+        }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) {
           notification in
           guard let context = notification.object as? ModelContext,
@@ -88,5 +91,10 @@ struct foqosApp: App {
 
   private func handleUniversalLink(_ url: URL) {
     navigationManager.handleLink(url)
+  }
+
+  private func updateLiveActivityAppearance() {
+    guard let session = startegyManager.activeSession else { return }
+    liveActivityManager.updateSessionActivity(session: session)
   }
 }

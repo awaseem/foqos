@@ -14,6 +14,18 @@ struct FoqosWidgetAttributes: ActivityAttributes {
     var pauseStartTime: Date?
     var pauseEndTime: Date?
 
+    // Optional so activities started before appearance customization still decode.
+    var themeColorName: String?
+    var appIconName: String?
+
+    var themeColor: Color {
+      ThemeManager.color(named: themeColorName)
+    }
+
+    var appIcon: AppIconOption {
+      AppIconOption.allCases.first { $0.alternateIconName == appIconName } ?? .defaultIcon
+    }
+
     func getTimeIntervalSinceNow() -> Double {
       // Calculate the break duration to subtract from elapsed time
       let breakDuration = calculateBreakDuration()
@@ -72,7 +84,7 @@ struct FoqosWidgetLiveActivity: Widget {
               .font(.headline)
               .fontWeight(.bold)
               .foregroundColor(.primary)
-            foqosLogo(size: 20)
+            activityIcon(for: context.state, size: 20)
           }
 
           Text(context.attributes.name)
@@ -93,6 +105,7 @@ struct FoqosWidgetLiveActivity: Widget {
               label: "Paused",
               assetName: "PauseStickerIcon",
               countdownRange: context.state.countdownRange,
+              tint: context.state.themeColor,
               timerFont: .title,
               alignment: .trailing
             )
@@ -101,6 +114,7 @@ struct FoqosWidgetLiveActivity: Widget {
               label: "On a Break",
               assetName: "CoffeeStickerIcon",
               countdownRange: context.state.countdownRange,
+              tint: context.state.themeColor,
               timerFont: .title,
               alignment: .trailing
             )
@@ -115,15 +129,14 @@ struct FoqosWidgetLiveActivity: Widget {
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          expandedIslandTitle(name: context.attributes.name)
+          expandedIslandTitle(name: context.attributes.name, state: context.state)
         }
 
         DynamicIslandExpandedRegion(.trailing) {
           expandedIslandStatusView(for: context.state)
         }
       } compactLeading: {
-        foqosLogo(size: compactLogoSize)
-          .frame(width: compactLogoSize, height: compactLogoSize)
+        activityIcon(for: context.state, size: compactLogoSize)
       } compactTrailing: {
         #if compiler(>=6.4)
           if #available(iOS 27.0, *) {
@@ -137,25 +150,28 @@ struct FoqosWidgetLiveActivity: Widget {
           compactIslandStatusView(for: context.state)
         #endif
       } minimal: {
-        foqosLogo(size: minimalLogoSize)
-          .frame(width: minimalLogoSize, height: minimalLogoSize)
+        activityIcon(for: context.state, size: minimalLogoSize)
       }
       .widgetURL(URL(string: "http://www.foqos.app"))
-      .keylineTint(Color.purple)
+      .keylineTint(context.state.themeColor)
     }
   }
 
-  private func foqosLogo(size: CGFloat) -> some View {
-    Image("FoqosStickerLogo")
+  private func activityIcon(for state: FoqosWidgetAttributes.ContentState, size: CGFloat)
+    -> some View
+  {
+    Image(state.appIcon.liveActivityAssetName)
       .resizable()
       .scaledToFit()
       .frame(width: size, height: size)
+      .accessibilityLabel("Foqos")
   }
 
-  private func expandedIslandTitle(name: String) -> some View {
+  private func expandedIslandTitle(name: String, state: FoqosWidgetAttributes.ContentState)
+    -> some View
+  {
     HStack(alignment: .center, spacing: 8) {
-      foqosLogo(size: expandedLogoSize)
-        .frame(width: expandedLogoSize, height: expandedLogoSize)
+      activityIcon(for: state, size: expandedLogoSize)
 
       VStack(alignment: .leading, spacing: 1) {
         Text("Foqos")
@@ -202,7 +218,7 @@ struct FoqosWidgetLiveActivity: Widget {
     } else if isWidthLimited {
       Image(systemName: "timer")
         .font(.system(size: 18, weight: .semibold))
-        .foregroundStyle(.purple)
+        .foregroundStyle(state.themeColor)
         .frame(width: 20, height: 20)
         .accessibilityLabel("Focus session active")
         .accessibilityValue(
@@ -220,21 +236,6 @@ struct FoqosWidgetLiveActivity: Widget {
       .frame(width: size, height: size)
   }
 
-  private func elapsedTimerText(
-    for state: FoqosWidgetAttributes.ContentState,
-    font: Font
-  ) -> some View {
-    Text(
-      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
-      style: .timer
-    )
-    .font(font)
-    .fontWeight(.semibold)
-    .monospacedDigit()
-    .foregroundColor(.purple)
-    .contentTransition(.numericText())
-  }
-
   private func expandedElapsedTimerText(
     for state: FoqosWidgetAttributes.ContentState
   ) -> some View {
@@ -247,7 +248,7 @@ struct FoqosWidgetLiveActivity: Widget {
     .lineLimit(1)
     .minimumScaleFactor(0.76)
     .allowsTightening(true)
-    .foregroundColor(.purple)
+    .foregroundColor(state.themeColor)
     .frame(width: expandedTimerWidth, alignment: .center)
     .contentTransition(.numericText())
   }
@@ -262,7 +263,7 @@ struct FoqosWidgetLiveActivity: Widget {
     .lineLimit(1)
     .minimumScaleFactor(0.68)
     .allowsTightening(true)
-    .foregroundColor(.purple)
+    .foregroundColor(state.themeColor)
     .frame(width: compactTimerWidth, alignment: .center)
     .contentTransition(.numericText())
   }
@@ -277,7 +278,7 @@ struct FoqosWidgetLiveActivity: Widget {
       Text(timerInterval: countdownRange, countsDown: true)
         .font(font)
         .fontWeight(.semibold)
-        .foregroundColor(.primary)
+        .foregroundColor(state.themeColor)
         .multilineTextAlignment(alignment)
     } else {
       Text(
@@ -286,7 +287,7 @@ struct FoqosWidgetLiveActivity: Widget {
       )
       .font(font)
       .fontWeight(.semibold)
-      .foregroundColor(.primary)
+      .foregroundColor(state.themeColor)
       .multilineTextAlignment(alignment)
     }
   }
@@ -296,6 +297,7 @@ struct FoqosWidgetLiveActivity: Widget {
     label: String,
     assetName: String,
     countdownRange: ClosedRange<Date>?,
+    tint: Color,
     timerFont: Font,
     alignment: TextAlignment
   ) -> some View {
@@ -312,7 +314,7 @@ struct FoqosWidgetLiveActivity: Widget {
         Text(timerInterval: countdownRange, countsDown: true)
           .font(timerFont)
           .fontWeight(.semibold)
-          .foregroundColor(.primary)
+          .foregroundColor(tint)
           .multilineTextAlignment(alignment)
       }
     }
@@ -341,6 +343,13 @@ extension FoqosWidgetAttributes {
 }
 
 extension FoqosWidgetAttributes.ContentState {
+  fileprivate static var mintCat: FoqosWidgetAttributes.ContentState {
+    var state = shortTime
+    state.themeColorName = "Mint Fresh"
+    state.appIconName = AppIconOption.cat.alternateIconName
+    return state
+  }
+
   fileprivate static var shortTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes
       .ContentState(
@@ -402,8 +411,16 @@ extension FoqosWidgetAttributes.ContentState {
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
   FoqosWidgetLiveActivity()
 } contentStates: {
+  FoqosWidgetAttributes.ContentState.mintCat
   FoqosWidgetAttributes.ContentState.shortTime
   FoqosWidgetAttributes.ContentState.longTime
   FoqosWidgetAttributes.ContentState.breakActive
   FoqosWidgetAttributes.ContentState.pauseActive
+}
+
+#Preview("Mint Dynamic Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview)
+{
+  FoqosWidgetLiveActivity()
+} contentStates: {
+  FoqosWidgetAttributes.ContentState.mintCat
 }

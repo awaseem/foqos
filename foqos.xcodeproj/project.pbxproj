@@ -184,6 +184,8 @@
 				Intents/BreakControlIntent.swift,
 				Intents/FoqosControlError.swift,
 				Intents/ProfileControlIntent.swift,
+				LiveActivityAssets.xcassets,
+				Models/AppIconOption.swift,
 				Models/FoqosControlState.swift,
 				Models/BlockedProfiles.swift,
 				Models/BlockedProfileSessions.swift,

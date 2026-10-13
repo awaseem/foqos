@@ -43,7 +43,11 @@ class ThemeManager: ObservableObject {
   }
 
   var themeColor: Color {
-    Self.availableColors.first(where: { $0.name == themeColorName })?.color
+    Self.color(named: themeColorName)
+  }
+
+  static func color(named name: String?) -> Color {
+    availableColors.first(where: { $0.name == name })?.color
       ?? Self.availableColors.first!.color
   }
 
