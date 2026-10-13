@@ -16,14 +16,14 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 
     // Optional so activities started before appearance customization still decode.
     var themeColorName: String?
-    var iconName: String?
+    var appIconName: String?
 
     var themeColor: Color {
       ThemeManager.color(named: themeColorName)
     }
 
-    var icon: LiveActivityIcon {
-      iconName.flatMap(LiveActivityIcon.init(rawValue:)) ?? .foqos
+    var appIcon: AppIconOption {
+      AppIconOption.allCases.first { $0.alternateIconName == appIconName } ?? .defaultIcon
     }
 
     func getTimeIntervalSinceNow() -> Double {
@@ -160,20 +160,11 @@ struct FoqosWidgetLiveActivity: Widget {
   private func activityIcon(for state: FoqosWidgetAttributes.ContentState, size: CGFloat)
     -> some View
   {
-    Group {
-      if let symbolName = state.icon.symbolName {
-        Image(systemName: symbolName)
-          .resizable()
-          .scaledToFit()
-          .foregroundStyle(state.themeColor)
-      } else {
-        Image("FoqosStickerLogo")
-          .resizable()
-          .scaledToFit()
-      }
-    }
-    .frame(width: size, height: size)
-    .accessibilityLabel("Foqos")
+    Image(state.appIcon.liveActivityAssetName)
+      .resizable()
+      .scaledToFit()
+      .frame(width: size, height: size)
+      .accessibilityLabel("Foqos")
   }
 
   private func expandedIslandTitle(name: String, state: FoqosWidgetAttributes.ContentState)
@@ -352,10 +343,10 @@ extension FoqosWidgetAttributes {
 }
 
 extension FoqosWidgetAttributes.ContentState {
-  fileprivate static var mintLeaf: FoqosWidgetAttributes.ContentState {
+  fileprivate static var mintCat: FoqosWidgetAttributes.ContentState {
     var state = shortTime
     state.themeColorName = "Mint Fresh"
-    state.iconName = LiveActivityIcon.leaf.rawValue
+    state.appIconName = AppIconOption.cat.alternateIconName
     return state
   }
 
@@ -420,7 +411,7 @@ extension FoqosWidgetAttributes.ContentState {
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
   FoqosWidgetLiveActivity()
 } contentStates: {
-  FoqosWidgetAttributes.ContentState.mintLeaf
+  FoqosWidgetAttributes.ContentState.mintCat
   FoqosWidgetAttributes.ContentState.shortTime
   FoqosWidgetAttributes.ContentState.longTime
   FoqosWidgetAttributes.ContentState.breakActive
@@ -431,5 +422,5 @@ extension FoqosWidgetAttributes.ContentState {
 {
   FoqosWidgetLiveActivity()
 } contentStates: {
-  FoqosWidgetAttributes.ContentState.mintLeaf
+  FoqosWidgetAttributes.ContentState.mintCat
 }

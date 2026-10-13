@@ -58,9 +58,6 @@ struct foqosApp: App {
         .onChange(of: themeManager.selectedColorName) { _, _ in
           updateLiveActivityAppearance()
         }
-        .onChange(of: themeManager.selectedLiveActivityIcon) { _, _ in
-          updateLiveActivityAppearance()
-        }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) {
           notification in
           guard let context = notification.object as? ModelContext,

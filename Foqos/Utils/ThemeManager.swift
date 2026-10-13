@@ -33,18 +33,6 @@ class ThemeManager: ObservableObject {
     "foqosThemeColorName", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
   private var themeColorName: String = defaultColorName
 
-  @AppStorage(
-    "foqosLiveActivityIcon", store: UserDefaults(suiteName: "group.dev.ambitionsoftware.foqos"))
-  private var liveActivityIconName: String = LiveActivityIcon.foqos.rawValue
-
-  var selectedLiveActivityIcon: LiveActivityIcon {
-    get { LiveActivityIcon(rawValue: liveActivityIconName) ?? .foqos }
-    set {
-      objectWillChange.send()
-      liveActivityIconName = newValue.rawValue
-    }
-  }
-
   var selectedColorName: String {
     get { themeColorName }
     set {
