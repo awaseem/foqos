@@ -170,7 +170,7 @@ enum SoftUnblockGrantStore {
     )
   }
 
-  private static func grants(for sessionId: String) -> [SoftUnblockGrant] {
+  static func grants(for sessionId: String) -> [SoftUnblockGrant] {
     let prefix = grantSessionKeyPrefix(sessionId: sessionId)
 
     return suite.dictionaryRepresentation().compactMap { key, value in

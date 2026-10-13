@@ -86,6 +86,10 @@ class StrategyManager: ObservableObject {
       // Start live activity for existing session if one exists
       // live activities can only be started when the app is in the foreground
       if let session = activeSession {
+        let profile = BlockedProfiles.getSnapshot(for: session.blockedProfile)
+        if SoftUnblockGrantStore.isActive(sessionId: session.id, profileId: profile.id) {
+          SoftUnblockGrantTimerActivity().reconcile(for: profile)
+        }
         liveActivityManager.startSessionActivity(session: session)
       }
     } else {

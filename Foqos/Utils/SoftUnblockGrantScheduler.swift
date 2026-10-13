@@ -22,10 +22,7 @@ enum SoftUnblockGrantScheduler {
       dateComponents,
       from: calendar.startOfDay(for: now)
     )
-    let intervalEnd = calendar.dateComponents(
-      dateComponents,
-      from: max(grant.expiresAt, now.addingTimeInterval(60))
-    )
+    let intervalEnd = intervalEnd(for: grant.expiresAt, at: now)
     let schedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
@@ -33,6 +30,21 @@ enum SoftUnblockGrantScheduler {
     )
 
     try center.startMonitoring(activityName, during: schedule)
+  }
+
+  static func intervalEnd(for expiresAt: Date, at date: Date = Date()) -> DateComponents {
+    // DeviceActivity uses whole seconds; never schedule before the stored expiry.
+    let endDate = Date(
+      timeIntervalSince1970: max(expiresAt, date.addingTimeInterval(60))
+        .timeIntervalSince1970.rounded(.up)
+    )
+    return Calendar.current.dateComponents(
+      [.year, .month, .day, .hour, .minute, .second], from: endDate
+    )
+  }
+
+  static func stopGrant(_ grant: SoftUnblockGrant) {
+    DeviceActivityCenter().stopMonitoring([activityName(for: grant)])
   }
 
   static func stopAll(sessionId: String? = nil) {

@@ -204,6 +204,29 @@ final class SoftUnblockTests: XCTestCase {
     )
   }
 
+  func testGrantScheduleNeverEndsBeforeFractionalExpiry() throws {
+    let now = Date(timeIntervalSince1970: 1_800_000_000)
+    for fraction in [0.0, 0.001, 0.25, 0.5, 0.75, 0.999] {
+      let expiresAt = now.addingTimeInterval(15 * 60 + fraction)
+      let components = SoftUnblockGrantScheduler.intervalEnd(for: expiresAt, at: now)
+      let scheduledEnd = try XCTUnwrap(Calendar.current.date(from: components))
+
+      XCTAssertGreaterThanOrEqual(scheduledEnd, expiresAt)
+      XCTAssertLessThan(scheduledEnd.timeIntervalSince(expiresAt), 1)
+    }
+  }
+
+  func testGrantScheduleRoundsMinimumIntervalUp() throws {
+    let now = Date(timeIntervalSince1970: 1_800_000_000.75)
+    let components = SoftUnblockGrantScheduler.intervalEnd(
+      for: now.addingTimeInterval(-1), at: now
+    )
+    let scheduledEnd = try XCTUnwrap(Calendar.current.date(from: components))
+
+    XCTAssertGreaterThanOrEqual(scheduledEnd.timeIntervalSince(now), 60)
+    XCTAssertLessThan(scheduledEnd.timeIntervalSince(now), 61)
+  }
+
   func testActivityIdentifiersParseWithoutEmbeddingResourceTokens() {
     let profileId = UUID()
     let sessionId = UUID().uuidString
