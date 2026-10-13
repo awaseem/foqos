@@ -129,11 +129,6 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    if let message = expiredSession.minimumDurationStopMessage {
-      errorMessage = message
-      return
-    }
-
     let profile = expiredSession.blockedProfile
     let descriptor = FetchDescriptor<BlockedProfileSession>(
       predicate: #Predicate { $0.endTime == nil }
@@ -212,10 +207,6 @@ class StrategyManager: ObservableObject {
       let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
 
       if let localActiveSession = getActiveSession(context: context) {
-        if let message = localActiveSession.minimumDurationStopMessage {
-          errorMessage = message
-          return
-        }
         if localActiveSession.blockedProfile.disableBackgroundStops {
           print(
             "profile: \(localActiveSession.blockedProfile.name) has disable background stops enabled, not stopping it"
@@ -472,11 +463,6 @@ class StrategyManager: ObservableObject {
 
     // Do not allow emergency unblocks if there is no active session
     guard let activeSession = getActiveSession(context: context) else {
-      return
-    }
-
-    if let message = activeSession.minimumDurationStopMessage {
-      errorMessage = message
       return
     }
 
@@ -834,11 +820,6 @@ class StrategyManager: ObservableObject {
       print(
         "No active session found, calling stop blocking with no session"
       )
-      return
-    }
-
-    if let message = session.minimumDurationStopMessage {
-      errorMessage = message
       return
     }
 

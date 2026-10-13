@@ -26,16 +26,11 @@ struct StopProfileIntent: AppIntent {
   func perform() async throws -> some IntentResult {
     let strategyManager = StrategyManager.shared
 
-    strategyManager.errorMessage = nil
     strategyManager
       .stopSessionFromBackground(
         profile.id,
         context: modelContext
       )
-
-    if let message = strategyManager.errorMessage {
-      throw FoqosControlError.actionFailed(message)
-    }
 
     return .result()
   }

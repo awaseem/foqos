@@ -72,7 +72,6 @@ enum SharedData {
     var pauseEndTime: Date?
 
     var forceStarted: Bool
-    var minimumDurationInSeconds: TimeInterval? = nil
   }
 
   // MARK: – Persisted snapshots keyed by profile ID (UUID string)

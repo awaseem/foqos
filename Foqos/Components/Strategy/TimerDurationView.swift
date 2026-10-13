@@ -12,6 +12,7 @@ struct TimerDurationView: View {
   @State private var durationMinutes: Double
   @State private var isSliding = false
   @State private var hideStopButton: Bool
+  @State private var continueAfterTimer: Bool
 
   // Constants
   private let minMinutes: Double = 15
@@ -34,6 +35,7 @@ struct TimerDurationView: View {
     self.onDurationSelected = onDurationSelected
     _durationMinutes = State(initialValue: Double(initialConfiguration.durationInMinutes))
     _hideStopButton = State(initialValue: initialConfiguration.hideStopButton)
+    _continueAfterTimer = State(initialValue: initialConfiguration.continueAfterTimer == true)
   }
 
   var body: some View {
@@ -60,6 +62,18 @@ struct TimerDurationView: View {
 
       // Hide stop button toggle
       hideStopButtonToggle
+
+      Toggle(isOn: $continueAfterTimer) {
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Continue After Timer")
+          Text(
+            "Keep blocking when the timer ends. Stop becomes available, and the session continues until you stop it."
+          )
+          .font(.caption)
+          .foregroundStyle(.secondary)
+        }
+      }
+      .tint(themeManager.themeColor)
 
       // Confirm button
       ActionButton(
@@ -222,7 +236,8 @@ struct TimerDurationView: View {
 
   private func handleConfirm() {
     let data = StrategyTimerData(
-      durationInMinutes: Int(durationMinutes), hideStopButton: hideStopButton
+      durationInMinutes: Int(durationMinutes), hideStopButton: hideStopButton,
+      continueAfterTimer: continueAfterTimer
     )
     onDurationSelected(data)
     dismiss()

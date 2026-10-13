@@ -24,7 +24,7 @@ enum SessionTimeCalculator {
     elapsedFocusTime: TimeInterval? = nil,
     at date: Date = Date()
   ) -> TimeInterval {
-    if let expectedEndTime = expectedEndTime(for: session) {
+    if let expectedEndTime = expectedEndTime(for: session, at: date) {
       return max(0, expectedEndTime.timeIntervalSince(date))
     }
 
@@ -35,7 +35,7 @@ enum SessionTimeCalculator {
     for session: BlockedProfileSession,
     at date: Date = Date()
   ) -> Bool {
-    guard let expectedEndTime = expectedEndTime(for: session) else {
+    guard let expectedEndTime = expectedEndTime(for: session, at: date) else {
       return false
     }
 
@@ -46,14 +46,14 @@ enum SessionTimeCalculator {
     for session: BlockedProfileSession,
     at date: Date = Date()
   ) -> Bool {
-    guard let expectedEndTime = expectedEndTime(for: session) else {
+    guard let expectedEndTime = expectedEndTime(for: session, at: date) else {
       return false
     }
 
     return expectedEndTime.addingTimeInterval(countdownReloadDelay) <= date
   }
 
-  static func expectedEndTime(for session: BlockedProfileSession) -> Date? {
+  static func expectedEndTime(for session: BlockedProfileSession, at date: Date = Date()) -> Date? {
     if let pauseStartTime = session.pauseStartTime, session.isPauseActive {
       return pauseStartTime.addingTimeInterval(pauseDurationInSeconds(for: session.blockedProfile))
     }
@@ -67,7 +67,18 @@ enum SessionTimeCalculator {
       return breakStartTime.addingTimeInterval(session.totalBreakAllowanceInSeconds)
     }
 
+    if isContinuingAfterTimer(session, at: date) { return nil }
     return expectedSessionEndTime(for: session)
+  }
+
+  static func isContinuingAfterTimer(_ session: BlockedProfileSession, at date: Date = Date())
+    -> Bool
+  {
+    guard !isScheduledSession(session), isTimerSession(session),
+      StrategyTimerData.decode(session.blockedProfile.strategyData).continueAfterTimer == true,
+      let end = expectedSessionEndTime(for: session)
+    else { return false }
+    return date >= end
   }
 
   static func expectedSessionEndTime(for session: BlockedProfileSession) -> Date? {

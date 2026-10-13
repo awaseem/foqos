@@ -221,6 +221,7 @@
 				Models/Shared.swift,
 				Models/SoftUnblockGrant.swift,
 				Models/Strategies/BlockingSessionLifecycle.swift,
+				Models/Strategies/Data/StrategyTimerData.swift,
 				Models/Strategies/Data/SoftUnblockStrategyData.swift,
 				Models/Strategies/SoftUnblockSessionLifecycleHandler.swift,
 				Models/Timers/BreakTimerActivity.swift,

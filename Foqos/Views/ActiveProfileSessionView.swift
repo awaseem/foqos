@@ -32,7 +32,12 @@ struct ActiveProfileSessionView: View {
   private let focusMessageTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
 
   private var showStopButton: Bool {
-    profile.showStopButton(elapsedTime: elapsedTime)
+    if let session = strategyManager.activeSession,
+      SessionTimeCalculator.isContinuingAfterTimer(session)
+    {
+      return true
+    }
+    return profile.showStopButton(elapsedTime: elapsedTime)
   }
 
   private var stopButtonAction: BlockingStrategySessionAction {
@@ -311,13 +316,6 @@ struct ActiveProfileSessionView: View {
 
   private var actionSection: some View {
     VStack(spacing: 12) {
-      if let session = strategyManager.activeSession, session.minimumDurationRemaining() > 0 {
-        Text(
-          "Stopping available in \(DateFormatters.formatDurationClock(ceil(session.minimumDurationRemaining())))"
-        )
-        .font(.footnote)
-        .foregroundStyle(.secondary)
-      }
       if isCountdownExpired {
         VStack(spacing: 8) {
           Text("This timer finished, but the session is still active.")
@@ -333,7 +331,6 @@ struct ActiveProfileSessionView: View {
             role: .destructive,
             action: onExpiredCountdownReset
           )
-          .disabled((strategyManager.activeSession?.minimumDurationRemaining() ?? 0) > 0)
         }
       } else {
         if !isPauseActive && isBreakAvailable {
@@ -357,7 +354,6 @@ struct ActiveProfileSessionView: View {
                 showEmergencyView = true
               }
             )
-            .disabled((strategyManager.activeSession?.minimumDurationRemaining() ?? 0) > 0)
           }
 
           if showStopButton {
@@ -368,7 +364,6 @@ struct ActiveProfileSessionView: View {
               role: .standard,
               action: onStopTapped
             )
-            .disabled((strategyManager.activeSession?.minimumDurationRemaining() ?? 0) > 0)
           }
         }
       }

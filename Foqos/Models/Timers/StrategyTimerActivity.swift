@@ -44,8 +44,6 @@ class StrategyTimerActivity: TimerActivity {
       return
     }
 
-    guard (activeSession.minimumDurationInSeconds ?? 0) == 0 else { return }
-
     // Check to make sure the active session is the same as the profile before disabling restrictions
     if activeSession.blockedProfileId != profile.id {
       log.info(
@@ -53,6 +51,9 @@ class StrategyTimerActivity: TimerActivity {
       )
       return
     }
+
+    // Continuing timers keep their session and shields until explicitly stopped.
+    guard StrategyTimerData.decode(profile.strategyData).continueAfterTimer != true else { return }
 
     // End restrictions
     appBlocker.deactivateRestrictions()
