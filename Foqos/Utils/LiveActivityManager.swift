@@ -194,7 +194,9 @@ class LiveActivityManager: ObservableObject {
       usedBreakDurationInSeconds: session.usedBreakDurationInSeconds,
       isPauseActive: session.isPauseActive,
       pauseStartTime: session.pauseStartTime,
-      pauseEndTime: session.pauseEndTime
+      pauseEndTime: session.pauseEndTime,
+      themeColorName: ThemeManager.shared.selectedColorName,
+      iconName: ThemeManager.shared.selectedLiveActivityIcon.rawValue
     )
   }
 }

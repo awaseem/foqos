@@ -188,6 +188,7 @@
 				Models/BlockedProfiles.swift,
 				Models/BlockedProfileSessions.swift,
 				Models/FoqosModelContainer.swift,
+				Models/LiveActivityIcon.swift,
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,
@@ -203,6 +204,7 @@
 		803899772EF736BA009988BB /* Exceptions for "Foqos" folder in "FoqosShieldConfig" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/LiveActivityIcon.swift,
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
 				Models/Shared.swift,

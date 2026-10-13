@@ -55,6 +55,25 @@ struct SettingsView: View {
           .onChange(of: themeManager.selectedColorName) { _, _ in
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
+
+          Picker("Live Activity Icon", selection: $themeManager.selectedLiveActivityIcon) {
+            ForEach(LiveActivityIcon.allCases) { icon in
+              Label {
+                Text(icon.name)
+              } icon: {
+                if let symbolName = icon.symbolName {
+                  Image(systemName: symbolName)
+                } else {
+                  Image("FoqosStickerLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                }
+              }
+              .tag(icon)
+            }
+          }
+          .accessibilityValue(themeManager.selectedLiveActivityIcon.name)
         }
 
         AppIconPicker()
