@@ -1,0 +1,81 @@
+name: Report a reproducible bug
+description: Report a problem after checking the Help Center and existing issues.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the [Help Center](https://www.foqos.app/support.html) and search [open and closed issues](https://github.com/awaseem/foqos/issues?q=is%3Aissue).
+        Foqos is maintained in spare time; individual setup support is not available. Support questions and duplicates may be closed with a link to an answer. A response or fix is not guaranteed.
+        Read [Ali's note on why support is changing](https://www.foqos.app/support.html#why-support-is-changing).
+        Foqos supports iPhone and its Mac companion. Native iPad support is tracked in [#287](https://github.com/awaseem/foqos/issues/287).
+  - type: checkboxes
+    id: before-reporting
+    attributes:
+      label: Before reporting
+      options:
+        - label: I searched the Help Center and open and closed issues for this problem.
+          required: true
+        - label: I observed this behavior myself; this is not an unverified automated finding.
+          required: true
+  - type: textarea
+    id: troubleshooting
+    attributes:
+      label: Which support answer did you try, and what happened?
+      description: Link the answer and describe the result. If nothing matched, tell us what you searched for.
+      placeholder: "I tried the schedule troubleshooting steps at ... and the next scheduled start still ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - iPhone
+        - Mac
+        - iPhone and Mac sync
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device model and OS version
+      description: Include both devices for Mac sync problems. Give the exact OS versions, not just “latest.”
+      placeholder: "iPhone 16, iOS 26.0; MacBook Air M3, macOS 26.0"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Foqos version
+      description: Find the iPhone version in Settings → About. Include the Mac app version for Mac or sync problems.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the strategy and relevant settings. For schedules, include days, times, time zone, and whether you started the session manually. Say how often it happens.
+      placeholder: |
+        1. Create a profile using ...
+        2. Set ...
+        3. Start ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Describe what you observed, including any error message. Attach screenshots or a recording if useful.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Relevant diagnostics (optional)
+      description: Use Settings → Help → Debug Mode on iPhone or export Mac diagnostics. GitHub is public; remove private profile names, websites, identifiers, and tag or QR contents before sharing. Performance reports should include measurements and the workload used.

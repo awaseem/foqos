@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help, troubleshooting, and common questions
+    url: https://www.foqos.app/support.html
+    about: Search existing answers and known limitations before reporting a problem.
+  - name: Search open and closed issues
+    url: https://github.com/awaseem/foqos/issues?q=is%3Aissue
+    about: Find previous answers, bug reports, and feature decisions.

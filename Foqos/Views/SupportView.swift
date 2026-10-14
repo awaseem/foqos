@@ -154,8 +154,12 @@ struct SupportView: View {
       .fadeInSlide(delay: 0.3)
 
       VStack(alignment: .leading, spacing: 18) {
+        Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
+          Label("Help & Troubleshooting", systemImage: "arrow.up.right.square")
+        }
+
         Text(
-          "Questions, feedback, or a story to share? Reach out to me. Your messages mean a lot and help me keep going."
+          "For setup questions and common problems, start with the Help Center. Follow along or share how Foqos fits into your day."
         )
         .font(.callout)
         .multilineTextAlignment(.leading)
