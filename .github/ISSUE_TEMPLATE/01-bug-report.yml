@@ -6,7 +6,7 @@ body:
       value: |
         Start with the [Help Center](https://www.foqos.app/support.html) and search [open and closed issues](https://github.com/awaseem/foqos/issues?q=is%3Aissue).
         Foqos is maintained in spare time; individual setup support is not available. Support questions and duplicates may be closed with a link to an answer. A response or fix is not guaranteed.
-        Read [Ali's note on why support is changing](https://www.foqos.app/support.html#why-support-is-changing).
+        Read [Ali's note on why support is changing](https://github.com/awaseem/foqos/blob/main/SUPPORT.md#why-support-is-changing).
         Foqos supports iPhone and its Mac companion. Native iPad support is tracked in [#287](https://github.com/awaseem/foqos/issues/287).
   - type: checkboxes
     id: before-reporting

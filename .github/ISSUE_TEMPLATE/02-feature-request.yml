@@ -7,7 +7,7 @@ body:
         Search the [Help Center](https://www.foqos.app/support.html) and [open and closed issues](https://github.com/awaseem/foqos/issues?q=is%3Aissue) first.
         Manual starts, timer sessions, and Temporary Access already exist. Check the available strategies before proposing a new one.
         Proposals are not commitments to implement a feature or provide a response. Repeated requests may be closed with a link to the existing decision.
-        Read [Ali's note on why support is changing](https://www.foqos.app/support.html#why-support-is-changing).
+        Read [Ali's note on why support is changing](https://github.com/awaseem/foqos/blob/main/SUPPORT.md#why-support-is-changing).
   - type: checkboxes
     id: search
     attributes:
