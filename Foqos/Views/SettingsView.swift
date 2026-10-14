@@ -60,6 +60,16 @@ struct SettingsView: View {
         AppIconPicker()
 
         Section("Help") {
+          Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
+            HStack {
+              Text("Help & Troubleshooting")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
           HStack {
             Text("Debug Mode")
               .foregroundColor(.primary)

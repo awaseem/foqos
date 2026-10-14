@@ -14,6 +14,7 @@
 
 <p align="center">
   <a href="https://www.foqos.app/">Website</a> |
+  <a href="https://www.foqos.app/support.html">Help Center</a> |
   <a href="https://apps.apple.com/ca/app/foqos/id6736793117">App Store</a> |
   <a href="https://github.com/awaseem/foqos/releases">Releases</a> |
   <a href="https://coff.ee/ambitionsoftware">Support the project</a>
@@ -294,7 +295,11 @@ foqos/
 
 ## Contributing
 
-Contributions are welcome. Before opening a pull request:
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Verify reports and changes yourself; do not publish unverified automated audits or batches of
+speculative improvements. For performance reports, include measurements and a reproducible workload.
+
+Before opening a pull request:
 
 1. Fork the repository and create a focused branch.
 2. Make the change and update documentation when behavior changes.
@@ -304,18 +309,32 @@ Contributions are welcome. Before opening a pull request:
 
 ## Issues and Support
 
-Use [GitHub Issues](https://github.com/awaseem/foqos/issues) for bugs and feature requests.
+Foqos has grown to 100,000+ users, and hundreds of daily messages have made individual support
+unsustainable. Read [Ali's personal note on why support is changing](SUPPORT.md#why-support-is-changing).
+
+Start with the searchable [Help Center](https://www.foqos.app/support.html) for setup questions,
+troubleshooting, existing features, and known limitations. Then search
+[open and closed issues](https://github.com/awaseem/foqos/issues?q=is%3Aissue) for previous discussions.
+
+Foqos is maintained in spare time, and individual setup support is not available. GitHub Issues
+tracks reproducible bugs and new feature proposals. Support questions and duplicates may be closed
+with a link to the relevant answer; a response or fix is not guaranteed.
+
+If a problem is not covered, use the [bug-report form](https://github.com/awaseem/foqos/issues/new?template=01-bug-report.yml).
+For a new capability, use the [feature-request form](https://github.com/awaseem/foqos/issues/new?template=02-feature-request.yml)
+and explain why existing strategies do not meet your needs. See [SUPPORT.md](SUPPORT.md) for details.
 
 When reporting a bug, include:
 
-- iOS version
+- iOS or macOS version (both for Mac sync problems)
 - Device model
 - Foqos version
+- The support answer you tried and what happened
 - Steps to reproduce
 - Expected behavior
 - Actual behavior
 - Screenshots or screen recordings when useful
-- Debug output from Settings -> Help -> Debug Mode
+- Relevant debug output from Settings -> Help -> Debug Mode, with private details removed
 
 ## License
 
@@ -324,6 +343,7 @@ Foqos is released under the MIT License. See [LICENSE](LICENSE) for details.
 ## Links
 
 - [Website](https://www.foqos.app/)
+- [Help Center](https://www.foqos.app/support.html)
 - [App Store](https://apps.apple.com/ca/app/foqos/id6736793117)
 - [GitHub Issues](https://github.com/awaseem/foqos/issues)
 - [Releases](https://github.com/awaseem/foqos/releases)
