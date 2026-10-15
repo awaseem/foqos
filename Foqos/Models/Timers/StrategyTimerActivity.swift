@@ -52,6 +52,9 @@ class StrategyTimerActivity: TimerActivity {
       return
     }
 
+    // Continuing timers keep their session and shields until explicitly stopped.
+    guard StrategyTimerData.decode(profile.strategyData).continueAfterTimer != true else { return }
+
     // End restrictions
     appBlocker.deactivateRestrictions()
 

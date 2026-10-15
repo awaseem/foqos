@@ -32,7 +32,12 @@ struct ActiveProfileSessionView: View {
   private let focusMessageTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
 
   private var showStopButton: Bool {
-    profile.showStopButton(elapsedTime: elapsedTime)
+    if let session = strategyManager.activeSession,
+      SessionTimeCalculator.isContinuingAfterTimer(session)
+    {
+      return true
+    }
+    return profile.showStopButton(elapsedTime: elapsedTime)
   }
 
   private var stopButtonAction: BlockingStrategySessionAction {

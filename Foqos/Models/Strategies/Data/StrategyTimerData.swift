@@ -5,6 +5,7 @@ struct StrategyTimerData: Codable {
 
   var durationInMinutes: Int
   var hideStopButton: Bool
+  var continueAfterTimer: Bool? = nil
 
   static var defaultConfiguration: StrategyTimerData {
     StrategyTimerData(
