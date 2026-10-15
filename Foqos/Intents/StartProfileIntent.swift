@@ -14,11 +14,20 @@ struct StartProfileIntent: LiveActivityIntent {
 
   @Parameter(title: "Duration minutes (Optional)") var durationInMinutes: Int?
 
+  @Parameter(title: "Hide Stop Button", default: false) var hideStopButton: Bool
+
   static var title: LocalizedStringResource = "Start Foqos Profile"
 
   static var parameterSummary: some ParameterSummary {
-    Summary("Start \(\.$profile)") {
-      \.$durationInMinutes
+    When(\.$durationInMinutes, .hasAnyValue) {
+      Summary("Start \(\.$profile)") {
+        \.$durationInMinutes
+        \.$hideStopButton
+      }
+    } otherwise: {
+      Summary("Start \(\.$profile)") {
+        \.$durationInMinutes
+      }
     }
   }
 
@@ -31,7 +40,8 @@ struct StartProfileIntent: LiveActivityIntent {
     StrategyManager.shared.startSessionFromBackground(
       profile.id,
       context: modelContext,
-      durationInMinutes: durationInMinutes
+      durationInMinutes: durationInMinutes,
+      hideStopButton: hideStopButton
     )
 
     return .result()
