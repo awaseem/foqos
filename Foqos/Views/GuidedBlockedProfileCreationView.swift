@@ -533,6 +533,10 @@ private struct GuidedProfileReviewContent: View {
   private var safeguardsSummary: String {
     var enabled: [String] = []
 
+    if draft.enableHardMode && draft.selectedStrategyAllowsHardMode {
+      enabled.append("Hard Mode: \(DateFormatters.formatMinutes(draft.hardModeDurationInMinutes))")
+    }
+
     if draft.enableStrictMode {
       enabled.append("App deletion blocked")
     }

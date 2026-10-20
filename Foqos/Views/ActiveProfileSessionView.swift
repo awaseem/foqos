@@ -32,11 +32,22 @@ struct ActiveProfileSessionView: View {
   private let focusMessageTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
 
   private var showStopButton: Bool {
-    profile.showStopButton(elapsedTime: elapsedTime)
+    profile.showStopButton(elapsedTime: elapsedTime) && !isHardModeActionLocked
   }
 
   private var stopButtonAction: BlockingStrategySessionAction {
     blockingStrategy?.activeSessionAction(isPauseActive: isPauseActive) ?? .stop()
+  }
+
+  private var activeSession: BlockedProfileSession? {
+    guard let session = strategyManager.activeSession,
+      session.blockedProfile.id == profile.id
+    else { return nil }
+    return session
+  }
+
+  private var isHardModeActionLocked: Bool {
+    activeSession?.isSessionActionLockedByHardMode() ?? false
   }
 
   private var breakButtonTitle: String {
@@ -311,7 +322,7 @@ struct ActiveProfileSessionView: View {
 
   private var actionSection: some View {
     VStack(spacing: 12) {
-      if isCountdownExpired {
+      if isCountdownExpired && (activeSession?.canResetExpiredCountdown() ?? true) {
         VStack(spacing: 8) {
           Text("This timer finished, but the session is still active.")
             .font(.footnote)
@@ -339,26 +350,40 @@ struct ActiveProfileSessionView: View {
           )
         }
 
-        HStack(spacing: 12) {
-          if profile.enableEmergencyUnblock {
-            ActiveSessionActionButton(
-              title: "Emergency",
-              iconName: "exclamationmark.triangle.fill",
-              role: .destructive,
-              action: {
-                showEmergencyView = true
-              }
-            )
+        VStack(spacing: 6) {
+          HStack(spacing: 12) {
+            if profile.enableEmergencyUnblock {
+              ActiveSessionActionButton(
+                title: "Emergency",
+                iconName: "exclamationmark.triangle.fill",
+                role: .destructive,
+                action: {
+                  showEmergencyView = true
+                }
+              )
+            }
+
+            if showStopButton {
+              ActiveSessionActionButton(
+                title: stopButtonAction.title,
+                iconName: stopButtonAction.systemImageName,
+                imageName: stopButtonAction.assetImageName,
+                role: .standard,
+                action: onStopTapped
+              )
+            }
           }
 
-          if showStopButton {
-            ActiveSessionActionButton(
-              title: stopButtonAction.title,
-              iconName: stopButtonAction.systemImageName,
-              imageName: stopButtonAction.assetImageName,
-              role: .standard,
-              action: onStopTapped
+          if let session = activeSession, session.isStopLockedByHardMode(),
+            let unlockTime = session.hardModeUnlockTime
+          {
+            Text(
+              "Stop available at \(unlockTime.formatted(date: .omitted, time: .shortened))"
             )
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
           }
         }
       }

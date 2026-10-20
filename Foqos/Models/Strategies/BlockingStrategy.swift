@@ -175,7 +175,7 @@ extension BlockingStrategy {
   ) -> BlockingStrategySessionAction {
     guard isEnabled else {
       return BlockingStrategySessionAction(
-        title: hasPauseMode ? "Pause Locked" : "Stop Locked",
+        title: hasPauseMode && !isPauseActive ? "Pause Locked" : "Stop Locked",
         systemImageName: "lock.fill",
         assetImageName: nil
       )

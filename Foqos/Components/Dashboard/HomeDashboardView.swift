@@ -73,6 +73,8 @@ struct HomeDashboardView: View {
             activeSessionProfileId: strategyManager.activeSession?.blockedProfile.id,
             elapsedTime: strategyManager.elapsedTime,
             isPauseActive: strategyManager.isPauseActive,
+            isHardModeActionLocked:
+              strategyManager.activeSession?.isSessionActionLockedByHardMode() ?? false,
             onManageTapped: onManageProfilesTapped,
             onStartTapped: onStartProfile,
             onStopTapped: onStopProfile,
