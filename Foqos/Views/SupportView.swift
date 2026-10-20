@@ -154,16 +154,13 @@ struct SupportView: View {
       .fadeInSlide(delay: 0.3)
 
       VStack(alignment: .leading, spacing: 18) {
-        Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
-          Label("Help & Troubleshooting", systemImage: "arrow.up.right.square")
-        }
-
         Text(
-          "For setup questions and common problems, start with the Help Center. Follow along or share how Foqos fits into your day."
+          "For setup questions and common problems, start with the [Help Center](https://www.foqos.app/support.html). Follow along or share how Foqos fits into your day."
         )
         .font(.callout)
         .multilineTextAlignment(.leading)
         .foregroundColor(.secondary)
+        .tint(themeManager.themeColor)
 
         HStack(alignment: .center, spacing: 20) {
           Link(destination: threadsURL) {

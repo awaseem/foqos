@@ -59,10 +59,25 @@ struct SettingsView: View {
 
         AppIconPicker()
 
-        Section("Help") {
+        Section("Help & Troubleshooting") {
           Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
             HStack {
-              Text("Help & Troubleshooting")
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Help Center")
+                  .foregroundColor(.primary)
+                Text("Setup guides and common questions")
+                  .font(.caption)
+                  .foregroundColor(.secondary)
+              }
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
+          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+            HStack {
+              Text("Block Safari & Settings")
                 .foregroundColor(.primary)
               Spacer()
               Image(systemName: "arrow.up.right.square")
@@ -80,16 +95,6 @@ struct SettingsView: View {
           }
           .onTapGesture {
             showDebugView = true
-          }
-
-          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
-            HStack {
-              Text("Blocking Native Apps")
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "arrow.up.right.square")
-                .foregroundColor(.secondary)
-            }
           }
 
           if !strategyManager.isBlocking {
