@@ -12,10 +12,7 @@ import SwiftUI
 
 @MainActor private let container: ModelContainer = {
   do {
-    let container = try ModelContainer(
-      for: BlockedProfileSession.self,
-      BlockedProfiles.self
-    )
+    let container = try FoqosModelContainer.make()
     // Temporary backfill for users upgrading from the legacy NFC/QR fields.
     // Remove this in the next app version once the installed base has migrated.
     try PhysicalUnblockMigrationHelper.migrateOldPhysicalUnblockFields(
@@ -52,11 +49,22 @@ struct foqosApp: App {
       key: "ModelContainer",
       dependency: asyncDependency
     )
+    FoqosShortcutsProvider.updateAppShortcutParameters()
   }
 
   var body: some Scene {
     WindowGroup {
       HomeView()
+        .onChange(of: themeManager.selectedColorName) { _, _ in
+          updateLiveActivityAppearance()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) {
+          notification in
+          guard let context = notification.object as? ModelContext,
+            context === container.mainContext
+          else { return }
+          FoqosShortcutsProvider.updateAppShortcutParameters()
+        }
         .onOpenURL { url in
           handleUniversalLink(url)
         }
@@ -83,5 +91,10 @@ struct foqosApp: App {
 
   private func handleUniversalLink(_ url: URL) {
     navigationManager.handleLink(url)
+  }
+
+  private func updateLiveActivityAppearance() {
+    guard let session = startegyManager.activeSession else { return }
+    liveActivityManager.updateSessionActivity(session: session)
   }
 }

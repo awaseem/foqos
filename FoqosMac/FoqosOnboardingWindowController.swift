@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class FoqosOnboardingWindowController: NSObject, ObservableObject {
+final class FoqosOnboardingWindowController: NSObject, ObservableObject, NSWindowDelegate {
   private static let completionKey = "hasCompletedMacOnboarding"
 
   private let filterManager: FoqosFilterManager
@@ -13,6 +13,13 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
   }
 
   func showIfNeeded() {
+    let completed = UserDefaults.standard.bool(forKey: Self.completionKey)
+    MacDiagnostics.shared.updateState(
+      "onboarding", fields: ["completed": String(completed), "visible": "false"])
+    MacDiagnostics.shared.record(
+      "onboarding.launch_check", "Checked whether onboarding was completed previously.",
+      fields: ["completed": String(completed)]
+    )
     guard !UserDefaults.standard.bool(forKey: Self.completionKey) else {
       return
     }
@@ -21,6 +28,15 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
   }
 
   func show() {
+    MacDiagnostics.shared.record(
+      "onboarding.opened", "Showing onboarding.",
+      fields: ["status": filterManager.status.diagnosticName])
+    MacDiagnostics.shared.updateState(
+      "onboarding",
+      fields: [
+        "completed": String(UserDefaults.standard.bool(forKey: Self.completionKey)),
+        "visible": "true",
+      ])
     filterManager.refreshStatus()
 
     if let window = windowController?.window {
@@ -48,6 +64,7 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
       defer: false
     )
     window.title = "Welcome to Foqos"
+    window.delegate = self
     window.titleVisibility = .hidden
     window.titlebarAppearsTransparent = true
     window.isMovableByWindowBackground = true
@@ -67,8 +84,20 @@ final class FoqosOnboardingWindowController: NSObject, ObservableObject {
   }
 
   private func completeOnboarding() {
+    MacDiagnostics.shared.record(
+      "onboarding.completed", "User completed onboarding with the filter enabled.")
     UserDefaults.standard.set(true, forKey: Self.completionKey)
     windowController?.close()
+  }
+
+  func windowWillClose(_ notification: Notification) {
+    let completed = UserDefaults.standard.bool(forKey: Self.completionKey)
+    MacDiagnostics.shared.record(
+      "onboarding.closed", "Onboarding window closed.",
+      fields: ["completed": String(completed), "status": filterManager.status.diagnosticName]
+    )
+    MacDiagnostics.shared.updateState(
+      "onboarding", fields: ["completed": String(completed), "visible": "false"])
   }
 }
 
@@ -97,5 +126,10 @@ final class FoqosMacAppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationDidBecomeActive(_ notification: Notification) {
     filterManager?.refreshStatus()
+  }
+
+  func applicationWillTerminate(_ notification: Notification) {
+    MacDiagnostics.shared.record("app.terminating", "Foqos Mac is terminating.")
+    MacDiagnostics.shared.flush()
   }
 }

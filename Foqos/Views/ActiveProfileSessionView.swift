@@ -1,3 +1,4 @@
+import Combine
 import FamilyControls
 import SwiftUI
 import UIKit
@@ -75,20 +76,24 @@ struct ActiveProfileSessionView: View {
     VStack(alignment: .leading, spacing: 0) {
       topControls
 
-      Spacer(minLength: 24)
-
-      timerPresentation
-
-      Spacer(minLength: 24)
-
-      VStack(alignment: .leading, spacing: 18) {
-        profileDetails
-        actionSection
+      GeometryReader { geometry in
+        ScrollView {
+          VStack(alignment: .leading, spacing: 0) {
+            Spacer(minLength: 24)
+            timerPresentation
+            Spacer(minLength: 24)
+            VStack(alignment: .leading, spacing: 18) {
+              profileDetails
+              actionSection
+            }
+          }
+          .frame(minHeight: max(0, geometry.size.height - 16))
+          .padding(.bottom, 16)
+        }
       }
     }
     .padding(.horizontal, 20)
     .padding(.top, 8)
-    .padding(.bottom, 16)
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
         .presentationDetents([.height(350), .large])
@@ -220,6 +225,14 @@ struct ActiveProfileSessionView: View {
       .accessibilityValue(DateFormatters.formatDurationClock(displayTime))
   }
 
+  private var scheduledEndTime: Date? {
+    guard let session = strategyManager.activeSession,
+      session.blockedProfile.id == profile.id
+    else { return nil }
+
+    return SessionTimeCalculator.scheduledEndTime(for: session)
+  }
+
   private var timerPresentation: some View {
     ZStack {
       ActiveSessionPetalAnimation(
@@ -229,8 +242,16 @@ struct ActiveProfileSessionView: View {
       )
       .frame(maxWidth: 360, maxHeight: 300)
 
-      timer
-        .padding(.horizontal, 16)
+      VStack(spacing: 8) {
+        timer
+
+        if let scheduledEndTime {
+          Text("Ends at \(scheduledEndTime, style: .time)")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+      }
+      .padding(.horizontal, 16)
     }
     .frame(maxWidth: .infinity)
     .frame(height: 300)

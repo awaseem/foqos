@@ -5,45 +5,131 @@ private let threadsURL = URL(string: "https://www.threads.com/@softwarecuddler")
 private let twitterURL = URL(string: "https://x.com/softwarecuddler")!
 private let redditURL = URL(string: "https://www.reddit.com/user/waseema393/")!
 private let linkedinURL = URL(string: "https://www.linkedin.com/in/aliw")!
-private let donateURL = URL(string: "https://www.buymeacoffee.com/ambitionsoftware")!
 
 struct SupportView: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.scenePhase) private var scenePhase
   @EnvironmentObject var donationManager: TipManager
   @EnvironmentObject var themeManager: ThemeManager
 
-  private let isUnitedStatesStorefrontOverride: Bool?
-
-  @State private var isUnitedStatesStorefront = false
   @State private var stampScale: CGFloat = 0.1
   @State private var stampRotation: Double = 0
   @State private var stampOpacity: Double = 0.0
+  @State private var selectedProductID: String?
+  @State private var celebrationStart: Date?
+  @State private var hasPendingCelebration = false
+  @State private var isShowingThankYou = false
 
-  init(isUnitedStatesStorefrontOverride: Bool? = nil) {
-    self.isUnitedStatesStorefrontOverride = isUnitedStatesStorefrontOverride
-    _isUnitedStatesStorefront = State(initialValue: isUnitedStatesStorefrontOverride ?? false)
+  private var selectedProduct: Product? {
+    donationManager.products.first { $0.id == selectedProductID } ?? donationManager.products.first
+  }
+
+  private var selectedTipEmoji: String {
+    switch selectedProduct?.id {
+    case "tip_developer_support_5": "🤑"
+    case "tip_developer_support_10": "😱"
+    default: "❤️"
+    }
   }
 
   var body: some View {
-    // Thank you stamp image and header
+    NavigationStack {
+      GeometryReader { geometry in
+        ScrollView {
+          supportContent
+            .frame(maxWidth: 600)
+            .frame(minHeight: max(0, geometry.size.height - 40))
+            .frame(maxWidth: .infinity)
+            .padding(20)
+        }
+        .opacity(isShowingThankYou ? 0 : 1)
+        .allowsHitTesting(!isShowingThankYou)
+        .accessibilityHidden(isShowingThankYou)
+        .overlay {
+          if isShowingThankYou {
+            TipThankYouView()
+              .id(celebrationStart)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .transition(.opacity)
+          }
+        }
+      }
+      .navigationTitle("Support")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Close", systemImage: "xmark") { dismiss() }
+        }
+      }
+    }
+    .overlay {
+      if let celebrationStart, !reduceMotion {
+        TipConfettiView(startDate: celebrationStart)
+          .ignoresSafeArea()
+          .allowsHitTesting(false)
+          .accessibilityHidden(true)
+      }
+    }
+    .onChange(of: donationManager.completedTipCount) {
+      hasPendingCelebration = true
+      celebrateIfReady()
+    }
+    .onChange(of: scenePhase) {
+      celebrateIfReady()
+    }
+    .sensoryFeedback(.success, trigger: donationManager.completedTipCount)
+    .task(id: celebrationStart) {
+      guard celebrationStart != nil else { return }
+      do {
+        try await Task.sleep(for: .seconds(4))
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+          isShowingThankYou = false
+        }
+        try await Task.sleep(for: .seconds(1))
+        celebrationStart = nil
+      } catch {
+        return
+      }
+    }
+    .task {
+      await donationManager.loadProducts()
+      for await _ in Storefront.updates {
+        await donationManager.loadProducts()
+      }
+    }
+  }
+
+  private func celebrateIfReady() {
+    guard hasPendingCelebration, scenePhase == .active else { return }
+    hasPendingCelebration = false
+    celebrationStart = Date()
+    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+      isShowingThankYou = true
+    }
+  }
+
+  private var supportContent: some View {
     VStack(alignment: .leading, spacing: 24) {
       Spacer()
 
       Image("ThankYouStamp")
         .resizable()
         .aspectRatio(contentMode: .fit)
-        .frame(width: 200, height: 200)
+        .frame(width: 140, height: 140)
         .frame(maxWidth: .infinity, alignment: .center)
         .scaleEffect(stampScale)
         .rotationEffect(.degrees(stampRotation))
         .opacity(stampOpacity)
         .onAppear {
-          withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0)) {
+          withAnimation(reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.6)) {
             stampScale = 1
             stampRotation = 8
             stampOpacity = 1
           }
         }
-        .padding(.bottom, 30)
+        .padding(.bottom, 12)
 
       Text("Thank you for being here ♥")
         .fontWeight(.bold)
@@ -60,10 +146,6 @@ struct SupportView: View {
         Text(
           "If this has helped you, consider leaving a review, telling a friend, or making a small donation."
         )
-
-        Text(
-          "If you ever want to reach out with kind words, feedback, or your story, please do. Those messages mean a lot and help me keep going."
-        )
       }
       .font(.callout)
       .multilineTextAlignment(.leading)
@@ -73,11 +155,12 @@ struct SupportView: View {
 
       VStack(alignment: .leading, spacing: 18) {
         Text(
-          "Questions? Reach out to me."
+          "For setup questions and common problems, start with the [Help Center](https://www.foqos.app/support.html). Follow along or share how Foqos fits into your day."
         )
         .font(.callout)
         .multilineTextAlignment(.leading)
         .foregroundColor(.secondary)
+        .tint(themeManager.themeColor)
 
         HStack(alignment: .center, spacing: 20) {
           Link(destination: threadsURL) {
@@ -113,55 +196,96 @@ struct SupportView: View {
 
       Spacer()
 
-      VStack(spacing: 16) {
-        ActionButton(
-          title: donationManager.hasPurchasedTip ? "Thank you for the donation" : "Donate",
-          backgroundColor: donationManager.hasPurchasedTip ? .gray : themeManager.themeColor,
-          iconName: "heart.fill",
-          iconColor: donationManager.hasPurchasedTip ? .red : nil,
-          isLoading: donationManager.loadingTip,
-          action: {
-            if !donationManager.hasPurchasedTip {
-              donationManager.tip()
-            }
-          }
-        )
+      tipSection
+        .fadeInSlide(delay: 0.6)
+    }
+  }
 
-        if isUnitedStatesStorefront {
-          Link("Or Buy Me a Coffee", destination: donateURL)
-            .font(.subheadline.weight(.semibold))
-            .foregroundColor(themeManager.themeColor)
+  private var tipSection: some View {
+    VStack(spacing: 24) {
+      if donationManager.isLoadingProducts {
+        ProgressView("Loading tips…")
+          .padding()
+      } else if let error = donationManager.productLoadingError {
+        Text(error)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .multilineTextAlignment(.center)
+        Button("Try again") {
+          Task { await donationManager.loadProducts() }
         }
-      }
-      .fadeInSlide(delay: 0.6)
-    }
-    .padding(.horizontal, 20)
-    .task {
-      guard isUnitedStatesStorefrontOverride == nil else {
-        return
+        .tint(themeManager.themeColor)
+      } else if !donationManager.products.isEmpty {
+        HStack(spacing: 0) {
+          ForEach(donationManager.products) { product in
+            Button {
+              selectedProductID = product.id
+            } label: {
+              Text(product.displayPrice)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background {
+                  if selectedProduct?.id == product.id {
+                    Capsule()
+                      .fill(colorScheme == .dark ? Color(.systemGray3) : .white)
+                  }
+                }
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(selectedProduct?.id == product.id ? .isSelected : [])
+          }
+        }
+        .padding(3)
+        .background(Color(.quaternarySystemFill), in: Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Tip amount")
+        .disabled(donationManager.loadingTip)
       }
 
-      isUnitedStatesStorefront = await Storefront.current?.countryCode == "USA"
-
-      for await storefront in Storefront.updates {
-        isUnitedStatesStorefront = storefront.countryCode == "USA"
+      ActionButton(
+        title: selectedProduct.map { "Tip \($0.displayPrice) \(selectedTipEmoji)" }
+          ?? "Leave a tip",
+        backgroundColor: themeManager.themeColor,
+        isLoading: donationManager.loadingTip,
+        isDisabled: selectedProduct == nil || donationManager.isLoadingProducts
+      ) {
+        guard let product = selectedProduct else { return }
+        Task { await donationManager.tip(product) }
       }
+
+      if let error = donationManager.purchaseError {
+        Text(error)
+          .font(.subheadline)
+          .foregroundStyle(.red)
+          .multilineTextAlignment(.center)
+      }
+
+      if let message = donationManager.purchaseMessage {
+        Text(message)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .multilineTextAlignment(.center)
+      }
+
     }
+    .frame(maxWidth: .infinity)
   }
+
 }
 
-#Preview("United States") {
-  NavigationView {
-    SupportView(isUnitedStatesStorefrontOverride: true)
-      .environmentObject(TipManager())
-      .environmentObject(ThemeManager.shared)
-  }
+#Preview("Support") {
+  SupportView()
+    .environmentObject(TipManager())
+    .environmentObject(ThemeManager.shared)
 }
 
-#Preview("Outside United States") {
-  NavigationView {
-    SupportView(isUnitedStatesStorefrontOverride: false)
-      .environmentObject(TipManager())
-      .environmentObject(ThemeManager.shared)
-  }
+#Preview("Dark") {
+  SupportView()
+    .environmentObject(TipManager())
+    .environmentObject(ThemeManager.shared)
+    .preferredColorScheme(.dark)
 }

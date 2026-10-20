@@ -1,6 +1,7 @@
 import ActivityKit
 import Foundation
 import SwiftUI
+import UIKit
 
 class LiveActivityManager: ObservableObject {
   // Published property for live activity reference
@@ -194,7 +195,9 @@ class LiveActivityManager: ObservableObject {
       usedBreakDurationInSeconds: session.usedBreakDurationInSeconds,
       isPauseActive: session.isPauseActive,
       pauseStartTime: session.pauseStartTime,
-      pauseEndTime: session.pauseEndTime
+      pauseEndTime: session.pauseEndTime,
+      themeColorName: ThemeManager.shared.selectedColorName,
+      appIconName: UIApplication.shared.alternateIconName
     )
   }
 }

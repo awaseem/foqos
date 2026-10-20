@@ -1,0 +1,38 @@
+name: Suggest a new feature
+description: Explain an unmet need after checking existing strategies and previous requests.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search the [Help Center](https://www.foqos.app/support.html) and [open and closed issues](https://github.com/awaseem/foqos/issues?q=is%3Aissue) first.
+        Manual starts, timer sessions, and Temporary Access already exist. Check the available strategies before proposing a new one.
+        Proposals are not commitments to implement a feature or provide a response. Repeated requests may be closed with a link to the existing decision.
+        Read [Ali's note on why support is changing](https://github.com/awaseem/foqos/blob/main/SUPPORT.md#why-support-is-changing).
+  - type: checkboxes
+    id: search
+    attributes:
+      label: Before requesting
+      options:
+        - label: I searched the Help Center and open and closed issues for this feature.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe a concrete situation and who it would help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Which existing strategies or settings did you try?
+      description: Explain what is missing. Link any related requests and explain how this differs, especially if the idea was previously declined.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest change that would address the problem.
+    validations:
+      required: true

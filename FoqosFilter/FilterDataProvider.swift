@@ -196,12 +196,12 @@ final class FilterDataProvider: NEFilterDataProvider {
       return .allow()
     }
 
-    logger.debug("Blocked TLS hostname: \(hostname, privacy: .public)")
+    logger.debug("Blocked TLS hostname: \(hostname, privacy: .private)")
     return .drop()
   }
 
   private func loggedDrop(_ hostname: String) -> NEFilterNewFlowVerdict {
-    logger.debug("Blocked hostname: \(hostname, privacy: .public)")
+    logger.debug("Blocked hostname: \(hostname, privacy: .private)")
     return .drop()
   }
 

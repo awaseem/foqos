@@ -139,16 +139,16 @@ struct ProfileSummaryContent: View {
         .frame(width: iconSize, height: iconSize)
 
       VStack(alignment: .leading, spacing: contentSpacing) {
-        HStack(spacing: 7) {
-          Text(profile.name)
-            .font(titleFont)
-            .fontWeight(.semibold)
-            .foregroundStyle(.primary)
-            .lineLimit(1)
-
-          if showsActiveChip {
-            activeChip
+        ViewThatFits(in: .horizontal) {
+          if isActive {
+            HStack(spacing: 7) {
+              profileTitle
+              activeChip
+            }
+            .fixedSize(horizontal: true, vertical: false)
           }
+
+          profileTitle
         }
 
         if metadata.isVisible {
@@ -174,8 +174,12 @@ struct ProfileSummaryContent: View {
       .background(Color(.secondarySystemFill), in: Capsule())
   }
 
-  private var showsActiveChip: Bool {
-    isActive && !DeviceLayoutUtil.hasCompactEffectiveWidth
+  private var profileTitle: some View {
+    Text(profile.name)
+      .font(titleFont)
+      .fontWeight(.semibold)
+      .foregroundStyle(.primary)
+      .lineLimit(1)
   }
 }
 

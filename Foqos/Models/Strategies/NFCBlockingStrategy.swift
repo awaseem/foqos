@@ -6,7 +6,6 @@ class NFCBlockingStrategy: BlockingStrategy {
 
   var name: String = "NFC Tags"
   var description: String = "Start by scanning an NFC tag. To stop, scan the same tag again."
-  var iconAssetName: String = "NFCStickerLogo"
   var color: Color = .yellow
   var pickerCategory: BlockingStrategyPickerCategory = .mostPopular
 

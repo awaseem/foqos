@@ -13,6 +13,9 @@ struct CheckProfileStatusIntent: AppIntent {
   @Parameter(title: "Profile") var profile: BlockedProfileEntity
 
   static var title: LocalizedStringResource = "Foqos Profile Status"
+  static var parameterSummary: some ParameterSummary {
+    Summary("Check whether \(\.$profile) is active")
+  }
   static var description = IntentDescription(
     "Check if a Foqos profile is currently active and return the status as a boolean value.")
 

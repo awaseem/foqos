@@ -124,6 +124,10 @@ struct BlockingStrategySessionAction {
 }
 
 extension BlockingStrategy {
+  var iconAssetName: String {
+    BlockingStrategyArtwork.assetName(for: getIdentifier())
+  }
+
   var usesNFC: Bool { false }
   var usesQRCode: Bool { false }
   var hasTimer: Bool { false }

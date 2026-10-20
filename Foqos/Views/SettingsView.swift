@@ -14,7 +14,7 @@ struct SettingsView: View {
   @EnvironmentObject var requestAuthorizer: RequestAuthorizer
   @EnvironmentObject var strategyManager: StrategyManager
 
-  @State private var showResetBlockingStateAlert = false
+  @State private var showResetBlockingAlert = false
   @State private var showDebugView = false
 
   private var appVersion: String {
@@ -57,9 +57,34 @@ struct SettingsView: View {
           }
         }
 
-        AppIconPicker(selectionColor: themeManager.themeColor)
+        AppIconPicker()
 
-        Section("Help") {
+        Section("Help & Troubleshooting") {
+          Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
+            HStack {
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Help Center")
+                  .foregroundColor(.primary)
+                Text("Setup guides and common questions")
+                  .font(.caption)
+                  .foregroundColor(.secondary)
+              }
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
+          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
+            HStack {
+              Text("Block Safari & Settings")
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundColor(.secondary)
+            }
+          }
+
           HStack {
             Text("Debug Mode")
               .foregroundColor(.primary)
@@ -72,21 +97,11 @@ struct SettingsView: View {
             showDebugView = true
           }
 
-          Link(destination: URL(string: "https://www.foqos.app/blocking-native-apps.html")!) {
-            HStack {
-              Text("Blocking Native Apps")
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "arrow.up.right.square")
-                .foregroundColor(.secondary)
-            }
-          }
-
           if !strategyManager.isBlocking {
             Button {
-              showResetBlockingStateAlert = true
+              showResetBlockingAlert = true
             } label: {
-              Text("Reset Blocking State")
+              Text("Fix Stuck Blocking")
                 .foregroundColor(themeManager.themeColor)
             }
           }
@@ -168,14 +183,14 @@ struct SettingsView: View {
           .accessibilityLabel("Close")
         }
       }
-      .alert("Reset Blocking State", isPresented: $showResetBlockingStateAlert) {
+      .alert("Fix Stuck Blocking?", isPresented: $showResetBlockingAlert) {
         Button("Cancel", role: .cancel) {}
-        Button("Reset", role: .destructive) {
+        Button("Fix Blocking", role: .destructive) {
           strategyManager.resetBlockingState(context: context)
         }
       } message: {
         Text(
-          "This will clear all app restrictions and remove any ghost schedules. Only use this if you're locked out and no profile is active."
+          "Clear stuck restrictions on this iPhone and your synced Mac. Your profiles and history will be kept."
         )
       }
       .sheet(isPresented: $showDebugView) {

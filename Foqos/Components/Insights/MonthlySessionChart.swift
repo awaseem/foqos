@@ -110,10 +110,7 @@ struct MonthlySessionChart: View {
   }
 
   private func daySquareView(
-    for day: MonthlyDayAggregate,
-    weekIndex: Int,
-    dayIndex: Int,
-    geometry: GeometryProxy
+    for day: MonthlyDayAggregate
   ) -> some View {
     let hours = day.totalSessionTime / 3600
     let isSelected = selectedDay?.date == day.date
@@ -154,18 +151,11 @@ struct MonthlySessionChart: View {
   }
 
   private func weekRowView(
-    for week: [MonthlyDayAggregate],
-    weekIndex: Int,
-    geometry: GeometryProxy
+    for week: [MonthlyDayAggregate]
   ) -> some View {
     HStack(spacing: 4) {
-      ForEach(Array(week.enumerated()), id: \.element.id) { dayIndex, day in
-        daySquareView(
-          for: day,
-          weekIndex: weekIndex,
-          dayIndex: dayIndex,
-          geometry: geometry
-        )
+      ForEach(week) { day in
+        daySquareView(for: day)
       }
     }
   }
@@ -177,19 +167,19 @@ struct MonthlySessionChart: View {
         HStack {
           VStack(alignment: .leading, spacing: 2) {
             Text(DateFormatters.formatSelectedDayHeader(selectedDay.date))
-              .font(.caption)
+              .font(.subheadline)
               .fontWeight(.semibold)
               .foregroundStyle(.secondary)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
               Text(DateFormatters.formatDurationHoursMinutes(selectedDay.totalSessionTime))
-                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .font(.system(size: 48, weight: .bold, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundStyle(.primary)
                 .contentTransition(.numericText())
 
               Text("total")
-                .font(.title3)
+                .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
             }
@@ -212,12 +202,12 @@ struct MonthlySessionChart: View {
       } else {
         VStack(alignment: .leading, spacing: 2) {
           Text("Avg Focus Session")
-            .font(.caption)
+            .font(.subheadline)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
 
           Text(DateFormatters.formatDurationHoursMinutes(monthlySummary.averageSessionDuration))
-            .font(.system(size: 40, weight: .bold, design: .rounded))
+            .font(.system(size: 48, weight: .bold, design: .rounded))
             .fontWeight(.bold)
             .foregroundStyle(.primary)
             .contentTransition(.numericText())
@@ -226,23 +216,13 @@ struct MonthlySessionChart: View {
       }
 
       // Grid
-      GeometryReader { geometry in
-        LazyVStack(spacing: 4) {
-          ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
-            weekRowView(
-              for: weeksInMonth[weekIndex],
-              weekIndex: weekIndex,
-              geometry: geometry
-            )
-          }
+      VStack(spacing: 4) {
+        ForEach(weeksInMonth.indices, id: \.self) { weekIndex in
+          weekRowView(for: weeksInMonth[weekIndex])
         }
-        .frame(maxWidth: .infinity)
-        .coordinateSpace(name: "grid")
       }
-      .frame(
-        height: CGFloat(weeksInMonth.count) * (UIScreen.main.bounds.width - 32) / 7
-          + CGFloat(
-            weeksInMonth.count - 1))
+      .frame(maxWidth: .infinity)
+      .coordinateSpace(name: "grid")
 
       // Legend
       legendView()

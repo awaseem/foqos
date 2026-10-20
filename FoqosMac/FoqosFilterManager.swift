@@ -1,6 +1,5 @@
 import Foundation
 import NetworkExtension
-import OSLog
 import SystemExtensions
 
 final class FoqosFilterManager: NSObject, ObservableObject {
@@ -14,22 +13,51 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     case notConfigured
     case requiresRestart
     case unknown
+
+    var diagnosticName: String {
+      switch self {
+      case .activatingExtension: return "activating_extension"
+      case .approvalRequired: return "approval_required"
+      case .configuringFilter: return "configuring_filter"
+      case .disabled: return "disabled"
+      case .enabled: return "enabled"
+      case .failed: return "failed"
+      case .notConfigured: return "not_configured"
+      case .requiresRestart: return "requires_restart"
+      case .unknown: return "unknown"
+      }
+    }
   }
 
   static let extensionIdentifier = "dev.ambitionsoftware.foqos.mac.filter"
 
-  @Published private(set) var status: Status = .unknown
+  @Published private(set) var status: Status = .unknown {
+    didSet {
+      guard status != oldValue else { return }
+      let fields = [
+        "previousStatus": oldValue.diagnosticName, "status": status.diagnosticName,
+        "bundledExtensionActive": String(isBundledExtensionActive),
+      ]
+      diagnostics.record(
+        "filter.status_changed",
+        status.diagnosticName == "failed"
+          ? "Filter setup or configuration failed. See the preceding error event." : statusText,
+        level: status.diagnosticName == "failed" ? .error : .info, fields: fields
+      )
+      diagnostics.updateState("filter", fields: fields)
+    }
+  }
 
-  private let logger = Logger(
-    subsystem: "dev.ambitionsoftware.foqos.mac",
-    category: "filter-manager"
-  )
+  private let diagnostics = MacDiagnostics.shared
   private var configurationObserver: NSObjectProtocol?
   private var activationRequest: OSSystemExtensionRequest?
   private var inspectionRequest: OSSystemExtensionRequest?
   private var isBundledExtensionActive = false
   private var latestRules: FilterRules?
+  private var latestRulesAttemptID: String?
   private var isSavingRules = false
+  private var activationID: String?
+  private var inspectionID: String?
 
   #if DEBUG
     private var developmentResetCompletion: ((Result<Bool, Error>) -> Void)?
@@ -69,6 +97,9 @@ final class FoqosFilterManager: NSObject, ObservableObject {
       object: nil,
       queue: .main
     ) { [weak self] _ in
+      self?.diagnostics.record(
+        "filter.configuration_changed",
+        "macOS reported a filter configuration change; rechecking status.")
       self?.refreshStatus()
     }
     inspectBundledExtension()
@@ -82,9 +113,19 @@ final class FoqosFilterManager: NSObject, ObservableObject {
 
   func installAndEnable() {
     guard activationRequest == nil else {
+      diagnostics.record(
+        "onboarding.activation_pending", "An extension activation request is already pending.",
+        fields: ["operationID": activationID ?? "unknown"])
       return
     }
 
+    activationID = UUID().uuidString
+    diagnostics.record(
+      "onboarding.activation_requested",
+      "Requesting installation or activation of the bundled network extension.",
+      fields: [
+        "operationID": activationID!, "bundledVersion": bundledExtensionVersion ?? "missing",
+      ])
     isBundledExtensionActive = false
     status = .activatingExtension
 
@@ -98,6 +139,18 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   }
 
   private func inspectBundledExtension() {
+    inspectionID = UUID().uuidString
+    diagnostics.record(
+      "onboarding.inspection_requested",
+      "Asking macOS which Foqos extension versions are installed.",
+      fields: [
+        "operationID": inspectionID!, "bundledVersion": bundledExtensionVersion ?? "missing",
+      ])
+    diagnostics.updateState(
+      "filter",
+      fields: [
+        "status": status.diagnosticName, "bundledVersion": bundledExtensionVersion ?? "missing",
+      ])
     let request = OSSystemExtensionRequest.propertiesRequest(
       forExtensionWithIdentifier: Self.extensionIdentifier,
       queue: .main
@@ -116,9 +169,17 @@ final class FoqosFilterManager: NSObject, ObservableObject {
 
   func refreshStatus() {
     guard isBundledExtensionActive else {
+      diagnostics.record(
+        "filter.status_deferred",
+        "Cannot read filter readiness until the bundled extension is confirmed active.",
+        fields: ["status": status.diagnosticName])
       return
     }
 
+    let operationID = UUID().uuidString
+    diagnostics.record(
+      "filter.status_requested", "Loading saved filter preferences from macOS.",
+      fields: ["operationID": operationID])
     NEFilterManager.shared().loadFromPreferences { [weak self] error in
       DispatchQueue.main.async {
         guard let self else {
@@ -126,11 +187,23 @@ final class FoqosFilterManager: NSObject, ObservableObject {
         }
 
         if let error {
+          self.diagnostics.record(
+            "filter.status_failed", "macOS could not load filter preferences.", level: .error,
+            fields: MacDiagnostics.errorFields(error).merging(["operationID": operationID]) {
+              _, new in new
+            })
           self.status = .failed(error.localizedDescription)
           return
         }
 
         let manager = NEFilterManager.shared()
+        self.diagnostics.record(
+          "filter.status_loaded", "Read saved filter preferences from macOS.",
+          fields: [
+            "operationID": operationID,
+            "hasConfiguration": String(manager.providerConfiguration != nil),
+            "enabled": String(manager.isEnabled),
+          ])
         guard manager.providerConfiguration != nil else {
           self.status = .notConfigured
           return
@@ -141,12 +214,23 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     }
   }
 
-  func setRules(_ rules: FilterRules) {
+  func setRules(_ rules: FilterRules, attemptID: String? = nil) {
+    let fields = [
+      "attemptID": attemptID ?? "none", "domainCount": String(rules.domains.count),
+      "enabled": String(rules.isEnabled),
+    ]
     guard latestRules != rules else {
+      diagnostics.record(
+        "filter.rules_unchanged",
+        "Rules match the last requested rules; no new save is scheduled. This does not confirm a previous save succeeded.",
+        fields: fields)
       return
     }
 
+    diagnostics.record(
+      "filter.rules_received", "Received a new desired rule set from the Mac app.", fields: fields)
     latestRules = rules
+    latestRulesAttemptID = attemptID
     saveLatestRulesIfNeeded()
   }
 
@@ -207,12 +291,23 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   #endif
 
   private func configureFilter() {
+    let operationID = activationID ?? UUID().uuidString
+    diagnostics.record(
+      "onboarding.configuration_requested",
+      "Loading preferences before enabling content filtering.", fields: ["operationID": operationID]
+    )
     status = .configuringFilter
 
     let manager = NEFilterManager.shared()
     manager.loadFromPreferences { [weak self] error in
       guard let self, error == nil else {
         DispatchQueue.main.async {
+          self?.diagnostics.record(
+            "onboarding.configuration_failed", "Could not load filter preferences during setup.",
+            level: .error,
+            fields: (error.map(MacDiagnostics.errorFields) ?? [:]).merging([
+              "operationID": operationID, "stage": "load_preferences",
+            ]) { _, new in new })
           self?.status = .failed(error?.localizedDescription ?? "Unable to load filter settings.")
         }
         return
@@ -229,11 +324,27 @@ final class FoqosFilterManager: NSObject, ObservableObject {
       manager.localizedDescription = "Foqos Website Filter"
       manager.providerConfiguration = configuration
       manager.isEnabled = true
+      self.diagnostics.record(
+        "onboarding.permission_requested",
+        "Saving the enabled filter configuration; macOS may be waiting for the user to allow content filtering.",
+        fields: [
+          "operationID": operationID, "domainCount": String(self.latestRules?.domains.count ?? 0),
+        ])
       manager.saveToPreferences { error in
         DispatchQueue.main.async {
           if let error {
+            self.diagnostics.record(
+              "onboarding.configuration_failed",
+              "macOS did not save the enabled filter configuration.", level: .error,
+              fields: MacDiagnostics.errorFields(error).merging([
+                "operationID": operationID, "stage": "save_preferences",
+              ]) { _, new in new })
             self.status = .failed(error.localizedDescription)
           } else {
+            self.diagnostics.record(
+              "onboarding.configuration_saved",
+              "macOS saved the enabled filter configuration. Setup can be completed.",
+              fields: ["operationID": operationID])
             self.status = .enabled
           }
         }
@@ -243,6 +354,10 @@ final class FoqosFilterManager: NSObject, ObservableObject {
 
   private func saveLatestRulesIfNeeded() {
     guard !isSavingRules else {
+      diagnostics.record(
+        "filter.rules_queued",
+        "A save is in progress; the newest rules will be checked when it finishes.",
+        fields: ["attemptID": latestRulesAttemptID ?? "none"])
       return
     }
 
@@ -251,16 +366,31 @@ final class FoqosFilterManager: NSObject, ObservableObject {
     }
 
     isSavingRules = true
+    let fields = [
+      "operationID": UUID().uuidString, "attemptID": latestRulesAttemptID ?? "none",
+      "domainCount": String(rules.domains.count), "enabled": String(rules.isEnabled),
+    ]
+    diagnostics.record(
+      "filter.rules_save_requested", "Loading preferences before saving the desired rules.",
+      fields: fields)
 
     let manager = NEFilterManager.shared()
     manager.loadFromPreferences { [weak self] error in
       DispatchQueue.main.async {
-        guard
-          let self,
-          error == nil,
-          let configuration = manager.providerConfiguration
-        else {
-          self?.finishSavingRules(rules, error: error)
+        guard let self else { return }
+        if let error {
+          self.diagnostics.record(
+            "filter.rules_failed", "Could not load preferences for the rule update.", level: .error,
+            fields: fields.merging(MacDiagnostics.errorFields(error)) { _, new in new })
+          self.finishSavingRules(rules, error: error)
+          return
+        }
+        guard let configuration = manager.providerConfiguration else {
+          self.diagnostics.record(
+            "filter.rules_deferred",
+            "No filter configuration exists yet. Desired rules are retained for onboarding; nothing was saved.",
+            level: .warning, fields: fields)
+          self.finishSavingRules(rules, error: nil)
           return
         }
 
@@ -268,6 +398,16 @@ final class FoqosFilterManager: NSObject, ObservableObject {
         manager.providerConfiguration = configuration
         manager.saveToPreferences { error in
           DispatchQueue.main.async {
+            if let error {
+              self.diagnostics.record(
+                "filter.rules_failed", "macOS did not save the rule update.", level: .error,
+                fields: fields.merging(MacDiagnostics.errorFields(error)) { _, new in new })
+            } else {
+              self.diagnostics.record(
+                "filter.rules_saved",
+                "macOS saved the rule configuration. Extension enforcement has not been verified.",
+                fields: fields)
+            }
             self.finishSavingRules(rules, error: error)
           }
         }
@@ -288,11 +428,15 @@ final class FoqosFilterManager: NSObject, ObservableObject {
   }
 
   private func vendorConfiguration(for rules: FilterRules) -> [String: Any]? {
-    guard let data = try? JSONEncoder().encode(rules) else {
+    do {
+      let data = try JSONEncoder().encode(rules)
+      return [FilterRules.vendorConfigurationKey: data]
+    } catch {
+      diagnostics.record(
+        "filter.rules_encode_failed", "Unable to encode rules for macOS filter configuration.",
+        level: .error, fields: MacDiagnostics.errorFields(error))
       return nil
     }
-
-    return [FilterRules.vendorConfigurationKey: data]
   }
 }
 
@@ -302,7 +446,14 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
     actionForReplacingExtension existing: OSSystemExtensionProperties,
     withExtension extension: OSSystemExtensionProperties
   ) -> OSSystemExtensionRequest.ReplacementAction {
-    .replace
+    diagnostics.record(
+      "onboarding.extension_replacement",
+      "macOS asked to replace the installed extension; accepting the bundled version.",
+      fields: [
+        "operationID": activationID ?? "unknown", "installedVersion": existing.bundleVersion,
+        "replacementVersion": `extension`.bundleVersion,
+      ])
+    return .replace
   }
 
   func request(
@@ -325,12 +476,21 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
 
     if request === inspectionRequest {
       inspectionRequest = nil
-      logger.error("Unable to inspect installed filter version: \(error.localizedDescription)")
+      diagnostics.record(
+        "onboarding.inspection_failed",
+        "macOS could not inspect the installed extension; setup will be offered.", level: .error,
+        fields: MacDiagnostics.errorFields(error).merging(["operationID": inspectionID ?? "unknown"]
+        ) { _, new in new })
       status = .disabled
       return
     }
 
     if request === activationRequest {
+      diagnostics.record(
+        "onboarding.activation_failed", "macOS rejected or failed extension activation.",
+        level: .error,
+        fields: MacDiagnostics.errorFields(error).merging(["operationID": activationID ?? "unknown"]
+        ) { _, new in new })
       activationRequest = nil
     }
 
@@ -378,11 +538,22 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
 
     switch result {
     case .completed:
+      diagnostics.record(
+        "onboarding.activation_completed",
+        "macOS completed extension activation; configuring content filtering next.",
+        fields: ["operationID": activationID ?? "unknown"])
       isBundledExtensionActive = true
       configureFilter()
     case .willCompleteAfterReboot:
+      diagnostics.record(
+        "onboarding.restart_required", "Extension activation will complete after the Mac restarts.",
+        level: .warning, fields: ["operationID": activationID ?? "unknown"])
       status = .requiresRestart
     @unknown default:
+      diagnostics.record(
+        "onboarding.activation_unknown_result", "macOS returned an unrecognized activation result.",
+        level: .error,
+        fields: ["operationID": activationID ?? "unknown", "result": String(result.rawValue)])
       status = .failed("The system returned an unknown filter installation result.")
     }
   }
@@ -393,6 +564,10 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
     }
 
     status = .approvalRequired
+    diagnostics.record(
+      "onboarding.approval_required",
+      "Waiting for the user to enable Foqos in Login Items & Extensions, under Network Extensions.",
+      fields: ["operationID": activationID ?? "unknown"])
   }
 
   func request(
@@ -413,6 +588,15 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       bundledVersion: bundledExtensionVersion,
       installedExtensions: installedExtensions
     )
+    diagnostics.record(
+      "onboarding.inspection_completed",
+      "Compared installed extension versions with the bundled extension.",
+      fields: [
+        "operationID": inspectionID ?? "unknown", "installedCount": String(properties.count),
+        "installedVersions": properties.map(\.bundleVersion).joined(separator: ","),
+        "enabledCount": String(properties.filter(\.isEnabled).count),
+        "bundledVersion": bundledExtensionVersion ?? "missing",
+      ])
 
     switch versionStatus {
     case .current:
@@ -422,9 +606,13 @@ extension FoqosFilterManager: OSSystemExtensionRequestDelegate {
       isBundledExtensionActive = false
       status = .notConfigured
     case .requiresUpdate(let installedVersion):
-      logger.info(
-        "Updating installed filter version \(installedVersion, privacy: .public) to the bundled version."
-      )
+      diagnostics.record(
+        "onboarding.extension_update_required",
+        "The installed extension differs from the bundled version; requesting an update.",
+        fields: [
+          "installedVersion": installedVersion,
+          "bundledVersion": bundledExtensionVersion ?? "missing",
+        ])
       installAndEnable()
     }
   }

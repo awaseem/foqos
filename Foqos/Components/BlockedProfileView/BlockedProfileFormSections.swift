@@ -462,7 +462,7 @@ struct BlockedProfileSessionSafeguardsFields: View {
     CustomToggle(
       title: "Require Foqos to Stop",
       description:
-        "Prevent this profile from being stopped by Shortcuts, NFC links, or QR links outside the app.",
+        "Prevent this profile from being stopped by Control Center, Shortcuts, NFC links, or QR links outside the app.",
       isOn: $draft.disableBackgroundStops,
       isDisabled: disabled
     )

@@ -7,7 +7,6 @@ final class NFCSoftUnblockBlockingStrategy: BlockingStrategy {
   var name: String = "Temporary Access + NFC"
   var description: String =
     "Block your apps, but allow a few short opens when you need them. Scan an NFC tag to stop the session."
-  var iconAssetName: String = "Soft Unblock + NFC"
   var color: Color = .purple
   var pickerCategory: BlockingStrategyPickerCategory = .forever
 

@@ -1,19 +1,26 @@
 import Foundation
+import OSLog
 
 enum ActiveProfileSyncStore {
-  private static let store = NSUbiquitousKeyValueStore.default
+  private static let log = Logger(
+    subsystem: "dev.ambitionsoftware.foqos", category: "ActiveProfileSync")
 
-  static func publish(session: BlockedProfileSession?) {
+  static func publish(
+    session: SharedData.SessionSnapshot?,
+    profile: SharedData.ProfileSnapshot?
+  ) {
     let record: ActiveProfileSyncRecord
 
-    if let session, session.isActive, session.blockedProfile.enableMacSync {
+    if let session, session.endTime == nil,
+      let profile, profile.id == session.blockedProfileId, profile.enableMacSync == true
+    {
       record = ActiveProfileSyncRecord(
-        profileId: session.blockedProfile.id,
-        profileName: session.blockedProfile.name,
+        profileId: profile.id,
+        profileName: profile.name,
         sessionId: session.id,
-        domains: domains(for: session.blockedProfile),
-        domainMode: session.blockedProfile.enableAllowModeDomains ? .allowOnly : .block,
-        state: state(for: session),
+        domains: FilterRules.normalize(profile.domains ?? []),
+        domainMode: profile.enableAllowModeDomains ? .allowOnly : .block,
+        state: state(for: session, profile: profile),
         updatedAt: Date()
       )
     } else {
@@ -27,28 +34,40 @@ enum ActiveProfileSyncStore {
         updatedAt: Date()
       )
     }
-
-    guard let data = try? JSONEncoder().encode(record) else {
-      return
+    do {
+      let data = try JSONEncoder().encode(record)
+      let store = NSUbiquitousKeyValueStore.default
+      store.set(data, forKey: ActiveProfileSyncRecord.storeKey)
+      // Hand off the local update before the monitor callback returns. This is not a delivery acknowledgement.
+      let accepted = store.synchronize()
+      log.info(
+        "Profile sync update: state=\(record.state.rawValue, privacy: .public) bytes=\(data.count) synchronizeAccepted=\(accepted)"
+      )
+      if !accepted {
+        log.error(
+          "iCloud did not accept profile synchronization; check availability and entitlements")
+      }
+    } catch {
+      log.error("Could not encode the profile sync record")
     }
-
-    store.set(data, forKey: ActiveProfileSyncRecord.storeKey)
-    store.synchronize()
   }
 
-  private static func state(for session: BlockedProfileSession) -> ActiveProfileSyncRecord.State {
-    if session.isPauseActive {
+  private static func state(
+    for session: SharedData.SessionSnapshot,
+    profile: SharedData.ProfileSnapshot
+  ) -> ActiveProfileSyncRecord.State {
+    if session.pauseStartTime != nil && session.pauseEndTime == nil {
       return .paused
     }
 
-    if session.isBreakActive {
+    if profile.enableBreaks,
+      profile.blockingStrategyId != SoftUnblockSessionLifecycleHandler.nfcStrategyId,
+      profile.blockingStrategyId != SoftUnblockSessionLifecycleHandler.qrStrategyId,
+      session.breakStartTime != nil && session.breakEndTime == nil
+    {
       return .breakActive
     }
 
     return .active
-  }
-
-  private static func domains(for profile: BlockedProfiles) -> [String] {
-    FilterRules.normalize(profile.domains ?? [])
   }
 }

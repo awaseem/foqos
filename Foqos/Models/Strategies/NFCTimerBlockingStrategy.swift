@@ -7,7 +7,6 @@ class NFCTimerBlockingStrategy: BlockingStrategy {
   var name: String = "NFC + Timer"
   var description: String =
     "Choose how long blocking should last. To stop early, scan any NFC tag. Use Strict Unlocks if you want only selected tags to work."
-  var iconAssetName: String = "NFC+TimerSticker"
   var color: Color = .mint
   var pickerCategory: BlockingStrategyPickerCategory = .timers
 

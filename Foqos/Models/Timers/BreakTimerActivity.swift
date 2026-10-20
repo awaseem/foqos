@@ -33,17 +33,13 @@ class BreakTimerActivity: TimerActivity {
       return
     }
 
+    // The app owns the transition. A delayed callback must not reopen an ended break.
+    guard activeSession.breakStartTime != nil, activeSession.breakEndTime == nil else {
+      return
+    }
+
     // End restrictions for break, preserving strict mode if enabled
     appBlocker.deactivateRestrictionsForBreak(for: profile)
-
-    if activeSession.breakStartTime == nil || activeSession.breakEndTime != nil {
-      if profile.allowMultipleBreaks == true {
-        SharedData.resetBreak()
-      }
-
-      let now = Date()
-      SharedData.setBreakStartTime(date: now)
-    }
   }
 
   func stop(for profile: SharedData.ProfileSnapshot) {

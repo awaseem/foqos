@@ -8,7 +8,6 @@ class QRManualBlockingStrategy: BlockingStrategy {
   var name: String = "QR/Barcode + Manual"
   var description: String =
     "Start in the app. To stop, scan any QR code or barcode. Use Strict Unlocks if you want only selected codes to work."
-  var iconAssetName: String = "Manual+QRSticker"
   var color: Color = .pink
   var pickerCategory: BlockingStrategyPickerCategory = .easyToStart
 

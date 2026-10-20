@@ -20,14 +20,44 @@
       "internalID" : "7808C96D",
       "localizations" : [
         {
-          "description" : "",
-          "displayName" : "",
+          "description" : "A small thank you to support Foqos development.",
+          "displayName" : "Small Tip",
           "locale" : "en_US"
         }
       ],
       "productID" : "tip_developer_support",
       "referenceName" : "Tip for developer ",
-      "type" : "NonConsumable"
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "A6C93B25",
+      "localizations" : [
+        {
+          "description" : "Support the continued development of Foqos.",
+          "displayName" : "Generous Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_developer_support_5",
+      "referenceName" : "Developer Tip - 4.99 USD",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "B7D04C36",
+      "localizations" : [
+        {
+          "description" : "Give extra support to the continued development of Foqos.",
+          "displayName" : "Extra Generous Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_developer_support_10",
+      "referenceName" : "Developer Tip - 9.99 USD",
+      "type" : "Consumable"
     }
   ],
   "settings" : {
