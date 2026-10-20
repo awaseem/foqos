@@ -67,6 +67,57 @@ final class FoqosControlTests: ModelRegressionTestCase {
     ) { XCTAssertEqual($0 as? FoqosControlError, .profileUnavailable) }
   }
 
+  func testHardModeRejectsStopRoutesUntilTheLockExpires() throws {
+    let session = try makeSession()
+    session.blockedProfile.enableHardMode = true
+    try context.save()
+    manager.loadActiveSession(context: context)
+
+    manager.toggleBlocking(context: context, activeProfile: session.blockedProfile)
+    XCTAssertTrue(session.isActive)
+    manager.stopSessionFromBackground(session.blockedProfile.id, context: context)
+    XCTAssertTrue(session.isActive)
+    XCTAssertThrowsError(
+      try manager.setProfileActiveFromControl(
+        false, profileID: session.blockedProfile.id, context: context)
+    )
+
+    let otherProfile = try makeProfile(name: "Reading")
+    for profile in [session.blockedProfile, otherProfile] {
+      manager.toggleSessionFromDeeplink(
+        profile.id.uuidString,
+        url: try XCTUnwrap(URL(string: BlockedProfiles.getProfileDeepLink(profile))),
+        context: context
+      )
+      XCTAssertTrue(session.isActive)
+      XCTAssertEqual(SharedData.getActiveSharedSession()?.id, session.id)
+    }
+
+    session.startTime = Date().addingTimeInterval(-31 * 60)
+    SharedData.createActiveSharedSession(for: session.toSnapshot())
+    try context.save()
+    try manager.setProfileActiveFromControl(
+      false, profileID: session.blockedProfile.id, context: context)
+    XCTAssertFalse(session.isActive)
+    XCTAssertNil(SharedData.getActiveSharedSession())
+  }
+
+  func testHardModeBlocksManualStoppingOfScheduledSessionButAllowsScheduledEnd() throws {
+    let profile = try makeProfile()
+    profile.enableHardMode = true
+    try context.save()
+    SharedData.createSessionForSchedular(for: profile.id)
+
+    XCTAssertThrowsError(
+      try manager.setProfileActiveFromControl(false, profileID: profile.id, context: context)
+    )
+    XCTAssertEqual(SharedData.getActiveSharedSession()?.blockedProfileId, profile.id)
+
+    ScheduleTimerActivity().stop(for: BlockedProfiles.getSnapshot(for: profile))
+    manager.loadActiveSession(context: context)
+    XCTAssertNil(manager.activeSession)
+  }
+
   func testBreakControlStartsAndEndsWithoutEndingTheProfile() throws {
     let session = try makeSession()
     var scheduleCount = 0

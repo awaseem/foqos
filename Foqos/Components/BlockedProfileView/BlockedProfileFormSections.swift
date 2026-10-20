@@ -459,6 +459,10 @@ struct BlockedProfileSessionSafeguardsFields: View {
   @State private var showingEmergencyUnblockWarning = false
 
   var body: some View {
+    BlockedProfileHardModeFields(draft: draft, disabled: disabled)
+
+    ProfileFieldDivider(isVisible: showsSeparators)
+
     CustomToggle(
       title: "Require Foqos to Stop",
       description:

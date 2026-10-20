@@ -1,11 +1,10 @@
-import CoreData
 import SwiftData
 import XCTest
 
 @testable import foqos
 
 final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
-  func testPreRefactorStoreOpensWithoutSchemaMigrationAndRetainsAllData() throws {
+  func testPreRefactorStoreMigratesAndRetainsAllData() throws {
     let fixture = try XCTUnwrap(
       Bundle(for: Self.self).url(forResource: "pre-refactor-models", withExtension: "store"))
     let directory = URL.temporaryDirectory.appendingPathComponent(
@@ -14,19 +13,17 @@ final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
     defer { try? FileManager.default.removeItem(at: directory) }
     let url = directory.appendingPathComponent("models.store")
     try FileManager.default.copyItem(at: fixture, to: url)
-    let originalHashes = try modelHashes(at: url)
 
     try openVerifyAndUpdateStore(at: url)
 
-    XCTAssertEqual(
-      try modelHashes(at: url), originalHashes,
-      "Moving methods must not change the persistent schema")
     // Open a new container, not just a new context, to verify a durable post-upgrade write.
     let reopened = try diskContainer(at: url)
     let reader = ModelContext(reopened)
     let profile = try XCTUnwrap(BlockedProfiles.fetchProfiles(in: reader).first)
     XCTAssertEqual(profile.name, "Updated after upgrade")
     XCTAssertEqual(profile.sessions.count, 2)
+    XCTAssertFalse(profile.enableHardMode)
+    XCTAssertEqual(profile.hardModeDurationInMinutes, 30)
     XCTAssertEqual(BlockedProfileSession.mostRecentActiveSession(in: reader)?.id, "legacy-active")
   }
 
@@ -61,11 +58,5 @@ final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
     try ModelContainer(
       for: BlockedProfileSession.self, BlockedProfiles.self,
       configurations: ModelConfiguration(url: url))
-  }
-
-  private func modelHashes(at url: URL) throws -> [String: Data] {
-    let metadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
-      ofType: NSSQLiteStoreType, at: url, options: nil)
-    return try XCTUnwrap(metadata[NSStoreModelVersionHashesKey] as? [String: Data])
   }
 }

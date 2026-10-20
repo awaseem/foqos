@@ -48,6 +48,8 @@ class BlockedProfiles {
   var disableBackgroundStops: Bool = false
 
   var enableEmergencyUnblock: Bool = true
+  var enableHardMode: Bool = false
+  var hardModeDurationInMinutes: Int = 30
 
   var customReminderMessage: String?
 
@@ -80,7 +82,9 @@ class BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
-    enableEmergencyUnblock: Bool = true
+    enableEmergencyUnblock: Bool = true,
+    enableHardMode: Bool = false,
+    hardModeDurationInMinutes: Int = 30
   ) {
     self.id = id
     self.name = name
@@ -113,5 +117,7 @@ class BlockedProfiles {
 
     self.disableBackgroundStops = disableBackgroundStops
     self.enableEmergencyUnblock = enableEmergencyUnblock
+    self.enableHardMode = enableHardMode
+    self.hardModeDurationInMinutes = hardModeDurationInMinutes
   }
 }

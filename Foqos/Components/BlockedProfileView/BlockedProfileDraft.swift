@@ -20,6 +20,8 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var enableAdultContentBlocking: Bool
   @Published var enableMacSync: Bool
   @Published var disableBackgroundStops: Bool
+  @Published var enableHardMode: Bool
+  @Published var hardModeDurationInMinutes: Int
   @Published var enableEmergencyUnblock: Bool
   @Published var domains: [String]
   @Published var physicalUnblockItems: [PhysicalUnblockItem]
@@ -61,6 +63,8 @@ final class BlockedProfileDraft: ObservableObject {
     enableReminder = profile?.reminderTimeInSeconds != nil
     disableBackgroundStops = profile?.disableBackgroundStops ?? false
     enableEmergencyUnblock = profile?.enableEmergencyUnblock ?? true
+    enableHardMode = profile?.enableHardMode ?? false
+    hardModeDurationInMinutes = profile?.hardModeDurationInMinutes ?? 30
     reminderTimeInMinutes = Int(profile?.reminderTimeInSeconds ?? 900) / 60
     customReminderMessage = profile?.customReminderMessage ?? ""
     domains = profile?.domains ?? []
@@ -97,6 +101,10 @@ final class BlockedProfileDraft: ObservableObject {
 
   var selectedStrategyAllowsTimedBreaks: Bool {
     return selectedStrategy?.allowsTimedBreaks ?? true
+  }
+
+  var selectedStrategyAllowsHardMode: Bool {
+    !(selectedStrategy?.hasTimer ?? false)
   }
 
   var selectedStrategySupportsAllowMode: Bool {
@@ -142,7 +150,9 @@ final class BlockedProfileDraft: ObservableObject {
         physicalUnblockItems: .some(physicalUnblockItemsToSave),
         schedule: schedule,
         disableBackgroundStops: disableBackgroundStops,
-        enableEmergencyUnblock: enableEmergencyUnblock
+        enableEmergencyUnblock: enableEmergencyUnblock,
+        enableHardMode: selectedStrategyAllowsHardMode && enableHardMode,
+        hardModeDurationInMinutes: hardModeDurationInMinutes
       )
 
       DeviceActivityCenterUtil.scheduleTimerActivity(for: updatedProfile)
@@ -173,7 +183,9 @@ final class BlockedProfileDraft: ObservableObject {
       physicalUnblockItems: physicalUnblockItemsToSave,
       schedule: schedule,
       disableBackgroundStops: disableBackgroundStops,
-      enableEmergencyUnblock: enableEmergencyUnblock
+      enableEmergencyUnblock: enableEmergencyUnblock,
+      enableHardMode: selectedStrategyAllowsHardMode && enableHardMode,
+      hardModeDurationInMinutes: hardModeDurationInMinutes
     )
 
     DeviceActivityCenterUtil.scheduleTimerActivity(for: newProfile)
@@ -181,6 +193,10 @@ final class BlockedProfileDraft: ObservableObject {
   }
 
   private func enforceStrategyPolicies() {
+    if !selectedStrategyAllowsHardMode {
+      enableHardMode = false
+    }
+
     if !selectedStrategyAllowsTimedBreaks {
       enableBreaks = false
       allowMultipleBreaks = false
