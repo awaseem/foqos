@@ -37,7 +37,8 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
 
   func stop(for profile: SharedData.ProfileSnapshot, activityName: DeviceActivityName) {
     guard let grant = activeGrant(for: activityName) else { return }
-    guard grant.isExpired() else { return }
+    // iOS can end the interval up to a second before the grant's sub-second expiry.
+    guard grant.isExpired(at: Date().addingTimeInterval(1)) else { return }
 
     expire(grant, for: profile)
     log.info("Expired soft-unblock grant \(grant.id.uuidString)")
