@@ -4,7 +4,75 @@ struct ChartConfigurationSheet: View {
   @EnvironmentObject var themeManager: ThemeManager
   @Binding var showHabitTracker: Bool
   @Binding var chartType: HabitChartType
+  @Binding var heatmapThresholds: HeatmapThresholds
   let onDismiss: () -> Void
+
+  private var normalizedHeatmapThresholds: HeatmapThresholds {
+    heatmapThresholds.normalized
+  }
+
+  private var lowThresholdBinding: Binding<Double> {
+    Binding(
+      get: { normalizedHeatmapThresholds.lowHours },
+      set: {
+        heatmapThresholds = HeatmapThresholds(
+          lowHours: $0,
+          mediumHours: normalizedHeatmapThresholds.mediumHours,
+          highHours: normalizedHeatmapThresholds.highHours
+        ).normalized
+      }
+    )
+  }
+
+  private var mediumThresholdBinding: Binding<Double> {
+    Binding(
+      get: { normalizedHeatmapThresholds.mediumHours },
+      set: {
+        heatmapThresholds = HeatmapThresholds(
+          lowHours: normalizedHeatmapThresholds.lowHours,
+          mediumHours: $0,
+          highHours: normalizedHeatmapThresholds.highHours
+        ).normalized
+      }
+    )
+  }
+
+  private var highThresholdBinding: Binding<Double> {
+    Binding(
+      get: { normalizedHeatmapThresholds.highHours },
+      set: {
+        heatmapThresholds = HeatmapThresholds(
+          lowHours: normalizedHeatmapThresholds.lowHours,
+          mediumHours: normalizedHeatmapThresholds.mediumHours,
+          highHours: $0
+        ).normalized
+      }
+    )
+  }
+
+  private var lowThresholdRange: ClosedRange<Double> {
+    ClosedRange(
+      uncheckedBounds: (
+        lower: HeatmapThresholds.minimumHours,
+        upper: normalizedHeatmapThresholds.mediumHours - HeatmapThresholds.minimumGapHours
+      ))
+  }
+
+  private var mediumThresholdRange: ClosedRange<Double> {
+    ClosedRange(
+      uncheckedBounds: (
+        lower: normalizedHeatmapThresholds.lowHours + HeatmapThresholds.minimumGapHours,
+        upper: normalizedHeatmapThresholds.highHours - HeatmapThresholds.minimumGapHours
+      ))
+  }
+
+  private var highThresholdRange: ClosedRange<Double> {
+    ClosedRange(
+      uncheckedBounds: (
+        lower: normalizedHeatmapThresholds.mediumHours + HeatmapThresholds.minimumGapHours,
+        upper: HeatmapThresholds.maximumHours
+      ))
+  }
 
   var body: some View {
     NavigationStack {
@@ -63,6 +131,41 @@ struct ChartConfigurationSheet: View {
             .listRowSeparator(.hidden)
           }
         }
+
+        if chartType == .fourWeek {
+          Section {
+            thresholdSlider(
+              title: "Light activity",
+              value: lowThresholdBinding,
+              range: lowThresholdRange
+            )
+
+            thresholdSlider(
+              title: "Moderate activity",
+              value: mediumThresholdBinding,
+              range: mediumThresholdRange
+            )
+
+            thresholdSlider(
+              title: "High activity",
+              value: highThresholdBinding,
+              range: highThresholdRange
+            )
+
+            Button {
+              heatmapThresholds = .defaults
+            } label: {
+              Label("Reset to Default", systemImage: "arrow.counterclockwise")
+            }
+            .foregroundStyle(themeManager.themeColor)
+          } header: {
+            Text("Heatmap Scale")
+          } footer: {
+            Text(
+              "Adjust these when your focus sessions usually run longer than the default 1h, 3h, and 5h buckets."
+            )
+          }
+        }
       }
       .navigationTitle("Manage chart")
       .navigationBarTitleDisplayMode(.inline)
@@ -77,17 +180,42 @@ struct ChartConfigurationSheet: View {
       }
     }
   }
+
+  private func thresholdSlider(
+    title: String,
+    value: Binding<Double>,
+    range: ClosedRange<Double>
+  ) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack {
+        Text(title)
+          .foregroundStyle(.primary)
+
+        Spacer()
+
+        Text(HeatmapThresholds.formattedHours(value.wrappedValue))
+          .font(.subheadline.monospacedDigit())
+          .foregroundStyle(.secondary)
+      }
+
+      Slider(value: value, in: range, step: 0.5)
+        .tint(themeManager.themeColor)
+    }
+    .padding(.vertical, 4)
+  }
 }
 
 #Preview {
   struct PreviewWrapper: View {
     @State private var showChart = true
     @State private var chartType: HabitChartType = .fourWeek
+    @State private var heatmapThresholds: HeatmapThresholds = .defaults
 
     var body: some View {
       ChartConfigurationSheet(
         showHabitTracker: $showChart,
         chartType: $chartType,
+        heatmapThresholds: $heatmapThresholds,
         onDismiss: {}
       )
       .environmentObject(ThemeManager.shared)
