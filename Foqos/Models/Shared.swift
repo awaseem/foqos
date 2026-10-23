@@ -12,6 +12,8 @@ enum SharedData {
     case profileSnapshots
     case activeScheduleSession
     case completedScheduleSessions
+    case blockedAttemptsByDay
+    case lastBlockedAttemptAt
   }
 
   // MARK: – Serializable snapshot of a profile (no sessions)
@@ -134,6 +136,63 @@ enum SharedData {
         suite.removeObject(forKey: Key.activeScheduleSession.rawValue)
       }
       reloadControls()
+    }
+  }
+
+  // MARK: – Blocked attempts (shield displays), counted per local day
+  private static let blockedAttemptCoalesceInterval: TimeInterval = 5
+  private static let blockedAttemptRetentionDays = 400
+
+  private static func dayKey(for date: Date) -> String {
+    let parts = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    return String(
+      format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+  }
+
+  private static var blockedAttemptsByDay: [String: Int] {
+    get {
+      guard let data = suite.data(forKey: Key.blockedAttemptsByDay.rawValue) else { return [:] }
+      return (try? JSONDecoder().decode([String: Int].self, from: data)) ?? [:]
+    }
+    set {
+      if let data = try? JSONEncoder().encode(newValue) {
+        suite.set(data, forKey: Key.blockedAttemptsByDay.rawValue)
+      } else {
+        suite.removeObject(forKey: Key.blockedAttemptsByDay.rawValue)
+      }
+    }
+  }
+
+  /// Records that a blocked app or site was opened. The system can ask for the shield more than
+  /// once per open, so repeats inside a short window count as a single attempt.
+  static func recordBlockedAttempt(at date: Date = Date()) {
+    if let last = suite.object(forKey: Key.lastBlockedAttemptAt.rawValue) as? Date,
+      abs(date.timeIntervalSince(last)) < blockedAttemptCoalesceInterval
+    {
+      return
+    }
+    suite.set(date, forKey: Key.lastBlockedAttemptAt.rawValue)
+
+    var counts = blockedAttemptsByDay
+    counts[dayKey(for: date), default: 0] += 1
+
+    if let cutoff = Calendar.current.date(
+      byAdding: .day, value: -blockedAttemptRetentionDays, to: date)
+    {
+      let cutoffKey = dayKey(for: cutoff)
+      counts = counts.filter { $0.key >= cutoffKey }
+    }
+    blockedAttemptsByDay = counts
+  }
+
+  /// Blocked attempts from `start` (inclusive) up to `end` (exclusive). Pass nil for all time.
+  static func blockedAttemptCount(from start: Date? = nil, to end: Date? = nil) -> Int {
+    let startKey = start.map(dayKey(for:))
+    let endKey = end.map(dayKey(for:))
+    return blockedAttemptsByDay.reduce(0) { total, entry in
+      if let startKey, entry.key < startKey { return total }
+      if let endKey, entry.key >= endKey { return total }
+      return total + entry.value
     }
   }
 
