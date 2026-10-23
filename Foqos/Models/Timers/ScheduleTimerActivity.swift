@@ -1,10 +1,14 @@
 import DeviceActivity
+import Foundation
 import OSLog
 
 private let log: Logger = Logger(subsystem: "com.foqos.monitor", category: ScheduleTimerActivity.id)
 
 class ScheduleTimerActivity: TimerActivity {
   static var id: String = "ScheduleTimerActivity"
+
+  // Device Activity callbacks can overlap on different handler instances.
+  private static let transitionLock = NSLock()
 
   private let appBlocker = AppBlockerUtil()
 
@@ -28,6 +32,9 @@ class ScheduleTimerActivity: TimerActivity {
   }
 
   func start(for profile: SharedData.ProfileSnapshot) {
+    Self.transitionLock.lock()
+    defer { Self.transitionLock.unlock() }
+
     let profileId = profile.id.uuidString
 
     guard let schedule = profile.schedule
@@ -77,6 +84,9 @@ class ScheduleTimerActivity: TimerActivity {
   }
 
   func stop(for profile: SharedData.ProfileSnapshot) {
+    Self.transitionLock.lock()
+    defer { Self.transitionLock.unlock() }
+
     let profileId = profile.id.uuidString
 
     guard let activeSession = SharedData.getActiveSharedSession() else {
