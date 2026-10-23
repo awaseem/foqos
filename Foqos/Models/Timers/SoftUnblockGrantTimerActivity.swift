@@ -37,7 +37,9 @@ class SoftUnblockGrantTimerActivity: TimerActivity {
 
   func stop(for profile: SharedData.ProfileSnapshot, activityName: DeviceActivityName) {
     guard let grant = activeGrant(for: activityName) else { return }
-    // iOS can end the interval up to a second before the grant's sub-second expiry.
+    // scheduleGrant drops fractional seconds from intervalEnd, so this callback can
+    // precede expiresAt by less than one second. Accept that gap and any later callback:
+    // this one-shot monitor won't retry, so returning early can leave apps unblocked.
     guard grant.isExpired(at: Date().addingTimeInterval(1)) else { return }
 
     expire(grant, for: profile)
