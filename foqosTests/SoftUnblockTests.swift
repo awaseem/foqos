@@ -1,4 +1,5 @@
 import DeviceActivity
+import ManagedSettings
 import XCTest
 
 @testable import foqos
@@ -229,6 +230,44 @@ final class SoftUnblockTests: XCTestCase {
     )
 
     XCTAssertNil(SoftUnblockGrantScheduler.identifiers(from: activityName))
+  }
+
+  func testGrantExpiresWhenIntervalEndsJustBeforeExpiry() throws {
+    SoftUnblockGrantStore.clearAll()
+    defer { SoftUnblockGrantStore.clearAll() }
+
+    let profile = BlockedProfiles(name: "Work")
+    let sessionId = UUID().uuidString
+    SoftUnblockGrantStore.beginSession(
+      sessionId: sessionId,
+      profileId: profile.id,
+      maximumUnblockCount: 3,
+      allowanceResetIntervalInHours: nil,
+      startedAt: Date().addingTimeInterval(-60 * 60)
+    )
+    let token = try JSONDecoder().decode(
+      ApplicationToken.self, from: Data(#"{"data":"AAECAwQFBgcICQ=="}"#.utf8))
+    // intervalEnd drops the fraction of a second, so the interval can end just before expiresAt.
+    let expiresAt = Date().addingTimeInterval(0.5)
+    let grant = SoftUnblockGrant(
+      id: UUID(),
+      sessionId: sessionId,
+      profileId: profile.id,
+      resource: .application(token),
+      createdAt: expiresAt.addingTimeInterval(-15 * 60),
+      expiresAt: expiresAt
+    )
+    XCTAssertTrue(SoftUnblockGrantStore.issue(grant))
+
+    SoftUnblockGrantTimerActivity().stop(
+      for: BlockedProfiles.getSnapshot(for: profile),
+      activityName: DeviceActivityName(
+        rawValue:
+          "\(SoftUnblockGrantScheduler.activityId):\(profile.id.uuidString)|\(sessionId)|\(grant.id.uuidString)"
+      )
+    )
+
+    XCTAssertNil(SoftUnblockGrantStore.grant(id: grant.id, sessionId: sessionId))
   }
 
   private func makeSession(
