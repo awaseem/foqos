@@ -6,6 +6,7 @@ struct HomeProfilesListView: View {
   let activeSessionProfileId: UUID?
   let elapsedTime: TimeInterval
   let isPauseActive: Bool
+  var isHardModeActionLocked: Bool = false
   let onManageTapped: () -> Void
   let onStartTapped: (BlockedProfiles) -> Void
   let onStopTapped: (BlockedProfiles) -> Void
@@ -31,6 +32,7 @@ struct HomeProfilesListView: View {
             isActive: profile.id == activeSessionProfileId,
             elapsedTime: elapsedTime,
             isPauseActive: isPauseActive,
+            isHardModeActionLocked: isHardModeActionLocked,
             isSelected: profile.id == selectedProfileId,
             selectsInsights: onSelectProfile != nil,
             onSelected: {
@@ -78,6 +80,7 @@ private struct HomeProfileRow: View {
   let isActive: Bool
   let elapsedTime: TimeInterval
   let isPauseActive: Bool
+  let isHardModeActionLocked: Bool
   let isSelected: Bool
   let selectsInsights: Bool
   let onSelected: () -> Void
@@ -95,7 +98,7 @@ private struct HomeProfileRow: View {
   }
 
   private var canStop: Bool {
-    profile.showStopButton(elapsedTime: elapsedTime)
+    profile.showStopButton(elapsedTime: elapsedTime) && !isHardModeActionLocked
   }
 
   private var blockingStrategy: BlockingStrategy? {

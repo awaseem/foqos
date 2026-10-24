@@ -44,6 +44,10 @@ struct StopActiveSessionIntent: AppIntent {
       context: modelContext
     )
 
+    if let errorMessage = strategyManager.errorMessage {
+      return .result(value: false, dialog: "\(errorMessage)")
+    }
+
     return .result(value: true, dialog: "Stopped profile: \(profileName)")
   }
 }

@@ -10,6 +10,13 @@ enum SessionTimeCalculator {
     ShortcutTimerBlockingStrategy.id,
   ]
 
+  static func hardModeUnlockTime(for session: BlockedProfileSession) -> Date? {
+    let profile = session.blockedProfile
+    guard profile.enableHardMode, profile.allowsHardMode else { return nil }
+    let minutes = min(720, max(30, profile.hardModeDurationInMinutes))
+    return session.startTime.addingTimeInterval(TimeInterval(minutes * 60))
+  }
+
   static func elapsedFocusTime(
     for session: BlockedProfileSession,
     at date: Date = Date()

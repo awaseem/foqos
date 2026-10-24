@@ -32,6 +32,10 @@ struct StopProfileIntent: AppIntent {
         context: modelContext
       )
 
+    if let errorMessage = strategyManager.errorMessage {
+      throw FoqosControlError.actionFailed(errorMessage)
+    }
+
     return .result()
   }
 }

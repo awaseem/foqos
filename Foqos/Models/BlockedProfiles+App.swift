@@ -20,6 +20,10 @@ extension BlockedProfiles {
     return StrategyManager.getStrategyFromId(id: strategyId).allowsTimedBreaks
   }
 
+  var allowsHardMode: Bool {
+    !StrategyManager.getStrategyFromId(id: blockingStrategyId ?? NFCBlockingStrategy.id).hasTimer
+  }
+
   var shouldAskForStartSettings: Bool {
     askForStartSettings || strategyData == nil
   }
@@ -117,7 +121,9 @@ extension BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]?? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool? = nil,
-    enableEmergencyUnblock: Bool? = nil
+    enableEmergencyUnblock: Bool? = nil,
+    enableHardMode: Bool? = nil,
+    hardModeDurationInMinutes: Int? = nil
   ) throws -> BlockedProfiles {
     if let newName = name {
       profile.name = newName
@@ -221,6 +227,14 @@ extension BlockedProfiles {
 
     if let newEnableEmergencyUnblock = enableEmergencyUnblock {
       profile.enableEmergencyUnblock = newEnableEmergencyUnblock
+    }
+
+    if let enableHardMode {
+      profile.enableHardMode = enableHardMode
+    }
+
+    if let hardModeDurationInMinutes {
+      profile.hardModeDurationInMinutes = hardModeDurationInMinutes
     }
 
     if let physicalUnblockItems {
@@ -357,7 +371,9 @@ extension BlockedProfiles {
     physicalUnblockItems: [PhysicalUnblockItem]? = nil,
     schedule: BlockedProfileSchedule? = nil,
     disableBackgroundStops: Bool = false,
-    enableEmergencyUnblock: Bool = true
+    enableEmergencyUnblock: Bool = true,
+    enableHardMode: Bool = false,
+    hardModeDurationInMinutes: Int = 30
   ) throws -> BlockedProfiles {
     let profileOrder = getNextOrder(in: context)
 
@@ -384,7 +400,9 @@ extension BlockedProfiles {
       domains: domains,
       physicalUnblockItems: physicalUnblockItems,
       disableBackgroundStops: disableBackgroundStops,
-      enableEmergencyUnblock: enableEmergencyUnblock
+      enableEmergencyUnblock: enableEmergencyUnblock,
+      enableHardMode: enableHardMode,
+      hardModeDurationInMinutes: hardModeDurationInMinutes
     )
 
     if let schedule = schedule {
@@ -428,7 +446,9 @@ extension BlockedProfiles {
       domains: source.domains,
       physicalUnblockItems: source.physicalUnblockItems,
       schedule: source.schedule,
-      enableEmergencyUnblock: source.enableEmergencyUnblock
+      enableEmergencyUnblock: source.enableEmergencyUnblock,
+      enableHardMode: source.enableHardMode,
+      hardModeDurationInMinutes: source.hardModeDurationInMinutes
     )
 
     context.insert(cloned)

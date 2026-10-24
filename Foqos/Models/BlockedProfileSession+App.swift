@@ -7,6 +7,34 @@ extension BlockedProfileSession {
     return endTime == nil
   }
 
+  var hardModeUnlockTime: Date? {
+    SessionTimeCalculator.hardModeUnlockTime(for: self)
+  }
+
+  func isStopLockedByHardMode(at date: Date = Date()) -> Bool {
+    guard isActive, let hardModeUnlockTime else { return false }
+    return date < hardModeUnlockTime
+  }
+
+  func isSessionActionLockedByHardMode(at date: Date = Date()) -> Bool {
+    let strategy = StrategyManager.getStrategyFromId(
+      id: blockedProfile.blockingStrategyId ?? NFCBlockingStrategy.id
+    )
+    // Pause strategies keep their existing pause behavior during Hard Mode.
+    if strategy.hasPauseMode && !isPauseActive { return false }
+    return isStopLockedByHardMode(at: date)
+  }
+
+  func canResetExpiredCountdown(at date: Date = Date()) -> Bool {
+    guard SessionTimeCalculator.isCountdownExpired(for: self, at: date) else { return false }
+    guard isStopLockedByHardMode(at: date) else { return true }
+    // Recover an overdue session end, but do not let an overdue break or pause bypass the lock.
+    guard let sessionEnd = SessionTimeCalculator.expectedSessionEndTime(for: self) else {
+      return false
+    }
+    return sessionEnd <= date
+  }
+
   var isBreakAvailable: Bool {
     guard blockedProfile.enableBreaks == true,
       blockedProfile.allowsTimedBreaks
