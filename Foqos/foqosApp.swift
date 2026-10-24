@@ -26,6 +26,8 @@ import SwiftUI
 
 @main
 struct foqosApp: App {
+  @UIApplicationDelegateAdaptor(FoqosAppDelegate.self) private var appDelegate
+
   @StateObject private var requestAuthorizer = RequestAuthorizer()
   @StateObject private var donationManager = TipManager()
   @StateObject private var navigationManager = NavigationManager()
