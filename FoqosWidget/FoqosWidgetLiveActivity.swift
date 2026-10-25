@@ -64,6 +64,7 @@ struct FoqosWidgetAttributes: ActivityAttributes {
   var message: String
 }
 
+@available(iOS 18.0, *)
 struct FoqosWidgetLiveActivity: Widget {
   private let compactLogoSize: CGFloat = 24
   private let compactTimerWidth: CGFloat = 48
@@ -75,56 +76,7 @@ struct FoqosWidgetLiveActivity: Widget {
 
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
-      // Lock screen/banner UI goes here
-      HStack(alignment: .center, spacing: 16) {
-        // Left side - App info
-        VStack(alignment: .leading, spacing: 8) {
-          HStack(spacing: 4) {
-            Text("Foqos")
-              .font(.headline)
-              .fontWeight(.bold)
-              .foregroundColor(.primary)
-            activityIcon(for: context.state, size: 20)
-          }
-
-          Text(context.attributes.name)
-            .font(.subheadline)
-            .foregroundColor(.primary)
-
-          Text(context.attributes.message)
-            .font(.caption)
-            .foregroundColor(.secondary)
-        }
-
-        Spacer()
-
-        // Right side - Timer or break/pause indicator
-        VStack(alignment: .trailing, spacing: 4) {
-          if context.state.isPauseActive {
-            statusView(
-              label: "Paused",
-              assetName: "PauseStickerIcon",
-              countdownRange: context.state.countdownRange,
-              tint: context.state.themeColor,
-              timerFont: .title,
-              alignment: .trailing
-            )
-          } else if context.state.isBreakActive {
-            statusView(
-              label: "On a Break",
-              assetName: "CoffeeStickerIcon",
-              countdownRange: context.state.countdownRange,
-              tint: context.state.themeColor,
-              timerFont: .title,
-              alignment: .trailing
-            )
-          } else {
-            timerText(for: context.state, font: .title, alignment: .trailing)
-          }
-        }
-      }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 12)
+      FoqosLiveActivityContentView(attributes: context.attributes, state: context.state)
 
     } dynamicIsland: { context in
       DynamicIsland {
@@ -155,6 +107,7 @@ struct FoqosWidgetLiveActivity: Widget {
       .widgetURL(URL(string: "http://www.foqos.app"))
       .keylineTint(context.state.themeColor)
     }
+    .supplementalActivityFamilies([.medium])
   }
 
   private func activityIcon(for state: FoqosWidgetAttributes.ContentState, size: CGFloat)
@@ -267,6 +220,80 @@ struct FoqosWidgetLiveActivity: Widget {
     .frame(width: compactTimerWidth, alignment: .center)
     .contentTransition(.numericText())
   }
+}
+
+private struct FoqosLiveActivityContentView: View {
+  @Environment(\.isActivityFullscreen) private var isFullscreen
+
+  let attributes: FoqosWidgetAttributes
+  let state: FoqosWidgetAttributes.ContentState
+
+  var body: some View {
+    Group {
+      if isFullscreen {
+        FoqosStandByActivityView(
+          profileName: attributes.name, message: attributes.message, state: state
+        )
+      } else {
+        lockScreenContent
+      }
+    }
+    .activityBackgroundTint(isFullscreen ? .black : nil)
+  }
+
+  private var lockScreenContent: some View {
+    HStack(alignment: .center, spacing: 16) {
+      VStack(alignment: .leading, spacing: 8) {
+        HStack(spacing: 4) {
+          Text("Foqos")
+            .font(.headline)
+            .fontWeight(.bold)
+            .foregroundColor(.primary)
+          Image(state.appIcon.liveActivityAssetName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 20, height: 20)
+            .accessibilityHidden(true)
+        }
+
+        Text(attributes.name)
+          .font(.subheadline)
+          .foregroundColor(.primary)
+
+        Text(attributes.message)
+          .font(.caption)
+          .foregroundColor(.secondary)
+      }
+
+      Spacer()
+
+      VStack(alignment: .trailing, spacing: 4) {
+        if state.isPauseActive {
+          statusView(
+            label: "Paused",
+            assetName: "PauseStickerIcon",
+            countdownRange: state.countdownRange,
+            tint: state.themeColor,
+            timerFont: .title,
+            alignment: .trailing
+          )
+        } else if state.isBreakActive {
+          statusView(
+            label: "On a Break",
+            assetName: "CoffeeStickerIcon",
+            countdownRange: state.countdownRange,
+            tint: state.themeColor,
+            timerFont: .title,
+            alignment: .trailing
+          )
+        } else {
+          timerText(for: state, font: .title, alignment: .trailing)
+        }
+      }
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 12)
+  }
 
   @ViewBuilder
   private func timerText(
@@ -303,7 +330,10 @@ struct FoqosWidgetLiveActivity: Widget {
   ) -> some View {
     VStack(alignment: alignment == .trailing ? .trailing : .center, spacing: 4) {
       HStack(spacing: 6) {
-        stickerStatusView(assetName: assetName, size: 28)
+        Image(assetName)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 28, height: 28)
         Text(label)
           .font(.subheadline)
           .fontWeight(.semibold)
@@ -317,6 +347,88 @@ struct FoqosWidgetLiveActivity: Widget {
           .foregroundColor(tint)
           .multilineTextAlignment(alignment)
       }
+    }
+  }
+}
+
+private struct FoqosStandByActivityView: View {
+  let profileName: String
+  let message: String
+  let state: FoqosWidgetAttributes.ContentState
+
+  var body: some View {
+    VStack(spacing: 0) {
+      timerPresentation
+
+      VStack(spacing: 3) {
+        Text(profileName)
+          .font(.system(size: 15, weight: .bold))
+          .lineLimit(1)
+          .minimumScaleFactor(0.75)
+
+        Text(message)
+          .font(.system(size: 11))
+          .foregroundStyle(.white.opacity(0.65))
+          .lineLimit(1)
+      }
+    }
+    .foregroundStyle(.white)
+    .padding(.horizontal, 20)
+    .padding(.vertical, 2)
+    .frame(maxWidth: .infinity)
+  }
+
+  private var timerPresentation: some View {
+    ZStack {
+      // Use the active screen's resting artwork; Live Activities don't run its breathing timer.
+      ActiveSessionPetalView(color: state.themeColor, settings: .defaultValue)
+        .frame(width: 360, height: 300)
+        .scaleEffect(0.4)
+        .frame(width: 144, height: 120)
+
+      VStack(spacing: 4) {
+        timer
+          .font(.system(size: 48, weight: .bold, design: .monospaced))
+          .monospacedDigit()
+          .lineLimit(1)
+          .minimumScaleFactor(0.5)
+          .multilineTextAlignment(.center)
+          .frame(maxWidth: .infinity)
+
+        timerDetail
+          .font(.system(size: 11, weight: .medium))
+          .foregroundStyle(.white.opacity(0.65))
+      }
+    }
+    .frame(height: 120)
+  }
+
+  @ViewBuilder
+  private var timer: some View {
+    if let countdownRange = state.countdownRange {
+      Text(timerInterval: countdownRange, countsDown: true)
+    } else if state.isPauseActive || state.isBreakActive {
+      Image(systemName: state.isPauseActive ? "pause.fill" : "cup.and.saucer.fill")
+        .font(.system(size: 54, weight: .medium))
+        .accessibilityHidden(true)
+    } else {
+      Text(Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()), style: .timer)
+    }
+  }
+
+  @ViewBuilder
+  private var timerDetail: some View {
+    if state.isPauseActive || state.isBreakActive {
+      HStack(spacing: 4) {
+        Image(state.isPauseActive ? "PauseStickerIcon" : "CoffeeStickerIcon")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 13, height: 13)
+          .accessibilityHidden(true)
+        Text(state.isPauseActive ? "Paused" : "On a Break")
+      }
+    } else if let endTime = state.expectedEndTime {
+      Text("Ends at \(endTime, style: .time)")
     }
   }
 }
@@ -353,7 +465,7 @@ extension FoqosWidgetAttributes.ContentState {
   fileprivate static var shortTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes
       .ContentState(
-        startTime: Date(timeInterval: 60, since: Date.now),
+        startTime: Date(timeIntervalSinceNow: -60),
         expectedEndTime: Date(timeIntervalSinceNow: 25 * 60),
         isBreakActive: false,
         breakStartTime: nil,
@@ -367,7 +479,7 @@ extension FoqosWidgetAttributes.ContentState {
 
   fileprivate static var longTime: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
-      startTime: Date(timeInterval: 60, since: Date.now),
+      startTime: Date(timeIntervalSinceNow: -60),
       expectedEndTime: Date(timeIntervalSinceNow: 2 * 60 * 60),
       isBreakActive: false,
       breakStartTime: nil,
@@ -381,7 +493,7 @@ extension FoqosWidgetAttributes.ContentState {
 
   fileprivate static var breakActive: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
-      startTime: Date(timeInterval: 60, since: Date.now),
+      startTime: Date(timeIntervalSinceNow: -60),
       expectedEndTime: Date(timeIntervalSinceNow: 5 * 60),
       isBreakActive: true,
       breakStartTime: Date.now,
@@ -395,7 +507,7 @@ extension FoqosWidgetAttributes.ContentState {
 
   fileprivate static var pauseActive: FoqosWidgetAttributes.ContentState {
     FoqosWidgetAttributes.ContentState(
-      startTime: Date(timeInterval: 60, since: Date.now),
+      startTime: Date(timeIntervalSinceNow: -60),
       expectedEndTime: Date(timeIntervalSinceNow: 10 * 60),
       isBreakActive: false,
       breakStartTime: nil,
@@ -408,6 +520,7 @@ extension FoqosWidgetAttributes.ContentState {
   }
 }
 
+@available(iOS 18.0, *)
 #Preview("Notification", as: .content, using: FoqosWidgetAttributes.preview) {
   FoqosWidgetLiveActivity()
 } contentStates: {
@@ -418,9 +531,66 @@ extension FoqosWidgetAttributes.ContentState {
   FoqosWidgetAttributes.ContentState.pauseActive
 }
 
+@available(iOS 18.0, *)
 #Preview("Mint Dynamic Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview)
 {
   FoqosWidgetLiveActivity()
 } contentStates: {
   FoqosWidgetAttributes.ContentState.mintCat
+}
+
+#Preview("StandBy · Focus", traits: .fixedLayout(width: 390, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "💪 Work",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState.mintCat
+  )
+  .background(.black)
+}
+
+#Preview("StandBy · Long timer", traits: .fixedLayout(width: 320, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "A long profile name for a deep focus session",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState.longTime
+  )
+  .background(.black)
+}
+
+#Preview("StandBy · Break", traits: .fixedLayout(width: 390, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "💪 Work",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState.breakActive
+  )
+  .background(.black)
+}
+
+#Preview("StandBy · Paused", traits: .fixedLayout(width: 390, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "💪 Work",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState.pauseActive
+  )
+  .background(.black)
+}
+
+#Preview("StandBy · Elapsed", traits: .fixedLayout(width: 320, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "Reading",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState(startTime: Date(timeIntervalSinceNow: -7_800))
+  )
+  .background(.black)
+}
+
+#Preview("StandBy · Open-ended pause", traits: .fixedLayout(width: 320, height: 180)) {
+  FoqosStandByActivityView(
+    profileName: "Reading",
+    message: FoqosWidgetAttributes.preview.message,
+    state: FoqosWidgetAttributes.ContentState(
+      startTime: Date(timeIntervalSinceNow: -7_800), isPauseActive: true
+    )
+  )
+  .background(.black)
 }
