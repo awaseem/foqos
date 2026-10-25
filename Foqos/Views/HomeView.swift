@@ -32,8 +32,8 @@ struct HomeView: View {
     strategyManager.isBlocking
   }
 
-  private var quickActionProfiles: [QuickActionProfile] {
-    profiles.map { QuickActionProfile(id: $0.id, name: $0.name) }
+  private var quickActionProfiles: [QuickActionManager.ProfileSnapshot] {
+    profiles.map { .init(id: $0.id, name: $0.name) }
   }
 
   private var isCountdownReloadDue: Bool {
@@ -101,8 +101,8 @@ struct HomeView: View {
       }
       refreshAlerts()
     }
-    .onChange(of: quickActionProfiles, initial: true) { _, _ in
-      quickActionManager.updateShortcutItems(for: profiles)
+    .onChange(of: quickActionProfiles, initial: true) { _, newValue in
+      quickActionManager.updateShortcutItems(for: newValue)
       startPendingQuickActionProfile()
     }
     .onChange(of: quickActionManager.pendingProfileId, initial: true) { _, _ in
@@ -230,11 +230,6 @@ struct HomeView: View {
     presentation.showingAlert = false
     strategyManager.errorMessage = nil
   }
-}
-
-private struct QuickActionProfile: Equatable {
-  let id: UUID
-  let name: String
 }
 
 #Preview {

@@ -3,6 +3,11 @@ import UIKit
 
 /// Bridges Home Screen quick actions (long-press on the app icon) into SwiftUI.
 final class QuickActionManager: ObservableObject {
+  struct ProfileSnapshot: Equatable {
+    let id: UUID
+    let name: String
+  }
+
   static let shared = QuickActionManager()
 
   static let startProfileActionType = "com.foqos.quickaction.startProfile"
@@ -24,7 +29,7 @@ final class QuickActionManager: ObservableObject {
     return true
   }
 
-  func updateShortcutItems(for profiles: [BlockedProfiles]) {
+  func updateShortcutItems(for profiles: [ProfileSnapshot]) {
     UIApplication.shared.shortcutItems = profiles.prefix(Self.maxShortcutItems).map { profile in
       UIApplicationShortcutItem(
         type: Self.startProfileActionType,
