@@ -181,6 +181,7 @@
 		801C99CE2E9C9B9D000E07CD /* Exceptions for "Foqos" folder in "FoqosWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Components/Common/ActiveSessionPetalView.swift,
 				Intents/BreakControlIntent.swift,
 				Intents/FoqosControlError.swift,
 				Intents/ProfileControlIntent.swift,
