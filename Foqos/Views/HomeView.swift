@@ -32,6 +32,10 @@ struct HomeView: View {
     strategyManager.isBlocking
   }
 
+  private var quickActionProfiles: [QuickActionProfile] {
+    profiles.map { QuickActionProfile(id: $0.id, name: $0.name) }
+  }
+
   private var isCountdownReloadDue: Bool {
     guard let activeSession = strategyManager.activeSession else {
       return false
@@ -97,8 +101,8 @@ struct HomeView: View {
       }
       refreshAlerts()
     }
-    .onChange(of: profiles, initial: true) { _, newValue in
-      quickActionManager.updateShortcutItems(for: newValue)
+    .onChange(of: quickActionProfiles, initial: true) { _, _ in
+      quickActionManager.updateShortcutItems(for: profiles)
       startPendingQuickActionProfile()
     }
     .onChange(of: quickActionManager.pendingProfileId, initial: true) { _, _ in
@@ -163,6 +167,9 @@ struct HomeView: View {
       showErrorAlert(message: "That profile no longer exists.")
       return
     }
+
+    // Quick actions can arrive before onAppear restores the active session.
+    strategyManager.loadActiveSession(context: context)
     startProfile(profile)
   }
 
@@ -223,6 +230,11 @@ struct HomeView: View {
     presentation.showingAlert = false
     strategyManager.errorMessage = nil
   }
+}
+
+private struct QuickActionProfile: Equatable {
+  let id: UUID
+  let name: String
 }
 
 #Preview {
