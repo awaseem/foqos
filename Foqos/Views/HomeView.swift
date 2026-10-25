@@ -11,6 +11,8 @@ struct HomeView: View {
   @EnvironmentObject private var navigationManager: NavigationManager
   @EnvironmentObject private var ratingManager: RatingManager
 
+  @ObservedObject private var quickActionManager = QuickActionManager.shared
+
   @Query(sort: [
     SortDescriptor(\BlockedProfiles.order, order: .forward),
     SortDescriptor(\BlockedProfiles.createdAt, order: .reverse),
@@ -28,6 +30,10 @@ struct HomeView: View {
 
   private var isBlocking: Bool {
     strategyManager.isBlocking
+  }
+
+  private var quickActionProfiles: [QuickActionManager.ProfileSnapshot] {
+    profiles.map { .init(id: $0.id, name: $0.name) }
   }
 
   private var isCountdownReloadDue: Bool {
@@ -95,6 +101,13 @@ struct HomeView: View {
       }
       refreshAlerts()
     }
+    .onChange(of: quickActionProfiles, initial: true) { _, newValue in
+      quickActionManager.updateShortcutItems(for: newValue)
+      startPendingQuickActionProfile()
+    }
+    .onChange(of: quickActionManager.pendingProfileId, initial: true) { _, _ in
+      startPendingQuickActionProfile()
+    }
     .onChange(of: scenePhase) { oldPhase, newPhase in
       if newPhase == .active {
         requestAuthorizer.refreshAuthorizationStatus()
@@ -141,6 +154,23 @@ struct HomeView: View {
     }
 
     strategyButtonPress(profile)
+  }
+
+  private func startPendingQuickActionProfile() {
+    guard let profileId = quickActionManager.pendingProfileId else { return }
+    // Profiles may not be loaded yet on a cold launch; the profiles onChange retries
+    guard !profiles.isEmpty else { return }
+
+    quickActionManager.pendingProfileId = nil
+
+    guard let profile = profiles.first(where: { $0.id == profileId }) else {
+      showErrorAlert(message: "That profile no longer exists.")
+      return
+    }
+
+    // Quick actions can arrive before onAppear restores the active session.
+    strategyManager.loadActiveSession(context: context)
+    startProfile(profile)
   }
 
   private func loadApp() {
