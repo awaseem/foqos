@@ -19,7 +19,7 @@ struct ProfileControlWidget: Widget {
       "Your focus, at a glance. Weekly charts, a monthly activity grid, and your profile in your theme."
     )
     .supportedFamilies([
-      .systemSmall, .systemMedium, .accessoryRectangular, .accessoryInline,
+      .systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline,
     ])
   }
 }

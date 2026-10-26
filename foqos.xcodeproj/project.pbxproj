@@ -196,6 +196,7 @@
 				Models/Shared.swift,
 				Models/SoftUnblockGrant.swift,
 				Models/Strategies/BlockingStrategyArtwork.swift,
+				Models/Strategies/Data/StrategyTimerData.swift,
 				StrategyAssets.xcassets,
 				Utils/AppBlockerUtil.swift,
 				Utils/SoftUnblockGrantStore.swift,
