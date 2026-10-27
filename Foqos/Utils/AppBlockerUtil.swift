@@ -50,11 +50,8 @@ class AppBlockerUtil {
 
     let selection = profile.selectedActivity
     let allowOnlyApps = profile.enableAllowMode
-    let allowOnlyDomains = profile.enableAllowModeDomains
     let strict = profile.enableStrictMode
     let enableSafariBlocking = profile.enableSafariBlocking
-    let enableAdultContentBlocking = profile.enableAdultContentBlocking == true
-    let domains = getWebDomains(from: profile)
 
     let webTokens = selection.webDomainTokens
 
@@ -81,18 +78,28 @@ class AppBlockerUtil {
       }
     }
 
-    if allowOnlyDomains {
+    applyWebContentFilter(for: profile)
+
+    store.application.denyAppRemoval = strict
+    store.application.denyAppInstallation = profile.enableBlockAppInstallation
+  }
+
+  func updateWebDomains(for profile: SharedData.ProfileSnapshot) {
+    applyWebContentFilter(for: profile)
+  }
+
+  private func applyWebContentFilter(for profile: SharedData.ProfileSnapshot) {
+    let domains = getWebDomains(from: profile)
+
+    if profile.enableAllowModeDomains {
       store.webContent.blockedByFilter = .all(except: domains)
-    } else if enableAdultContentBlocking {
+    } else if profile.enableAdultContentBlocking == true {
       store.webContent.blockedByFilter = .auto(domains)
     } else if !domains.isEmpty {
       store.webContent.blockedByFilter = .specific(domains)
     } else {
       store.webContent.blockedByFilter = nil
     }
-
-    store.application.denyAppRemoval = strict
-    store.application.denyAppInstallation = profile.enableBlockAppInstallation
   }
 
   func deactivateRestrictions() {
