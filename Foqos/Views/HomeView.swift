@@ -174,12 +174,16 @@ struct HomeView: View {
   }
 
   private func loadApp() {
+    strategyManager.applyPendingSharedDomains(context: context)
     strategyManager.loadActiveSession(context: context)
+    strategyManager.publishShareProfileChoices(profiles)
   }
 
   private func onAppearApp() {
     requestAuthorizer.refreshAuthorizationStatus()
+    strategyManager.applyPendingSharedDomains(context: context)
     strategyManager.loadActiveSession(context: context)
+    strategyManager.publishShareProfileChoices(profiles)
     strategyManager.cleanUpGhostSchedules(context: context)
     refreshAlerts()
   }
