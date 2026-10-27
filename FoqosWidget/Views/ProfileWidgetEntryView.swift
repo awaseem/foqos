@@ -25,6 +25,8 @@ struct ProfileWidgetEntryView: View {
         } icon: {
           Image(systemName: statusSymbol)
         }
+      case .accessoryCircular:
+        circular
       case .accessoryRectangular:
         VStack(alignment: .leading, spacing: 3) {
           Text(entry.profileName ?? "Foqos").font(.headline).lineLimit(1)
@@ -74,6 +76,93 @@ struct ProfileWidgetEntryView: View {
         .frame(maxWidth: .infinity)
       }
     }
+  }
+
+  // The ring only ever means session progress, so it appears for timed and scheduled sessions.
+  // Every other state uses the standard accessory disc. Durations past an hour read as "1h 15m"
+  // instead of a timer that would truncate; the timeline refreshes them each session minute.
+  @ViewBuilder
+  private var circular: some View {
+    if let start = entry.sessionStartTime, let end = entry.sessionEndTime {
+      ProgressView(timerInterval: start...end, countsDown: false) {
+        EmptyView()
+      } currentValueLabel: {
+        // The ring's stroke narrows the space below center, and WidgetKit truncates there rather
+        // than scaling, so fall back to a smaller font for "1h 15m".
+        circularContent(symbol: "hourglass", horizontalInset: 12) {
+          let remaining = end.timeIntervalSince(entry.date)
+          if remaining >= 3600 {
+            let label = circularDuration((remaining / 60).rounded(.up) * 60)
+            ViewThatFits(in: .horizontal) {
+              Text(label)
+              Text(label).font(.system(.caption, design: .rounded).weight(.semibold))
+            }
+          } else {
+            Text(timerInterval: entry.date...end, countsDown: true)
+          }
+        }
+      }
+      .progressViewStyle(.circular)
+      .widgetAccentable()
+      .accessibilityLabel("Focusing, ends \(end.formatted(date: .omitted, time: .shortened))")
+    } else if let start = entry.sessionStartTime, !entry.isBreakActive, !entry.isPauseActive {
+      circularBadge(symbol: "hourglass") {
+        let elapsed = entry.date.timeIntervalSince(start)
+        if elapsed >= 3600 {
+          Text(circularDuration(elapsed))
+        } else {
+          Text(start, style: .timer)
+        }
+      }
+      .accessibilityLabel("Focusing")
+    } else if entry.isBreakActive || entry.isPauseActive {
+      circularBadge(symbol: entry.isPauseActive ? "pause.fill" : "cup.and.saucer.fill") {
+        Text(entry.isPauseActive ? "Paused" : "Break")
+      }
+      .accessibilityLabel(entry.statusLabel)
+    } else if entry.isDataUnavailable || entry.selectedProfileId == nil {
+      circularBadge(symbol: entry.isDataUnavailable ? "arrow.clockwise" : "plus") { EmptyView() }
+        .accessibilityLabel(entry.statusLabel)
+    } else {
+      circularBadge(symbol: "hourglass") {
+        Text(circularDuration(duration))
+      }
+      .accessibilityLabel(
+        "\(WidgetActivitySummary.durationLabel(duration)) focused \(isMonthly ? "this month" : "this week")"
+      )
+    }
+  }
+
+  // "14h 12m" doesn't fit inside the circle, so drop the minutes from ten hours up.
+  private func circularDuration(_ interval: TimeInterval) -> String {
+    interval >= 10 * 3600
+      ? "\(Int(interval / 3600))h" : WidgetActivitySummary.durationLabel(interval)
+  }
+
+  private func circularBadge<Value: View>(
+    symbol: String, @ViewBuilder value: () -> Value
+  ) -> some View {
+    ZStack {
+      AccessoryWidgetBackground()
+      circularContent(symbol: symbol, value: value)
+    }
+  }
+
+  private func circularContent<Value: View>(
+    symbol: String, horizontalInset: CGFloat = 6, @ViewBuilder value: () -> Value
+  ) -> some View {
+    VStack(spacing: 1) {
+      Image(systemName: symbol)
+        .font(.caption.weight(.semibold))
+        .widgetAccentable()
+      value()
+        .font(.system(.callout, design: .rounded).weight(.semibold))
+        .monospacedDigit()
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .multilineTextAlignment(.center)
+    }
+    .padding(.horizontal, horizontalInset)
   }
 
   private func profileHeader(compact: Bool) -> some View {

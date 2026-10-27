@@ -3,11 +3,14 @@ import SwiftUI
 
 // Gallery and SwiftUI previews only; never persisted into the user's activity.
 enum WidgetPreviewData {
-  static func entry(period: WidgetActivityPeriod = .week) -> ProfileWidgetEntry {
+  private static let profileID = UUID(uuidString: "FEABBD23-D979-412D-ADE0-788B352E96FD")!
+
+  static func entry(
+    period: WidgetActivityPeriod = .week, activeSession: WidgetSessionInfo? = nil
+  ) -> ProfileWidgetEntry {
     let calendar = Calendar.current
     let date = calendar.date(from: DateComponents(year: 2026, month: 9, day: 24, hour: 16))!
     let monthStart = calendar.dateInterval(of: .month, for: date)!.start
-    let profileID = UUID(uuidString: "FEABBD23-D979-412D-ADE0-788B352E96FD")!
     let hours: [Double] = [
       2, 3.5, 0, 1.2, 4, 0, 0.8, 3, 2.3, 4.2, 1, 0, 2, 0, 3.1, 2.8, 4.5, 0, 2, 1, 3.5, 2.2, 4.8,
       2.7,
@@ -21,7 +24,7 @@ enum WidgetPreviewData {
       date: date,
       selectedProfileId: profileID.uuidString,
       profileName: "Deep work",
-      activeSession: nil,
+      activeSession: activeSession,
       profileInfo: WidgetProfileInfo(
         enableStrictMode: true, enableAllowMode: false, selectedItemCount: 8,
         strategyID: "NFCBlockingStrategy"),
@@ -29,6 +32,18 @@ enum WidgetPreviewData {
       useProfileURL: false,
       activity: .make(sessions: sessions, at: date), activityPeriod: period,
       themeColor: ThemeManager().themeColor
+    )
+  }
+
+  static func session(
+    focusedFor elapsed: TimeInterval, remaining: TimeInterval?, isOnBreak: Bool = false
+  ) -> WidgetSessionInfo {
+    let start = Date.now.addingTimeInterval(-elapsed)
+    return WidgetSessionInfo(
+      blockedProfileId: profileID, startTime: start, endTime: nil,
+      breakStartTime: isOnBreak ? .now : nil, breakEndTime: nil,
+      pauseStartTime: nil, pauseEndTime: nil,
+      expectedEndTime: remaining.map { Date.now.addingTimeInterval($0) }
     )
   }
 }

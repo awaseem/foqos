@@ -3,7 +3,7 @@ import SwiftUI
 import WidgetKit
 
 struct ProfileWidgetEntry: TimelineEntry {
-  let date: Date
+  var date: Date
   let selectedProfileId: String?
   let profileName: String?
   let activeSession: WidgetSessionInfo?
@@ -34,6 +34,13 @@ struct ProfileWidgetEntry: TimelineEntry {
   }
 
   var sessionStartTime: Date? { isSessionActive ? activeSession?.startTime : nil }
+
+  var sessionEndTime: Date? {
+    guard isSessionActive, !isBreakActive, !isPauseActive,
+      let end = activeSession?.expectedEndTime, end > date
+    else { return nil }
+    return end
+  }
 
   var destination: URL {
     if isSessionActive || hasOtherActiveProfile { return URL(string: "https://foqos.app")! }

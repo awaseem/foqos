@@ -19,8 +19,22 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
 
   func timeline(for configuration: Intent, in context: Context) async -> Timeline<Entry> {
     let current = await entry(for: configuration)
-    let nextRefresh = current.date.addingTimeInterval(current.isSessionActive ? 5 * 60 : 15 * 60)
-    return Timeline(entries: [current], policy: .after(nextRefresh))
+    var nextRefresh = current.date.addingTimeInterval(current.isSessionActive ? 5 * 60 : 15 * 60)
+    var entries = [current]
+    if let end = current.sessionEndTime { nextRefresh = min(nextRefresh, end) }
+    if let start = current.sessionStartTime, !current.isBreakActive, !current.isPauseActive {
+      // The circular family shows "1h 15m" past an hour, so add an entry on each session minute
+      // until the next reload.
+      let elapsedMinutes = (current.date.timeIntervalSince(start) / 60).rounded(.down)
+      var stepDate = start.addingTimeInterval((elapsedMinutes + 1) * 60)
+      while stepDate < nextRefresh {
+        var step = current
+        step.date = stepDate
+        entries.append(step)
+        stepDate.addTimeInterval(60)
+      }
+    }
+    return Timeline(entries: entries, policy: .after(nextRefresh))
   }
 
   private func entry(for configuration: Intent) async -> Entry {
