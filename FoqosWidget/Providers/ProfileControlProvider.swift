@@ -21,7 +21,9 @@ struct ProfileControlProvider: AppIntentTimelineProvider {
     let current = await entry(for: configuration)
     var nextRefresh = current.date.addingTimeInterval(current.isSessionActive ? 5 * 60 : 15 * 60)
     var entries = [current]
-    if let end = current.sessionEndTime { nextRefresh = min(nextRefresh, end) }
+    if let end = current.sessionEndTime ?? current.breakOrPauseRange?.upperBound {
+      nextRefresh = min(nextRefresh, end)
+    }
     if let start = current.sessionStartTime, !current.isBreakActive, !current.isPauseActive {
       // The circular family shows "1h 15m" past an hour, so add an entry on each session minute
       // until the next reload.

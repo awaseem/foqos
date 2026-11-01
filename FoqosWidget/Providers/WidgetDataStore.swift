@@ -75,7 +75,8 @@ enum WidgetDataStore {
           blockedProfileId: $0.blockedProfile.id, startTime: $0.startTime, endTime: $0.endTime,
           breakStartTime: $0.breakStartTime, breakEndTime: $0.breakEndTime,
           pauseStartTime: $0.pauseStartTime, pauseEndTime: $0.pauseEndTime,
-          expectedEndTime: expectedEndTime(for: $0)
+          expectedEndTime: expectedEndTime(for: $0),
+          breakOrPauseEndTime: breakOrPauseEndTime(for: $0)
         )
       },
       profileInfo: profile.map {
@@ -115,5 +116,22 @@ enum WidgetDataStore {
     guard isTimerSession, let strategyData = profile.strategyData else { return nil }
     let timerData = StrategyTimerData.toStrategyTimerData(from: strategyData)
     return session.startTime.addingTimeInterval(TimeInterval(timerData.durationInMinutes * 60))
+  }
+
+  // Mirrors the pause and break branches of SessionTimeCalculator.expectedEndTime.
+  private static func breakOrPauseEndTime(for session: BlockedProfileSession) -> Date? {
+    let profile = session.blockedProfile
+    if let pauseStart = session.pauseStartTime, session.pauseEndTime == nil {
+      let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: profile.strategyData)
+      return pauseStart.addingTimeInterval(TimeInterval(pauseData.pauseDurationInMinutes * 60))
+    }
+
+    guard let breakStart = session.breakStartTime, session.breakEndTime == nil else { return nil }
+    let allowance = TimeInterval(profile.breakTimeInMinutes * 60)
+    // Multiple breaks share one allowance, so a later break only gets what earlier ones left.
+    let remaining =
+      profile.allowMultipleBreaks
+      ? max(0, allowance - session.usedBreakDurationInSeconds) : allowance
+    return breakStart.addingTimeInterval(remaining)
   }
 }

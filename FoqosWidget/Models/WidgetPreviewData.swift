@@ -36,14 +36,18 @@ enum WidgetPreviewData {
   }
 
   static func session(
-    focusedFor elapsed: TimeInterval, remaining: TimeInterval?, isOnBreak: Bool = false
+    focusedFor elapsed: TimeInterval, remaining: TimeInterval?, isOnBreak: Bool = false,
+    isPaused: Bool = false, breakOrPauseRemaining: TimeInterval? = nil
   ) -> WidgetSessionInfo {
     let start = Date.now.addingTimeInterval(-elapsed)
+    // Five minutes in, so the countdown ring shows partly drained.
+    let interruptionStart = Date.now.addingTimeInterval(breakOrPauseRemaining == nil ? 0 : -5 * 60)
     return WidgetSessionInfo(
       blockedProfileId: profileID, startTime: start, endTime: nil,
-      breakStartTime: isOnBreak ? .now : nil, breakEndTime: nil,
-      pauseStartTime: nil, pauseEndTime: nil,
-      expectedEndTime: remaining.map { Date.now.addingTimeInterval($0) }
+      breakStartTime: isOnBreak ? interruptionStart : nil, breakEndTime: nil,
+      pauseStartTime: isPaused ? interruptionStart : nil, pauseEndTime: nil,
+      expectedEndTime: remaining.map { Date.now.addingTimeInterval($0) },
+      breakOrPauseEndTime: breakOrPauseRemaining.map { Date.now.addingTimeInterval($0) }
     )
   }
 }

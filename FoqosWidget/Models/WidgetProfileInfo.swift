@@ -16,4 +16,5 @@ struct WidgetSessionInfo {
   let pauseStartTime: Date?
   let pauseEndTime: Date?
   var expectedEndTime: Date? = nil
+  var breakOrPauseEndTime: Date? = nil
 }

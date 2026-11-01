@@ -58,6 +58,13 @@ struct FoqosWidgetAttributes: ActivityAttributes {
       let displayEndTime = max(now, expectedEndTime)
       return now...displayEndTime
     }
+
+    // expectedEndTime is the pause or break end while one is running, so the ring tracks that.
+    var progressRange: ClosedRange<Date>? {
+      let start = isPauseActive ? pauseStartTime : isBreakActive ? breakStartTime : startTime
+      guard let start, let expectedEndTime, expectedEndTime > max(start, .now) else { return nil }
+      return start...expectedEndTime
+    }
   }
 
   var name: String
@@ -73,6 +80,7 @@ struct FoqosWidgetLiveActivity: Widget {
   private let expandedTimerWidth: CGFloat = 76
   private let expandedTimerFontSize: CGFloat = 24
   private let minimalLogoSize: CGFloat = 18
+  private let minimalRingLogoSize: CGFloat = 12
 
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
@@ -102,7 +110,7 @@ struct FoqosWidgetLiveActivity: Widget {
           compactIslandStatusView(for: context.state)
         #endif
       } minimal: {
-        activityIcon(for: context.state, size: minimalLogoSize)
+        minimalIslandView(for: context.state)
       }
       .widgetURL(URL(string: "http://www.foqos.app"))
       .keylineTint(context.state.themeColor)
@@ -179,6 +187,26 @@ struct FoqosWidgetLiveActivity: Widget {
         )
     } else {
       compactElapsedTimerText(for: state)
+    }
+  }
+
+  @ViewBuilder
+  private func minimalIslandView(for state: FoqosWidgetAttributes.ContentState) -> some View {
+    if let range = state.progressRange {
+      let isInterrupted = state.isBreakActive || state.isPauseActive
+      // Same ring as the Lock Screen widget: focus fills up, a break or pause drains.
+      ProgressView(timerInterval: range, countsDown: isInterrupted) {
+        SwiftUI.EmptyView()
+      } currentValueLabel: {
+        activityIcon(for: state, size: minimalRingLogoSize)
+      }
+      .progressViewStyle(.circular)
+      .tint(state.themeColor)
+      .accessibilityLabel(
+        "\(state.isPauseActive ? "Paused" : state.isBreakActive ? "On a break" : "Focusing"), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
+      )
+    } else {
+      activityIcon(for: state, size: minimalLogoSize)
     }
   }
 
@@ -537,6 +565,15 @@ extension FoqosWidgetAttributes.ContentState {
   FoqosWidgetLiveActivity()
 } contentStates: {
   FoqosWidgetAttributes.ContentState.mintCat
+}
+
+@available(iOS 18.0, *)
+#Preview("Minimal Island", as: .dynamicIsland(.minimal), using: FoqosWidgetAttributes.preview) {
+  FoqosWidgetLiveActivity()
+} contentStates: {
+  FoqosWidgetAttributes.ContentState.shortTime
+  FoqosWidgetAttributes.ContentState.breakActive
+  FoqosWidgetAttributes.ContentState.pauseActive
 }
 
 #Preview("StandBy · Focus", traits: .fixedLayout(width: 390, height: 180)) {

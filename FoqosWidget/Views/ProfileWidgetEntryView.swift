@@ -87,24 +87,23 @@ struct ProfileWidgetEntryView: View {
       ProgressView(timerInterval: start...end, countsDown: false) {
         EmptyView()
       } currentValueLabel: {
-        // The ring's stroke narrows the space below center, and WidgetKit truncates there rather
-        // than scaling, so fall back to a smaller font for "1h 15m".
-        circularContent(symbol: "hourglass", horizontalInset: 12) {
-          let remaining = end.timeIntervalSince(entry.date)
-          if remaining >= 3600 {
-            let label = circularDuration((remaining / 60).rounded(.up) * 60)
-            ViewThatFits(in: .horizontal) {
-              Text(label)
-              Text(label).font(.system(.caption, design: .rounded).weight(.semibold))
-            }
-          } else {
-            Text(timerInterval: entry.date...end, countsDown: true)
-          }
-        }
+        circularCountdown(symbol: "hourglass", to: end)
       }
       .progressViewStyle(.circular)
       .widgetAccentable()
       .accessibilityLabel("Focusing, ends \(end.formatted(date: .omitted, time: .shortened))")
+    } else if let range = entry.breakOrPauseRange {
+      // Drains instead of filling and skips the accent tint, so a break doesn't read as focus time
+      // on a monochrome Lock Screen.
+      ProgressView(timerInterval: range, countsDown: true) {
+        EmptyView()
+      } currentValueLabel: {
+        circularCountdown(symbol: statusSymbol, to: range.upperBound)
+      }
+      .progressViewStyle(.circular)
+      .accessibilityLabel(
+        "\(entry.statusLabel), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
+      )
     } else if let start = entry.sessionStartTime, !entry.isBreakActive, !entry.isPauseActive {
       circularBadge(symbol: "hourglass") {
         let elapsed = entry.date.timeIntervalSince(start)
@@ -130,6 +129,23 @@ struct ProfileWidgetEntryView: View {
       .accessibilityLabel(
         "\(WidgetActivitySummary.durationLabel(duration)) focused \(isMonthly ? "this month" : "this week")"
       )
+    }
+  }
+
+  private func circularCountdown(symbol: String, to end: Date) -> some View {
+    // The ring's stroke narrows the space below center, and WidgetKit truncates there rather
+    // than scaling, so fall back to a smaller font for "1h 15m".
+    circularContent(symbol: symbol, horizontalInset: 12) {
+      let remaining = end.timeIntervalSince(entry.date)
+      if remaining >= 3600 {
+        let label = circularDuration((remaining / 60).rounded(.up) * 60)
+        ViewThatFits(in: .horizontal) {
+          Text(label)
+          Text(label).font(.system(.caption, design: .rounded).weight(.semibold))
+        }
+      } else {
+        Text(timerInterval: entry.date...end, countsDown: true)
+      }
     }
   }
 
