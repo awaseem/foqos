@@ -36,6 +36,8 @@ struct BlockedProfileListView: View {
 
   @State private var profileToEdit: BlockedProfiles?
   @State private var showErrorAlert = false
+  @State private var profileToUnlockForDeletion: BlockedProfiles?
+  @State private var showingUnlockForDeletion = false
   @State private var editMode: EditMode = .inactive
 
   var body: some View {
@@ -155,6 +157,16 @@ struct BlockedProfileListView: View {
           "You cannot delete a profile that is currently active. Please switch to a different profile first."
         )
       }
+      .alert("Unlock to Delete", isPresented: $showingUnlockForDeletion) {
+        Button("Cancel", role: .cancel) { profileToUnlockForDeletion = nil }
+        Button("Open Profile") {
+          editMode = .inactive
+          profileToEdit = profileToUnlockForDeletion
+          profileToUnlockForDeletion = nil
+        }
+      } message: {
+        Text("Open this profile and enter its password before deleting it from the profile menu.")
+      }
     }
   }
 
@@ -175,6 +187,15 @@ struct BlockedProfileListView: View {
       let profile = profiles[index]
       if profile.id == activeSession?.blockedProfile.id {
         showErrorAlert = true
+        return
+      }
+    }
+
+    // Check every selection before deleting anything, including mixed locked/unlocked selections.
+    for index in offsets {
+      if profiles[index].editLockCredential != nil {
+        profileToUnlockForDeletion = profiles[index]
+        showingUnlockForDeletion = true
         return
       }
     }

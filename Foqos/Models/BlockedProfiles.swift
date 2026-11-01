@@ -13,6 +13,7 @@ class BlockedProfiles {
   var strategyData: Data?
   var askForStartSettings: Bool = true
   var order: Int = 0
+  var editLockCredential: Data? = nil
 
   var enableLiveActivity: Bool = false
   var reminderTimeInSeconds: UInt32?

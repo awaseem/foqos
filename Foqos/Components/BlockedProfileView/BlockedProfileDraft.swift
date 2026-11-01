@@ -113,8 +113,12 @@ final class BlockedProfileDraft: ObservableObject {
 
   func save(
     existingProfile: BlockedProfiles?,
-    in context: ModelContext
+    in context: ModelContext,
+    authorization: ProfileEditAuthorization? = nil
   ) throws -> BlockedProfiles {
+    if let existingProfile {
+      try ProfileLockUtil.requireAuthorization(for: existingProfile, authorization: authorization)
+    }
     ensureSavedStartSettings()
     schedule.updatedAt = Date()
 
@@ -128,6 +132,7 @@ final class BlockedProfileDraft: ObservableObject {
       let updatedProfile = try BlockedProfiles.updateProfile(
         existingProfile,
         in: context,
+        authorization: authorization,
         name: name,
         selection: selectedActivity,
         blockingStrategyId: selectedStrategy?.getIdentifier(),
