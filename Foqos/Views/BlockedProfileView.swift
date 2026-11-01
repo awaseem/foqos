@@ -8,15 +8,24 @@ struct AlertIdentifier: Identifiable {
   enum AlertType {
     case error
     case deleteProfile
+    case removePassword
   }
 
   let id: AlertType
   var errorMessage: String?
 }
 
+private struct ProfilePasswordDestination: Identifiable {
+  let profile: BlockedProfiles
+  let mode: ProfilePasswordMode
+
+  var id: String { "\(profile.id)-\(mode.rawValue)" }
+}
+
 struct BlockedProfileView: View {
   @Environment(\.modelContext) private var modelContext
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.scenePhase) private var scenePhase
 
   @EnvironmentObject private var nfcWriter: NFCWriter
   @EnvironmentObject private var strategyManager: StrategyManager
@@ -25,6 +34,8 @@ struct BlockedProfileView: View {
   var profile: BlockedProfiles?
 
   @StateObject private var draft: BlockedProfileDraft
+  @State private var editAuthorization: ProfileEditAuthorization?
+  @State private var passwordDestination: ProfilePasswordDestination?
 
   // QR code generator
   @State private var showingGeneratedQRCode = false
@@ -66,6 +77,15 @@ struct BlockedProfileView: View {
     strategyManager.activeSession?.isActive ?? false
   }
 
+  private var isPasswordProtected: Bool {
+    profile?.editLockCredential != nil
+  }
+
+  private var isLocked: Bool {
+    guard let profile, isPasswordProtected else { return false }
+    return editAuthorization?.allowsEditing(profile) != true
+  }
+
   init(profile: BlockedProfiles? = nil) {
     self.profile = profile
     _draft = StateObject(wrappedValue: BlockedProfileDraft(profile: profile))
@@ -74,6 +94,15 @@ struct BlockedProfileView: View {
   var body: some View {
     NavigationStack {
       Form {
+        if isPasswordProtected {
+          ProfileLockStatusSection(
+            isLocked: isLocked,
+            isBlocking: isBlocking,
+            onUnlock: { presentPassword(.unlock) },
+            onLock: { relockProfile() }
+          )
+        }
+
         // Show lock status when profile is active
         if isBlocking {
           Section {
@@ -90,50 +119,52 @@ struct BlockedProfileView: View {
           }
         }
 
-        BlockedProfileNameSection(draft: draft, disabled: false)
+        Group {
+          BlockedProfileNameSection(draft: draft, disabled: isBlocking)
 
-        BlockedProfileStrategySection(
-          draft: draft,
-          showingStrategyPicker: $showingStrategyPicker,
-          disabled: isBlocking,
-          showsStartSettings: isEditing,
-          onUpdateStartSettings: { settingsKind in
-            startSettingsDestination = settingsKind
-          }
-        )
+          BlockedProfileStrategySection(
+            draft: draft,
+            showingStrategyPicker: $showingStrategyPicker,
+            disabled: isBlocking,
+            showsStartSettings: isEditing,
+            onUpdateStartSettings: { settingsKind in
+              startSettingsDestination = settingsKind
+            }
+          )
 
-        BlockedProfileAppsSection(
-          draft: draft,
-          showingActivityPicker: $showingActivityPicker,
-          disabled: isBlocking
-        )
+          BlockedProfileAppsSection(
+            draft: draft,
+            showingActivityPicker: $showingActivityPicker,
+            disabled: isBlocking
+          )
 
-        BlockedProfileDomainsSection(
-          draft: draft,
-          showingDomainPicker: $showingDomainPicker,
-          disabled: isBlocking
-        )
+          BlockedProfileDomainsSection(
+            draft: draft,
+            showingDomainPicker: $showingDomainPicker,
+            disabled: isBlocking
+          )
 
-        BlockedProfileStrictUnlocksSection(draft: draft, disabled: isBlocking)
+          BlockedProfileStrictUnlocksSection(draft: draft, disabled: isBlocking)
 
-        BlockedProfileScheduleSection(
-          draft: draft,
-          showingSchedulePicker: $showingSchedulePicker,
-          disabled: isBlocking
-        )
+          BlockedProfileScheduleSection(
+            draft: draft,
+            showingSchedulePicker: $showingSchedulePicker,
+            disabled: isBlocking
+          )
 
-        BlockedProfileBreaksSection(draft: draft, disabled: isBlocking)
+          BlockedProfileBreaksSection(draft: draft, disabled: isBlocking)
 
-        BlockedProfileStrictSafeguardsSection(draft: draft, disabled: isBlocking)
+          BlockedProfileStrictSafeguardsSection(draft: draft, disabled: isBlocking)
 
-        BlockedProfileSessionSafeguardsSection(draft: draft, disabled: isBlocking)
+          BlockedProfileSessionSafeguardsSection(draft: draft, disabled: isBlocking)
 
-        BlockedProfileNotificationsSection(
-          draft: draft,
-          profile: profile,
-          disabled: isBlocking
-        )
-
+          BlockedProfileNotificationsSection(
+            draft: draft,
+            profile: profile,
+            disabled: isBlocking
+          )
+        }
+        .disabled(isLocked)
       }
       .scrollDismissesKeyboard(.interactively)
       .navigationTitle(isEditing ? "Edit Profile" : "New Profile")
@@ -149,6 +180,36 @@ struct BlockedProfileView: View {
           ToolbarItemGroup(placement: .topBarTrailing) {
             if !isBlocking {
               Menu {
+                if isPasswordProtected {
+                  if isLocked {
+                    Button {
+                      presentPassword(.unlock)
+                    } label: {
+                      Label("Unlock Profile", systemImage: "lock.open")
+                    }
+                  } else {
+                    Button {
+                      presentPassword(.change)
+                    } label: {
+                      Label("Change Password", systemImage: "key")
+                    }
+
+                    Button(role: .destructive) {
+                      alertIdentifier = AlertIdentifier(id: .removePassword)
+                    } label: {
+                      Label("Remove Password", systemImage: "lock.slash")
+                    }
+                  }
+                } else {
+                  Button {
+                    presentPassword(.setup)
+                  } label: {
+                    Label("Protect Profile", systemImage: "lock")
+                  }
+                }
+
+                Divider()
+
                 Button {
                   writeProfile()
                 } label: {
@@ -167,6 +228,7 @@ struct BlockedProfileView: View {
                 } label: {
                   Label("Duplicate Profile", systemImage: "square.on.square")
                 }
+                .disabled(isLocked)
 
                 Divider()
 
@@ -175,6 +237,7 @@ struct BlockedProfileView: View {
                 } label: {
                   Label("Delete Profile", systemImage: "trash")
                 }
+                .disabled(isLocked)
               } label: {
                 Image(systemName: "ellipsis.circle")
               }
@@ -197,10 +260,24 @@ struct BlockedProfileView: View {
             Button(action: { saveProfile() }) {
               Image(systemName: "checkmark")
             }
-            .disabled(!draft.isValid)
+            .disabled(!draft.isValid || isLocked)
             .accessibilityLabel(isEditing ? "Update" : "Create")
           }
         }
+      }
+      .sheet(item: $passwordDestination) { destination in
+        ProfilePasswordView(
+          profile: destination.profile,
+          mode: destination.mode,
+          authorization: editAuthorization,
+          onUnlock: { authorization in
+            guard scenePhase == .active, !isBlocking else {
+              authorization.revoke()
+              return
+            }
+            editAuthorization = authorization
+          }
+        )
       }
       .sheet(isPresented: $showingActivityPicker) {
         AppPicker(
@@ -276,11 +353,11 @@ struct BlockedProfileView: View {
           cancelTitle: "Cancel",
           onConfirm: { enteredName in
             let trimmed = enteredName.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { return }
+            guard !trimmed.isEmpty, !isBlocking else { return }
             do {
               if let source = profile {
                 let clonedProfile = try BlockedProfiles.cloneProfile(
-                  source, in: modelContext, newName: trimmed)
+                  source, in: modelContext, newName: trimmed, authorization: editAuthorization)
                 DeviceActivityCenterUtil.scheduleTimerActivity(for: clonedProfile)
               }
             } catch {
@@ -304,18 +381,47 @@ struct BlockedProfileView: View {
               "Are you sure you want to delete this profile? This action cannot be undone."),
             primaryButton: .cancel(),
             secondaryButton: .destructive(Text("Delete")) {
-              dismiss()
+              guard !isBlocking else { return }
               if let profileToDelete = profile {
                 do {
-                  try BlockedProfiles.deleteProfile(profileToDelete, in: modelContext)
+                  try BlockedProfiles.deleteProfile(
+                    profileToDelete, in: modelContext, authorization: editAuthorization)
+                  try modelContext.save()
+                  dismiss()
                 } catch {
                   showError(message: error.localizedDescription)
                 }
               }
             }
           )
+        case .removePassword:
+          return Alert(
+            title: Text("Remove Password?"),
+            message: Text("Anyone using this device will be able to edit or delete this profile."),
+            primaryButton: .cancel(),
+            secondaryButton: .destructive(Text("Remove Password")) {
+              guard !isBlocking, let profile else { return }
+              do {
+                try ProfileLockUtil.setCredential(
+                  nil, for: profile, in: modelContext, authorization: editAuthorization)
+                revokeAuthorization()
+              } catch {
+                showError(message: error.localizedDescription)
+              }
+            }
+          )
         }
       }
+      .onChange(of: scenePhase) { _, phase in
+        if phase == .background { relockProfile() }
+      }
+      .onChange(of: isBlocking) { _, blocking in
+        if blocking { relockProfile() }
+      }
+      .onChange(of: profile?.editLockCredential) { _, _ in
+        revokeAuthorization()
+      }
+      .onDisappear { revokeAuthorization() }
     }
   }
 
@@ -355,12 +461,37 @@ struct BlockedProfileView: View {
   }
 
   private func saveProfile() {
+    guard !isBlocking else { return }
     do {
-      _ = try draft.save(existingProfile: profile, in: modelContext)
+      _ = try draft.save(
+        existingProfile: profile, in: modelContext, authorization: editAuthorization)
+      revokeAuthorization()
       dismiss()
     } catch {
       alertIdentifier = AlertIdentifier(id: .error, errorMessage: error.localizedDescription)
     }
+  }
+
+  private func revokeAuthorization() {
+    editAuthorization?.revoke()
+    editAuthorization = nil
+  }
+
+  private func presentPassword(_ mode: ProfilePasswordMode) {
+    guard let profile, !isBlocking else { return }
+    passwordDestination = ProfilePasswordDestination(profile: profile, mode: mode)
+  }
+
+  private func relockProfile() {
+    revokeAuthorization()
+    passwordDestination = nil
+    showingActivityPicker = false
+    showingDomainPicker = false
+    showingSchedulePicker = false
+    showingStrategyPicker = false
+    startSettingsDestination = nil
+    showingClonePrompt = false
+    alertIdentifier = nil
   }
 }
 
