@@ -1,0 +1,77 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : ""
+      }
+    ]
+  },
+  "identifier" : "D3F285AC",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6701001",
+      "localizations" : [
+        {
+          "description" : "Emergency break bailout pass (Light friction)",
+          "displayName" : "Light Stake Bailout",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_developer_support",
+      "referenceName" : "Light Stake Bailout",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6701002",
+      "localizations" : [
+        {
+          "description" : "Standard commitment stake to unlock emergency access",
+          "displayName" : "Standard Stake Bailout",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_developer_support_5",
+      "referenceName" : "Standard Stake Bailout",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6701003",
+      "localizations" : [
+        {
+          "description" : "Hardcore anti-bypass stake for focus sessions",
+          "displayName" : "Hardcore Stake Bailout",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_developer_support_10",
+      "referenceName" : "Hardcore Stake Bailout",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

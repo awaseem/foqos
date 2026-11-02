@@ -59,6 +59,27 @@ struct SettingsView: View {
 
         AppIconPicker()
 
+        Section("Discipline & Friction") {
+          NavigationLink {
+            BailoutSettingsView()
+          } label: {
+            HStack {
+              Image(systemName: "banknote.fill")
+                .foregroundStyle(themeManager.themeColor)
+                .font(.title3)
+
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Bailout Stakes")
+                  .font(.headline)
+                Text("Financial friction for emergency unblocks")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
+            }
+            .padding(.vertical, 4)
+          }
+        }
+
         Section("Help & Troubleshooting") {
           Link(destination: URL(string: "https://www.foqos.app/support.html")!) {
             HStack {

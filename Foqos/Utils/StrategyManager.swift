@@ -494,6 +494,25 @@ class StrategyManager: ObservableObject {
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
   }
 
+  func emergencyUnblockWithBailout(context: ModelContext) {
+    guard let activeSession = getActiveSession(context: context) else {
+      return
+    }
+
+    let manualStrategy = getStrategy(id: ManualBlockingStrategy.id, context: context)
+    _ = manualStrategy.stopBlocking(
+      context: context,
+      session: activeSession
+    )
+
+    self.liveActivityManager.endSessionActivity()
+    self.scheduleReminder(profile: activeSession.blockedProfile)
+    self.stopTimer()
+
+    // Bailout unblocks do not decrement the regular free emergency quota
+    WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
+  }
+
   func resetEmergencyUnblocks() {
     emergencyUnblocksRemaining = 3
     lastEmergencyUnblocksResetDateTimestamp = Date().timeIntervalSinceReferenceDate
