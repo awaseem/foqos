@@ -21,6 +21,7 @@ final class ModelStoreCompatibilityTests: ModelRegressionTestCase {
     let reader = ModelContext(reopened)
     let profile = try XCTUnwrap(BlockedProfiles.fetchProfiles(in: reader).first)
     XCTAssertEqual(profile.name, "Updated after upgrade")
+    XCTAssertNil(profile.editLockCredential)
     XCTAssertEqual(profile.sessions.count, 2)
     XCTAssertFalse(profile.enableHardMode)
     XCTAssertEqual(profile.hardModeDurationInMinutes, 30)

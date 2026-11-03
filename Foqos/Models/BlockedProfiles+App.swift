@@ -98,6 +98,7 @@ extension BlockedProfiles {
   static func updateProfile(
     _ profile: BlockedProfiles,
     in context: ModelContext,
+    authorization: ProfileEditAuthorization? = nil,
     name: String? = nil,
     selection: FamilyActivitySelection? = nil,
     blockingStrategyId: String? = nil,
@@ -125,6 +126,7 @@ extension BlockedProfiles {
     enableHardMode: Bool? = nil,
     hardModeDurationInMinutes: Int? = nil
   ) throws -> BlockedProfiles {
+    try ProfileLockUtil.requireAuthorization(for: profile, authorization: authorization)
     if let newName = name {
       profile.name = newName
     }
@@ -255,8 +257,10 @@ extension BlockedProfiles {
 
   static func deleteProfile(
     _ profile: BlockedProfiles,
-    in context: ModelContext
+    in context: ModelContext,
+    authorization: ProfileEditAuthorization? = nil
   ) throws {
+    try ProfileLockUtil.requireAuthorization(for: profile, authorization: authorization)
     // First end any active sessions
     for session in profile.sessions {
       if session.endTime == nil {
@@ -420,8 +424,10 @@ extension BlockedProfiles {
   static func cloneProfile(
     _ source: BlockedProfiles,
     in context: ModelContext,
-    newName: String
+    newName: String,
+    authorization: ProfileEditAuthorization? = nil
   ) throws -> BlockedProfiles {
+    try ProfileLockUtil.requireAuthorization(for: source, authorization: authorization)
     let nextOrder = getNextOrder(in: context)
     let cloned = BlockedProfiles(
       name: newName,
@@ -451,6 +457,7 @@ extension BlockedProfiles {
       hardModeDurationInMinutes: source.hardModeDurationInMinutes
     )
 
+    cloned.editLockCredential = source.editLockCredential
     context.insert(cloned)
     try context.save()
     return cloned
