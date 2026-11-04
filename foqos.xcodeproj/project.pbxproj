@@ -200,6 +200,7 @@
 				Models/Strategies/Data/StrategyTimerData.swift,
 				StrategyAssets.xcassets,
 				Utils/AppBlockerUtil.swift,
+				Utils/SessionTimeCalculator.swift,
 				Utils/SoftUnblockGrantStore.swift,
 				Utils/ThemeManager.swift,
 			);

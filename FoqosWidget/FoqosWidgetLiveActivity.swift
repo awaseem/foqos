@@ -61,7 +61,8 @@ struct FoqosWidgetAttributes: ActivityAttributes {
 
     // expectedEndTime is the pause or break end while one is running, so the ring tracks that.
     var progressRange: ClosedRange<Date>? {
-      let start = isPauseActive ? pauseStartTime : isBreakActive ? breakStartTime : startTime
+      guard isBreakActive || isPauseActive else { return nil }
+      let start = isPauseActive ? pauseStartTime : breakStartTime
       guard let start, let expectedEndTime, expectedEndTime > max(start, .now) else { return nil }
       return start...expectedEndTime
     }
@@ -80,7 +81,6 @@ struct FoqosWidgetLiveActivity: Widget {
   private let expandedTimerWidth: CGFloat = 76
   private let expandedTimerFontSize: CGFloat = 24
   private let minimalLogoSize: CGFloat = 18
-  private let minimalRingLogoSize: CGFloat = 12
 
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: FoqosWidgetAttributes.self) { context in
@@ -96,7 +96,7 @@ struct FoqosWidgetLiveActivity: Widget {
           expandedIslandStatusView(for: context.state)
         }
       } compactLeading: {
-        activityIcon(for: context.state, size: compactLogoSize)
+        islandProgressIcon(for: context.state, size: compactLogoSize)
       } compactTrailing: {
         #if compiler(>=6.4)
           if #available(iOS 27.0, *) {
@@ -110,7 +110,7 @@ struct FoqosWidgetLiveActivity: Widget {
           compactIslandStatusView(for: context.state)
         #endif
       } minimal: {
-        minimalIslandView(for: context.state)
+        islandProgressIcon(for: context.state, size: minimalLogoSize)
       }
       .widgetURL(URL(string: "http://www.foqos.app"))
       .keylineTint(context.state.themeColor)
@@ -191,22 +191,23 @@ struct FoqosWidgetLiveActivity: Widget {
   }
 
   @ViewBuilder
-  private func minimalIslandView(for state: FoqosWidgetAttributes.ContentState) -> some View {
+  private func islandProgressIcon(for state: FoqosWidgetAttributes.ContentState, size: CGFloat)
+    -> some View
+  {
     if let range = state.progressRange {
-      let isInterrupted = state.isBreakActive || state.isPauseActive
-      // Same ring as the Lock Screen widget: focus fills up, a break or pause drains.
-      ProgressView(timerInterval: range, countsDown: isInterrupted) {
+      ProgressView(timerInterval: range, countsDown: true) {
         SwiftUI.EmptyView()
       } currentValueLabel: {
-        activityIcon(for: state, size: minimalRingLogoSize)
+        activityIcon(for: state, size: size * 2 / 3)
       }
       .progressViewStyle(.circular)
+      .frame(width: size, height: size)
       .tint(state.themeColor)
       .accessibilityLabel(
-        "\(state.isPauseActive ? "Paused" : state.isBreakActive ? "On a break" : "Focusing"), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
+        "\(state.isPauseActive ? "Paused" : "On a break"), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
       )
     } else {
-      activityIcon(for: state, size: minimalLogoSize)
+      activityIcon(for: state, size: size)
     }
   }
 
@@ -562,11 +563,12 @@ extension FoqosWidgetAttributes.ContentState {
 }
 
 @available(iOS 18.0, *)
-#Preview("Mint Dynamic Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview)
-{
+#Preview("Compact Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview) {
   FoqosWidgetLiveActivity()
 } contentStates: {
   FoqosWidgetAttributes.ContentState.mintCat
+  FoqosWidgetAttributes.ContentState.breakActive
+  FoqosWidgetAttributes.ContentState.pauseActive
 }
 
 @available(iOS 18.0, *)
