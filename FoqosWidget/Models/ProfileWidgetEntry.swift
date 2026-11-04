@@ -42,6 +42,14 @@ struct ProfileWidgetEntry: TimelineEntry {
     return end
   }
 
+  var breakOrPauseRange: ClosedRange<Date>? {
+    guard isBreakActive || isPauseActive,
+      let start = isPauseActive ? activeSession?.pauseStartTime : activeSession?.breakStartTime,
+      let end = activeSession?.breakOrPauseEndTime, start < end, end > date
+    else { return nil }
+    return start...end
+  }
+
   var destination: URL {
     if isSessionActive || hasOtherActiveProfile { return URL(string: "https://foqos.app")! }
     return deepLinkURL ?? URL(string: "foqos://")!

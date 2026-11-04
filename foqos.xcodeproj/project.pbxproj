@@ -196,9 +196,11 @@
 				Models/Shared.swift,
 				Models/SoftUnblockGrant.swift,
 				Models/Strategies/BlockingStrategyArtwork.swift,
+				Models/Strategies/Data/StrategyPauseTimerData.swift,
 				Models/Strategies/Data/StrategyTimerData.swift,
 				StrategyAssets.xcassets,
 				Utils/AppBlockerUtil.swift,
+				Utils/SessionTimeCalculator.swift,
 				Utils/SoftUnblockGrantStore.swift,
 				Utils/ThemeManager.swift,
 			);

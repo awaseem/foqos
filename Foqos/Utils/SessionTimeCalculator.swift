@@ -1,80 +1,25 @@
 import Foundation
 
+// Shared by the app and widget extension without loading blocking strategies.
 enum SessionTimeCalculator {
-  static let countdownReloadDelay: TimeInterval = 30
-  static let countdownResetGracePeriod: TimeInterval = 90
-
-  private static let timerStrategyIds: Set<String> = [
-    NFCTimerBlockingStrategy.id,
-    QRTimerBlockingStrategy.id,
-    ShortcutTimerBlockingStrategy.id,
+  private static let timerStrategyIDs: Set<String> = [
+    "NFCTimerBlockingStrategy", "QRTimerBlockingStrategy", "ShortcutTimerBlockingStrategy",
   ]
 
-  static func hardModeUnlockTime(for session: BlockedProfileSession) -> Date? {
+  static func breakOrPauseEndTime(for session: BlockedProfileSession) -> Date? {
     let profile = session.blockedProfile
-    guard profile.enableHardMode, profile.allowsHardMode else { return nil }
-    let minutes = min(720, max(30, profile.hardModeDurationInMinutes))
-    return session.startTime.addingTimeInterval(TimeInterval(minutes * 60))
-  }
-
-  static func elapsedFocusTime(
-    for session: BlockedProfileSession,
-    at date: Date = Date()
-  ) -> TimeInterval {
-    let rawElapsedTime = date.timeIntervalSince(session.startTime)
-    let breakDuration = calculateBreakDuration(for: session, at: date)
-    return max(0, rawElapsedTime - breakDuration)
-  }
-
-  static func displayedTime(
-    for session: BlockedProfileSession,
-    elapsedFocusTime: TimeInterval? = nil,
-    at date: Date = Date()
-  ) -> TimeInterval {
-    if let expectedEndTime = expectedEndTime(for: session) {
-      return max(0, expectedEndTime.timeIntervalSince(date))
+    if let pauseStart = session.pauseStartTime, session.pauseEndTime == nil {
+      let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: profile.strategyData)
+      return pauseStart.addingTimeInterval(TimeInterval(pauseData.pauseDurationInMinutes * 60))
     }
 
-    return elapsedFocusTime ?? self.elapsedFocusTime(for: session, at: date)
-  }
-
-  static func isCountdownExpired(
-    for session: BlockedProfileSession,
-    at date: Date = Date()
-  ) -> Bool {
-    guard let expectedEndTime = expectedEndTime(for: session) else {
-      return false
-    }
-
-    return expectedEndTime.addingTimeInterval(countdownResetGracePeriod) <= date
-  }
-
-  static func isCountdownReloadDue(
-    for session: BlockedProfileSession,
-    at date: Date = Date()
-  ) -> Bool {
-    guard let expectedEndTime = expectedEndTime(for: session) else {
-      return false
-    }
-
-    return expectedEndTime.addingTimeInterval(countdownReloadDelay) <= date
-  }
-
-  static func expectedEndTime(for session: BlockedProfileSession) -> Date? {
-    if let pauseStartTime = session.pauseStartTime, session.isPauseActive {
-      return pauseStartTime.addingTimeInterval(pauseDurationInSeconds(for: session.blockedProfile))
-    }
-
-    if let breakStartTime = session.breakStartTime, session.isBreakActive {
-      if session.blockedProfile.allowMultipleBreaks {
-        let remainingAllowanceAtBreakStart = session.remainingBreakAllowance(at: breakStartTime)
-        return breakStartTime.addingTimeInterval(remainingAllowanceAtBreakStart)
-      }
-
-      return breakStartTime.addingTimeInterval(session.totalBreakAllowanceInSeconds)
-    }
-
-    return expectedSessionEndTime(for: session)
+    guard let breakStart = session.breakStartTime, session.breakEndTime == nil else { return nil }
+    let allowance = TimeInterval(profile.breakTimeInMinutes * 60)
+    // Later breaks use only the allowance left by completed breaks.
+    let remaining =
+      profile.allowMultipleBreaks
+      ? max(0, allowance - session.usedBreakDurationInSeconds) : allowance
+    return breakStart.addingTimeInterval(remaining)
   }
 
   static func expectedSessionEndTime(for session: BlockedProfileSession) -> Date? {
@@ -106,8 +51,8 @@ enum SessionTimeCalculator {
   }
 
   static func isTimerSession(_ session: BlockedProfileSession) -> Bool {
-    Self.timerStrategyIds.contains(session.tag)
-      || Self.timerStrategyIds.contains(session.blockedProfile.blockingStrategyId ?? "")
+    Self.timerStrategyIDs.contains(session.tag)
+      || Self.timerStrategyIDs.contains(session.blockedProfile.blockingStrategyId ?? "")
   }
 
   static func timerDurationInSeconds(for session: BlockedProfileSession) -> TimeInterval? {
@@ -121,37 +66,5 @@ enum SessionTimeCalculator {
 
   private static func isScheduledSession(_ session: BlockedProfileSession) -> Bool {
     session.blockedProfile.schedule?.isActive == true && UUID(uuidString: session.tag) != nil
-  }
-
-  private static func pauseDurationInSeconds(for profile: BlockedProfiles) -> TimeInterval {
-    guard let strategyData = profile.strategyData else {
-      return TimeInterval(15 * 60)
-    }
-
-    let pauseData = StrategyPauseTimerData.toStrategyPauseTimerData(from: strategyData)
-    return TimeInterval(pauseData.pauseDurationInMinutes * 60)
-  }
-
-  private static func calculateBreakDuration(
-    for session: BlockedProfileSession,
-    at date: Date
-  ) -> TimeInterval {
-    if session.blockedProfile.allowMultipleBreaks {
-      return session.usedBreakDurationIncludingActiveBreak(at: date)
-    }
-
-    guard let breakStartTime = session.breakStartTime else {
-      return 0
-    }
-
-    if let breakEndTime = session.breakEndTime {
-      return max(0, breakEndTime.timeIntervalSince(breakStartTime))
-    }
-
-    if session.isBreakActive {
-      return max(0, date.timeIntervalSince(breakStartTime))
-    }
-
-    return 0
   }
 }

@@ -58,6 +58,14 @@ struct FoqosWidgetAttributes: ActivityAttributes {
       let displayEndTime = max(now, expectedEndTime)
       return now...displayEndTime
     }
+
+    // expectedEndTime is the pause or break end while one is running, so the ring tracks that.
+    var progressRange: ClosedRange<Date>? {
+      guard isBreakActive || isPauseActive else { return nil }
+      let start = isPauseActive ? pauseStartTime : breakStartTime
+      guard let start, let expectedEndTime, expectedEndTime > max(start, .now) else { return nil }
+      return start...expectedEndTime
+    }
   }
 
   var name: String
@@ -88,7 +96,7 @@ struct FoqosWidgetLiveActivity: Widget {
           expandedIslandStatusView(for: context.state)
         }
       } compactLeading: {
-        activityIcon(for: context.state, size: compactLogoSize)
+        islandProgressIcon(for: context.state, size: compactLogoSize)
       } compactTrailing: {
         #if compiler(>=6.4)
           if #available(iOS 27.0, *) {
@@ -102,7 +110,7 @@ struct FoqosWidgetLiveActivity: Widget {
           compactIslandStatusView(for: context.state)
         #endif
       } minimal: {
-        activityIcon(for: context.state, size: minimalLogoSize)
+        islandProgressIcon(for: context.state, size: minimalLogoSize)
       }
       .widgetURL(URL(string: "http://www.foqos.app"))
       .keylineTint(context.state.themeColor)
@@ -145,10 +153,10 @@ struct FoqosWidgetLiveActivity: Widget {
     for state: FoqosWidgetAttributes.ContentState
   ) -> some View {
     if state.isPauseActive {
-      stickerStatusView(assetName: "PauseStickerIcon", size: 30)
+      symbolStatusView("pause.fill", size: 30, tint: state.themeColor)
         .frame(width: expandedTimerWidth, alignment: .center)
     } else if state.isBreakActive {
-      stickerStatusView(assetName: "CoffeeStickerIcon", size: 30)
+      symbolStatusView("cup.and.saucer.fill", size: 30, tint: state.themeColor)
         .frame(width: expandedTimerWidth, alignment: .center)
     } else {
       expandedElapsedTimerText(for: state)
@@ -161,11 +169,11 @@ struct FoqosWidgetLiveActivity: Widget {
     isWidthLimited: Bool = false
   ) -> some View {
     if state.isPauseActive {
-      stickerStatusView(assetName: "PauseStickerIcon", size: 20)
+      symbolStatusView("pause.fill", size: 20, tint: state.themeColor)
         .frame(width: isWidthLimited ? 20 : compactTimerWidth, alignment: .center)
         .accessibilityLabel("Paused")
     } else if state.isBreakActive {
-      stickerStatusView(assetName: "CoffeeStickerIcon", size: 20)
+      symbolStatusView("cup.and.saucer.fill", size: 20, tint: state.themeColor)
         .frame(width: isWidthLimited ? 20 : compactTimerWidth, alignment: .center)
         .accessibilityLabel("On a break")
     } else if isWidthLimited {
@@ -182,10 +190,33 @@ struct FoqosWidgetLiveActivity: Widget {
     }
   }
 
-  private func stickerStatusView(assetName: String, size: CGFloat) -> some View {
-    Image(assetName)
-      .resizable()
-      .scaledToFit()
+  @ViewBuilder
+  private func islandProgressIcon(for state: FoqosWidgetAttributes.ContentState, size: CGFloat)
+    -> some View
+  {
+    if let range = state.progressRange {
+      ProgressView(timerInterval: range, countsDown: true) {
+        SwiftUI.EmptyView()
+      } currentValueLabel: {
+        activityIcon(for: state, size: size * 2 / 3)
+      }
+      .progressViewStyle(.circular)
+      .frame(width: size, height: size)
+      .tint(state.themeColor)
+      .accessibilityLabel(
+        "\(state.isPauseActive ? "Paused" : "On a break"), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
+      )
+    } else {
+      activityIcon(for: state, size: size)
+    }
+  }
+
+  // The sticker artwork's white die-cut border reads as a stray outline on the black Island, so
+  // the Island uses plain symbols in the theme color, matching the Lock Screen widget.
+  private func symbolStatusView(_ systemName: String, size: CGFloat, tint: Color) -> some View {
+    Image(systemName: systemName)
+      .font(.system(size: size * 0.8, weight: .semibold))
+      .foregroundStyle(tint)
       .frame(width: size, height: size)
   }
 
@@ -532,11 +563,21 @@ extension FoqosWidgetAttributes.ContentState {
 }
 
 @available(iOS 18.0, *)
-#Preview("Mint Dynamic Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview)
-{
+#Preview("Compact Island", as: .dynamicIsland(.compact), using: FoqosWidgetAttributes.preview) {
   FoqosWidgetLiveActivity()
 } contentStates: {
   FoqosWidgetAttributes.ContentState.mintCat
+  FoqosWidgetAttributes.ContentState.breakActive
+  FoqosWidgetAttributes.ContentState.pauseActive
+}
+
+@available(iOS 18.0, *)
+#Preview("Minimal Island", as: .dynamicIsland(.minimal), using: FoqosWidgetAttributes.preview) {
+  FoqosWidgetLiveActivity()
+} contentStates: {
+  FoqosWidgetAttributes.ContentState.shortTime
+  FoqosWidgetAttributes.ContentState.breakActive
+  FoqosWidgetAttributes.ContentState.pauseActive
 }
 
 #Preview("StandBy · Focus", traits: .fixedLayout(width: 390, height: 180)) {

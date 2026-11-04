@@ -45,3 +45,19 @@ import WidgetKit
   WidgetPreviewData.entry(
     activeSession: WidgetPreviewData.session(focusedFor: 30 * 60, remaining: nil, isOnBreak: true))
 }
+
+#Preview("Break countdown · Circular", as: .accessoryCircular) {
+  ProfileControlWidget()
+} timeline: {
+  WidgetPreviewData.entry(
+    activeSession: WidgetPreviewData.session(
+      focusedFor: 30 * 60, remaining: nil, isOnBreak: true, breakOrPauseRemaining: 10 * 60))
+}
+
+#Preview("Pause countdown · Circular", as: .accessoryCircular) {
+  ProfileControlWidget()
+} timeline: {
+  WidgetPreviewData.entry(
+    activeSession: WidgetPreviewData.session(
+      focusedFor: 30 * 60, remaining: nil, isPaused: true, breakOrPauseRemaining: 10 * 60))
+}
