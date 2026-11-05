@@ -15,6 +15,7 @@ import UIKit
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application) -> ShieldConfiguration {
+    SharedData.recordBlockedAttempt()
     if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: nil) {
       return softUnblockConfiguration
     }
@@ -26,6 +27,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   override func configuration(shielding application: Application, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    SharedData.recordBlockedAttempt()
     if let softUnblockConfiguration = softUnblockConfiguration(for: application, in: category) {
       return softUnblockConfiguration
     }
@@ -35,12 +37,14 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
   }
 
   override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
+    SharedData.recordBlockedAttempt()
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 
   override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory)
     -> ShieldConfiguration
   {
+    SharedData.recordBlockedAttempt()
     return createCustomShieldConfiguration(for: .website, title: webDomain.domain ?? "Website")
   }
 

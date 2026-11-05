@@ -12,6 +12,7 @@ struct ProfileInsightsSections: View {
   let showsSummary: Bool
   let totalFocusTime: TimeInterval
   let totalBreakTime: TimeInterval
+  let blockedAttempts: Int
   let profileId: UUID
   let onSelectSession: (BlockedProfileSession) -> Void
   let onDeleteSession: (BlockedProfileSession) -> Void
@@ -80,6 +81,12 @@ struct ProfileInsightsSections: View {
           label: "Total Break Time",
           value: DateFormatters.formatDurationHoursMinutes(
             totalBreakTime)
+        )
+
+        InsightsSummaryRow(
+          icon: "hand.raised.fill",
+          label: "Blocked Attempts (All Profiles)",
+          value: "\(blockedAttempts)"
         )
 
         InsightsSummaryRow(

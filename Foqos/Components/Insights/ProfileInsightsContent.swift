@@ -170,6 +170,17 @@ struct ProfileInsightsContent: View {
       ?? monthSummary.monthEndDate
   }
 
+  private var blockedAttempts: Int {
+    switch viewMode {
+    case .week:
+      return SharedData.blockedAttemptCount(from: weekStart, to: weekEndExclusive)
+    case .month:
+      return SharedData.blockedAttemptCount(from: monthStart, to: monthEndExclusive)
+    case .allSessions:
+      return SharedData.blockedAttemptCount()
+    }
+  }
+
   private var sessionsSectionTitle: String {
     switch viewMode {
     case .week:
@@ -200,6 +211,7 @@ struct ProfileInsightsContent: View {
         showsSummary: selectedDay == nil,
         totalFocusTime: profileInsightsViewModel.metrics.totalFocusTime,
         totalBreakTime: profileInsightsViewModel.metrics.totalBreakTime,
+        blockedAttempts: blockedAttempts,
         profileId: profileId,
         onSelectSession: { selectedSession = $0 },
         onDeleteSession: {
