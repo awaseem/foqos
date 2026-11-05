@@ -29,11 +29,26 @@ struct HomePresentations: ViewModifier {
           }
         )
         .presentationDetents([.medium, .large])
+        .alert(
+          "Screen Time Authorization Failed", isPresented: $requestAuthorizer.showAuthorizationError
+        ) {
+          Button("OK", role: .cancel) {}
+        } message: {
+          Text(requestAuthorizer.authorizationErrorMessage)
+        }
       }
       .fullScreenCover(isPresented: $showIntroScreen) {
         IntroView {
           requestAuthorizer.requestAuthorization()
         }.interactiveDismissDisabled()
+          .alert(
+            "Screen Time Authorization Failed",
+            isPresented: $requestAuthorizer.showAuthorizationError
+          ) {
+            Button("OK", role: .cancel) {}
+          } message: {
+            Text(requestAuthorizer.authorizationErrorMessage)
+          }
       }
       .fullScreenCover(isPresented: $presentation.showActiveProfileSessionView) {
         HomeActiveSessionView(onStopProfile: onStopProfile)

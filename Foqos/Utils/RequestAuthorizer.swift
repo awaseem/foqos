@@ -5,6 +5,8 @@ import SwiftUI
 
 class RequestAuthorizer: ObservableObject {
   @Published var isAuthorized = false
+  @Published var showAuthorizationError = false
+  @Published var authorizationErrorMessage = ""
 
   func refreshAuthorizationStatus() {
     let isApproved = getAuthorizationStatus() == .approved
@@ -25,9 +27,12 @@ class RequestAuthorizer: ObservableObject {
           self.isAuthorized = true
         }
       } catch {
-        print("Error requesting authorization: \(error)")
+        let authorizationError = error as NSError
         await MainActor.run {
           self.isAuthorized = false
+          self.authorizationErrorMessage =
+            "\(authorizationError.localizedDescription)\n\nDomain: \(authorizationError.domain)\nCode: \(authorizationError.code)"
+          self.showAuthorizationError = true
         }
       }
     }
