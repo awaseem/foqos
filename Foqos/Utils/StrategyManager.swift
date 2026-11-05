@@ -76,6 +76,56 @@ class StrategyManager: ObservableObject {
     return baseMessage + " by enabling \(profile.name)"
   }
 
+  func publishShareProfileChoices(_ profiles: [BlockedProfiles]) {
+    let choices =
+      profiles
+      .filter { !$0.enableAllowModeDomains }
+      .map { ShareProfileChoice(id: $0.id, name: $0.name) }
+    let activeProfileId = activeSession?.isActive == true ? activeSession?.blockedProfile.id : nil
+    SharedDomainQueue.publishChoices(choices, activeProfileId: activeProfileId)
+  }
+
+  func applyPendingSharedDomains(context: ModelContext) {
+    let pending = SharedDomainQueue.takeAll()
+    guard !pending.isEmpty else { return }
+
+    var changedProfileIds = Set<UUID>()
+    for item in pending {
+      guard
+        let profile = try? BlockedProfiles.findProfile(byID: item.profileId, in: context),
+        !profile.enableAllowModeDomains
+      else { continue }
+
+      let existing = profile.domains ?? []
+      guard !existing.contains(where: { $0.caseInsensitiveCompare(item.domain) == .orderedSame })
+      else { continue }
+
+      do {
+        // updateProfile resets these two to nil unless they are passed back in
+        _ = try BlockedProfiles.updateProfile(
+          profile,
+          in: context,
+          reminderTime: profile.reminderTimeInSeconds,
+          customReminderMessage: profile.customReminderMessage,
+          domains: existing + [item.domain]
+        )
+        changedProfileIds.insert(profile.id)
+      } catch {
+        errorMessage = "Failed to add \(item.domain): \(error.localizedDescription)"
+      }
+    }
+
+    guard let session = getActiveSession(context: context),
+      session.isActive,
+      !session.isBreakActive,
+      !session.isPauseActive,
+      changedProfileIds.contains(session.blockedProfile.id)
+    else { return }
+
+    appBlocker.updateWebDomains(for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
+    ActiveProfileSyncStore.publish(session: session)
+  }
+
   func loadActiveSession(context: ModelContext) {
     activeSession = getActiveSession(context: context)
     ActiveProfileSyncStore.publish(session: activeSession)
