@@ -43,7 +43,7 @@ struct AnimatedIntroContainer: View {
         totalSteps: totalSteps,
         onNext: handleNext,
         onBack: handleBack,
-        nextButtonTitle: getNextButtonTitle(),
+        nextButtonTitle: "Continue",
         showBackButton: currentStep > 0
       )
       .animation(.easeInOut, value: currentStep)
@@ -67,15 +67,6 @@ struct AnimatedIntroContainer: View {
       withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
         currentStep -= 1
       }
-    }
-  }
-
-  private func getNextButtonTitle() -> String {
-    switch currentStep {
-    case totalSteps - 1:
-      return "Allow Screen Time Access"
-    default:
-      return "Continue"
     }
   }
 }

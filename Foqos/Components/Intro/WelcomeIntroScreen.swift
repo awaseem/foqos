@@ -87,7 +87,7 @@ struct WelcomeIntroScreen: View {
       // Message text
       VStack(spacing: 12) {
         Text(
-          "No need to waste hundreds on gimmicky plastic bricks and overpriced metal cards."
+          "Your attention belongs to you. Block apps and find focus."
         )
         .font(.system(size: 18, weight: .medium))
         .foregroundColor(.secondary)
