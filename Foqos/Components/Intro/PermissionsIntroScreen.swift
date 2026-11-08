@@ -9,21 +9,14 @@ struct PermissionsIntroScreen: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      // Heading
       // Header
-      VStack(spacing: 8) {
-        Text("One Last Step")
-          .font(.system(size: 34, weight: .bold))
-          .foregroundColor(.primary)
-          .opacity(showContent ? 1 : 0)
-          .offset(y: showContent ? 0 : -20)
-
-        Text("We need Screen Time Access to get started")
-          .font(.system(size: 16))
-          .foregroundColor(.secondary)
-          .opacity(showContent ? 1 : 0)
-          .offset(y: showContent ? 0 : -20)
-      }
+      Text("One Last Step")
+        .font(.system(size: 34, weight: .bold))
+        .foregroundColor(.primary)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .opacity(showContent ? 1 : 0)
+        .offset(y: showContent ? 0 : -20)
 
       Spacer()
 
@@ -63,34 +56,30 @@ struct PermissionsIntroScreen: View {
           .shadow(color: themeManager.themeColor.opacity(0.22), radius: 16, y: 8)
           .opacity(showContent ? 1 : 0)
       }
-      .frame(height: 360)
+      .frame(height: 300)
 
       Spacer()
 
       // Message text
       VStack(spacing: 16) {
-        (Text("Foqos is 100% open source, ")
-          + Text("read the code yourself")
-          .foregroundColor(themeManager.themeColor)
-          + Text(
-            " if you're skeptical. We don't care who you are, we just want you to live with focus and intention."
-          ))
-          .font(.system(size: 16, weight: .medium))
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-          .lineSpacing(4)
-          .onTapGesture {
-            if let url = URL(string: "https://github.com/awaseem/foqos") {
-              UIApplication.shared.open(url)
-            }
-          }
+        Text(
+          "Foqos needs Screen Time access to block your chosen apps and websites during focus sessions."
+        )
+        .font(.system(size: 15))
+        .foregroundColor(.primary)
+        .multilineTextAlignment(.center)
+        .lineSpacing(4)
 
-        Text("No account required. No subscription fees. No tracking. No BS.")
-          .font(.system(size: 16, weight: .medium))
-          .foregroundColor(.secondary)
-          .multilineTextAlignment(.center)
-          .lineSpacing(4)
+        Text(
+          "Your trust matters. Foqos is [100% open source](https://github.com/awaseem/foqos), so you can see exactly how it works. No account required. No tracking."
+        )
+        .font(.system(size: 16))
+        .foregroundColor(.secondary)
+        .tint(themeManager.themeColor)
+        .multilineTextAlignment(.center)
+        .lineSpacing(4)
       }
+      .fixedSize(horizontal: false, vertical: true)
       .padding(.horizontal, 10)
       .opacity(showContent ? 1 : 0)
       .offset(y: showContent ? 0 : 20)
