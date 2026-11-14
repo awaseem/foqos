@@ -17,8 +17,8 @@ struct ProfileWidgetEntryView: View {
       switch family {
       case .accessoryInline:
         Label {
-          if let start = entry.sessionStartTime, !entry.isPauseActive, !entry.isBreakActive {
-            Text(start, style: .timer)
+          if let timer = entry.timer {
+            SessionTimerText(timer: timer)
           } else {
             Text(entry.isSessionActive ? entry.statusLabel : entry.profileName ?? "Foqos")
           }
@@ -83,11 +83,13 @@ struct ProfileWidgetEntryView: View {
   // instead of a timer that would truncate; the timeline refreshes them each session minute.
   @ViewBuilder
   private var circular: some View {
-    if let start = entry.sessionStartTime, let end = entry.sessionEndTime {
-      ProgressView(timerInterval: start...end, countsDown: false) {
+    if let start = entry.sessionStartTime, let end = entry.sessionEndTime,
+      let timer = entry.timer
+    {
+      ProgressView(timerInterval: start...max(start, end), countsDown: false) {
         EmptyView()
       } currentValueLabel: {
-        circularCountdown(symbol: "hourglass", to: end)
+        circularTimer(symbol: "hourglass", timer: timer)
       }
       .progressViewStyle(.circular)
       .widgetAccentable()
@@ -98,20 +100,17 @@ struct ProfileWidgetEntryView: View {
       ProgressView(timerInterval: range, countsDown: true) {
         EmptyView()
       } currentValueLabel: {
-        circularCountdown(symbol: statusSymbol, to: range.upperBound)
+        circularTimer(
+          symbol: statusSymbol,
+          timer: SessionTimer(startTime: range.lowerBound, endTime: range.upperBound))
       }
       .progressViewStyle(.circular)
       .accessibilityLabel(
         "\(entry.statusLabel), ends \(range.upperBound.formatted(date: .omitted, time: .shortened))"
       )
-    } else if let start = entry.sessionStartTime, !entry.isBreakActive, !entry.isPauseActive {
+    } else if let timer = entry.timer {
       circularBadge(symbol: "hourglass") {
-        let elapsed = entry.date.timeIntervalSince(start)
-        if elapsed >= 3600 {
-          Text(circularDuration(elapsed))
-        } else {
-          Text(start, style: .timer)
-        }
+        circularTimerValue(timer)
       }
       .accessibilityLabel("Focusing")
     } else if entry.isBreakActive || entry.isPauseActive {
@@ -132,20 +131,24 @@ struct ProfileWidgetEntryView: View {
     }
   }
 
-  private func circularCountdown(symbol: String, to end: Date) -> some View {
-    // The ring's stroke narrows the space below center, and WidgetKit truncates there rather
-    // than scaling, so fall back to a smaller font for "1h 15m".
+  private func circularTimer(symbol: String, timer: SessionTimer) -> some View {
     circularContent(symbol: symbol, horizontalInset: 12) {
-      let remaining = end.timeIntervalSince(entry.date)
-      if remaining >= 3600 {
-        let label = circularDuration((remaining / 60).rounded(.up) * 60)
-        ViewThatFits(in: .horizontal) {
-          Text(label)
-          Text(label).font(.system(.caption, design: .rounded).weight(.semibold))
-        }
-      } else {
-        Text(timerInterval: entry.date...end, countsDown: true)
+      circularTimerValue(timer)
+    }
+  }
+
+  @ViewBuilder
+  private func circularTimerValue(_ timer: SessionTimer) -> some View {
+    let duration = timer.displayedTime(at: entry.date)
+    if duration >= 3600 {
+      let rounded = timer.countsDown ? (duration / 60).rounded(.up) * 60 : duration
+      let label = circularDuration(rounded)
+      ViewThatFits(in: .horizontal) {
+        Text(label)
+        Text(label).font(.system(.caption, design: .rounded).weight(.semibold))
       }
+    } else {
+      SessionTimerText(timer: timer)
     }
   }
 
@@ -249,9 +252,9 @@ struct ProfileWidgetEntryView: View {
         .font(.system(size: entry.isSessionActive ? 7 : 9, weight: .bold))
         .foregroundStyle(entry.themeColor)
         .widgetAccentable()
-      if let start = entry.sessionStartTime, !entry.isBreakActive, !entry.isPauseActive {
-        if !compact { Text("Focusing").foregroundStyle(.secondary) }
-        Text(start, style: .timer).monospacedDigit()
+      if let timer = entry.timer {
+        if !compact { Text(entry.statusLabel).foregroundStyle(.secondary) }
+        SessionTimerText(timer: timer)
           .frame(maxWidth: .infinity, alignment: .leading)
       } else {
         Text(entry.statusLabel).lineLimit(1).minimumScaleFactor(0.75)

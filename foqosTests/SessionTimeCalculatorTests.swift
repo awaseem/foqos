@@ -277,7 +277,8 @@ final class SessionTimeCalculatorTests: XCTestCase {
     profile.schedule = BlockedProfileSchedule(
       days: [.monday], startHour: 9, startMinute: 0, endHour: 10, endMinute: 0)
     let session = BlockedProfileSession(tag: profile.id.uuidString, blockedProfile: profile)
-    session.startTime = Date(timeIntervalSinceReferenceDate: 1_000)
+    session.startTime = Calendar.current.date(
+      bySettingHour: 9, minute: 0, second: 0, of: Date(timeIntervalSinceReferenceDate: 1_000))!
 
     XCTAssertEqual(
       SessionTimeCalculator.expectedSessionEndTime(for: session),

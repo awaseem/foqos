@@ -27,7 +27,8 @@ extension SessionTimeCalculator {
     at date: Date = Date()
   ) -> TimeInterval {
     if let expectedEndTime = expectedEndTime(for: session) {
-      return max(0, expectedEndTime.timeIntervalSince(date))
+      return SessionTimer(startTime: session.startTime, endTime: expectedEndTime)
+        .displayedTime(at: date)
     }
 
     return elapsedFocusTime ?? self.elapsedFocusTime(for: session, at: date)
@@ -66,16 +67,18 @@ extension SessionTimeCalculator {
     for session: BlockedProfileSession,
     at date: Date
   ) -> TimeInterval {
+    if session.breakEndTime != nil || session.breakStartTime == nil {
+      return completedBreakDuration(
+        breakStartTime: session.breakStartTime, breakEndTime: session.breakEndTime,
+        usedBreakDurationInSeconds: session.usedBreakDurationInSeconds)
+    }
+
     if session.blockedProfile.allowMultipleBreaks {
       return session.usedBreakDurationIncludingActiveBreak(at: date)
     }
 
     guard let breakStartTime = session.breakStartTime else {
       return 0
-    }
-
-    if let breakEndTime = session.breakEndTime {
-      return max(0, breakEndTime.timeIntervalSince(breakStartTime))
     }
 
     if session.isBreakActive {

@@ -23,10 +23,8 @@ enum SessionTimeCalculator {
   }
 
   static func expectedSessionEndTime(for session: BlockedProfileSession) -> Date? {
-    if isScheduledSession(session), let schedule = session.blockedProfile.schedule {
-      let durationInSeconds = schedule.totalDurationInSeconds
-      guard durationInSeconds > 0 else { return nil }
-      return session.startTime.addingTimeInterval(TimeInterval(durationInSeconds))
+    if isScheduledSession(session) {
+      return scheduledEndTime(for: session)
     }
 
     if isTimerSession(session), let timerDuration = timerDurationInSeconds(for: session) {
@@ -37,16 +35,32 @@ enum SessionTimeCalculator {
   }
 
   static func scheduledEndTime(for session: BlockedProfileSession) -> Date? {
-    guard UUID(uuidString: session.tag) == session.blockedProfile.id,
-      let schedule = session.blockedProfile.schedule,
-      schedule.isActive
+    guard isScheduledSession(session), let schedule = session.blockedProfile.schedule
     else { return nil }
 
-    return Calendar.current.date(
-      bySettingHour: schedule.endHour,
-      minute: schedule.endMinute,
-      second: 0,
-      of: session.startTime
+    return schedule.endDate(forSessionStartingAt: session.startTime)
+  }
+
+  static func completedBreakDuration(
+    breakStartTime: Date?, breakEndTime: Date?, usedBreakDurationInSeconds: TimeInterval
+  ) -> TimeInterval {
+    let lastBreakDuration =
+      breakStartTime.flatMap { start in
+        breakEndTime.map { $0.timeIntervalSince(start) }
+      } ?? 0
+    // Reusable breaks already include the latest completed break in the accumulator.
+    // Single-break sessions only have the timestamps.
+    return max(0, usedBreakDurationInSeconds, lastBreakDuration)
+  }
+
+  static func focusStartTime(
+    startTime: Date, breakStartTime: Date?, breakEndTime: Date?,
+    usedBreakDurationInSeconds: TimeInterval
+  ) -> Date {
+    startTime.addingTimeInterval(
+      completedBreakDuration(
+        breakStartTime: breakStartTime, breakEndTime: breakEndTime,
+        usedBreakDurationInSeconds: usedBreakDurationInSeconds)
     )
   }
 
@@ -65,6 +79,7 @@ enum SessionTimeCalculator {
   }
 
   private static func isScheduledSession(_ session: BlockedProfileSession) -> Bool {
-    session.blockedProfile.schedule?.isActive == true && UUID(uuidString: session.tag) != nil
+    session.blockedProfile.schedule?.isActive == true
+      && UUID(uuidString: session.tag) == session.blockedProfile.id
   }
 }
