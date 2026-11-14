@@ -37,46 +37,50 @@ struct TimerDurationView: View {
   }
 
   var body: some View {
-    VStack(spacing: 32) {
-      // Header
-      VStack(alignment: .leading, spacing: 12) {
-        Text("Timer Settings")
-          .font(.title2).bold()
+    ContentSizedSheetScrollView {
+      VStack(spacing: 32) {
+        // Header
+        VStack(alignment: .leading, spacing: 12) {
+          Text("Timer Settings")
+            .font(.title2).bold()
 
-        Text(
-          "Select how long you want \(profileName) to last."
-        )
-        .font(.callout)
-        .foregroundColor(.secondary)
+          Text(
+            "Select how long you want \(profileName) to last."
+          )
+          .font(.callout)
+          .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 16)
+
+        // Large time display
+        timeDisplay
+
+        // Slider with +/- buttons
+        sliderControls
+
+        // Hide stop button toggle
+        hideStopButtonToggle
+
+        // Confirm button
+        ActionButton(
+          title: actionTitle,
+          backgroundColor: themeManager.themeColor,
+          iconName: "checkmark.circle.fill"
+        ) {
+          handleConfirm()
+        }
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.top, 16)
-
-      // Large time display
-      timeDisplay
-
-      // Slider with +/- buttons
-      sliderControls
-
-      // Hide stop button toggle
-      hideStopButtonToggle
-
-      // Confirm button
-      ActionButton(
-        title: actionTitle,
-        backgroundColor: themeManager.themeColor,
-        iconName: "checkmark.circle.fill"
-      ) {
-        handleConfirm()
-      }
+      .padding(24)
     }
-    .padding(24)
   }
 
   private var timeDisplay: some View {
     VStack(spacing: 8) {
       Text(formattedDuration)
         .font(.system(size: 56, weight: .bold, design: .rounded))
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
         .contentTransition(.numericText())
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: durationMinutes)
     }
@@ -200,7 +204,7 @@ struct TimerDurationView: View {
   }
 
   private var hideStopButtonToggle: some View {
-    HStack(spacing: 12) {
+    Toggle(isOn: $hideStopButton) {
       VStack(alignment: .leading, spacing: 2) {
         Text("Disable Stop Button")
           .font(.body)
@@ -209,15 +213,10 @@ struct TimerDurationView: View {
         Text("Prevent early stopping during timer sessions")
           .font(.caption)
           .foregroundColor(.secondary)
-          .lineLimit(1)
+          .fixedSize(horizontal: false, vertical: true)
       }
-
-      Spacer()
-
-      Toggle("", isOn: $hideStopButton)
-        .labelsHidden()
-        .tint(themeManager.themeColor)
     }
+    .tint(themeManager.themeColor)
   }
 
   private func handleConfirm() {
@@ -235,15 +234,14 @@ struct TimerDurationPreviewSheetHost: View {
   var body: some View {
     Color.clear
       .sheet(isPresented: $show) {
-        NavigationView {
-          TimerDurationView(
-            profileName: "Work Focus",
-            onDurationSelected: { timerData in
-              print("Selected duration: \(timerData.durationInMinutes) minutes")
-            }
-          )
-        }
-        .presentationDetents([.medium, .large])
+        TimerDurationView(
+          profileName: "Work Focus",
+          onDurationSelected: { timerData in
+            print("Selected duration: \(timerData.durationInMinutes) minutes")
+          }
+        )
+        .contentSizedSheetPresentation()
+        .environmentObject(ThemeManager())
       }
   }
 }

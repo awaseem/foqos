@@ -311,7 +311,7 @@ struct BlockedProfileView: View {
           kind: settingsKind,
           draft: draft
         )
-        .presentationDetents(settingsKind.presentationDetents)
+        .contentSizedSheetPresentation(fallbackDetents: settingsKind.presentationDetents)
       }
       .sheet(isPresented: $showingGeneratedQRCode) {
         if let profileToWrite = profile {

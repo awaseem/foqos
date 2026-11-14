@@ -64,7 +64,7 @@ struct StrategyPicker: View {
             isPresented = false
           }
         )
-        .presentationDetents([.medium, .large])
+        .contentSizedSheetPresentation()
       }
     }
   }
