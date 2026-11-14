@@ -5,6 +5,7 @@ import UIKit
 
 struct ActiveProfileSessionView: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
 
@@ -107,7 +108,10 @@ struct ActiveProfileSessionView: View {
     .padding(.top, 8)
     .sheet(isPresented: $showEmergencyView) {
       EmergencyView()
-        .presentationDetents([.height(350), .large])
+        .presentationDetents(
+          dynamicTypeSize.isAccessibilitySize ? [.large] : [.height(280), .large]
+        )
+        .presentationDragIndicator(.visible)
     }
     .sheet(isPresented: $strategyManager.showCustomStrategyView) {
       BlockingStrategyActionView(
