@@ -21,7 +21,7 @@ enum WidgetPreviewData {
       return WidgetSessionInterval(start: start, end: start.addingTimeInterval(hours * 3600))
     }
     return ProfileWidgetEntry(
-      date: date,
+      date: activeSession == nil ? date : .now,
       selectedProfileId: profileID.uuidString,
       profileName: "Deep work",
       activeSession: activeSession,

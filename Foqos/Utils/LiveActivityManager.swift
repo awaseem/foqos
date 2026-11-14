@@ -82,7 +82,7 @@ class LiveActivityManager: ObservableObject {
     let profileName = session.blockedProfile.name
     let message = FocusMessages.getRandomMessage()
     let attributes = FoqosWidgetAttributes(name: profileName, message: message)
-    let contentState = makeContentState(for: session)
+    let contentState = Self.makeContentState(for: session)
     let activityContent = ActivityContent(
       state: contentState,
       staleDate: contentState.expectedEndTime
@@ -111,7 +111,7 @@ class LiveActivityManager: ObservableObject {
       return
     }
 
-    let updatedState = makeContentState(for: session)
+    let updatedState = Self.makeContentState(for: session)
     let updatedContent = ActivityContent(
       state: updatedState,
       staleDate: updatedState.expectedEndTime
@@ -129,7 +129,7 @@ class LiveActivityManager: ObservableObject {
       return
     }
 
-    let updatedState = makeContentState(for: session)
+    let updatedState = Self.makeContentState(for: session)
     let updatedContent = ActivityContent(
       state: updatedState,
       staleDate: updatedState.expectedEndTime
@@ -147,7 +147,7 @@ class LiveActivityManager: ObservableObject {
       return
     }
 
-    let updatedState = makeContentState(for: session)
+    let updatedState = Self.makeContentState(for: session)
     let updatedContent = ActivityContent(
       state: updatedState,
       staleDate: updatedState.expectedEndTime
@@ -183,7 +183,7 @@ class LiveActivityManager: ObservableObject {
     currentActivity = nil
   }
 
-  private func makeContentState(for session: BlockedProfileSession)
+  static func makeContentState(for session: BlockedProfileSession)
     -> FoqosWidgetAttributes.ContentState
   {
     FoqosWidgetAttributes.ContentState(

@@ -70,15 +70,7 @@ enum WidgetDataStore {
       date: date,
       selectedProfileId: profile?.id.uuidString,
       profileName: profile?.name,
-      activeSession: activeSession.map {
-        WidgetSessionInfo(
-          blockedProfileId: $0.blockedProfile.id, startTime: $0.startTime, endTime: $0.endTime,
-          breakStartTime: $0.breakStartTime, breakEndTime: $0.breakEndTime,
-          pauseStartTime: $0.pauseStartTime, pauseEndTime: $0.pauseEndTime,
-          expectedEndTime: SessionTimeCalculator.expectedSessionEndTime(for: $0),
-          breakOrPauseEndTime: SessionTimeCalculator.breakOrPauseEndTime(for: $0)
-        )
-      },
+      activeSession: activeSession.map { WidgetSessionInfo(session: $0) },
       profileInfo: profile.map {
         WidgetProfileInfo(
           enableStrictMode: $0.enableStrictMode, enableAllowMode: $0.enableAllowMode,
