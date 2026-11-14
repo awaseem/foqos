@@ -26,38 +26,15 @@ struct FoqosWidgetAttributes: ActivityAttributes {
       AppIconOption.allCases.first { $0.alternateIconName == appIconName } ?? .defaultIcon
     }
 
-    func getTimeIntervalSinceNow() -> Double {
-      // Calculate the break duration to subtract from elapsed time
-      let breakDuration = calculateBreakDuration()
-
-      // Calculate elapsed time minus break duration
-      let adjustedStartTime = startTime.addingTimeInterval(breakDuration)
-
-      return adjustedStartTime.timeIntervalSince1970
-        - Date().timeIntervalSince1970
+    var timer: SessionTimer {
+      let focusStart = SessionTimeCalculator.focusStartTime(
+        startTime: startTime, breakStartTime: breakStartTime, breakEndTime: breakEndTime,
+        usedBreakDurationInSeconds: usedBreakDurationInSeconds)
+      let start = isPauseActive ? pauseStartTime : isBreakActive ? breakStartTime : nil
+      return SessionTimer(startTime: start ?? focusStart, endTime: expectedEndTime)
     }
 
-    private func calculateBreakDuration() -> TimeInterval {
-      guard let breakStart = breakStartTime else {
-        return usedBreakDurationInSeconds
-      }
-
-      if let breakEnd = breakEndTime {
-        return usedBreakDurationInSeconds + breakEnd.timeIntervalSince(breakStart)
-      }
-
-      return usedBreakDurationInSeconds
-    }
-
-    var countdownRange: ClosedRange<Date>? {
-      guard let expectedEndTime else {
-        return nil
-      }
-
-      let now = Date.now
-      let displayEndTime = max(now, expectedEndTime)
-      return now...displayEndTime
-    }
+    var countdownRange: ClosedRange<Date>? { timer.countdownRange }
 
     // expectedEndTime is the pause or break end while one is running, so the ring tracks that.
     var progressRange: ClosedRange<Date>? {
@@ -159,7 +136,7 @@ struct FoqosWidgetLiveActivity: Widget {
       symbolStatusView("cup.and.saucer.fill", size: 30, tint: state.themeColor)
         .frame(width: expandedTimerWidth, alignment: .center)
     } else {
-      expandedElapsedTimerText(for: state)
+      expandedTimerText(for: state)
     }
   }
 
@@ -183,10 +160,10 @@ struct FoqosWidgetLiveActivity: Widget {
         .frame(width: 20, height: 20)
         .accessibilityLabel("Focus session active")
         .accessibilityValue(
-          Text(Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()), style: .timer)
+          SessionTimerText(timer: state.timer).text
         )
     } else {
-      compactElapsedTimerText(for: state)
+      compactTimerText(for: state)
     }
   }
 
@@ -220,36 +197,30 @@ struct FoqosWidgetLiveActivity: Widget {
       .frame(width: size, height: size)
   }
 
-  private func expandedElapsedTimerText(
+  private func expandedTimerText(
     for state: FoqosWidgetAttributes.ContentState
   ) -> some View {
-    Text(
-      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
-      style: .timer
-    )
-    .font(.system(size: expandedTimerFontSize, weight: .semibold, design: .rounded))
-    .monospacedDigit()
-    .lineLimit(1)
-    .minimumScaleFactor(0.76)
-    .allowsTightening(true)
-    .foregroundColor(state.themeColor)
-    .frame(width: expandedTimerWidth, alignment: .center)
-    .contentTransition(.numericText())
+    SessionTimerText(timer: state.timer)
+      .font(.system(size: expandedTimerFontSize, weight: .semibold, design: .rounded))
+      .monospacedDigit()
+      .lineLimit(1)
+      .minimumScaleFactor(0.76)
+      .allowsTightening(true)
+      .foregroundColor(state.themeColor)
+      .frame(width: expandedTimerWidth, alignment: .center)
+      .contentTransition(.numericText())
   }
 
-  private func compactElapsedTimerText(for state: FoqosWidgetAttributes.ContentState) -> some View {
-    Text(
-      Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
-      style: .timer
-    )
-    .font(.system(size: compactTimerFontSize, weight: .semibold, design: .rounded))
-    .monospacedDigit()
-    .lineLimit(1)
-    .minimumScaleFactor(0.68)
-    .allowsTightening(true)
-    .foregroundColor(state.themeColor)
-    .frame(width: compactTimerWidth, alignment: .center)
-    .contentTransition(.numericText())
+  private func compactTimerText(for state: FoqosWidgetAttributes.ContentState) -> some View {
+    SessionTimerText(timer: state.timer)
+      .font(.system(size: compactTimerFontSize, weight: .semibold, design: .rounded))
+      .monospacedDigit()
+      .lineLimit(1)
+      .minimumScaleFactor(0.68)
+      .allowsTightening(true)
+      .foregroundColor(state.themeColor)
+      .frame(width: compactTimerWidth, alignment: .center)
+      .contentTransition(.numericText())
   }
 }
 
@@ -326,28 +297,16 @@ private struct FoqosLiveActivityContentView: View {
     .padding(.vertical, 12)
   }
 
-  @ViewBuilder
   private func timerText(
     for state: FoqosWidgetAttributes.ContentState,
     font: Font,
     alignment: TextAlignment
   ) -> some View {
-    if let countdownRange = state.countdownRange {
-      Text(timerInterval: countdownRange, countsDown: true)
-        .font(font)
-        .fontWeight(.semibold)
-        .foregroundColor(state.themeColor)
-        .multilineTextAlignment(alignment)
-    } else {
-      Text(
-        Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()),
-        style: .timer
-      )
+    SessionTimerText(timer: state.timer)
       .font(font)
       .fontWeight(.semibold)
       .foregroundColor(state.themeColor)
       .multilineTextAlignment(alignment)
-    }
   }
 
   @ViewBuilder
@@ -443,7 +402,7 @@ private struct FoqosStandByActivityView: View {
         .font(.system(size: 54, weight: .medium))
         .accessibilityHidden(true)
     } else {
-      Text(Date(timeIntervalSinceNow: state.getTimeIntervalSinceNow()), style: .timer)
+      SessionTimerText(timer: state.timer).text
     }
   }
 
@@ -486,6 +445,15 @@ extension FoqosWidgetAttributes {
 }
 
 extension FoqosWidgetAttributes.ContentState {
+  fileprivate static var elapsed: FoqosWidgetAttributes.ContentState {
+    FoqosWidgetAttributes.ContentState(startTime: .now.addingTimeInterval(-15 * 60))
+  }
+
+  fileprivate static var expired: FoqosWidgetAttributes.ContentState {
+    FoqosWidgetAttributes.ContentState(
+      startTime: .now.addingTimeInterval(-61 * 60), expectedEndTime: .now.addingTimeInterval(-60))
+  }
+
   fileprivate static var mintCat: FoqosWidgetAttributes.ContentState {
     var state = shortTime
     state.themeColorName = "Mint Fresh"
@@ -567,6 +535,8 @@ extension FoqosWidgetAttributes.ContentState {
   FoqosWidgetLiveActivity()
 } contentStates: {
   FoqosWidgetAttributes.ContentState.mintCat
+  FoqosWidgetAttributes.ContentState.elapsed
+  FoqosWidgetAttributes.ContentState.expired
   FoqosWidgetAttributes.ContentState.breakActive
   FoqosWidgetAttributes.ContentState.pauseActive
 }

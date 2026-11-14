@@ -17,4 +17,26 @@ struct WidgetSessionInfo {
   let pauseEndTime: Date?
   var expectedEndTime: Date? = nil
   var breakOrPauseEndTime: Date? = nil
+  var usedBreakDurationInSeconds: TimeInterval = 0
+
+  var focusTimer: SessionTimer {
+    SessionTimer(
+      startTime: SessionTimeCalculator.focusStartTime(
+        startTime: startTime, breakStartTime: breakStartTime, breakEndTime: breakEndTime,
+        usedBreakDurationInSeconds: usedBreakDurationInSeconds),
+      endTime: expectedEndTime)
+  }
+}
+
+extension WidgetSessionInfo {
+  init(session: BlockedProfileSession) {
+    self.init(
+      blockedProfileId: session.blockedProfile.id, startTime: session.startTime,
+      endTime: session.endTime, breakStartTime: session.breakStartTime,
+      breakEndTime: session.breakEndTime, pauseStartTime: session.pauseStartTime,
+      pauseEndTime: session.pauseEndTime,
+      expectedEndTime: SessionTimeCalculator.expectedSessionEndTime(for: session),
+      breakOrPauseEndTime: SessionTimeCalculator.breakOrPauseEndTime(for: session),
+      usedBreakDurationInSeconds: session.usedBreakDurationInSeconds)
+  }
 }

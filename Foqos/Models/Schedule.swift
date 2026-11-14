@@ -49,7 +49,20 @@ struct BlockedProfileSchedule: Codable, Equatable {
   }
 
   var totalDurationInSeconds: Int {
-    return (endHour - startHour) * 3600 + (endMinute - startMinute) * 60
+    let duration = (endHour - startHour) * 3600 + (endMinute - startMinute) * 60
+    return duration > 0 ? duration : duration + 24 * 60 * 60
+  }
+
+  func endDate(forSessionStartingAt start: Date, calendar: Calendar = .current) -> Date? {
+    let startMinutes = startHour * 60 + startMinute
+    let endMinutes = endHour * 60 + endMinute
+    let sessionMinutes =
+      calendar.component(.hour, from: start) * 60
+      + calendar.component(.minute, from: start)
+    let endsTomorrow = endMinutes <= startMinutes && sessionMinutes >= startMinutes
+    guard let endDay = calendar.date(byAdding: .day, value: endsTomorrow ? 1 : 0, to: start)
+    else { return nil }
+    return calendar.date(bySettingHour: endHour, minute: endMinute, second: 0, of: endDay)
   }
 
   var summaryText: String {

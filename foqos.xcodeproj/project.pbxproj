@@ -161,6 +161,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				FoqosWidgetLiveActivity.swift,
+				Models/ProfileWidgetEntry.swift,
+				Models/WidgetActivityPeriod.swift,
+				Models/WidgetActivitySummary.swift,
+				Models/WidgetProfileInfo.swift,
 			);
 			target = 801B20942CB363A10073E9E2 /* foqos */;
 		};
@@ -182,6 +186,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Components/Common/ActiveSessionPetalView.swift,
+				Components/Common/SessionTimerText.swift,
 				Intents/BreakControlIntent.swift,
 				Intents/FoqosControlError.swift,
 				Intents/ProfileControlIntent.swift,
@@ -193,6 +198,7 @@
 				Models/FoqosModelContainer.swift,
 				Models/PhysicalUnblockItem.swift,
 				Models/Schedule.swift,
+				Models/SessionTimer.swift,
 				Models/Shared.swift,
 				Models/SoftUnblockGrant.swift,
 				Models/Strategies/BlockingStrategyArtwork.swift,
