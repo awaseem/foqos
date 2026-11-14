@@ -28,7 +28,7 @@ struct HomePresentations: ViewModifier {
             onAlertPrimaryAction(alert)
           }
         )
-        .presentationDetents([.medium, .large])
+        .contentSizedSheetPresentation()
         .alert(
           "Screen Time Authorization Failed", isPresented: $requestAuthorizer.showAuthorizationError
         ) {

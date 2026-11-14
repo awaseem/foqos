@@ -10,6 +10,6 @@ struct BlockingStrategyActionView: View {
         AnyView(customViewToDisplay)
       }
     }
-    .presentationDetents(presentationDetents)
+    .contentSizedSheetPresentation(fallbackDetents: presentationDetents)
   }
 }

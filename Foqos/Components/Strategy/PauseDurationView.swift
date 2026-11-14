@@ -40,43 +40,47 @@ struct PauseDurationView: View {
   }
 
   var body: some View {
-    VStack(spacing: 32) {
-      // Header
-      VStack(alignment: .leading, spacing: 12) {
-        Text(title)
-          .font(.title2).bold()
+    ContentSizedSheetScrollView {
+      VStack(spacing: 32) {
+        // Header
+        VStack(alignment: .leading, spacing: 12) {
+          Text(title)
+            .font(.title2).bold()
 
-        Text(
-          description ?? "Select how long you want to allow access when pausing \(profileName)."
-        )
-        .font(.callout)
-        .foregroundColor(.secondary)
+          Text(
+            description ?? "Select how long you want to allow access when pausing \(profileName)."
+          )
+          .font(.callout)
+          .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 16)
+
+        // Large time display
+        timeDisplay
+
+        // Slider with +/- buttons
+        sliderControls
+
+        // Confirm button
+        ActionButton(
+          title: actionTitle,
+          backgroundColor: themeManager.themeColor,
+          iconName: "checkmark.circle.fill"
+        ) {
+          handleConfirm()
+        }
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.top, 16)
-
-      // Large time display
-      timeDisplay
-
-      // Slider with +/- buttons
-      sliderControls
-
-      // Confirm button
-      ActionButton(
-        title: actionTitle,
-        backgroundColor: themeManager.themeColor,
-        iconName: "checkmark.circle.fill"
-      ) {
-        handleConfirm()
-      }
+      .padding(24)
     }
-    .padding(24)
   }
 
   private var timeDisplay: some View {
     VStack(spacing: 8) {
       Text(formattedDuration)
         .font(.system(size: 56, weight: .bold, design: .rounded))
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
         .contentTransition(.numericText())
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: durationMinutes)
 
@@ -199,15 +203,14 @@ struct PauseDurationPreviewSheetHost: View {
   var body: some View {
     Color.clear
       .sheet(isPresented: $show) {
-        NavigationView {
-          PauseDurationView(
-            profileName: "Work Focus",
-            onDurationSelected: { minutes in
-              print("Selected pause duration: \(minutes) minutes")
-            }
-          )
-        }
-        .presentationDetents([.medium, .large])
+        PauseDurationView(
+          profileName: "Work Focus",
+          onDurationSelected: { minutes in
+            print("Selected pause duration: \(minutes) minutes")
+          }
+        )
+        .contentSizedSheetPresentation()
+        .environmentObject(ThemeManager())
       }
   }
 }

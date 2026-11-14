@@ -74,50 +74,48 @@ struct HomeAlertDetailView: View {
 
   var body: some View {
     NavigationStack {
-      VStack(spacing: 22) {
-        Spacer(minLength: 10)
+      ContentSizedSheetScrollView {
+        VStack(spacing: 22) {
+          Image(systemName: alert.iconName)
+            .font(.system(size: 50, weight: .semibold))
+            .foregroundStyle(.red)
+            .frame(width: 104, height: 104)
 
-        Image(systemName: alert.iconName)
-          .font(.system(size: 50, weight: .semibold))
-          .foregroundStyle(.red)
-          .frame(width: 104, height: 104)
+          VStack(spacing: 10) {
+            Text(alert.title)
+              .font(.title2.weight(.bold))
+              .foregroundStyle(.primary)
+              .multilineTextAlignment(.center)
 
-        VStack(spacing: 10) {
-          Text(alert.title)
-            .font(.title2.weight(.bold))
-            .foregroundStyle(.primary)
-            .multilineTextAlignment(.center)
+            Text(alert.detailMessage)
+              .font(.body)
+              .foregroundStyle(.secondary)
+              .multilineTextAlignment(.center)
+              .fixedSize(horizontal: false, vertical: true)
+          }
+          .padding(.horizontal, 8)
 
-          Text(alert.detailMessage)
-            .font(.body)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
+          if let disabledReason {
+            Text(disabledReason)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+              .padding(12)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .background(
+                Color(.secondarySystemBackground),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+              )
+          }
+
+          ActionButton(
+            title: alert.primaryActionTitle,
+            backgroundColor: themeManager.themeColor,
+            isDisabled: !canRunPrimaryAction,
+            action: runPrimaryAction
+          )
         }
-        .padding(.horizontal, 28)
-
-        if let disabledReason {
-          Text(disabledReason)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-              Color(.secondarySystemBackground),
-              in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-            )
-        }
-
-        Spacer(minLength: 12)
-
-        ActionButton(
-          title: alert.primaryActionTitle,
-          backgroundColor: themeManager.themeColor,
-          isDisabled: !canRunPrimaryAction,
-          action: runPrimaryAction
-        )
+        .padding(24)
       }
-      .padding()
       .navigationTitle("Details")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
