@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "fire-alarm-sticker.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
