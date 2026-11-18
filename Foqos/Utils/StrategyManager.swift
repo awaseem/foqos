@@ -139,20 +139,23 @@ class StrategyManager: ObservableObject {
     }
   }
 
-  /// Returns false when the ended session's history could not be saved.
+  // Ends the session at its own deadline when that has passed, so history matches a session the
+  // extension ended on time. Returns false when the history could not be saved.
   private func endExpiredCountdown(
     _ expiredSession: BlockedProfileSession,
-    context: ModelContext,
-    endTime: Date = Date()
+    context: ModelContext
   ) -> Bool {
+    let now = Date()
     let profile = expiredSession.blockedProfile
+    let deadline = SessionTimeCalculator.expectedSessionEndTime(for: expiredSession)
+    let expiredEndTime = deadline.map { min($0, now) } ?? now
     let descriptor = FetchDescriptor<BlockedProfileSession>(
       predicate: #Predicate { $0.endTime == nil }
     )
     let unfinishedSessions = (try? context.fetch(descriptor)) ?? [expiredSession]
 
     for session in unfinishedSessions where session.isActive {
-      session.endSession(at: session.id == expiredSession.id ? endTime : Date())
+      session.endSession(at: session.id == expiredSession.id ? expiredEndTime : now)
     }
 
     var isHistorySaved = true
@@ -171,18 +174,14 @@ class StrategyManager: ObservableObject {
   }
 
   // The extension can miss a timer's end, leaving an overdue session that would block every
-  // background start until the user taps Reset in the app. End it at its deadline so history
-  // matches a session the extension ended on time.
+  // background start until the user taps Reset in the app. disableBackgroundStops is deliberately
+  // not applied: it guards against stopping a session early, and this one's time is already up.
   private func activeSessionEndingOverdue(context: ModelContext) -> BlockedProfileSession? {
     guard let session = getActiveSession(context: context) else { return nil }
-    guard SessionTimeCalculator.isSessionDeadlineExpired(for: session),
-      let deadline = SessionTimeCalculator.expectedSessionEndTime(for: session)
-    else {
-      return session
-    }
+    guard SessionTimeCalculator.isSessionDeadlineExpired(for: session) else { return session }
 
     print("ending overdue session for profile: \(session.blockedProfile.name)")
-    if !endExpiredCountdown(session, context: context, endTime: deadline) {
+    if !endExpiredCountdown(session, context: context) {
       // Not surfaced as errorMessage: the new session's start clears it, and the Control path
       // would report a failed start even though the start succeeds.
       print("ended overdue session for profile: \(session.blockedProfile.name), save failed")

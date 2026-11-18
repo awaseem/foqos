@@ -201,6 +201,41 @@ final class FoqosControlTests: ModelRegressionTestCase {
     XCTAssertEqual(next.blockedProfile.id, expired.blockedProfile.id)
   }
 
+  func testAutomationChainedAtTheDeadlineStartsAfterTheShortGrace() throws {
+    let overdue = try makeTimerSession(startedMinutesAgo: 15 + 20.0 / 60)
+    manager.startSessionFromBackground(
+      overdue.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNotNil(overdue.endTime)
+    XCTAssertNotEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, overdue.id)
+  }
+
+  func testStartWithinTheGraceLeavesTheExtensionToEndTheSession() throws {
+    let justEnded = try makeTimerSession(startedMinutesAgo: 15 + 3.0 / 60)
+    manager.startSessionFromBackground(
+      justEnded.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNil(justEnded.endTime)
+  }
+
+  func testOverdueSessionIsEndedEvenWhenBackgroundStopsAreDisabled() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    expired.blockedProfile.disableBackgroundStops = true
+    try context.save()
+    manager.startSessionFromBackground(
+      expired.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNotNil(expired.endTime)
+  }
+
+  func testResetRecordsTheDeadlineAsTheEndTime() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    manager.loadActiveSession(context: context)
+    manager.resetExpiredCountdown(context: context)
+
+    XCTAssertEqual(expired.endTime, expired.startTime.addingTimeInterval(15 * 60))
+  }
+
   func testExpiredTimerSessionIsEndedWhenTheControlStartsAProfile() throws {
     let expired = try makeTimerSession(startedMinutesAgo: 20)
     let other = try makeProfile(name: "Reading")
