@@ -189,6 +189,38 @@ final class FoqosControlTests: ModelRegressionTestCase {
     XCTAssertFalse(controlState.isProfileActive("invalid"))
   }
 
+  func testExpiredTimerSessionIsEndedWhenABackgroundStartArrives() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    manager.startSessionFromBackground(
+      expired.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNotNil(expired.endTime)
+    let next = try XCTUnwrap(BlockedProfileSession.mostRecentActiveSession(in: context))
+    XCTAssertNotEqual(next.id, expired.id)
+    XCTAssertEqual(next.blockedProfile.id, expired.blockedProfile.id)
+  }
+
+  func testRunningTimerSessionBlocksABackgroundStart() throws {
+    let running = try makeTimerSession(startedMinutesAgo: 10)
+    manager.startSessionFromBackground(
+      running.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNil(running.endTime)
+    XCTAssertEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, running.id)
+  }
+
+  func testOverdueBreakOnOpenEndedSessionIsNotEndedByABackgroundStart() throws {
+    let session = try makeSession()
+    session.startTime = Date().addingTimeInterval(-60 * 60)
+    session.breakStartTime = Date().addingTimeInterval(-30 * 60)
+    SharedData.createActiveSharedSession(for: session.toSnapshot())
+    try context.save()
+    manager.startSessionFromBackground(session.blockedProfile.id, context: context)
+
+    XCTAssertNil(session.endTime)
+    XCTAssertEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, session.id)
+  }
+
   private var controlState: FoqosControlState {
     FoqosControlState(session: SharedData.getActiveSharedSession())
   }
@@ -209,6 +241,24 @@ final class FoqosControlTests: ModelRegressionTestCase {
     let session = BlockedProfileSession.createSession(
       in: context, withTag: ManualBlockingStrategy.id, withProfile: profile
     )
+    try context.save()
+    return session
+  }
+
+  private func makeTimerSession(startedMinutesAgo minutes: Double) throws -> BlockedProfileSession {
+    let profile = BlockedProfiles(
+      name: "Timer", blockingStrategyId: ShortcutTimerBlockingStrategy.id,
+      strategyData: StrategyTimerData.toData(
+        from: StrategyTimerData(durationInMinutes: 15, hideStopButton: false)),
+      enableLiveActivity: false
+    )
+    context.insert(profile)
+    let session = BlockedProfileSession.createSession(
+      in: context, withTag: ShortcutTimerBlockingStrategy.id, withProfile: profile
+    )
+    session.startTime = Date().addingTimeInterval(-minutes * 60)
+    // getActiveSession syncs from the shared snapshot, so it must carry the same start time.
+    SharedData.createActiveSharedSession(for: session.toSnapshot())
     try context.save()
     return session
   }

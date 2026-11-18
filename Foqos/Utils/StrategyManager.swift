@@ -134,6 +134,10 @@ class StrategyManager: ObservableObject {
       return
     }
 
+    endExpiredCountdown(expiredSession, context: context)
+  }
+
+  private func endExpiredCountdown(_ expiredSession: BlockedProfileSession, context: ModelContext) {
     let profile = expiredSession.blockedProfile
     let descriptor = FetchDescriptor<BlockedProfileSession>(
       predicate: #Predicate { $0.endTime == nil }
@@ -270,10 +274,19 @@ class StrategyManager: ObservableObject {
       }
 
       if let localActiveSession = getActiveSession(context: context) {
+        guard isPastSessionDeadline(localActiveSession) else {
+          print(
+            "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
+          )
+          return
+        }
+
+        // The extension can miss the timer's end, leaving an expired session that would
+        // otherwise block every background start until the user taps Reset in the app.
         print(
-          "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
+          "ending expired session for profile: \(localActiveSession.blockedProfile.name) before starting a new one"
         )
-        return
+        endExpiredCountdown(localActiveSession, context: context)
       }
 
       if let duration = durationInMinutes {
@@ -757,6 +770,20 @@ class StrategyManager: ObservableObject {
     customStrategyView = view
     customStrategyViewPresentationDetents = presentationDetents
     showCustomStrategyView = true
+  }
+
+  // Uses the session's own deadline rather than isCountdownExpired, which follows an active
+  // break or pause, so an overdue break on an open-ended session is never ended here.
+  private func isPastSessionDeadline(
+    _ session: BlockedProfileSession,
+    at date: Date = Date()
+  ) -> Bool {
+    guard let sessionEnd = SessionTimeCalculator.expectedSessionEndTime(for: session) else {
+      return false
+    }
+
+    return sessionEnd.addingTimeInterval(SessionTimeCalculator.countdownResetGracePeriod) <= date
+      && session.canResetExpiredCountdown(at: date)
   }
 
   private func getActiveSession(context: ModelContext)
