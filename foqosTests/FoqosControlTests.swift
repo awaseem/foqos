@@ -194,10 +194,74 @@ final class FoqosControlTests: ModelRegressionTestCase {
     manager.startSessionFromBackground(
       expired.blockedProfile.id, context: context, durationInMinutes: 15)
 
-    XCTAssertNotNil(expired.endTime)
+    // Ended at its deadline, not when the next start arrived, so focus history stays accurate.
+    XCTAssertEqual(expired.endTime, expired.startTime.addingTimeInterval(15 * 60))
     let next = try XCTUnwrap(BlockedProfileSession.mostRecentActiveSession(in: context))
     XCTAssertNotEqual(next.id, expired.id)
     XCTAssertEqual(next.blockedProfile.id, expired.blockedProfile.id)
+  }
+
+  func testExpiredTimerSessionIsEndedWhenTheControlStartsAProfile() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    let other = try makeProfile(name: "Reading")
+    try manager.setProfileActiveFromControl(true, profileID: other.id, context: context)
+
+    XCTAssertNotNil(expired.endTime)
+    XCTAssertEqual(
+      BlockedProfileSession.mostRecentActiveSession(in: context)?.blockedProfile.id, other.id)
+  }
+
+  func testInvalidDurationLeavesTheExpiredSessionUntouched() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    manager.startSessionFromBackground(
+      expired.blockedProfile.id, context: context, durationInMinutes: 10)
+
+    XCTAssertNil(expired.endTime)
+    XCTAssertEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, expired.id)
+  }
+
+  func testBreakRunningPastTheDeadlineDoesNotKeepTheTimerSessionAlive() throws {
+    let expired = try makeTimerSession(startedMinutesAgo: 20)
+    expired.breakStartTime = Date().addingTimeInterval(-6 * 60)
+    SharedData.createActiveSharedSession(for: expired.toSnapshot())
+    try context.save()
+    XCTAssertTrue(expired.isBreakActive)
+    manager.startSessionFromBackground(
+      expired.blockedProfile.id, context: context, durationInMinutes: 15)
+
+    XCTAssertNotNil(expired.endTime)
+    XCTAssertNotEqual(BlockedProfileSession.mostRecentActiveSession(in: context)?.id, expired.id)
+  }
+
+  func testOverdueHardModeScheduledSessionIsEndedAtTheScheduleEnd() throws {
+    let start = Date().addingTimeInterval(-2 * 60 * 60)
+    let end = Date().addingTimeInterval(-60 * 60)
+    let calendar = Calendar.current
+    let profile = try makeProfile(name: "Scheduled")
+    profile.schedule = BlockedProfileSchedule(
+      days: [.saturday],
+      startHour: calendar.component(.hour, from: start),
+      startMinute: calendar.component(.minute, from: start),
+      endHour: calendar.component(.hour, from: end),
+      endMinute: calendar.component(.minute, from: end)
+    )
+    profile.enableHardMode = true
+    profile.hardModeDurationInMinutes = 720
+    let scheduled = BlockedProfileSession.createSession(
+      in: context, withTag: profile.id.uuidString, withProfile: profile
+    )
+    scheduled.startTime = start
+    SharedData.createActiveSharedSession(for: scheduled.toSnapshot())
+    try context.save()
+    XCTAssertTrue(scheduled.isStopLockedByHardMode())
+    let expectedEnd = try XCTUnwrap(SessionTimeCalculator.expectedSessionEndTime(for: scheduled))
+
+    let other = try makeProfile(name: "Reading")
+    manager.startSessionFromBackground(other.id, context: context)
+
+    XCTAssertEqual(scheduled.endTime, expectedEnd)
+    XCTAssertEqual(
+      BlockedProfileSession.mostRecentActiveSession(in: context)?.blockedProfile.id, other.id)
   }
 
   func testRunningTimerSessionBlocksABackgroundStart() throws {
@@ -250,7 +314,7 @@ final class FoqosControlTests: ModelRegressionTestCase {
       name: "Timer", blockingStrategyId: ShortcutTimerBlockingStrategy.id,
       strategyData: StrategyTimerData.toData(
         from: StrategyTimerData(durationInMinutes: 15, hideStopButton: false)),
-      enableLiveActivity: false
+      enableLiveActivity: false, enableBreaks: true, breakTimeInMinutes: 15
     )
     context.insert(profile)
     let session = BlockedProfileSession.createSession(

@@ -45,6 +45,19 @@ extension SessionTimeCalculator {
     return expectedEndTime.addingTimeInterval(countdownResetGracePeriod) <= date
   }
 
+  // Unlike isCountdownExpired this ignores an active break or pause, so a break running past the
+  // session's own deadline does not keep an overdue session alive.
+  static func isSessionDeadlineExpired(
+    for session: BlockedProfileSession,
+    at date: Date = Date()
+  ) -> Bool {
+    guard let sessionEndTime = expectedSessionEndTime(for: session) else {
+      return false
+    }
+
+    return sessionEndTime.addingTimeInterval(countdownResetGracePeriod) <= date
+  }
+
   static func isCountdownReloadDue(
     for session: BlockedProfileSession,
     at date: Date = Date()

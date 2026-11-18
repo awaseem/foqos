@@ -134,10 +134,17 @@ class StrategyManager: ObservableObject {
       return
     }
 
-    endExpiredCountdown(expiredSession, context: context)
+    if !endExpiredCountdown(expiredSession, context: context) {
+      errorMessage = "The session was reset, but its history could not be saved."
+    }
   }
 
-  private func endExpiredCountdown(_ expiredSession: BlockedProfileSession, context: ModelContext) {
+  /// Returns false when the ended session's history could not be saved.
+  private func endExpiredCountdown(
+    _ expiredSession: BlockedProfileSession,
+    context: ModelContext,
+    endTime: Date = Date()
+  ) -> Bool {
     let profile = expiredSession.blockedProfile
     let descriptor = FetchDescriptor<BlockedProfileSession>(
       predicate: #Predicate { $0.endTime == nil }
@@ -145,13 +152,14 @@ class StrategyManager: ObservableObject {
     let unfinishedSessions = (try? context.fetch(descriptor)) ?? [expiredSession]
 
     for session in unfinishedSessions where session.isActive {
-      session.endSession()
+      session.endSession(at: session.id == expiredSession.id ? endTime : Date())
     }
 
+    var isHistorySaved = true
     do {
       try context.save()
     } catch {
-      errorMessage = "The session was reset, but its history could not be saved."
+      isHistorySaved = false
     }
 
     SharedData.flushActiveSession()
@@ -159,6 +167,27 @@ class StrategyManager: ObservableObject {
     SoftUnblockGrantScheduler.stopAll()
     SoftUnblockGrantStore.clearAll()
     handleSessionEnded(profile: profile, shouldScheduleReminder: false)
+    return isHistorySaved
+  }
+
+  // The extension can miss a timer's end, leaving an overdue session that would block every
+  // background start until the user taps Reset in the app. End it at its deadline so history
+  // matches a session the extension ended on time.
+  private func activeSessionEndingOverdue(context: ModelContext) -> BlockedProfileSession? {
+    guard let session = getActiveSession(context: context) else { return nil }
+    guard SessionTimeCalculator.isSessionDeadlineExpired(for: session),
+      let deadline = SessionTimeCalculator.expectedSessionEndTime(for: session)
+    else {
+      return session
+    }
+
+    print("ending overdue session for profile: \(session.blockedProfile.name)")
+    if !endExpiredCountdown(session, context: context, endTime: deadline) {
+      // Not surfaced as errorMessage: the new session's start clears it, and the Control path
+      // would report a failed start even though the start succeeds.
+      print("ended overdue session for profile: \(session.blockedProfile.name), save failed")
+    }
+    return nil
   }
 
   func startTimer() {
@@ -273,28 +302,19 @@ class StrategyManager: ObservableObject {
         return
       }
 
-      if let localActiveSession = getActiveSession(context: context) {
-        guard isPastSessionDeadline(localActiveSession) else {
-          print(
-            "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
-          )
-          return
-        }
+      if let duration = durationInMinutes, duration < 15 || duration > 1440 {
+        self.errorMessage = "Duration must be between 15 and 1440 minutes"
+        return
+      }
 
-        // The extension can miss the timer's end, leaving an expired session that would
-        // otherwise block every background start until the user taps Reset in the app.
+      if let localActiveSession = activeSessionEndingOverdue(context: context) {
         print(
-          "ending expired session for profile: \(localActiveSession.blockedProfile.name) before starting a new one"
+          "session is already active for profile: \(localActiveSession.blockedProfile.name), not starting a new one"
         )
-        endExpiredCountdown(localActiveSession, context: context)
+        return
       }
 
       if let duration = durationInMinutes {
-        if duration < 15 || duration > 1440 {
-          self.errorMessage = "Duration must be between 15 and 1440 minutes"
-          return
-        }
-
         if let strategyTimerData = StrategyTimerData.toData(
           from: StrategyTimerData(durationInMinutes: duration, hideStopButton: false)
         ) {
@@ -330,7 +350,8 @@ class StrategyManager: ObservableObject {
     guard let profile = try BlockedProfiles.findProfile(byID: profileID, in: context) else {
       throw FoqosControlError.profileUnavailable
     }
-    let session = getActiveSession(context: context)
+    let session =
+      isActive ? activeSessionEndingOverdue(context: context) : getActiveSession(context: context)
     if isActive {
       if let session {
         guard session.blockedProfile.id == profileID else {
@@ -770,20 +791,6 @@ class StrategyManager: ObservableObject {
     customStrategyView = view
     customStrategyViewPresentationDetents = presentationDetents
     showCustomStrategyView = true
-  }
-
-  // Uses the session's own deadline rather than isCountdownExpired, which follows an active
-  // break or pause, so an overdue break on an open-ended session is never ended here.
-  private func isPastSessionDeadline(
-    _ session: BlockedProfileSession,
-    at date: Date = Date()
-  ) -> Bool {
-    guard let sessionEnd = SessionTimeCalculator.expectedSessionEndTime(for: session) else {
-      return false
-    }
-
-    return sessionEnd.addingTimeInterval(SessionTimeCalculator.countdownResetGracePeriod) <= date
-      && session.canResetExpiredCountdown(at: date)
   }
 
   private func getActiveSession(context: ModelContext)
