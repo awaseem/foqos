@@ -95,7 +95,9 @@ struct HomePresentations: ViewModifier {
         )
       }
       .sheet(isPresented: $presentation.showDonationView) {
-        SupportView()
+        SupportView(
+          isAppInstallationBlocked: strategyManager.activeSession?.isAppInstallationBlocked == true
+        )
       }
       .sheet(isPresented: $presentation.showSettingsView) {
         SettingsView()
