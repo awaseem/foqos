@@ -7,6 +7,8 @@ private let redditURL = URL(string: "https://www.reddit.com/user/waseema393/")!
 private let linkedinURL = URL(string: "https://www.linkedin.com/in/aliw")!
 
 struct SupportView: View {
+  let isAppInstallationBlocked: Bool
+
   @Environment(\.dismiss) private var dismiss
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.colorScheme) private var colorScheme
@@ -91,12 +93,6 @@ struct SupportView: View {
         celebrationStart = nil
       } catch {
         return
-      }
-    }
-    .task {
-      await donationManager.loadProducts()
-      for await _ in Storefront.updates {
-        await donationManager.loadProducts()
       }
     }
   }
@@ -196,8 +192,26 @@ struct SupportView: View {
 
       Spacer()
 
-      tipSection
-        .fadeInSlide(delay: 0.6)
+      Group {
+        if isAppInstallationBlocked {
+          Text(
+            "Even the tip jar is in focus mode. Your profile blocks new app installs, so tips are paused too. Thanks for thinking of us! See you after your session."
+          )
+          .font(.callout)
+          .foregroundStyle(.secondary)
+          .multilineTextAlignment(.center)
+          .frame(maxWidth: .infinity)
+        } else {
+          tipSection
+            .task {
+              await donationManager.loadProducts()
+              for await _ in Storefront.updates {
+                await donationManager.loadProducts()
+              }
+            }
+        }
+      }
+      .fadeInSlide(delay: 0.6)
     }
   }
 
@@ -278,14 +292,20 @@ struct SupportView: View {
 }
 
 #Preview("Support") {
-  SupportView()
+  SupportView(isAppInstallationBlocked: false)
     .environmentObject(TipManager())
     .environmentObject(ThemeManager.shared)
 }
 
 #Preview("Dark") {
-  SupportView()
+  SupportView(isAppInstallationBlocked: false)
     .environmentObject(TipManager())
     .environmentObject(ThemeManager.shared)
     .preferredColorScheme(.dark)
+}
+
+#Preview("App installs blocked") {
+  SupportView(isAppInstallationBlocked: true)
+    .environmentObject(TipManager())
+    .environmentObject(ThemeManager.shared)
 }

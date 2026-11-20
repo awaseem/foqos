@@ -7,6 +7,10 @@ extension BlockedProfileSession {
     return endTime == nil
   }
 
+  var isAppInstallationBlocked: Bool {
+    isActive && blockedProfile.enableBlockAppInstallation && !isBreakActive && !isPauseActive
+  }
+
   var hardModeUnlockTime: Date? {
     SessionTimeCalculator.hardModeUnlockTime(for: self)
   }

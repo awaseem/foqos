@@ -55,6 +55,27 @@ final class BlockedProfileSessionRegressionTests: ModelRegressionTestCase {
       try BlockedProfileSession.findSession(byID: session.id, in: freshContext())?.endTime)
   }
 
+  func testAppInstallationBlockFollowsSessionRestrictions() {
+    let session = makeSession(multiple: false)
+    XCTAssertFalse(session.isAppInstallationBlocked)
+
+    session.blockedProfile.enableBlockAppInstallation = true
+    XCTAssertTrue(session.isAppInstallationBlocked)
+
+    session.startBreak()
+    XCTAssertFalse(session.isAppInstallationBlocked)
+    session.endBreak()
+    XCTAssertTrue(session.isAppInstallationBlocked)
+
+    session.startPause()
+    XCTAssertFalse(session.isAppInstallationBlocked)
+    session.endPause()
+    XCTAssertTrue(session.isAppInstallationBlocked)
+
+    session.endSession()
+    XCTAssertFalse(session.isAppInstallationBlocked)
+  }
+
   func testSingleBreakTransitionsAndSharedState() {
     let session = makeSession(multiple: false)
     XCTAssertTrue(session.isBreakAvailable)
