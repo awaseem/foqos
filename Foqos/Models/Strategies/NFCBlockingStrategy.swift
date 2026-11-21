@@ -28,9 +28,17 @@ class NFCBlockingStrategy: BlockingStrategy {
     forceStart: Bool?
   ) -> (any View)? {
     nfcScanner.onTagScanned = { tag in
+      let tag = tag.url ?? tag.id
+      if profile.hasPhysicalUnblockItem(ofType: .nfc) {
+        if !profile.canUnblock(withCode: tag, type: .nfc) {
+          self.onErrorMessage?(
+            "This NFC tag is not allowed to start focus. Physical unblock setting is on for this profile"
+          )
+          return
+        }
+      }
       self.appBlocker.activateRestrictions(for: BlockedProfiles.getSnapshot(for: profile))
 
-      let tag = tag.url ?? tag.id
       let activeSession =
         BlockedProfileSession
         .createSession(
