@@ -10,7 +10,7 @@ enum SoftUnblockGrantScheduler {
     let grantId: UUID
   }
 
-  static func scheduleGrant(_ grant: SoftUnblockGrant) throws {
+  static func scheduleGrant(_ grant: SoftUnblockGrant, enableBlockingWarnings: Bool) throws {
     let center = DeviceActivityCenter()
     let activityName = activityName(for: grant)
     let calendar = Calendar.current
@@ -29,7 +29,9 @@ enum SoftUnblockGrantScheduler {
     let schedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
-      repeats: false
+      repeats: false,
+      warningTime: enableBlockingWarnings
+        ? BlockingWarning.leadTime(for: grant.expiresAt.timeIntervalSince(grant.createdAt)) : nil
     )
 
     try center.startMonitoring(activityName, during: schedule)

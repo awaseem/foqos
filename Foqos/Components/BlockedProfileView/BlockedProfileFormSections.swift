@@ -1,5 +1,6 @@
 import FamilyControls
 import SwiftUI
+import UserNotifications
 
 private struct ProfileFieldDivider: View {
   var isVisible: Bool
@@ -536,6 +537,7 @@ struct BlockedProfileNotificationsFields: View {
   @EnvironmentObject private var strategyManager: StrategyManager
   @EnvironmentObject private var themeManager: ThemeManager
   @FocusState private var isReminderTimeFocused: Bool
+  @State private var hasNotificationPermission = true
 
   @ObservedObject var draft: BlockedProfileDraft
   var profile: BlockedProfiles?
@@ -555,6 +557,29 @@ struct BlockedProfileNotificationsFields: View {
       isOn: $draft.enableLiveActivity,
       isDisabled: disabled
     )
+
+    ProfileFieldDivider(isVisible: showsSeparators)
+
+    CustomToggle(
+      title: "Warn before blocking",
+      description:
+        "Get a reminder 15 minutes before a schedule starts, or 1–5 minutes before a break, pause, or Temporary Access ends.",
+      isOn: $draft.enableBlockingWarnings,
+      isDisabled: disabled
+    )
+    .task(id: draft.enableBlockingWarnings) {
+      guard draft.enableBlockingWarnings else { return }
+      hasNotificationPermission =
+        (try? await UNUserNotificationCenter.current().requestAuthorization(options: [
+          .alert, .sound,
+        ])) == true
+    }
+
+    if draft.enableBlockingWarnings && !hasNotificationPermission {
+      Text("Allow notifications in Settings to receive blocking warnings.")
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
 
     ProfileFieldDivider(isVisible: showsSeparators)
 

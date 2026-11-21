@@ -24,6 +24,8 @@ class DeviceActivityCenterUtil {
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
       repeats: true,
+      warningTime: profile.enableBlockingWarnings
+        ? DateComponents(minute: BlockedProfileSchedule.warningMinutes) : nil
     )
 
     do {
@@ -62,11 +64,14 @@ class DeviceActivityCenterUtil {
     let breakTimerActivity = BreakTimerActivity()
     let deviceActivityName = breakTimerActivity.getDeviceActivityName(from: profile.id.uuidString)
 
+    let now = Date()
     let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(from: durationInSeconds)
     let deviceActivitySchedule = DeviceActivitySchedule(
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
       repeats: false,
+      warningTime: profile.enableBlockingWarnings
+        ? BlockingWarning.leadTime(for: durationInSeconds, intervalEnd: intervalEnd, now: now) : nil
     )
 
     stopActivities(for: [deviceActivityName], with: center)
@@ -154,6 +159,7 @@ class DeviceActivityCenterUtil {
     let deviceActivityName = pauseTimerActivity.getDeviceActivityName(
       from: profile.id.uuidString)
 
+    let now = Date()
     let (intervalStart, intervalEnd) = getTimeIntervalStartAndEnd(
       from: TimeInterval(pauseData.pauseDurationInMinutes * 60))
 
@@ -161,6 +167,10 @@ class DeviceActivityCenterUtil {
       intervalStart: intervalStart,
       intervalEnd: intervalEnd,
       repeats: false,
+      warningTime: profile.enableBlockingWarnings
+        ? BlockingWarning.leadTime(
+          for: TimeInterval(pauseData.pauseDurationInMinutes * 60), intervalEnd: intervalEnd,
+          now: now) : nil
     )
 
     stopActivities(for: [deviceActivityName], with: center)

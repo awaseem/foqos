@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UserNotifications
 
 /// Bridges Home Screen quick actions (long-press on the app icon) into SwiftUI.
 final class QuickActionManager: ObservableObject {
@@ -42,7 +43,22 @@ final class QuickActionManager: ObservableObject {
   }
 }
 
-final class FoqosAppDelegate: NSObject, UIApplicationDelegate {
+final class FoqosAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    UNUserNotificationCenter.current().delegate = self
+    return true
+  }
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter, willPresent notification: UNNotification
+  ) async -> UNNotificationPresentationOptions {
+    notification.request.identifier.hasPrefix(BlockingWarning.identifierPrefix)
+      ? [.banner, .sound] : []
+  }
+
   func application(
     _ application: UIApplication,
     configurationForConnecting connectingSceneSession: UISceneSession,

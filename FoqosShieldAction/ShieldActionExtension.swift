@@ -76,7 +76,8 @@ class ShieldActionExtension: ShieldActionDelegate {
     }
 
     do {
-      try SoftUnblockGrantScheduler.scheduleGrant(grant)
+      try SoftUnblockGrantScheduler.scheduleGrant(
+        grant, enableBlockingWarnings: snapshot.enableBlockingWarnings == true)
     } catch {
       SoftUnblockGrantStore.rollbackIssuedGrant(
         id: grant.id,
