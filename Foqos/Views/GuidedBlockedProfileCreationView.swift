@@ -563,6 +563,10 @@ private struct GuidedProfileReviewContent: View {
       enabled.append("Live Activity")
     }
 
+    if draft.enableBlockingWarnings {
+      enabled.append("Warn before blocking")
+    }
+
     if draft.enableReminder {
       enabled.append("Reminder")
     }

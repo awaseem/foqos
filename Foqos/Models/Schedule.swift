@@ -43,6 +43,51 @@ struct BlockedProfileSchedule: Codable, Equatable {
   var endMinute: Int
 
   var updatedAt: Date = Date()
+  var registeredAt: Date?
+
+  static let warningMinutes = 15
+
+  private func hasSameTimesAndDays(as other: Self) -> Bool {
+    Set(days) == Set(other.days) && startHour == other.startHour && startMinute == other.startMinute
+      && endHour == other.endHour && endMinute == other.endMinute
+  }
+
+  func updatedAtForRegistration(
+    previous: Self?, now: Date, calendar: Calendar = .current
+  ) -> Date {
+    guard let previous, hasSameTimesAndDays(as: previous) else { return now }
+    // Registering inside today's interval can immediately invoke intervalDidStart.
+    // Keep the original cooldown in that case, including after a user stopped the block early.
+    let time = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
+    let start = startHour * 60 + startMinute
+    let end = endHour * 60 + endMinute
+    let inside = start < end ? (start..<end).contains(time) : time >= start || time < end
+    return inside && isTodayScheduled(now: now, calendar: calendar) ? now : previous.updatedAt
+  }
+
+  func isEligibleStart(_ start: Date, profileCreatedAt: Date, calendar: Calendar = .current) -> Bool
+  {
+    isTodayScheduled(now: start, calendar: calendar)
+      && start.timeIntervalSince(max(updatedAt, profileCreatedAt)) > 15 * 60
+      && start >= (registeredAt ?? .distantPast)
+  }
+
+  func startForWarning(at now: Date, profileCreatedAt: Date, calendar: Calendar = .current) -> Date?
+  {
+    let components = DateComponents(hour: startHour, minute: startMinute, second: 0)
+    guard
+      let start = calendar.nextDate(
+        after: now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents
+      ), isEligibleStart(start, profileCreatedAt: profileCreatedAt, calendar: calendar)
+    else { return nil }
+
+    let warning = start.addingTimeInterval(-TimeInterval(Self.warningMinutes * 60))
+    // Screen Time can deliver callbacks late. Only announce within the intended warning minute.
+    guard warning >= (registeredAt ?? .distantPast),
+      (0..<60).contains(now.timeIntervalSince(warning))
+    else { return nil }
+    return start
+  }
 
   var isActive: Bool {
     return !days.isEmpty

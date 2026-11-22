@@ -105,6 +105,7 @@ extension BlockedProfiles {
     strategyData: Data?? = nil,
     askForStartSettings: Bool? = nil,
     enableLiveActivity: Bool? = nil,
+    enableBlockingWarnings: Bool? = nil,
     reminderTime: UInt32? = nil,
     customReminderMessage: String? = nil,
     enableBreaks: Bool? = nil,
@@ -164,6 +165,10 @@ extension BlockedProfiles {
 
     if let newEnableLiveActivity = enableLiveActivity {
       profile.enableLiveActivity = newEnableLiveActivity
+    }
+
+    if let enableBlockingWarnings {
+      profile.enableBlockingWarnings = enableBlockingWarnings
     }
 
     if let newEnableBreaks = enableBreaks {
@@ -299,6 +304,7 @@ extension BlockedProfiles {
       strategyData: profile.strategyData,
       order: profile.order,
       enableLiveActivity: profile.enableLiveActivity,
+      enableBlockingWarnings: profile.enableBlockingWarnings,
       reminderTimeInSeconds: profile.reminderTimeInSeconds,
       customReminderMessage: profile.customReminderMessage,
       enableBreaks: profile.enableBreaks,
@@ -359,6 +365,7 @@ extension BlockedProfiles {
     strategyData: Data? = nil,
     askForStartSettings: Bool = true,
     enableLiveActivity: Bool = false,
+    enableBlockingWarnings: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String = "",
     enableBreaks: Bool = false,
@@ -388,6 +395,7 @@ extension BlockedProfiles {
       strategyData: strategyData,
       askForStartSettings: askForStartSettings,
       enableLiveActivity: enableLiveActivity,
+      enableBlockingWarnings: enableBlockingWarnings,
       reminderTimeInSeconds: reminderTimeInSeconds,
       customReminderMessage: customReminderMessage,
       enableBreaks: enableBreaks,
@@ -436,6 +444,7 @@ extension BlockedProfiles {
       strategyData: source.strategyData,
       askForStartSettings: source.askForStartSettings,
       enableLiveActivity: source.enableLiveActivity,
+      enableBlockingWarnings: source.enableBlockingWarnings,
       reminderTimeInSeconds: source.reminderTimeInSeconds,
       customReminderMessage: source.customReminderMessage,
       enableBreaks: source.enableBreaks,

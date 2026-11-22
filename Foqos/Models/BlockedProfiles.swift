@@ -15,6 +15,7 @@ class BlockedProfiles {
   var order: Int = 0
   var editLockCredential: Data? = nil
 
+  var enableBlockingWarnings: Bool = false
   var enableLiveActivity: Bool = false
   var reminderTimeInSeconds: UInt32?
   var enableBreaks: Bool = false
@@ -66,6 +67,7 @@ class BlockedProfiles {
     strategyData: Data? = nil,
     askForStartSettings: Bool = true,
     enableLiveActivity: Bool = false,
+    enableBlockingWarnings: Bool = false,
     reminderTimeInSeconds: UInt32? = nil,
     customReminderMessage: String? = nil,
     enableBreaks: Bool = false,
@@ -100,7 +102,7 @@ class BlockedProfiles {
     self.enableLiveActivity = enableLiveActivity
     self.reminderTimeInSeconds = reminderTimeInSeconds
     self.customReminderMessage = customReminderMessage
-    self.enableLiveActivity = enableLiveActivity
+    self.enableBlockingWarnings = enableBlockingWarnings
     self.enableBreaks = enableBreaks
     self.breakTimeInMinutes = breakTimeInMinutes
     self.allowMultipleBreaks = allowMultipleBreaks

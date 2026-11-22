@@ -630,12 +630,6 @@ class StrategyManager: ObservableObject {
     appBlocker.deactivateRestrictionsForBreak(
       for: BlockedProfiles.getSnapshot(for: session.blockedProfile))
 
-    // Schedule a reminder to get back to the profile after the break
-    scheduleBreakReminder(
-      profile: session.blockedProfile,
-      durationInSeconds: remainingBreakAllowance
-    )
-
     // Refresh widgets when break starts
     WidgetCenter.shared.reloadTimelines(ofKind: "ProfileControlWidget")
 
@@ -872,24 +866,6 @@ class StrategyManager: ObservableObject {
         message: message,
         seconds: TimeInterval(reminderTimeInSeconds)
       )
-  }
-
-  private func scheduleBreakReminder(
-    profile: BlockedProfiles,
-    durationInSeconds: TimeInterval? = nil
-  ) {
-    let profileName = profile.name
-
-    // Schedule a reminder to let the user know that the break is about to end
-    let breakDurationInSeconds = durationInSeconds ?? TimeInterval(profile.breakTimeInMinutes * 60)
-    let breakNotificationTimeInSeconds = breakDurationInSeconds - 60
-    if breakNotificationTimeInSeconds > 0 {
-      timersUtil.scheduleNotification(
-        title: "Break almost over!",
-        message: "Hope you enjoyed your break, starting " + profileName + " in 1 minute.",
-        seconds: breakNotificationTimeInSeconds
-      )
-    }
   }
 
   func cleanUpGhostSchedules(context: ModelContext) {

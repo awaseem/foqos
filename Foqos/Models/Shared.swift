@@ -26,6 +26,7 @@ enum SharedData {
     var order: Int
 
     var enableLiveActivity: Bool
+    var enableBlockingWarnings: Bool? = nil
     var reminderTimeInSeconds: UInt32?
     var customReminderMessage: String?
     var enableBreaks: Bool

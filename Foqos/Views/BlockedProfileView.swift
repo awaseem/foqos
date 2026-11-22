@@ -358,6 +358,7 @@ struct BlockedProfileView: View {
               if let source = profile {
                 let clonedProfile = try BlockedProfiles.cloneProfile(
                   source, in: modelContext, newName: trimmed, authorization: editAuthorization)
+                BlockedProfiles.updateSnapshot(for: clonedProfile)
                 DeviceActivityCenterUtil.scheduleTimerActivity(for: clonedProfile)
               }
             } catch {

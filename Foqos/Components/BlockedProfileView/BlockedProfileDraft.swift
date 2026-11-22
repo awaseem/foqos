@@ -7,6 +7,7 @@ final class BlockedProfileDraft: ObservableObject {
   @Published var name: String
   @Published var enableLiveActivity: Bool
   @Published var enableReminder: Bool
+  @Published var enableBlockingWarnings: Bool
   @Published var enableBreaks: Bool
   @Published var breakTimeInMinutes: Int
   @Published var allowMultipleBreaks: Bool
@@ -49,6 +50,7 @@ final class BlockedProfileDraft: ObservableObject {
     name = profile?.name ?? ""
     selectedActivity = profile?.selectedActivity ?? FamilyActivitySelection()
     enableLiveActivity = profile?.enableLiveActivity ?? false
+    enableBlockingWarnings = profile?.enableBlockingWarnings ?? false
     enableBreaks = profile?.enableBreaks ?? false
     breakTimeInMinutes = profile?.breakTimeInMinutes ?? 15
     allowMultipleBreaks = profile?.allowMultipleBreaks ?? false
@@ -120,7 +122,14 @@ final class BlockedProfileDraft: ObservableObject {
       try ProfileLockUtil.requireAuthorization(for: existingProfile, authorization: authorization)
     }
     ensureSavedStartSettings()
-    schedule.updatedAt = Date()
+    let now = Date()
+    if let existingProfile, existingProfile.enableBlockingWarnings != enableBlockingWarnings {
+      schedule.updatedAt = schedule.updatedAtForRegistration(
+        previous: existingProfile.schedule, now: now)
+    } else {
+      schedule.updatedAt = now
+    }
+    schedule.registeredAt = now
 
     let reminderTimeSeconds: UInt32? =
       enableReminder ? UInt32(reminderTimeInMinutes * 60) : nil
@@ -139,6 +148,7 @@ final class BlockedProfileDraft: ObservableObject {
         strategyData: .some(strategyData),
         askForStartSettings: askForStartSettings,
         enableLiveActivity: enableLiveActivity,
+        enableBlockingWarnings: enableBlockingWarnings,
         reminderTime: reminderTimeSeconds,
         customReminderMessage: customReminderMessage,
         enableBreaks: enableTimedBreaksToSave,
@@ -172,6 +182,7 @@ final class BlockedProfileDraft: ObservableObject {
       strategyData: strategyData,
       askForStartSettings: askForStartSettings,
       enableLiveActivity: enableLiveActivity,
+      enableBlockingWarnings: enableBlockingWarnings,
       reminderTimeInSeconds: reminderTimeSeconds,
       customReminderMessage: customReminderMessage,
       enableBreaks: enableTimedBreaksToSave,
