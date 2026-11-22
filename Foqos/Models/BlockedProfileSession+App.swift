@@ -184,9 +184,7 @@ extension BlockedProfileSession {
     self.pauseEndTime = pauseEndTime
   }
 
-  func endSession() {
-    let endTime = Date()
-
+  func endSession(at endTime: Date = Date()) {
     BlockingSessionLifecycleRegistry.sessionDidEnd(
       BlockingSessionLifecycleContext(
         profile: BlockedProfiles.getSnapshot(for: blockedProfile),
